@@ -2575,9 +2575,9 @@ function drawHub(){
       g.save();g.globalAlpha=0.18;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,15*sc,5*sc,0,0,7);g.fill();g.restore();
       drawCat(g, sx, it.p.y, 1, now*0.0018, CATS.tomy, {scale:sc});
       g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
-      g.fillStyle='rgba(0,0,0,.6)';g.fillText('Tomy 💛',sx+1,it.p.y-56*sc+1);
-      g.fillStyle='rgba(255,231,176,.97)';g.fillText('Tomy 💛',sx,it.p.y-56*sc);g.restore();
-      if(HUB.nearTomy){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px serif';g.fillText('💬',sx,it.p.y-70*sc);g.restore(); }
+      g.fillStyle='rgba(0,0,0,.6)';g.fillText('Tomy',sx+1,it.p.y-72*sc+1);
+      g.fillStyle='rgba(255,231,176,.97)';g.fillText('Tomy',sx,it.p.y-72*sc);g.restore();
+      if(HUB.nearTomy){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px serif';g.fillText('💬',sx,it.p.y-86*sc);g.restore(); }
       continue;
     }
     if(it.t==='fishbarrel'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
@@ -2618,9 +2618,9 @@ function drawHub(){
       g.restore();
     } else if(it.t==='rocky'){ const r=HUB.rocky, sc=hubScale(r.y)*0.92, sx=r.x-HUB.camx, now=Date.now();
       const key=(now<r.barkUntil)?'bark':(r.moving?(Math.floor(r.phase*1.2)%2?'walk1':'walk0'):(S.companion?'idle':'sit'));
-      drawDogSprite(g,sx,r.y,r.facing,64*sc,key);
+      drawDogSprite(g,sx,r.y,r.facing,86*sc,key);
       g.save(); g.textAlign='center'; g.font='bold 11px Trebuchet MS'; g.fillStyle='rgba(255,231,176,.92)';
-      g.fillText(COMP.staying&&S.companion?'Rocky 💤':'Rocky', sx, r.y-66*sc); g.restore();
+      g.fillText(COMP.staying&&S.companion?'Rocky 💤':'Rocky', sx, r.y-88*sc); g.restore();
       if(HUB.nearRocky){ g.save(); g.globalAlpha=0.5+0.5*Math.abs(Math.sin(now*0.006)); g.textAlign='center'; g.font='18px serif'; g.fillText('💬',sx,r.y-80*sc); g.restore(); }
     } else {
       const c=HUB.cat, sc=hubScale(c.y), lift=c.z+(c.onPlat?20:0), sx=c.x-HUB.camx;
