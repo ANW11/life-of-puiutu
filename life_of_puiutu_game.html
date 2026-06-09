@@ -1128,7 +1128,7 @@ function buildAreas(){
                 toSpawn:{xf:0.25, yf:0.89}}],   // arrive in the courtyard right in front of the wooden gate
         mobXf:[0.26,0.40,0.54,0.66,0.78],    // duck spawn positions (fraction of world width)
         fishXf:[0.18,0.34,0.50,0.62,0.74],   // collectible fish along the path (respawn ~60s)
-        rocky:{xf:0.22, yf:0.66},            // Rocky the dog (NPC to recruit, or follows you once joined)
+        tomy:{xf:0.26, yf:0.70},             // Tomy 💛 — dozing in the sun (in loving memory)
       },
       platforms:[
         {x:0,y:560,w:3800,h:120,t:'grass'},
@@ -1166,6 +1166,7 @@ function buildAreas(){
         walkTop:0.64, walkBot:0.97,
         scaleFar:0.60, scaleNear:1.08,
         spawn:{xf:0.25, yf:0.89},            // in front of the wooden gate (matches the park door's arrival spot)
+        rocky:{xf:0.63, yf:0.83},            // Rocky the dog — now hangs out by the fountain
         mobXf:[0.34,0.48,0.62,0.72,0.84],    // pigeon spawn spots (on the courtyard green)
         // left wooden gate -> park; central castle gate -> Library; right wall arch -> Beach
         doors:[{xf:0.205, yf:0.85, r:78, glowXf:0.16, glowYf:0.43, glowR:66, to:'garden', label:'Back to Garden', icon:'↩', toSpawn:{xf:0.07, yf:0.44}},
@@ -1342,13 +1343,14 @@ const input={left:false,right:false,up:false,down:false,jumpQueued:false,jumpHel
 function topdownMode(){ return inGame && A && A.mode==='topdown'; }
 // what (if anything) the player can interact with right now
 function interactTarget(){
-  if(topdownMode()){ if(HUB.nearRocky) return 'rocky'; if(HUB.nearMerlin) return 'merlin'; if(HUB.nearPotions) return 'potions'; if(HUB.nearFishbarrel) return 'fishbarrel'; if(HUB.nearMerge) return 'merge'; if(HUB.nearDoor) return 'door'; if(HUB.nearCave) return 'cave'; return null; }
+  if(topdownMode()){ if(HUB.nearRocky) return 'rocky'; if(HUB.nearTomy) return 'tomy'; if(HUB.nearMerlin) return 'merlin'; if(HUB.nearPotions) return 'potions'; if(HUB.nearFishbarrel) return 'fishbarrel'; if(HUB.nearMerge) return 'merge'; if(HUB.nearDoor) return 'door'; if(HUB.nearCave) return 'cave'; return null; }
   if(nearPortal) return 'portal'; if(nearNpc) return 'npc'; return null;
 }
 function doInteract(){
   if(!inGame) return;
   const t=interactTarget();
   if(t==='rocky') openDialogue(HUB_ROCKY_NPC);
+  else if(t==='tomy') tomyTalk();
   else if(t==='merlin') merlinTalk();
   else if(t==='potions') sortOpen();
   else if(t==='fishbarrel') fishOpen();
@@ -1364,7 +1366,7 @@ function updateInteractBtn(){
   const t=interactTarget();
   if(!t || !inGame || dialogueActive || battleActive || mapOpen){ b.style.display='none'; return; }
   b.style.display='flex';
-  b.textContent = t==='merge' ? '🍉' : t==='merlin' ? '🧙' : t==='potions' ? '🧪' : t==='fishbarrel' ? '🎣' : t==='cave' ? '🔮' : t==='door' ? (HUB.nearDoor&&HUB.nearDoor.icon||'🏰') : '💬';
+  b.textContent = t==='merge' ? '🍉' : t==='tomy' ? '💛' : t==='merlin' ? '🧙' : t==='potions' ? '🧪' : t==='fishbarrel' ? '🎣' : t==='cave' ? '🔮' : t==='door' ? (HUB.nearDoor&&HUB.nearDoor.icon||'🏰') : '💬';
 }
 
 function resize(){
@@ -2210,6 +2212,18 @@ let _merlinLine=0;
 function merlinTalk(){ toast(MERLIN_LINES[_merlinLine % MERLIN_LINES.length]); _merlinLine++; SFX&&SFX.tone&&SFX.tone(560,0.08,'sine',0.05); }
 function hubMerlin(){ const H=A.hub; return H.merlin?{x:H.merlin.xf*HUB.worldW, y:H.merlin.yf*VH}:null; }
 function hubPotions(){ const H=A.hub; return H.potions?{x:H.potions.xf*HUB.worldW, y:H.potions.yf*VH}:null; }
+function hubTomy(){ const H=A.hub; return H.tomy?{x:H.tomy.xf*HUB.worldW, y:H.tomy.yf*VH}:null; }
+// Tomy 💛 — in loving memory of a dear old cat. He naps in the sun, forever welcome here.
+const TOMY_LINES=[
+  'Tomy is curled up in a warm sunbeam, purring softly. 💛',
+  'He blinks at you slowly — the gentlest "I love you" a cat can give.',
+  'Old friend, brave little heart… you are always welcome here. 🌼',
+  'Forever napping in the sun. We miss you, Tomy. 💛',
+];
+let _tomyLine=0;
+function tomyTalk(){ toast(TOMY_LINES[_tomyLine % TOMY_LINES.length]); _tomyLine++;
+  const t=hubTomy(); if(t){ for(let i=0;i<3;i++) floatText(t.x+(Math.random()-0.5)*30, t.y-30-i*14, '💛', '#ffd0e0'); }
+  SFX&&SFX.tone&&SFX.tone(520,0.10,'sine',0.04); }
 const FISHBARREL_IMG=new Image(); FISHBARREL_IMG.src='fishing_barrel.png';
 function hubFishbarrel(){ const H=A.hub; return H.fishbarrel?{x:H.fishbarrel.xf*HUB.worldW, y:H.fishbarrel.yf*VH}:null; }
 function hubAspect(){ const im=hubImg(); return (im.naturalWidth&&im.naturalHeight)?im.naturalWidth/im.naturalHeight:3.027; }
@@ -2305,7 +2319,7 @@ function enterHub(fromRight){
   c.z=0; c.vz=0; c.onPlat=false; c.moving=false; c.facing=1; c.phase=0;
   if(maskReady() && maskClassify(c.x,c.y)!=='walk'){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
   c.safeX=c.x; c.safeY=c.y;
-  HUB.target=null; HUB.nearCave=false; HUB.nearRocky=false; HUB.nearMerge=false; HUB.nearDoor=null; HUB.nearMerlin=false; HUB.nearPotions=false; HUB.nearFishbarrel=false;
+  HUB.target=null; HUB.nearCave=false; HUB.nearRocky=false; HUB.nearMerge=false; HUB.nearDoor=null; HUB.nearMerlin=false; HUB.nearPotions=false; HUB.nearFishbarrel=false; HUB.nearTomy=false;
   HUB.cityX = H.cityExit ? (rightmostWalkX()-10) : Infinity;   // only the park exits to the City on its right
   HUB.camx=Math.max(0,Math.min(HUB.worldW-VW, c.x-VW/2)); cam.x=HUB.camx;
   // Rocky: follows the cat if recruited, else waits as an NPC on the path
@@ -2411,6 +2425,7 @@ function updateHub(){
   const ml2=hubMerlin(); HUB.nearMerlin = ml2 ? Math.hypot(c.x-ml2.x,c.y-ml2.y)<70 : false;
   const po2=hubPotions(); HUB.nearPotions = po2 ? Math.hypot(c.x-po2.x,c.y-po2.y)<(A.hub.potions.r||80) : false;
   const fb2=hubFishbarrel(); HUB.nearFishbarrel = fb2 ? Math.hypot(c.x-fb2.x,c.y-fb2.y)<(A.hub.fishbarrel.r||76) : false;
+  const ty2=hubTomy(); HUB.nearTomy = ty2 ? Math.hypot(c.x-ty2.x,c.y-ty2.y)<68 : false;
   // doors (tower → tower garden, and back). nearest door in range glows + opens on interact.
   // a door can be anchored to a painted RED region (maskColor) instead of a fixed point.
   HUB.nearDoor=null;
@@ -2519,6 +2534,7 @@ function drawHub(){
   const mlPos=hubMerlin(); if(mlPos) items.push({z:mlPos.y, t:'merlin', p:mlPos});
   const poPos=hubPotions(); if(poPos) items.push({z:poPos.y+30, t:'potions', p:poPos});
   const fbPos=hubFishbarrel(); if(fbPos) items.push({z:fbPos.y, t:'fishbarrel', p:fbPos});
+  const tyPos=hubTomy(); if(tyPos) items.push({z:tyPos.y, t:'tomy', p:tyPos});
   items.push({z:HUB.cat.y, t:'cat'});
   items.sort((a,b)=>a.z-b.z);
   for(const it of items){
@@ -2543,6 +2559,25 @@ function drawHub(){
       g.fillStyle='rgba(0,0,0,.6)';g.fillText('Merlin',sx+1,it.p.y-152*sc+1);
       g.fillStyle='rgba(255,231,176,.96)';g.fillText('Merlin',sx,it.p.y-152*sc);g.restore();
       if(HUB.nearMerlin){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px serif';g.fillText('💬',sx,it.p.y-166*sc);g.restore(); }
+      continue;
+    }
+    if(it.t==='tomy'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
+      // soft warm sunbeam glow
+      g.save(); const gr=g.createRadialGradient(sx,it.p.y-16*sc,2,sx,it.p.y-16*sc,48*sc);
+      gr.addColorStop(0,'rgba(255,222,150,0.32)'); gr.addColorStop(1,'rgba(255,222,150,0)');
+      g.fillStyle=gr; g.beginPath(); g.arc(sx,it.p.y-16*sc,48*sc,0,7); g.fill(); g.restore();
+      // gentle drifting hearts
+      g.save(); g.textAlign='center';
+      for(let k=0;k<3;k++){ const tt=((now*0.0006)+k*0.34)%1, hy=it.p.y-22*sc-tt*56*sc, hx=sx+Math.sin(now*0.002+k*2)*10*sc;
+        g.globalAlpha=(1-tt)*0.7; g.font=Math.round((9+6*(1-tt))*sc)+'px serif'; g.fillText('💛',hx,hy); }
+      g.restore();
+      // shadow + Tomy, dozing
+      g.save();g.globalAlpha=0.18;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,15*sc,5*sc,0,0,7);g.fill();g.restore();
+      drawCat(g, sx, it.p.y, 1, now*0.0018, CATS.tomy, {scale:sc});
+      g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
+      g.fillStyle='rgba(0,0,0,.6)';g.fillText('Tomy 💛',sx+1,it.p.y-56*sc+1);
+      g.fillStyle='rgba(255,231,176,.97)';g.fillText('Tomy 💛',sx,it.p.y-56*sc);g.restore();
+      if(HUB.nearTomy){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px serif';g.fillText('💬',sx,it.p.y-70*sc);g.restore(); }
       continue;
     }
     if(it.t==='fishbarrel'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
