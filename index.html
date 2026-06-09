@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IsaacAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M11 2L20 6.5V15.5L11 20L2 15.5V6.5L11 2Z" fill="#a855f7" opacity=".9"/>
+        <path d="M11 2L20 6.5V15.5L11 20L2 15.5V6.5L11 2Z" stroke="#c084fc" stroke-width="1" fill="none"/>
+      </svg>
+      <span class="logo-name">IsaacAI</span>
+      <span class="badge-beta">BETA</span>
+    </div>
+  </header>
+
+  <!-- ── Main split layout ──────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- LEFT: Controls -->
+    <section class="panel-left">
+      <div class="panel-left-inner">
+
+        <div class="trial-label">
+          <span class="trial-line"></span>
+          TRIAL GRATUIT
+        </div>
+
+        <h1 class="hero-title">
+          Generează orice<br/>
+          <span class="hero-accent">model 3D.</span>
+        </h1>
+        <p class="hero-sub">
+          Descrie obiectul tău și AI-ul nostru îl va analiza și genera în câteva secunde — fără cont, fără card.
+        </p>
+
+        <!-- Example chips -->
+        <div class="examples-label">ÎNCEARCĂ UN EXEMPLU:</div>
+        <div class="chips">
+          <button class="chip" data-prompt="medieval dragon breathing fire">🐉 Dragon medieval</button>
+          <button class="chip" data-prompt="samurai warrior with katana">⚔️ Samurai cu katana</button>
+          <button class="chip" data-prompt="sci-fi spaceship futuristic">🚀 Navă spațială</button>
+          <button class="chip" data-prompt="ancient stone castle ruins">🏰 Castel antic</button>
+          <button class="chip" data-prompt="sports car low poly">🚗 Mașină sport</button>
+          <button class="chip" data-prompt="cyberpunk robot humanoid">🤖 Robot cyberpunk</button>
+        </div>
+
+        <!-- Textarea -->
+        <div class="textarea-wrap">
+          <textarea
+            id="prompt-input"
+            class="prompt-textarea"
+            placeholder='Descrie obiectul tău 3D... (ex: „Un topor viking ruginit cu gravuri ornamentale")'
+            maxlength="300"
+            rows="5"
+          ></textarea>
+          <div class="textarea-footer">
+            <span id="char-count" class="char-count">0 / 300</span>
+            <div class="footer-badges">
+              <span class="fbadge green">● Sketchfab conectat</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate button -->
+        <button id="generate-btn" class="generate-btn">
+          <span class="gen-btn-icon">◈</span>
+          <span id="gen-btn-label">Generează Model 3D</span>
+          <span class="gen-btn-arrow">→</span>
+        </button>
+
+        <p class="bottom-hint">Fără cont necesar · Apasă Ctrl+Enter pentru generare rapidă</p>
+
+      </div>
+    </section>
+
+    <!-- RIGHT: Viewer -->
+    <section class="panel-right" id="panel-right">
+
+      <!-- EMPTY STATE -->
+      <div id="state-empty" class="rstate active">
+        <div class="empty-icon">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <path d="M28 6L50 17V39L28 50L6 39V17L28 6Z" stroke="#a855f7" stroke-width="1.5" fill="none" opacity=".4"/>
+            <path d="M28 6V50M6 17L50 39M50 17L6 39" stroke="#a855f7" stroke-width=".7" opacity=".2"/>
+            <circle cx="28" cy="28" r="4" fill="#a855f7" opacity=".5"/>
+          </svg>
+        </div>
+        <p class="empty-title">Rezultatul va apărea aici</p>
+        <p class="empty-sub">Introdu un prompt și apasă Generează</p>
+      </div>
+
+      <!-- LOADING STATE -->
+      <div id="state-loading" class="rstate">
+        <div class="loading-wrap">
+          <div class="loading-orb"></div>
+          <div class="loading-log" id="loading-log"></div>
+        </div>
+      </div>
+
+      <!-- RESULT STATE -->
+      <div id="state-result" class="rstate">
+        <iframe id="embed-frame" class="embed-frame" src="" frameborder="0"
+          allow="autoplay; fullscreen; xr-spatial-tracking"
+          allowfullscreen mozallowfullscreen webkitallowfullscreen></iframe>
+
+        <!-- info bar over embed -->
+        <div class="result-info">
+          <div class="ri-left">
+            <span class="ri-generated">◈ MODEL GENERAT</span>
+            <span id="ri-name" class="ri-name"></span>
+          </div>
+          <div class="ri-right">
+            <div id="ri-score" class="ri-score"></div>
+          </div>
+        </div>
+
+        <!-- stat pills -->
+        <div id="ri-stats" class="ri-stats"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

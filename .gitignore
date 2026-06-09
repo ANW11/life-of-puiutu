@@ -1,0 +1,13 @@
+# secrets — never commit these
+.env
+
+# OS / editor junk
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# node
+node_modules/
+
+# local backups / temp
+*.backup.png

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English → Romanian Subtitles</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      background: #111;
+      border-bottom: 1px solid #222;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #ccc;
+    }
+
+    header h1 span { color: #4fc3f7; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #statusDot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #444;
+      transition: background 0.3s;
+    }
+    #statusDot.listening { background: #ef5350; animation: pulse 1.2s infinite; }
+    #statusDot.translating { background: #ffa726; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    #statusText {
+      font-size: 0.8rem;
+      color: #666;
+      min-width: 80px;
+    }
+
+    #toggleBtn {
+      padding: 8px 22px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #4fc3f7;
+      color: #000;
+      transition: background 0.2s, transform 0.1s;
+    }
+    #toggleBtn:hover { background: #81d4fa; }
+    #toggleBtn:active { transform: scale(0.97); }
+    #toggleBtn.active { background: #ef5350; color: #fff; }
+
+    /* Subtitle stage */
+    .stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 80px;
+      gap: 24px;
+      text-align: center;
+    }
+
+    /* Live subtitle box */
+    #liveBox {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #liveEn {
+      font-size: 1rem;
+      color: #607d8b;
+      font-style: italic;
+      max-width: 900px;
+      line-height: 1.5;
+    }
+
+    #liveRo {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.35;
+      max-width: 1000px;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.9);
+    }
+
+    #interimRo {
+      font-size: 2rem;
+      color: #78909c;
+      font-style: italic;
+      line-height: 1.35;
+      max-width: 900px;
+    }
+
+    /* Empty state */
+    #emptyState {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #333;
+      pointer-events: none;
+    }
+
+    #emptyState svg { opacity: 0.25; }
+    #emptyState p { font-size: 1.1rem; letter-spacing: 0.05em; }
+    #emptyState small { font-size: 0.8rem; color: #2a2a2a; }
+
+    .main-wrap { flex: 1; position: relative; display: flex; flex-direction: column; }
+
+    /* Error toast */
+    #errorToast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #c62828;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: transform 0.3s;
+      z-index: 100;
+    }
+    #errorToast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>English <span>→</span> Romanian Subtitles</h1>
+  <div class="controls">
+    <div id="statusDot"></div>
+    <span id="statusText">Idle</span>
+    <button id="toggleBtn" onclick="toggleListening()">Start</button>
+  </div>
+</header>
+
+<div class="main-wrap">
+  <div id="emptyState">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" y1="19" x2="12" y2="23"/>
+      <line x1="8" y1="23" x2="16" y2="23"/>
+    </svg>
+    <p>Press Start and speak in English</p>
+    <small>Subtitles will appear in Romanian</small>
+  </div>
+
+  <div class="stage">
+    <div id="history"></div>
+    <div id="liveBox">
+      <div id="liveEn"></div>
+      <div id="liveRo"></div>
+      <div id="interimRo"></div>
+    </div>
+  </div>
+</div>
+
+<div id="errorToast"></div>
+
+<script>
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    showError('Your browser does not support the Web Speech API. Please use Chrome or Edge.');
+  }
+
+  let recognition = null;
+  let isListening = false;
+  let translateTimer = null;
+  let clearTimer = null;       // flushes live box to history after silence
+  let translateCache = {};
+  let segments = [];           // accumulated final {en, ro} pairs for current block
+  const CLEAR_DELAY = 5000;    // ms of silence before flushing to history
+
+  // --- UI helpers ---
+  function setStatus(state) {
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    const btn = document.getElementById('toggleBtn');
+    const live = document.getElementById('liveBox');
+    dot.className = state;
+    const labels = { '': 'Idle', listening: 'Listening…', translating: 'Translating…' };
+    txt.textContent = labels[state] || state;
+    live.className = state === 'translating' ? 'translating' : '';
+    btn.textContent = isListening ? 'Stop' : 'Start';
+    btn.className = isListening ? 'active' : '';
+  }
+
+  function showError(msg, duration = 4000) {
+    const t = document.getElementById('errorToast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  function setEmpty(show) {
+    document.getElementById('emptyState').style.display = show ? 'flex' : 'none';
+  }
+
+  // --- Translation ---
+  async function translate(text) {
+    if (!text.trim()) return '';
+    if (translateCache[text]) return translateCache[text];
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ro&dt=t&q=${encodeURIComponent(text)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      // Response is a nested array: data[0] = [[translated, original], ...]
+      const ro = data[0].map(chunk => chunk[0]).join('');
+      if (ro) {
+        translateCache[text] = ro;
+        return ro;
+      }
+    } catch (e) {
+      console.error('Translation error', e);
+    }
+    return '';
+  }
+
+  // Render accumulated segments + optional interim into the live box
+  function renderLive(interimRo) {
+    const roEl = document.getElementById('liveRo');
+    const enEl = document.getElementById('liveEn');
+    const itEl = document.getElementById('interimRo');
+    roEl.textContent = segments.map(s => s.ro).join(' ');
+    enEl.textContent  = segments.map(s => s.en).join(' ');
+    itEl.textContent  = interimRo || '';
+  }
+
+  // Flush live box to history after silence
+  function scheduleClear() {
+    clearTimeout(clearTimer);
+    clearTimer = setTimeout(() => {
+      if (segments.length) {
+        pushHistory(
+          segments.map(s => s.en).join(' '),
+          segments.map(s => s.ro).join(' ')
+        );
+        segments = [];
+        renderLive('');
+      }
+    }, CLEAR_DELAY);
+  }
+
+  // Debounced interim translation (translates while you pause briefly)
+  function scheduleInterimTranslation(text) {
+    clearTimeout(translateTimer);
+    if (!text.trim()) { document.getElementById('interimRo').textContent = ''; return; }
+    translateTimer = setTimeout(async () => {
+      const ro = await translate(text);
+      if (ro) renderLive(ro);
+    }, 500);
+  }
+
+  // --- History ---
+  function pushHistory(en, ro) {
+    const history = document.getElementById('history');
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<div class="en">${escHtml(en)}</div><div class="ro">${escHtml(ro)}</div>`;
+    history.appendChild(div);
+    while (history.children.length > 10) history.removeChild(history.firstChild);
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // --- Speech Recognition ---
+  function buildRecognition() {
+    const r = new SpeechRecognition();
+    r.lang = 'en-US';
+    r.continuous = true;
+    r.interimResults = true;
+    r.maxAlternatives = 1;
+
+    r.onstart = () => setStatus('listening');
+
+    r.onresult = async (event) => {
+      let interim = '';
+      let finalText = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalText += t;
+        else interim += t;
+      }
+
+      setEmpty(false);
+
+      if (finalText.trim()) {
+        clearTimeout(translateTimer);
+        setStatus('translating');
+
+        const ro = await translate(finalText.trim());
+        segments.push({ en: finalText.trim(), ro: ro || finalText.trim() });
+        renderLive('');
+        scheduleClear();      // restart silence countdown
+        setStatus('listening');
+      } else if (interim.trim()) {
+        scheduleInterimTranslation(interim);
+        scheduleClear();      // keep resetting while speech is active
+      }
+    };
+
+    r.onerror = (e) => {
+      if (e.error === 'no-speech') return; // normal, just silence
+      if (e.error === 'not-allowed') {
+        showError('Microphone access denied. Please allow microphone in browser settings.');
+        stopListening();
+      } else {
+        showError(`Speech error: ${e.error}`);
+      }
+    };
+
+    r.onend = () => {
+      if (isListening) {
+        // Auto-restart on unexpected end
+        try { r.start(); } catch (_) {}
+      } else {
+        setStatus('');
+      }
+    };
+
+    return r;
+  }
+
+  function toggleListening() {
+    if (isListening) stopListening(); else startListening();
+  }
+
+  function startListening() {
+    if (!SpeechRecognition) return;
+    isListening = true;
+    recognition = buildRecognition();
+    try {
+      recognition.start();
+    } catch (e) {
+      showError('Could not start microphone: ' + e.message);
+      isListening = false;
+    }
+  }
+
+  function stopListening() {
+    isListening = false;
+    clearTimeout(translateTimer);
+    clearTimeout(clearTimer);
+    if (recognition) { try { recognition.stop(); } catch (_) {} recognition = null; }
+    setStatus('');
+    document.getElementById('toggleBtn').textContent = 'Start';
+    document.getElementById('toggleBtn').className = '';
+  }
+</script>
+</body>
+</html>

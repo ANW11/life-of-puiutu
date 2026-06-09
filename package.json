@@ -1,0 +1,15 @@
+{
+  "name": "life-of-puiutu",
+  "version": "1.0.0",
+  "description": "Life of Puiutu — multiplayer cat platformer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
