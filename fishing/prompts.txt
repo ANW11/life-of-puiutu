@@ -1,0 +1,118 @@
+=====================================================================
+ PROMPTURI ASSETS — FISHING MINIGAME (FULLSCREEN LANDSCAPE)
+ Stil: cozy 32-bit pixel art, Stardew-meets-children's-book
+ IMPORTANT: atașează-i lui Gemini 1-2 capturi din joc (parcul + Puiutu)
+ ca referință de stil înainte de a cere assets-urile.
+=====================================================================
+
+REGULI DE PUS ÎN FIECARE PROMPT (copy-paste la final):
+- "transparent background (PNG alpha)"  (MAI PUȚIN fundalul oceanului)
+- "no text, no labels, no captions, no watermark, no grid lines, no frame numbers"
+- Pentru animații: "exactly N frames in ONE horizontal row, each frame the
+  same WxH cell, subject same size and centered in every frame, evenly
+  spaced, no overlap"
+- "crisp pixel art, consistent palette and lighting across all frames"
+- un singur subiect per imagine (fără colaj cu variante)
+
+---------------------------------------------------------------------
+1. FUNDAL OCEAN (scena fullscreen)  —  1920 x 1080 (16:9), FĂRĂ transparență
+---------------------------------------------------------------------
+Cozy 32-bit pixel-art background, landscape 1920x1080 (16:9). A calm fishing
+scene seen from a wooden dock: warm sunset sky with soft clouds and god-rays
+across the top, a wide gentle ocean/lake filling the middle with painterly
+pixel water ripples and reflections, a worn wooden dock plank along the bottom
+edge. Warm storybook palette, soft black outlines, Stardew-Valley-meets-
+children's-book style. No characters, no text, no UI. Leave the bottom-left
+third calm/open for a character to sit, and keep all important detail within
+the central safe zone (it may be cropped slightly on the sides on different
+screens).
+
+---------------------------------------------------------------------
+2. PUIUTU CU UNDIȚA — 3 FIȘIERE SEPARATE, fiecare 512 x 512, transparent
+   (Spune-i: "keep the cat the SAME size and position in all three images")
+---------------------------------------------------------------------
+2a) puiutu_idle:
+Pixel-art character sprite, 512x512, transparent background. A small brown
+tabby cat ("Puiutu", big friendly eyes) sitting in profile facing right,
+calmly holding a small wooden fishing rod in its front paws, line going off to
+the right. Relaxed waiting pose. Cozy 32-bit pixel art, soft outlines, warm
+palette. No text, no ground, no baked-in shadow.
+
+2b) puiutu_reel:
+Same cat, same size/angle/style/transparent bg. Now actively reeling: leaning
+back, paws gripping the rod which bends under tension, determined expression.
+512x512.
+
+2c) puiutu_bite:
+Same cat, same size/angle/style/transparent bg. Surprised "got a bite!" pose,
+ears up, eyes wide, rod tip jerking down. 512x512.
+
+---------------------------------------------------------------------
+3. PLUTĂ / BOBBER  —  128 x 128, transparent, 2 variante
+---------------------------------------------------------------------
+Pixel-art fishing bobber/float, 128x128, transparent background. A classic
+red-and-white round float. Provide two versions: one floating upright on tiny
+water ripples, one dipped/pulled underwater with splash droplets. Cozy 32-bit
+pixel art, soft outlines. No text.
+
+---------------------------------------------------------------------
+4. SPLASH (animație) — 4 frame-uri pe UN rând, fiecare 256 x 256, transparent
+---------------------------------------------------------------------
+Pixel-art water splash animation sheet, exactly 4 frames in a single horizontal
+row, each frame exactly 256x256 on a transparent background, evenly spaced,
+identical cell size. Sequence: small ripple -> rising water crown -> big splash
+with droplets -> falling droplets. Cozy 32-bit pixel art, blue-white palette,
+soft outlines. No text, no grid lines, no numbers.
+
+(Peștii care sar îi avem deja din sprite-urile extrase — îi animez în arc + splash.)
+
+Opțional — umbra peștelui sub apă (256 x 128, transparent):
+Pixel-art dark fish silhouette/shadow seen through water, 256x128, transparent
+background, soft blurred edges, semi-transparent navy. No text.
+
+=====================================================================
+ NICE-TO-HAVE (opționale, extra polish)
+=====================================================================
+
+5. RAMĂ DE LEMN pentru bara de reeling  —  220 x 980, transparent:
+Pixel-art vertical wooden gauge frame, 220x980, transparent background. An
+empty rounded wooden track/slot (warm brown wood, brass rivets) meant to hold
+a sliding bar inside. Hollow center, only the frame. Cozy 32-bit pixel art.
+No text.
+
+6. CARD "PEȘTE PRINS"  —  720 x 420, transparent:
+Pixel-art wooden trophy card/banner, 720x420, transparent background, warm wood
+with rope corners and a cream parchment center area left blank for a fish image
+and text. Cozy 32-bit pixel art. No text written on it.
+
+7. UNDIȚĂ + CAST (dacă vrei cast separat de pisică) — 4 frame-uri x 512x512, rând, transparent:
+Pixel-art fishing rod cast animation, exactly 4 frames in one horizontal row,
+each 512x512, transparent, evenly spaced. A wooden rod swinging from back to
+forward cast with the line whipping out. Cozy 32-bit pixel art. No text, no grid.
+
+=====================================================================
+ NUME EXACTE DE FIȘIERE (codul le caută fix așa, în folderul fishing/)
+=====================================================================
+ fishing/scene_bg.png       <- fundalul ocean 1920x1080 (#1)
+ fishing/puiutu_idle.png    <- Puiutu așteaptă (#2a)
+ fishing/puiutu_bite.png    <- Puiutu mușcătura (#2c)
+ fishing/puiutu_reel.png    <- Puiutu trage (#2b)
+ fishing/bobber.png         <- plută pe apă (#3, varianta 1)
+ fishing/bobber_dip.png     <- plută scufundată (#3, varianta 2)
+ fishing/splash_sheet.png   <- splash 4 frame-uri x256 (#4)
+ fishing/gauge.png          <- OPȚIONAL rama de lemn (#5)
+ fishing/sprite_<pește>.png <- deja existente (clownfish, parrotfish, etc.)
+ Dacă un fișier lipsește, codul desenează automat un fallback (emoji/forme),
+ deci poți adăuga assets-urile pe rând și testa.
+
+=====================================================================
+ NOTE DE INTEGRARE (ce fac eu în cod când vin assets-urile)
+=====================================================================
+- Modal fishing -> position:fixed; inset:0 (fullscreen pe tot tab-ul)
+- Canvas redimensionat la window.innerWidth x innerHeight la deschidere + resize
+- Fundal afișat "contain" (vezi toată scena); barele laterale = copie blurată
+  a fundalului (nu negru), ca să pară tot fullscreen
+- Puiutu jos-stânga, poze comutate pe fază: idle -> bite -> reel
+- Apă animată + bobber pe apă (se scufundă la mușcătură)
+- Pești care sar din apă cu splash
+- Bara de reeling: desenată în cod, sau "skinned" cu rama #5 dacă o ceri

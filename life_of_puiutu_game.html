@@ -308,12 +308,22 @@
   #sortHud{color:#ffe7b0;font-weight:bold;font-size:19px;}
   #sortCanvas{background:linear-gradient(#3a2c5a,#241a3e);border:4px solid #6b4a1f;border-radius:14px;
     box-shadow:0 8px 24px rgba(0,0,0,.45);max-height:80vh;max-width:96vw;height:auto;touch-action:none;cursor:pointer;}
-  /* Fishing minigame */
-  #fishWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px;min-height:0;}
-  #fishHud{color:#ffe7b0;font-weight:bold;font-size:17px;}
-  #fishHint{color:#cfe6ff;font-size:13px;opacity:.8;}
-  #fishCanvas{background:linear-gradient(#bfe9ff,#3f86c4 55%,#1f4f86);border:4px solid #6b4a1f;border-radius:14px;
-    box-shadow:0 8px 24px rgba(0,0,0,.45);max-height:70vh;max-width:94vw;height:auto;touch-action:none;cursor:pointer;}
+  /* Fishing minigame — FULLSCREEN scenic (breaks out of the phone frame) */
+  #fishing{position:fixed;inset:0;z-index:60;background:#0a1722;}
+  #fishing .modal-head{position:absolute;top:0;left:0;right:0;z-index:3;height:54px;flex:0 0 54px;
+    background:linear-gradient(#1a120aee,#1a120a00);border-bottom:none;pointer-events:none;}
+  #fishing .modal-head h2{font-size:20px;text-shadow:0 2px 6px #000;}
+  #fishing .modal-close{pointer-events:auto;background:rgba(40,28,14,.7);}
+  #fishWrap{position:absolute;inset:0;padding:0;display:block;min-height:0;}
+  #fishHud{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:3;color:#ffe7b0;
+    font-weight:bold;font-size:16px;text-shadow:0 2px 6px #000;background:rgba(10,18,28,.42);
+    padding:5px 16px;border-radius:14px;backdrop-filter:blur(3px);pointer-events:none;white-space:nowrap;}
+  #fishHint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:3;color:#eaf6ff;
+    font-size:14px;text-shadow:0 2px 5px #000;background:rgba(10,18,28,.42);padding:5px 16px;
+    border-radius:14px;backdrop-filter:blur(3px);pointer-events:none;}
+  #fishCanvas{position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:0;
+    box-shadow:none;max-width:none;max-height:none;touch-action:none;cursor:pointer;display:block;
+    background:linear-gradient(#bfe9ff,#3f86c4 55%,#1f4f86);}
   #sortBtns{display:flex;gap:10px;}
   #sortBtns button{background:linear-gradient(#caa46a,#9c7233);border:2px solid #6b4a1f;color:#fff;font-weight:bold;
     font-size:14px;padding:8px 16px;border-radius:12px;cursor:pointer;}
@@ -431,11 +441,11 @@
         <div class="back-btn" id="btnMerge">🍉</div>
         <div class="back-btn" id="btnSort">🧪</div>
         <div class="back-btn" id="btnFish">🎣</div>
+        <div class="back-btn" id="btnBag">🎒</div>
         <div class="back-btn" id="btnRocky" style="display:none;">🐕 Stay</div>
       </div>
       <div style="display:flex;gap:8px;">
         <div class="chip" id="onlineChip" style="display:none;">👥 <span id="hudOnline">1</span></div>
-        <div class="chip">🐟 <span id="hudCoins">0</span></div>
         <div class="chip">⭐ <span id="hudLvl">1</span></div>
       </div>
     </div>
@@ -969,7 +979,7 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     ctx.restore();
   }
   // name + level label above pigeon
-  if(type==='pigeon' && opt.pigeonLevel && !defeated){
+  if(type==='pigeon' && opt.pigeonLevel && !defeated && !opt.noLabel){
     const lv=opt.pigeonLevel;
     const lv10=lv===10;
     const lvColor=lv>=10?'#dd88ff':lv>=8?'#ff6666':lv>=6?'#ffcc44':lv>=4?'#88ccff':'#ffffff';
@@ -990,7 +1000,7 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     ctx.restore();
   }
   // name + level label above Crystal Lobster
-  if(type==='clobster' && opt.clobsterLevel && !defeated){
+  if(type==='clobster' && opt.clobsterLevel && !defeated && !opt.noLabel){
     const lv=opt.clobsterLevel, lv10=lv===10, lvColor=levelTierColor(lv);
     const labelY=sy-h-(opt.moving?Math.abs(Math.sin((opt.phase||0)*Math.PI*2))*3:0)-6;
     ctx.save();
@@ -1013,8 +1023,7 @@ const ENEMY_SPAWNS={
   garden:[ {type:'duck',x0:1480,x1:1800,y:560}, {type:'duck',x0:2650,x1:2980,y:560}, {type:'duck',x0:3300,x1:3620,y:560} ],
   street:[ {type:'pigeon',x0:600,x1:900,y:560}, {type:'pigeon',x0:1100,x1:1380,y:560}, {type:'pigeon',x0:1700,x1:1980,y:560}, {type:'pigeon',x0:2200,x1:2500,y:560}, {type:'pigeon',x0:2700,x1:2980,y:560}, {type:'pigeon',x0:3200,x1:3480,y:560}, {type:'pigeon',x0:3600,x1:3880,y:560} ],
   house:[ {type:'pigeon',x0:700,x1:980,y:560}, {type:'pigeon',x0:1200,x1:1480,y:560}, {type:'pigeon',x0:1900,x1:2180,y:560}, {type:'pigeon',x0:2400,x1:2680,y:560}, {type:'pigeon',x0:2900,x1:3180,y:560} ],
-  // Crystal Lobsters guard the cave floor (boss Queen Seby patrols x2500-2860, so keep mobs clear of that)
-  cave:[ {type:'clobster',x0:420,x1:720,y:560}, {type:'clobster',x0:880,x1:1180,y:560}, {type:'clobster',x0:1320,x1:1620,y:560}, {type:'clobster',x0:1760,x1:2060,y:560}, {type:'clobster',x0:2180,x1:2420,y:560} ]
+  // (the Crystal Cave is now a top-down hub — its Crystal Lobsters spawn via hub.mobXf)
 };
 let enemies=[];
 
@@ -1206,27 +1215,38 @@ function buildAreas(){
       },
       platforms:[], npcs:[],
     },
+    // ── Crystal Cave: top-down cavern. Orange-painted floor = walkable; Crystal Lobsters prowl it.
+    //    Left passage -> back up to the Garden. The RED tunnel (far right) -> Queen Seby's boss arena. ──
     cave:{
-      name:'Crystal Cave', theme:'cave', w:3000, spawnX:280,
-      platforms:[
-        {x:0,y:560,w:3000,h:160,t:'rock'},
-        {x:360,y:460,w:170,h:20,t:'rock'},
-        {x:640,y:380,w:160,h:20,t:'rock'},
-        {x:900,y:300,w:170,h:20,t:'rock'},
-        {x:1200,y:380,w:160,h:20,t:'rock'},
-        {x:1480,y:300,w:160,h:20,t:'rock'},
-        {x:1760,y:400,w:170,h:20,t:'rock'},
-        {x:2040,y:330,w:160,h:20,t:'rock'},
-        {x:2320,y:420,w:170,h:20,t:'rock'},
-        {x:2600,y:340,w:160,h:20,t:'rock'},
-      ],
-      npcs:[],
-      // exit back up to the garden
-      portals:[ {x:120,y:560,to:'garden',toX:2280,label:'Back to Garden',exit:true} ],
-      // glowing crystals + mushrooms scattered along the cave floor (decorative)
-      decor:[ {t:'crystal',x:300},{t:'mushroom',x:520},{t:'crystal',x:780},{t:'crystal',x:1080},
-              {t:'mushroom',x:1340},{t:'crystal',x:1640},{t:'mushroom',x:1920},{t:'crystal',x:2240},
-              {t:'crystal',x:2560},{t:'mushroom',x:2820} ],
+      name:'Crystal Cave', theme:'cave', mode:'topdown',
+      hub:{
+        img:'crystalcave.png', mask:'crystalcavemask.png',
+        maskWalk:'orange', mob:'clobster',
+        walkTop:0.44, walkBot:0.97,
+        scaleFar:0.70, scaleNear:1.05,
+        spawn:{xf:0.085, yf:0.60},                // arrive at the foot of the runed archway (from the garden)
+        mobXf:[0.18,0.30,0.42,0.55,0.68,0.80],    // Crystal Lobster spawn spots along the cave floor
+        // the same archway leads back up to the garden
+        doors:[{xf:0.085, yf:0.60, r:80, glowXf:0.105, glowYf:0.32, glowR:70, to:'garden', label:'Back to Garden', icon:'↩', toSpawn:{xf:0.10, yf:0.74}},
+               // the glowing RED tunnel — descend into Queen Seby's lair
+               {xf:0.935, yf:0.57, r:88, glowXf:0.875, glowYf:0.42, glowR:88, to:'sebyboss', label:'Seby Boss Fight', icon:'👑', toSpawn:{xf:0.90, yf:0.70}}],
+      },
+      platforms:[], npcs:[],
+    },
+    // ── Queen Seby's Lair: the boss arena beyond the red tunnel. Green-painted ground = walkable. ──
+    sebyboss:{
+      name:"Queen Seby's Lair", theme:'cave', mode:'topdown',
+      hub:{
+        img:'sebybossfight.png', mask:'sebybossfightmask.png',
+        maskWalk:'green',
+        walkTop:0.47, walkBot:0.99,
+        scaleFar:0.72, scaleNear:1.06,
+        spawn:{xf:0.90, yf:0.70},                 // step out of the dark tunnel at the far right
+        boss:{xf:0.53, yf:0.74},                  // Queen Seby guards the magic circle
+        // the same tunnel is the only way back out
+        doors:[{xf:0.90, yf:0.70, r:80, glowXf:0.925, glowYf:0.55, glowR:64, to:'cave', label:'Back to Crystal Cave', icon:'↩', toSpawn:{xf:0.86, yf:0.60}}],
+      },
+      platforms:[], npcs:[],
     },
     street:{
       name:'City', theme:'street', w:4000, spawnX:80,
@@ -1330,7 +1350,96 @@ const COMP={x:80,y:480,facing:1,phase:0,moving:false,atkCD:0,barkUntil:0,staying
 function spawnCompanion(){ COMP.x=P.x-P.facing*46; COMP.y=P.groundY; COMP.staying=!!S.rockyStay; updateRockyBtn(); }
 function playerMaxHp(){ return 24+S.level*6; }
 let curArea='garden', A=null, cam={x:0,y:0};
-let coinSprites=[];
+// 🪙 coins spawn on walkable ground (bronze common · silver rare · never gold).
+// Works in both the top-down hub (garden/park/beach) and the side-scroll areas.
+let groundCoins=[];           // {x,y,kind,val,bob,spin,got}
+let coinSpawnAt=0;
+const COIN_MAX=6, COIN_SPAWN_MIN=3500, COIN_SPAWN_VAR=4500;
+const COIN_SPR={ bronze:new Image(), silver:new Image() };
+COIN_SPR.bronze.src='bronzecoin.png'; COIN_SPR.silver.src='silvercoin.png';
+// spinning-coin spritesheet: 5 frames (edge → oval → full face), all at y 504..1043
+const COIN_SY=504, COIN_SH=540, COIN_SHEET_W=2816, COIN_SHEET_H=1536;
+const COIN_FRAMES=[ {x:176,w:140},{x:481,w:385},{x:998,w:538},{x:1667,w:374},{x:2160,w:538} ];
+const COIN_FULL={ cx:1267, cy:774 };   // centre of the full-face frame (for the wallet icon)
+// inline CSS that crops a sheet down to just the full-face coin, fitted to a box
+function coinFaceStyle(src,box){
+  const s=box/COIN_SH;
+  return `display:inline-block;width:${box}px;height:${box}px;background:url('${src}') no-repeat;`
+    +`background-size:${(COIN_SHEET_W*s).toFixed(1)}px ${(COIN_SHEET_H*s).toFixed(1)}px;`
+    +`background-position:${(box/2-COIN_FULL.cx*s).toFixed(1)}px ${(box/2-COIN_FULL.cy*s).toFixed(1)}px;`;
+}
+function makeCoin(x,y){
+  const silver=Math.random()<0.10;                       // silver ~10% → rarer; gold never spawns
+  const kind=silver?'silver':'bronze';
+  const val=silver?100:(1+Math.floor(Math.random()*4));  // 100 bronze = 1 silver
+  return {x,y,kind,val,bob:Math.random()*6,spin:Math.random()*6,got:false};
+}
+function collectCoin(c){
+  if(c.got)return; c.got=true; S.coins+=c.val;
+  const col=c.kind==='silver'?'#e2e8ef':'#d9962e';
+  for(let i=0;i<10;i++)particles.push({x:c.x,y:c.y,vx:(Math.random()-.5)*6,vy:-(Math.random()*5+1),life:1,c:col});
+  SFX.coin&&SFX.coin(); checkAchievements&&checkAchievements(); syncHUD(); save();
+}
+function randomCoinSpot(){
+  if(A.mode==='topdown'){
+    const b=hubBand();
+    for(let i=0;i<10;i++){
+      // bias onto the visible stretch around the player so coins are seen + reachable
+      const x=Math.max(24, Math.min(HUB.worldW-24, HUB.camx+30+Math.random()*(VW-60)));
+      const y=b.top+(0.22+Math.random()*0.72)*(b.bot-b.top);
+      if(!maskReady())return {x,y};
+      if(maskClassify(x,y)==='walk')return {x,y};
+      const p=nearestWalk(x,y); if(p)return p;
+    }
+    return null;
+  }
+  const pls=A.platforms; if(!pls||!pls.length)return null;
+  // prefer platforms currently on screen, wide enough to land a coin
+  const vis=pls.filter(p=>p.w>=170 && p.x+p.w>cam.x+20 && p.x<cam.x+VW-20);
+  const pool=vis.length?vis:pls.filter(p=>p.w>=170);
+  if(!pool.length)return null;
+  const pl=pool[Math.floor(Math.random()*pool.length)];
+  return { x:pl.x+90+Math.random()*(pl.w-180), y:pl.y-26 };
+}
+function updateGroundCoins(){
+  if(!A)return;
+  const now=Date.now();
+  if(now>=coinSpawnAt && groundCoins.filter(c=>!c.got).length<COIN_MAX){
+    coinSpawnAt=now+COIN_SPAWN_MIN+Math.random()*COIN_SPAWN_VAR;
+    const s=randomCoinSpot(); if(s)groundCoins.push(makeCoin(s.x,s.y));
+  }
+  const top=A.mode==='topdown';
+  const px=top?HUB.cat.x:P.x, py=top?HUB.cat.y:(P.y-25), rad=top?34:30;
+  for(const c of groundCoins){ if(c.got)continue;
+    if(top){ if(Math.hypot(px-c.x,py-c.y)<rad)collectCoin(c); }
+    else if(Math.abs(px-c.x)<rad && Math.abs(py-c.y)<46)collectCoin(c);
+  }
+  if(groundCoins.length>60)groundCoins=groundCoins.filter(c=>!c.got);
+}
+const COIN_DRAW=34;   // full-coin display height (px, before perspective scale)
+function drawGroundCoins(topdown){
+  const now=Date.now(), t=now*0.004;
+  for(const c of groundCoins){ if(c.got)continue;
+    let sx, sc=1;
+    if(topdown){ sx=c.x-HUB.camx; sc=hubScale(c.y); } else { sx=c.x-cam.x; }
+    if(sx<-40||sx>VW+40)continue;
+    const sy=c.y+Math.sin(t+c.bob)*5;
+    const im=COIN_SPR[c.kind];
+    const dh=COIN_DRAW*sc;
+    // cycle the spritesheet frames → real spinning animation (~11fps, phase varied per coin)
+    const fi=Math.floor(now/90 + c.spin*5)%COIN_FRAMES.length, fr=COIN_FRAMES[fi];
+    const dw=dh*(fr.w/COIN_SH);                              // keep each frame's aspect (thin edge → wide face)
+    g.save();
+    g.fillStyle='rgba(0,0,0,.25)'; g.beginPath(); g.ellipse(sx,sy+dh*0.40,dh*0.32,dh*0.12,0,0,7); g.fill();
+    if(im&&im.complete&&im.naturalWidth){
+      g.shadowColor=c.kind==='silver'?'rgba(220,230,240,.55)':'rgba(255,205,90,.55)'; g.shadowBlur=7;
+      g.drawImage(im, fr.x,COIN_SY,fr.w,COIN_SH, sx-dw/2, sy-dh/2, dw, dh);
+    } else {
+      g.fillStyle=c.kind==='silver'?'#dfe6ee':'#e0a83a'; g.beginPath(); g.ellipse(sx,sy,dw/2,dh/2,0,0,7); g.fill();
+    }
+    g.restore();
+  }
+}
 let particles=[];
 let inGame=false, paused=false;
 let dialogueActive=false, dlgLines=[], dlgIdx=0, dlgData=null, dlgNpcId=null;
@@ -1461,18 +1570,8 @@ function hasDouble(){return S.items.includes('dbljump');}
 function enterArea(id,fromRight,toX){
   curArea=id;A=AREAS[id];
   S.visited[id]=true;save();
-  // build coins
-  coinSprites=[];
-  // scatter coins on/above platforms
-  for(const pl of A.platforms){
-    if(pl.t==='grass'||pl.t==='pavement'||pl.t==='carpet'){
-      for(let cx=pl.x+120;cx<pl.x+pl.w-80;cx+=200){
-        coinSprites.push({x:cx,y:pl.y-30,got:false,bob:Math.random()*6});
-      }
-    }else{
-      coinSprites.push({x:pl.x+pl.w/2,y:pl.y-30,got:false,bob:Math.random()*6});
-    }
-  }
+  // coins now spawn over time on the walkable platforms (see updateGroundCoins)
+  groundCoins=[]; coinSpawnAt=0;
   // build enemies for this area
   enemies=(ENEMY_SPAWNS[id]||[]).map(s=>{
     const leveled = (s.type==='pigeon'||s.type==='clobster');
@@ -1497,15 +1596,7 @@ function enterArea(id,fromRight,toX){
       kind:bk, hp:bk.hp, maxHp:bk.hp, hitFlash:0, respawnAt:0,
       state:'walk', animPhase:0, throwCD:0, threw:false, phase2:false });
   }
-  // CAVE BOSS — Seby the Ancient One, guardian of the Crystal Cave (much stronger)
-  if(id==='cave'){
-    const sk={hp:420, cdmg:[10,16], xp:350, coins:120};
-    enemies.push({ type:'seby', isBoss:true, bossKind:'seby', name:'Queen Seby, the Ancient One',
-      x0:2500, x1:2860, y:560, x:2700, dir:-1, phase:0, yoff:30,
-      defeated:false, defeatedAt:0, dead:false, w:96, h:96, dh:200, speed:0.7,
-      kind:sk, hp:sk.hp, maxHp:sk.hp, hitFlash:0, respawnAt:0,
-      state:'walk', animPhase:0, throwCD:0, dashCD:0, threw:false, phase2:false, introShown:false });
-  }
+  // (Queen Seby now lives in the top-down 'sebyboss' arena — see the HUB boss in enterHub/updateHub)
   // spawn
   if(toX!=null){P.x=toX;}else if(fromRight){P.x=A.w-100;}else{P.x=A.spawnX;}
   P.y=480;P.vx=0;P.vy=0;
@@ -1551,9 +1642,36 @@ function startGame(){
   if(!rafRunning){rafRunning=true;requestAnimationFrame(loop);}
 }
 
-//──────── HUD
+//──────── 💰 money system: S.coins is the base unit (bronze).
+//          100 bronze = 1 silver · 100 silver = 1 gold
+const COIN_IMG={ b:'bronzecoin.png', s:'silvercoin.png', g:'goldcoin.png' };
+function moneyParts(v){
+  v=Math.max(0,Math.round(v||0));
+  return { g:Math.floor(v/10000), s:Math.floor((v%10000)/100), b:v%100 };
+}
+// HTML breakdown with coin images (for menus/HUD)
+function moneyHTML(v,em){
+  const p=moneyParts(v);
+  const sz=em||1;
+  const box=Math.round(sz*17);
+  const ic=src=>`<span style="${coinFaceStyle(src,box)}vertical-align:-0.22em;margin:0 1px;"></span>`;
+  let out=[];
+  if(p.g) out.push(`<b>${p.g}</b>${ic(COIN_IMG.g)}`);
+  if(p.s) out.push(`<b>${p.s}</b>${ic(COIN_IMG.s)}`);
+  if(p.b||out.length===0) out.push(`<b>${p.b}</b>${ic(COIN_IMG.b)}`);
+  return out.join(' ');
+}
+// compact text (for toasts): e.g. "1g 20s 5b"
+function moneyText(v){
+  const p=moneyParts(v); let out=[];
+  if(p.g) out.push(p.g+'g');
+  if(p.s) out.push(p.s+'s');
+  if(p.b||out.length===0) out.push(p.b+'b');
+  return out.join(' ');
+}
+
+//──────── HUD  (money no longer shown up top — it lives in the 🎒 backpack)
 function syncHUD(){
-  document.getElementById('hudCoins').textContent=S.coins;
   document.getElementById('hudLvl').textContent=S.level;
   updateRockyBtn();
 }
@@ -1609,13 +1727,8 @@ function update(){
   if(P.y>VH+400){P.x=A.spawnX;P.y=480;P.vy=0;}
   if(P.onGround) P.groundY=P.y;     // remember ground level (for the companion)
 
-  // coins
-  for(const c of coinSprites){
-    if(c.got)continue;
-    if(Math.abs(P.x-c.x)<28&&Math.abs((P.y-25)-c.y)<40){
-      c.got=true;gainCoin(c.x,c.y);
-    }
-  }
+  // coins (spawn + pickup on walkable platforms)
+  updateGroundCoins();
 
   // ── enemies (real-time) ──
   const now=Date.now();
@@ -1747,18 +1860,18 @@ function killEnemy(e){
       if(!S.items.includes('crystalcrown')) S.items.push('crystalcrown');
       // a shower of crystal shards on defeat
       for(let i=0;i<22;i++)particles.push({x:e.x,y:e.y-50,vx:(Math.random()-.5)*9,vy:-(Math.random()*6+1),life:1,c:i%2?'#9fe6ff':'#b07cf0'});
-      toast('👑 Queen Seby, the Ancient One falls!  +'+k.coins+' 🐟  +'+k.xp+' XP  + 💎 Crystal Crown!');
+      toast('👑 Queen Seby, the Ancient One falls!  +'+moneyText(k.coins)+'  +'+k.xp+' XP  + 💎 Crystal Crown!');
     }else{
       S.bossDefeated=true;
       if(!S.items.includes('wizard')) S.items.push('wizard');
-      toast('👑 BOSS defeated!  +'+k.coins+' 🐟  +'+k.xp+' XP  + hat!');
+      toast('👑 BOSS defeated!  +'+moneyText(k.coins)+'  +'+k.xp+' XP  + hat!');
     }
   }else{
     e.respawnAt=Date.now()+ENEMY_RESPAWN; SFX.coin();
     const lbl = e.type==='duck' ? '🦆 Duck'
               : e.type==='clobster' ? '🦞 Crystal Lobster Lv.'+(e.clobsterLevel||1)
               : '🐦 Pigeon Lv.'+(e.pigeonLevel||1);
-    toast(lbl+' defeated!  +'+k.coins+' 🐟  +'+k.xp+' XP');
+    toast(lbl+' defeated!  +'+moneyText(k.coins)+'  +'+k.xp+' XP');
   }
   questProgress('defeat'); checkAchievements();
   syncHUD(); renderStatbars(); save();
@@ -1926,7 +2039,7 @@ function defeatEnemy(e){
   S.coins+=15; addXP(20);
   for(let i=0;i<14;i++)particles.push({x:e.x,y:e.y-30,vx:(Math.random()-.5)*7,vy:-(Math.random()*5+2),life:1,c:i%2?'#ffd86b':'#fff'});
   syncHUD();renderStatbars();save();
-  toast((e.type==='duck'?'🦆':'🐦')+' defeated!  +15 🐟  +20 XP');
+  toast((e.type==='duck'?'🦆':'🐦')+' defeated!  +'+moneyText(15)+'  +20 XP');
 }
 //──────── draw enemies
 function drawEnemies(){
@@ -2138,7 +2251,7 @@ function winBattle(){
     B.enemy.defeated=true; B.enemy.defeatedAt=Date.now();
     const n = boss?40:16;
     for(let i=0;i<n;i++)particles.push({x:B.enemy.x,y:B.enemy.y-30,vx:(Math.random()-.5)*8,vy:-(Math.random()*6+2),life:1,c:i%2?'#ffd86b':'#fff'});
-    toast(boss ? '👑 BOSS defeated!  +100 🐟  +150 XP  + wizard hat!' : (B.enemy.type==='duck'?'🦆':'🐦')+' defeated!  +15 🐟  +20 XP');
+    toast(boss ? '👑 BOSS defeated!  +'+moneyText(100)+'  +150 XP  + wizard hat!' : (B.enemy.type==='duck'?'🦆':'🐦')+' defeated!  +'+moneyText(15)+'  +20 XP');
     P.battleCD=Date.now()+900; P.vy=-3;
   }, boss?2200:1500);
 }
@@ -2231,7 +2344,7 @@ function hubBand(){ const H=A.hub; return {top:H.walkTop*VH, bot:H.walkBot*VH}; 
 function hubScale(y){ const H=A.hub,b=hubBand(); const t=Math.max(0,Math.min(1,(y-b.top)/(b.bot-b.top))); return H.scaleFar+(H.scaleNear-H.scaleFar)*t; }
 function hubCave(){ const H=A.hub; return H.cave?{x:H.cave.xf*HUB.worldW, y:H.cave.yf*VH}:null; }
 function hubMerge(){ const H=A.hub; return H.merge?{x:H.merge.xf*HUB.worldW, y:H.merge.yf*VH}:null; }
-const MASK_BAKED={"beach mask.png":{w:700,h:234,rle:"410.3y17.3y77.1y1.4y1.1y3.19y17.10y19.28y24.16y452.1y7.2y8.1y7.1y2.1y75.30y16.11y18.27y26.13y457.1y8.22y73.29y17.9y18.26y25.14y46.3y395.51y70.14y1.5y2.2y1.2y17.9y18.25y23.14y44.7y376.1y4.1y1.66y68.28y16.9y17.24y24.13y41.11y383.47y1.2y3.1y6.4y5.1y66.27y15.9y17.24y23.13y42.1y1.9y371.6y1.66y1.1y2.2y1.3y67.26y15.9y16.23y23.12y41.5y1.8y371.85y1.4y63.25y14.8y16.23y22.12y39.14y2.1y382.70y1.2y1.2y1.6y60.24y15.8y15.22y22.12y37.20y389.62y1.2y1.4y2.7y60.23y14.8y14.22y20.12y35.12y1.6y3.2y394.61y1.18y55.23y14.8y13.22y19.12y34.5y2.1y4.1y5.3y4.1y402.54y1.21y54.21y13.9y12.21y19.12y32.11y1.1y1.7y1.3y3.1y409.40y3.2y1.26y52.21y13.8y12.21y18.11y32.19y3.1y1.1y3.1y417.5y1.23y1.41y50.20y12.8y11.20y17.12y31.24y1.1y3.3y420.70y49.19y11.8y12.19y15.13y29.33y429.14y2.1y1.49y46.19y11.7y12.18y16.12y28.38y432.63y45.20y10.7y11.18y16.11y26.41y439.60y45.17y10.7y10.17y15.12y26.40y448.58y41.18y8.8y9.17y14.12y23.38y458.58y39.17y9.7y8.16y14.12y21.37y472.52y37.16y9.6y2.22y13.11y21.35y482.51y34.15y8.7y1.21y13.10y20.35y490.50y32.15y7.49y1.1y18.31y1.1y500.49y27.16y2.11y5.1y1.34y2.1y15.32y509.46y17.63y5.9y17.30y1.1y516.46y5.83y16.29y526.44y15.111y537.43y8.108y447.1y22.1y78.158y535.7y7.136y1.1y30.8y507.3y19.128y11.1y24.6y513.5y15.2y2.146y483.1y4.28y43.132y2.7y485.53y5.2y1.1y3.1y3.136y5.3y489.50y5.148y503.166y1.29y506.158y2.2y2.1y1.27y509.7y5.55y1.87y3.1y5.25y526.48y2.2y2.87y10.21y532.45y1.2y2.2y1.82y14.17y536.43y1.2y1.3y1.81y17.12y587.2y3.1y1.1y4.3y1.1y683.2y47.31y643.10y14.17y659.41y667.52y662.21y656.56y634.10y11.45y677.21y645.63y654.18y693.21y663.33y1.5y661.17y8.14y675.15y672.13y12.17y474.1o204.4y487.1o36.1o159.15y485.4o37.2o157.18y2.6y471.7o37.2o1.1o148.1y1.2y23.4y468.10o41.2o3.1o162.11y471.1p5b1p1o42.3o645.1p8b45.1o1.1o640.1o1.11b683.27b1p5.1p8b1p21.1o634.46b1p18.1o16.1o616.50b4.3o13.2o20.2o606.52b1.5o13.1o12.2o9.1o604.54b1p2o31.2o5.1o16.1o1.2o584.65b5p2.1o1.4o11.1o4.1o18.4o584.75b1p12.5o19.4o585.76b3.2o6.5o18.5o584.78b2.3o6.3o18.4o585.79b1.1o4.7o18.3o586.81b7.4o595.1p3b2p4.1p83b5o2.3o18.1o574.1p96b9o592.1p61b1.1p34b1.8o591.1p63b4.33b9o588.1p65b7.31b1p7o584.1p69b10.1p29b2.5o575.2p75b16.1p25b1.2o1.3o572.79b18.25b1.1o1.2o1.1o568.81b1p17.1p26b571.1p83b17.1p27b1p569.84b18.29b567.85b1p17.30b1p564.86b1p17.32b562.1p86b18.33b561.87b18.34b560.1p84b1p9.1o9.1p34b561.83b9.2o9.1p34b562.82b10.1o1.1o8.34b1p562.79b1p22.34b564.1p76b14.2p4b1p4.29b568.1o1.73b1p11.1p42b570.2o70b13.43b1p573.70b12.42b1p576.70b10.42b578.70b1p8.42b579.71b7.42b580.71b6.42b581.72b4.42b582.72b3.41b584.72b2.38b1p587.72b1.35b1p591.105b595.105b595.104b596.104b596.103b1p595.104b594.1p104b594.105b593.1p104b1p593.103b1p594.1p100b598.101b1p596.103b596.103b596.104b595.104b1p595.104b595.1p104b595.1p104b595.106b594.106b1p587.1p112b586.1p114b583.1o1p116b583.117b1p580.1o1p118b580.1p119b580.120b1p578.1p120b1p4.5p48b1p36.3p3.2p470.1o5.192b4p31b473.228b1p470.1o230b233.1o236.231b469.232b469.231b469.1p230b1p469.1o230b470.1o229b471.1b1.227b472.1b1p226b473.2b1.224b474.1p225b474.226b473.226b473.227b472.227b472.227b471.1p227b471.1p136b1p21.6p1.5p56b1p471.1p139b41.46b472.1p141b45.2p38b473.143b1p52.30b473.145b1p51.30b472.1p146b1p49.1p30b472.148b49.1p29b1p472.32b1p3.113b48.1p29b473.23b2p11.113b49.29b301.2p170.19b17.114b48.29b298.7b1p162.1o3.17b1p19.114b1p47.28b297.11b1p4.1p11b3p6b1p136.1p16b1p21.115b47.27b1p295.1p49b1p124.16b1p24.115b46.1p26b295.53b1p118.2p15b1p28.2p113b46.24b1p295.1p54b112.22b31.115b45.1p22b1p296.55b111.21b1p30.1p118b44.20b1p298.55b1p11.1p8b1p88.21b1p30.121b43.1p18b1p298.1p56b8.14b1p86.20b30.125b42.1p15b1p300.1p57b4.1p18b1p43.1p5b35.19b28.131b41.12b303.1p81b42.9b1p4.9b2p7.1p27b26.1p138b2p35.1p8b305.1p82b1.6b1p32.12b1.15b2.1p28b26.149b2p337.43b2.9b1.41b1r29.1p57b25.160b1p319.1p7b1.46b1.52b3.1o1.1o22.1o54b1p24.2p166b1p242.3p7b1p14.2p13b28.1p113b1p24.1o2.47b29.1p173b1p229.1p22b8.1p19b7.135b2o24.1o46b1p25.1p179b1p224.1p25b1p5.1p21b1p2.1p138b26.1o46b23.1p183b224.28b1p1.1p24b1p140b1o26.46b20.1p187b223.196b1p24.1p46b18.1p192b1p220.196b1p23.1p45b1.1o7b1p8.1p197b218.196b1p22.46b2.11b5.201b1p215.207b3p8.46b1p1.1o12b3.205b213.214b1p2.47b1p1.14b1p208b211.264b1p1.225b209.265b1.226b1p207.494b206.495b205.496b204.497b203.176b1p321b1p201.500b200.502b198.504b196.507b1p192.261b1p251b2p18.4p2b1p56.4p18b82.25b1p1.549b1p12.2p45b2p62.25b1.1p616b1p56.24b1p177b1p445b52.200b2.450b48.187b5.1o8.257b1p198b1p31.1p3b2p5.182b3p15.258b1.205b21.1p13b1.182b18.227b1p30b1p208b1p14.199b19.223b1p4.29b1.213b4.2p204b19.217b13.27b1.422b20.212b1p19.1p23b1p1.422b20.207b1p22.2o3.1p20b1.1p421b21.1p203b2p24.2o5.1p17b1p1.421b23.198b1p40.1p13b1p2.420b24.1p178b1p3.2p5b2p51.1p6b1p2.1o2.367b2p50b26.176b79.1p417b28.173b1p81.415b1p29.171b1p71.1o11.413b33.165b2p87.1p411b34.161b74.2o18.410b1p33.161b1p74.1o20.409b1p32.162b75.1o20.410b31.163b76.1o18.1o1.409b29.165b96.1o1.1p407b1p27.165b95.1o7.1p414b2p13.167b111.416b2p170b1p93.2o22.1p581b121.579b123.576b125.1p573b1p127.572b125.3o1p571b130.569b130.1o1.568b133.208b1.1p356b135.207b"}, "library mask.png":{w:700,h:234,rle:"69661.1r3500.1o164.4b35.3b492.1o164.7b14.48b631.81b453.1y2.1y162.99b438.1y161.103b598.104b591.2o4.104b588.5o4.104b587.5o4.105b585.7o4.105b583.9o4.105b243.23b189.4p124.9o5.103b242.27b191.1p2.1p120.10o4.103b240.29b117.1g197.10o4.102b240.28b307.4o6.10o5.100b240.27b184.3r120.6o6.9o34.71b240.27b4.4o299.7o6.9o40.64b192.13b35.27b3.6o298.8o6.9o40.63b189.19b12.5b9.32b3.8o297.9o6.8o42.61b185.80b3.9o290.5o3.1r8o6.7o43.4b2.54b170.94b3.10o289.7o4.8o6.6o45.58b164.99b3.10o1r5.2o282.8o4.8o6.4o48.56b161.100b5.10o4.5o281.9o3.9o93.20b142.118b5.10o4.7o281.9o3.9o98.14b139.119b6.10o4.8o281.10o3.9o100.4b5.1b138.119b8.10o3.9o275.5o2.10o3.8o246.117b11.9o4.10o274.8o1.10o3.6o246.113b16.9o4.9o275.9o1.10o4.4o245.111b19.8o4.9o276.10o1.9o251.109b23.7o4.9o1r247.22b7.11o1.9o247.108b27.7o3.10o6.1r197.3b10.56b5.11o1.8o1r242.106b34.4o4.10o5.4o52.2b10.1b130.72b4.10o1r1.8o240.105b36.4o4.10o5.6o51.14b130.71b6.10o1.7o238.104b45.11o5.7o8.41b2.14b131.71b5.1r10o1.5o238.93b56.11o5.8o1.64b132.71b5.10o2.3o237.92b58.11o5.8o1.66b131.72b5.10o240.90b61.10o5.8o1.67b131.73b5.9o238.90b63.10o5.8o68b131.73b6.7o235.92b65.9o5.8o69b131.74b6.6o229.96b68.7o5.8o71b130.75b7.2o222.104b71.4o5.8o1.71b130.76b229.103b81.8o1.72b130.77b227.101b83.8o2.73b129.83b220.101b84.7o2.74b129.84b220.64b13.21b86.6o3.75b128.84b220.23b4.12b57.1b87.6o3.75b128.84b224.16b166.2o4.76b128.83b413.76b76.1g5.1g45.80b416.76b74.4g5.2g43.59b3.8b1.4b424.73b74.6g1.1g2.2g41.52b448.73b39.7r27.2g1.4g2.1g1.2g41.52b450.70b39.10r25.7g2.5g40.52b454.66b32.2p5.1r3.1r7.1r22.2g1.1g4.1g3.1g41.51b457.63b24.1p5.2p1.2p5.1r18.2r7.1r6.4g1.1g2.2g2.1g41.47b463.61b24.2p4.1p2.2p5.1r11.1r6.2r7.1r7.1g1.1g5.1g1.2g41.43b470.62b21.1p6.2p7.1r3.2r4.1r6.3r7.1r7.2g3.3g2.2g41.38b476.22b1.41b35.1r2.2r3.2r7.3r5.2r8.2g5.2g43.36b480.20b2.41b35.8r9.8r10.8g43.34b484.18b3.42b71.2g46.32b488.15b5.42b111.36b493.13b6.42b103.41b497.10b7.43b99.41b502.8b8.45b72.7b14.36b1.5b508.4b8.48b66.64b523.58b37.79b526.75b8.89b529.168b532.166b534.161b540.5b1.151b544.150b552.145b557.141b560.137b565.130b572.122b579.116b586.109b593.104b66.2r531.97b605.92b68.1p542.87b616.80b622.74b628.67b635.62b639.60b643.54b649.47b655.43b659.38b665.33b670.27b675.22b679.18b684.11b690.9b698.2b13454.1p6.1p1410.3p685.1p12.2p655.9p687.14p686.13p693.3p1443.1p2988."}, "mask tower garden.png":{w:700,h:234,rle:"2188.1g695.1g26207.1y4358.1y1012.1y699.1y699.1y699.1y372.1y455.1y699.1y832.1y699.1y1154.1y28.1y10.1y9.1y4.1y168.2y75.1y5.1y331.4p1.1p400.1y290.1p1.12p92.1y592.9p56.1y323.1y310.8p90.1y306.1y294.6p1.3p1.1p1.2p685.5p1.2p3.1p1.4p387.1y294.5p7.1p1.6p64.1y268.1y50.1y295.5p5.1p1.1p1.5p1.1p65.2y265.1y45.1y300.4p6.3p1.2p1.2p378.1y302.3p4.2p1.3p1.2p2.3p678.2p1.1p5.1p1.3p1.2p1.2p1.1p3.1p107.1y566.3p3.1p2.1p1.1p1.1p2.1p1.2p2.2p113.3y560.3p2.2p1.2p1.1p1.1p2.1p1.2p1.1p2.1p329.2y343.5p1.2p2.1p1.3p1.2p1.3p4.3p115.1y250.1y304.5p1.1p3.1p1.3p1.2p1.4p1.2p1.3p326.1y33.1y309.3p1.1p1.1p3.1p1.3p1.2p1.4p1.7p1.1p324.1y342.3p3.1p5.3p1.2p1.4p1.3p1.3p3.1p116.1y1.1y158.2y385.4p3.1p1.1p1.1p1.3p1.2p1.4p1.6p3.2p664.5p2.1p1.1p1.1p1.3p1.2p1.4p1.3p2.2p267.1y5.2y393.5p2.1p1.3p1.3p1.2p1.4p1.2p1.2p1.1p668.3p1.2p1.1p1.1p1.1p1.1p1.1p2.1p1.4p2.1p1.1p2.3p269.1y39.3y355.2p1.2p1.1p3.1p1.3p1.2p1.4p1.5p1.3p314.1y352.2p1.2p1.1p1.1p1.1p1.3p1.2p1.1p1.2p1.4p3.2p666.3p1.2p1.1p1.3p1.3p1.2p1.1p1.2p3.2p3.3p318.2y344.3p1.3p1.1p1.3p1.3p1.2p1.1p1.2p1.1p1.3p2.3p664.3p1.3p1.1p1.3p1.3p1.2p1.1p1.2p1.1p1.3p1.4p1.2p1.2p658.3p1.3p1.1p1.3p1.3p1.2p1.1p1.2p1.5p1.1p1.5p1.2p658.3p1.3p1.1p1.3p1.3p1.2p1.1p1.2p1.2p1.2p1.1p1.8p658.3p1.3p1.1p1.3p1.1p1.1p1.2p1.4p1.5p1.10p658.3p1.3p1.1p1.3p1.1p1.1p2.1p1.4p1.5p1.10p658.3p1.3p1.1p1.3p1.1p1.1p2.1p1.4p1.5p1.2p1.2p1.3p659.3p1.3p1.9p1.2p1.4p1.5p1.2p1.2p1.3p659.3p1.3p1.9p1.2p1.4p1.3p1.4p1.2p1.2p660.3p1.3p1.9p1.2p1.4p1.1p1.6p1.3p662.3p1.3p1.4p1.4p1.2p1.4p1.1p1.7p1.2p662.3p1.3p1.2p1.6p1.2p1.4p1.9p1.2p662.2p2.3p1.2p1.1r4.1p1.2p1.4p1.9p1.2p663.1p2.3p1.2p1.1r2.1r1.1r2.1r2.3p1.7p1.1p1.2p662.3p1.3p1.2p1.1r2.3r2.1r1.3r1p1.2p1.6p1.2p662.3p1.3p1.1p2.1r2.3r2.1r1.3r2.2p1.5p2.2p662.3p1.3p1.1p1r1.1r2.3r1.2r1.3r2.3p1.4p3.1p662.3p1.3p1.1p1r1.1r2.3r1.2r1.3r1p1.3p1.5p2.1p662.3p1.3p1.1p1r1.1r2.3r1.2r1.3r1p1.3p1.5p2.1p662.3p1.3p4.1r2.3r1.2r1.2r1.1p1.9p2.1p662.3p1.5p4r1.3r1.2r6.3p1.5p2.1p662.3p1.5p2.2r1.3r1.2r1.2r1p8.3p2.1p662.3p1.1p1.3p3.1r1.3r1.2r3.9p7.1p660.3p3.3p3.1r1.3r1.2r4.13p1.2p660.3p1.5p3.1r1.3r1.2r4.13p1.1p661.3p1.5p3.1r1.3r1.2r3.5p2.4p1.2p663.3p11.3r1.2r3.14p2.1p660.2p2.3p7.3r1.2r12.4p664.3p1.5p3r2.3r1.2r1.1r2.1p1.6p668.3p1.5p4r1.3r1.2r1.2r1.1p1.5p1.2p4.1p661.3p1.5p4r1.3r1.2r1.2r2p1.5p1.2p666.3p1.4p1.4r1.3r1.2r1.2r2p1.5p1.4p664.3p2.3p1.4r1.1r1.1r2.1r1.2r1.1p1.5p1.4p664.3p1.4p9r1.2r2.3r1.5p1.4p1.1p662.3p1.4p9r1.2r1.6r4p1.4p1.2p661.3p1.3p1.12r1.6r4p2.3p1.2p661.3p1.3p1.12r1.6r4p3.2p1.2p661.3p1.4p19r5p1.3p1.2p1.1p659.3p1.4p19r5p1.3p1.2p1.1p659.3p1.3p1.9r1.12r2p2.2p1.2p1.1p659.3p1.3p1.22r1.2p1.2p1.2p1.1p659.3p1.4p9r1.12r1.5p1.1p2.1p660.2p1.4p23r5p1.2p1.1p660.2p1.4p1.22r5p1.2p1.1p663.4p23r5p1.2p1.1p660.2p1.4p23r5p1.2p1.1p660.2p1.4p23r5p1.2p1.1p660.2p1.4p23r5p1.2p1.1p661.1p1.4p23r5p1.2p1.1p663.4p23r5p1.2p1.1p664.2p6.18r5p1.2p1.1p663.2p5.6r1.8r1.4r5p1.2p665.3p5.2r1.2r1.8r1.4r5p1.2p1.1p663.3p6.1r1.8r1.2r1.4r5p1.2p1.1p663.3p5.1r2.8r2.1r1.4r5p1.2p1.1p663.3p5.2r1.8r2.1r2.3r5p1.2p1.1p663.2p6.2r1.2r1.4r1.1r1.1r3.2r5p1.2p1.1p663.2p4.2r1.1r2.5r1.2r3.1r1.2r5p1.2p665.2p4.1r4.1r1.6r5.1r2.5p1.2p665.2p8.9r3.1r4.5p1.2p665.2p3.1r1.2r1.9r1.1r1.1r4.5p1.2p665.2p3.1r1.2r1.9r1.1r7.4p1.2p665.2p3.1r4.7r1.1r9.4p1.2p104.1g560.2p3.1r4.7r1.1r4.1r1.2r1.4p1.2p665.3p2.2r1.1r2.2r1.9r2.2r1.4p1.2p665.3p3.6r2.5r5.2r2.4p1.1p666.3p9.1r1.7r2.3r1p1.4p1.1p666.3p8.2r1.7r1.4r1p1.4p1.1p666.4p3.1r2.3r1.7r1.4r1p1.4p1.1p666.3p3.2r2.3r1.7r1.4r1p1.4p1.1p666.3p2.3r2.3r1.7r1.4r1p1.4p1.1p666.3p2.4r1.3r1.7r1.4r1p1.4p1.1p666.3p2.4r1.3r1.7r1.4r1p1.4p1.1p666.3p1.1p4r1.3r1.7r1.4r1p1.4p1.1p131.1g1.2g531.3p1.1p4r1.3r1.7r1.4r1p1.4p1.1p128.1g3.5g50.5g42.3g430.2p1.1p4r1.3r1.7r1.3r1.1p1.3p3.2p119.16g38.2g12.4g32.14g428.2p1.1p4r1.3r1.7r1.3r1.1p4.2p1.2p118.18g35.7g7.6g29.4g3.4g2.9g422.3p1.1p4r1.3r1.7r4.8p1.2p119.17g33.22g27.25g43.1g377.5p4r1.3r1.5r3.3r8p1.1p118.4g1.15g30.24g24.29g40.11g7.1g362.4p4r1.3r1.8r3.4p2.2p1.1p81.1g39.18g30.21g25.6g2.2g10.12g37.19g362.3p1.1p1r1.1r2.3r1.9r3.7p1.1p66.1g47.1g4.21g24.5g1.22g23.4g2.4g1.8g1.15g34.23g358.1p1.1p4.2r1.3r1.6r1.3r1.8p48.5g7.15g1.1g3.3g7.52g24.28g23.2g3.31g23.38g356.2p4r1.3r1.5r2.2r1.4p6.2p40.35g2.4g6.51g21.1g2.29g23.35g23.44g348.5p1.3r1.3r1.8r2.1p3.3p3.1p35.1g1.2g3.41g5.50g22.32g23.35g23.47g120.1g3.10g211.5p2.2r1.3r1.6r8.3p36.51g5.48g20.36g26.33g6.2g14.50g113.26g8.6g189.5p2.2r1.3r1.4r1.2r1.2r3p1.3p32.164g41.23g17.56g97.12g1.38g188.1p1.3p2.2r1.3r1.7r1.2r3p1.3p2.2p26.166g42.23g16.59g82.25g1.10g5.22g188.5p3.1r1.3r1.7r1.1r2.2p1.3p2.1p24.168g44.26g11.64g55.84g1.2g187.4p6.3r2.6r1.1r1p1.2p1.3p24.170g46.28g8.67g44.90g1.5g190.1p5.3r2.6r1.1r1p1.6p22.163g3.1g2.3g50.1g2.22g6.71g22.14g4.98g189.1p1.2r4.1r2.6r1.1r8p19.162g64.3g1.17g9.64g1.7g1.21g6.101g1.7g186.2p1.1p3r4.1r2.6r1.1r8p16.159g8.1g63.21g6.80g22.100g1.7g186.2p1.2p2r4.1r1.2r1.4r2.8p15.159g74.23g2.81g19.103g1.5g187.3p1.2p1r5.1r2.1r1.2r2p1.5p1.2p13.160g77.227g1.3g189.3p1.2p1r8.1r1.2r2p1.3p12.163g80.227g193.1p1.1p1.2p9.1r1.2r2p15.164g81.3g1.219g196.1p1.1p1.3p10.1r13.169g81.3g1.221g194.1p1.1p1.4p2.3p1.2p1.1p8.1g2.171g82.2g1.220g195.1p1.1p1.4p2.3p1.2p1.1p8.174g83.1g1.211g1.3g2.1g199.1p1.4p2.3p1.2p3.2g1.178g85.195g1.8g1.2g1.4g205.1p1.4p2.3p5.182g85.195g1.6g1.1g1.1g211.1p1.3p10.183g86.194g1.3g218.1p1.2p2.2p7.183g87.190g1.1g223.1p3.1p9.184g86.189g227.2p10.186g86.186g241.187g86.183g238.1g2.190g85.184g232.4g3.192g83.184g228.4g1.3g2.195g80.185g229.206g78.190g226.206g75.184g234.207g71.191g231.210g64.193g232.216g55.195g232.224g43.202g231.233g24.217g220.1g1.2g2.476g217.485g213.1g1.487g210.492g205.498g199.1g1.43g1.458g197.45g1.459g195.47g1.460g192.511g189.513g186.517g182.521g177.525g178.26g2.2g2.492g172.3g1.16g1.8g1.2g2.2g1.36g1.1g1.451g2.2g170.3g1.12g1.1g1.9g1.46g1.456g168.4g2.6g1.13g1.508g166.3g5.3g1.13g1.8g1.438g1.61g165.3g1.1g8.12g1.9g1.502g164.2g7.3g1.11g2.8g1.504g169.4g1.2g1.3g1.14g1.435g1.69g166.1g1.11g1.12g1.58g2.449g165.1g1.1g1.6g3.4g1.7g1.52g2.1g5.451g2.1g173.5g4.2g1.13g3.35g10.454g174.5g1.2g2.13g1.4g1.33g10.456g2.2g170.2g3.16g1.3g3.32g10.458g3.3g175.12g1.37g11.460g5.1g171.4g1.10g1.34g13.463g1.1g3.1g172.1g1.10g1.1g4.1g1.2g1.10g2.9g71.408g1.2g3.1g172.15g3.2g1.1g1.7g4.4g75.415g1.3g170.28g4.2g77.412g1.8g172.23g84.413g4.7g172.19g85.415g4.4g166.2g6.17g97.406g3.1g178.13g99.1g1.220g2.185g42."}, "park_mask.png":{w:700,h:234,rle:"9766.1y13848.1r376.2r320.3r374.3r119.2y5.3y27.1y1.3y23.2y15.3y4.2y1.2y105.4r36.1y186.1y22.1y1.1y127.2r95.1y3.2y13.1y1.5y10.7y4.2y1.5y8.1y7.1y1.1y1.2y1.3y1.2y2.2y6.1y2.2y1.2y1.8y4.10y4.1y5.1y2.1y3.1y1.1y2.4y4.4y8.2y5.1y1.2y46.2r9.1y29.1y35.1y2.2y1.2y3.1y18.5y6.1y5.3y18.3y17.1y61.4y2.1y2.1y12.3y10.1y1.2y143.4y60.30y3.1y4.3y2.5y1.3y1.6y2.1y9.2y1.3y1.13y6.2y1.7y1.1y6.1y1.10y1.21y1.10y8.3y1.4y1.1y75.3y23.1y31.1y1.1y10.2y20.3y13.1y1.1y20.4y66.3y2.3y13.1y1.1y7.1y1.6y143.2y61.1y5.26y11.16y2.1y12.16y5.1y1.10y9.22y1.1y1.13y4.2y1.1y6.1y2.3y1.4y69.3y75.2y32.2y2.1y8.1y7.8y65.8y17.1y6.8y212.27y2.1y8.10y1.1y1.3y2.2y6.1y4.14y6.16y1.2y1.37y8.1y7.2y1.6y73.2y3.1y1.1y9.1y14.1y8.1y1.1y2.1y2.1y26.2y4.2y17.1y1.2y1.1y15.2y1.1y2.3y1.7y2.2y62.6y25.6y216.27y11.4y5.1y1.4y1.1y7.1y5.5y1.7y7.9y1.2y2.3y1.32y2.3y16.4y4.1y74.3y1.9y2.1y1.1y46.3y4.3y2.2y3.3y7.4y6.6y2.2y1.2y8.5y8.4y67.1y1.1y22.1y5.4y218.3y2.14y6.2y6.1y3.5y1.10y1.2y8.1y2.13y7.4y1.7y3.2y1.13y1.15y4.1y1.1y18.2y80.9y1.10y6.2y9.3y1.3y3.1y1.3y1.3y1.19y1.4y3.1y5.1y1.3y5.2y2.3y1.2y6.2y4.1y1.2y12.2y66.4y23.8y219.17y8.3y1.2y7.15y1.1y5.1y5.13y7.8y1.2y4.3y1.27y108.1y1.7y1.18y1.18y1.4y1.8y1.12y4.2y1.10y1.2y4.2y7.2y8.4y1.3y82.3y20.4y1.5y106.3r111.16y9.6y5.2y1.14y4.2y4.1y1.1y1.12y6.5y1.3y1.4y2.29y104.3r3.9y1.15y1.14y1.11y1.18y1.1y1.4y3.14y1.1y1.1y21.4y83.4y18.12y105.3r111.1y3.8y1.3y9.5y7.1y2.6y1.7y1.4y4.1y3.4y1.7y1.1y4.7y1.1y2.4y1.29y105.2r4.1y1.13y1.5y1.2y1.26y1.13y1.2y1.2y1.2y1.2y3.3y1.8y27.4y84.2y20.4y3.4y106.2r123.1y33.1y38.3y12.1y12.1y6.3y110.4r3.1y1.2y1.4y7.4y7.3y18.2y19.1y11.3y3.4y117.1y21.4y3.4y125.1r104.1y3.1y21.1y7.3y6.1y14.1y3.4y8.3y12.1y21.1y93.1r16.3r4.1y4.5y7.3y9.1y6.1y4.3y16.2y7.3y8.4y4.3y116.2y20.1y4.2y130.1r142.1y1.1y1.3y18.3y21.1y12.2y3.3y95.4r22.1y1.1y6.7y4.2y3.2y6.4y7.4y4.3y4.1y4.5y4.4y3.2y3.2y297.1r126.1y46.1y115.4r22.1y1.1y208.1y30.2y114.3r23.1r118.1y3.1y38.1y27.2y2.1y2.1y92.4r24.1y207.2y29.1y1.1y12.1y102.1r170.3y42.4y127.1y205.1y27.2y1.1y8.3y275.1y2.1y43.1y85.1g118.1y1.1y4.1y41.1y78.3y21.1y5.2y5.2y4.2y258.3y143.1g1.3g46.3y52.1y8.1y15.1y145.2y7.4y27.2y237.3y142.4g49.2y3.1y45.4y6.2y1.1y170.1y27.3y235.1y124.27g22.2r23.2y45.4y570.39g15.2r23.2y43.1y8.1y3.1y171.2y386.43g12.5r21.1y24.1y2.2y8.2y2.5y307.2r260.46g12.4r376.1r261.44g16.1r21.1r322.2r14.3r276.44g37.2r322.2r14.2r25.2r250.44g36.3r365.2r254.36g1.1g3.1r661.37g28.2r634.36g26.5r633.1g3.31g27.5r633.2g5.21g34.4r371.2r261.5g1.13g1.1g2.1g5.3g2.1g28.2r372.1r262.4g7.1g1.3g4.2g2.1g7.3g674.1r40.2r226.2y121.3r305.2r37.4r19.4r202.4y120.2r13.1r331.4r19.4r202.4y468.2r21.2r190.3y9.4y5.7y424.2r245.12y1.4y3.10y422.3r18.2r223.1y1.17y2.10y424.2r18.2r222.25y1.1o5y668.30y393.2r108.1r167.38y384.1r1o1r3.1y71.3r197.12y1.25y1o384.1r76.1r1o2r195.2o2y1.34y412.1y50.2r195.40y313.3g1.13g1.3g1.1g1.4g36.1y84.3r195.39y313.24g3.2g16.1y19.1y14.2r267.40y311.29g50.3r269.17y3.22y306.28g30.3r20.2r269.43y305.32g26.3r171.1r119.3y2.22y1.14y1o305.32g199.1r120.20y1o15y311.31g201.1r114.1r4.20y1.14y277.1y35.33g59.2r56.4r77.2r120.16y3.14y314.33g59.2r56.1o3r199.16y2.13y272.1y44.31g118.3r199.16y1.14y318.29g39.2r280.30y287.1y33.24g43.2r279.30y161.3r159.8g2.1g3.3g61.3r265.30y162.1r1o2r158.1g2.2g1.4g1.14g53.1r1o1r264.29y1o161.4r1o1r117.1y384.29y163.7r108.1y17.5g1.3g2.6g1.1g3.1g5.1g2.1g54.1o1r286.29y297.1g2.1g2.9g1.2g2.3g54.1y7.3r285.25y1.3y169.1y123.1y4.23g7.3g53.1r285.25y101.1o72.1y123.38g41.2r179.3r114.24y157.26g112.40g42.2r53.1r107.3r8.4r4.3r113.25y157.26g112.42g95.1r107.2r9.4r120.26y156.26g112.42g62.1r23.1r250.28y159.26g112.38g61.1r1.1r21.2r116.3r130.30y156.29g112.36g1.1g60.2r273.31y151.32g113.35g2.1g199.1y41.1r92.33y149.32g115.32g71.2r173.1r8.1r83.21y1.13y148.29g124.1g1.15g2.1g1.3g2.1g69.2r26.1y124.6r16.1r6.3r83.36y148.31g122.2g4.1g7.2g6.5g96.2r125.1r1.2r16.1r7.1r83.39y146.32g206.1r164.4r17.1r6.1r1.1r80.25y2.1o14y369.1y177.1r1.2r17.1r89.26y2.15y1o371.1r194.1r9.1r79.28y2.15y215.15g138.3r30.1o1r255.27y1.16y207.27g43.2g120.1o1r8.1r63.1y4.1r98.1r77.28y2.17y202.34g39.2g6.1g3.1g108.3r77.1r1.2r92.2r2.1r76.48y1o197.38g18.31g72.1y117.4r2.1y85.2r83.50y196.39g2.1y9.36g2.1g92.1r270.53y194.40g10.37g2.1g280.2r81.54y49.1y147.36g1.1y6.37g3.1g364.10y1o9.36y190.1o4.35g8.44g73.1y124.2r73.1r88.8y14.35y195.26g15.45g72.2o124.4r160.7y17.63y17.1y147.2r40.43g184.1y15.2r160.7y19.63y87.2r121.34g217.1r1.1r147.6y22.64y83.4r123.31g2.2g189.1y1.1r21.3r29.1r118.3y25.63y82.6r77.1y40.2y9.13g127.2r76.2r61.5r64.1r61.1y9.38y4.18y84.5r345.4r61.7r61.1r1.1r71.35y8.15y161.2r18.1r14.1y39.1g198.3r62.7r29.4r28.2r73.57y160.3r17.2r319.5r18.3r9.2r1.5r35.1o1r64.55y161.1r15.1r3.1r242.2r25.1r71.7r1.1r4.8r34.1o1.1o1r65.51y179.1r5.1r240.2r25.1r2.2r67.9r3.3r1.3r1.1r34.1o1r3o65.46y457.5r66.9r6.6r35.4o1r66.41y462.3r67.8r10.1r37.5r68.35y446.1r53.1r38.5r122.32y185.1y28.1r162.2g1.1g12.3g32.1y19.1r1.1r48.3r73.1y1.1o92.31y375.8g9.1g1.3g28.2y4.1y15.3r8.1r3.1r35.1r74.1o1.2o1r92.32y210.1r163.12g2.7g1.1g3.1g24.1y18.3r9.5r111.1r2o1r94.31y107.1y266.28g19.2y33.3r12.1r97.1r3o2r95.32y126.1r41.1r18.1y161.2r23.16g65.1r13.4r95.4r12.2r83.1o31y124.2r40.3r180.1r18.31g19.1y5.1y43.3r111.1o1.1r1o84.31y166.1r199.33g45.1r135.2o1.2o1r84.32y148.1y195.1r16.36g157.1y1r22.5o1r85.32y203.1r155.37g43.2r1.1r108.1r1o24.1r3o1r88.31y123.1r65.2r166.38g44.2r97.1o2.1o9.2o24.3r90.31y115.2r5.1r49.1r16.1r166.38g64.3r79.1o9.2o1r117.31y170.3r182.35g67.3r76.1r2o1r130.31y146.1y14.2r6.3r183.34g147.2o48.1o1y1o1r80.32y109.1o18y1o19.2r1.3r5.3r6.1r15.1r173.25g200.2o1.2o81.32y104.34y14.1r5.2r20.1r2.1r51.1r123.16g190.2r15.4o1r82.32y96.1o48y4.1y85.2r123.1g1.1g3.8g1.11g165.1o11.1r1o2r14.4r84.32y90.59y48.1y168.8g28y1o122.1o23.1r3o9.1r2o16.2r86.32y65.87y20.1y93.19y84.35y117.1o1y3o21.2o1.2o1r116.32y56.1y1.98y1.2r78.5r1.1r13.41y70.35y117.5o13.1r7.5o1r118.35y50.104y1o75.8r8.51y1o64.36y8.4y106.3o13.1r1o1r6.1r2o2r120.39y44.108y55.1y16.8r5.62y54.39y8.6y106.1r15.1r1o7.4r121.46y34.113y14.2r53.5r4.70y50.36y4.3y2.8y122.2r133.50y27.117y73.76y2.1r48.44y2.2y260.53y21.121y64.84y2r48.47y114.2o145.56y14.126y33.1p28.86y1o45.11y1.39y1o110.3o36.2o1.1r106.58y8.132y27.1p2.1p26.91y43.54y107.3o1r37.3o12.1o95.59y3.136y28.1p23.95y1o4.3r34.25y2o3.26y105.1r1o2r35.2o1r2o1r10.1o1.1o95.200y28.1p12.1r4.1o65y9.26y1.5r38.54y141.1r4o1r10.3o97.200y26.1p2.1p5.1r7.62y18.24y4r41.53y140.4r11.3r98.118y3o4.1r19.56y24.1p8.1r6.60y24.23y44.54y74.2r63.1r15.1r100.44y1.69y3.1o1r3.2o14.1o9.54y33.1y2.56y31.23y42.9y1.46y72.3r180.112y9.2o5.1o1r1o15.1y6.51y15.1p9.1r7.51y39.22y42.56y70.2r182.110y10.2r5.3r4.3p14.1y5.48y13.1p8.2r6.48y46.21y41.57y101.1r8.1r1o142.106y20.2r17.1o3.1y11.44y25.44y54.21y43.56y84.3o9.5o7.2o1r142.102y1r8.1y9.3p17.1y2.1y21.41y20.37y64.20y45.56y53.3r24.5o9.1r4o4.1r3o2r144.98y1.2r2.1r4.1o10.2p5.1r41.40y16.34y68.19y45.11y1.47y51.3r17.1r6.1r3o1r10.3r6.2o2r146.93y1o7.3r8.2r4.3p3.3r45.38y10.36y16.4r48.20y43.12y2.1o1.47y77.3r20.4r29.1r118.1o87y11.3r7.3r4.2p4.3r16.2y27.1r2.38y5.36y18.5r47.20y42.12y4.50y130.2o1r119.84y13.2r8.3r10.3r44.3r4.37y2.35y21.3r48.19y42.12y3.54y56.1r71.2r122.1o77y86.4r7.1o68y11.1g8.1g52.19y42.11y4.57y53.3r45.1o1.1r149.72y90.2r3.4r5.1o62y26.1g46.21y40.12y3.61y42.3r6.3r5.1r39.1r1o1r150.68y61.2y24.2r9.4r8.1o57y74.22y1o38.12y3.14y3.46y41.3r13.3r39.2r151.64y89.4r9.2r13.52y75.44y2.1y14.11y3.14y6.47y55.3r33.1r160.58y94.2r28.48y74.1o57y4.8y6.14y7.1o1.47y69.1o1.1o16.2o1r159.55y1o80.1g7.1g13.3r21.2o16y1o1.11y2.18y24.1g8.1g3.2g31.70y1o4.14y12.47y68.3o16.3r160.67y1o89.3r22.4o13y2.8y1.27y20.37y4.73y5.13y15.48y66.1r1o1r181.73y36.35y12.2r4.3r21.12y1o20y3.4y2.12y2.142y20.48y36.3r14.1r194.99y1o2.55y5.3r12.2o5.2o1.3y1o8y2.16y2.1o162y23.49y34.2r14.2r196.166y15.3o7.1o13y1g171y27.49y34.1r14.2r196.174y5.2o1.1o6y2.13y3g165y13.2o17.2o50y246.203y2g164y14.1o17.2o2.50y246.366y40.50y164.12y67.365y1o42.52y159.17y63.302y1.62y27.1o17.53y65.1g90.22y4.1o52.365y34.1o14.53y153.38y5.401y32.2o17.54y150.380y1.1o64y16.1o14.2o19.54y147.380y5.61y33.1r20.56y75.2r66.371y6.3y5.4y1.49y56.1o7.56y140.9y1.3y1o348y4.2g17.4y2.47y1o24.1o11.1o29.57y22.18y97.8y2.241y3.92y4.3g1.6g1.6g18.4y3.44y40.1o1r29.58y1o12.26y96.7y2.110y6.128y12.2g15.60y12.2g28.49y43.2r25.1o5.58y1o5.30y96.8y1.110y10.126y11.3g16.54y1o44.48y79.59y1o44y85.118y16.1o120y6.1o1.3o2g1.12o2.2o51y49.43y85.105y82.116y28.38y4.65y24.6o2.6o34y9.4y57.30y92.106y79.72y2.41y88.4o34.5y34.2g11.25y11.1o3.3y57.3y5.18y64.1o32.105y1o78.114y166.2g18.1o6y86.2y12.1o20.1o53.2o4.2o1.1o26.104y78.112y7.1y160.2g156.2o47.3o30.102y78.111y377.1o1r31.104y75.6y1.102y311.1y1o99.1g1.103y1.1p72.6y1.100y361.1o29.1r2o23.101y75.6y1.8y1.90y393.2o25.99y77.13y2o86y1o329.1o79.1g4.1g9.96y79.99y299.1o9.1o6.1y110.95y79.98y300.1o128.94y80.96y409.1g22.93y82.91y436.92y82.89y438.93y33.2g14.2g31.85y314.1o121.1g5.73y1.18y40.1g4.2g36.81y316.1o128.78y1.12y34.1g9.1g1.1g35.81y448.75y2.13y81.80y75.1g3.4g368.73y2.14y80.71y1o4.3y72.1g3.1g2.2g1.2g285.1o62.3r17.1r89y80.67y6.5y73.1g4.2g2.2g285.2o61.4r9.3r7.82y1.4y83.62y6.6y74.2g7.1g287.1o60.5r8.4r9.85y87.68y75.3g357.3r9.5r10.89y83.65y76.3g248.1r56.1g64.3r13.93y35.4g41.58y75.1g253.3r6.1r132.95y1.2r6.3r20.1g46.1o50y323.1p10.1r6.3r4.2r127.97y1r1.6r70.47y93.2g229.1p17.3r4.3r128.97y1o1r1.2r1.1r72.35y351.3r4.3r130.98y2.2r76.6y3.15y1o92.1g258.2r133.2r12.97y2r193.1g4.1g55.1o196.4r132.2r14.96y1r193.2g13.2g241.4r48.1o74.2r27.93y199.1g4.1g223.1p8.2p12.3r3.2r8.2r108.3r30.90y186.2g15.1g224.1p9.1p17.4r7.3r12.1r95.2r15.2r16.33y1.53y187.1g32.1g207.1p27.4r7.3r11.4r108.5r18.32y1.1o46y4o188.1g267.3r22.3r110.4r20.2r2.27y2.2o39y1.7o448.2r144.3r14.4r12.23y1.5o27y1.2o5r6o3r206.1g235.2p4.2r36.4r115.1r1.1r3.4r14.22y5r3o26y5o10r184.1g248.1p8.2p4.2r32.1y3.4r115.3r3.4r19.17y7r4o25y3o7r2o1r467.1r18.3r89.1r7.2r18.1r5.2r9.1r1.1r10.17y4o2r1o4r1o23y2o3r3o1r2o1r"}};
+const MASK_BAKED={"beach mask.png":{w:700,h:234,rle:"410.3y17.3y77.1y1.4y1.1y3.19y17.10y19.28y24.16y452.1y7.2y8.1y7.1y2.1y75.30y16.11y18.27y26.13y457.1y8.22y73.29y17.9y18.26y25.14y46.3y395.51y70.14y1.5y2.2y1.2y17.9y18.25y23.14y44.7y376.1y4.1y1.66y68.28y16.9y17.24y24.13y41.11y383.47y1.2y3.1y6.4y5.1y66.27y15.9y17.24y23.13y42.1y1.9y371.6y1.66y1.1y2.2y1.3y67.26y15.9y16.23y23.12y41.5y1.8y371.85y1.4y63.25y14.8y16.23y22.12y39.14y2.1y382.70y1.2y1.2y1.6y60.24y15.8y15.22y22.12y37.20y389.62y1.2y1.4y2.7y60.23y14.8y14.22y20.12y35.12y1.6y3.2y394.61y1.18y55.23y14.8y13.22y19.12y34.5y2.1y4.1y5.3y4.1y402.54y1.21y54.21y13.9y12.21y19.12y32.11y1.1y1.7y1.3y3.1y409.40y3.2y1.26y52.21y13.8y12.21y18.11y32.19y3.1y1.1y3.1y417.5y1.23y1.41y50.20y12.8y11.20y17.12y31.24y1.1y3.3y420.70y49.19y11.8y12.19y15.13y29.33y429.14y2.1y1.49y46.19y11.7y12.18y16.12y28.38y432.63y45.20y10.7y11.18y16.11y26.41y439.60y45.17y10.7y10.17y15.12y26.40y448.58y41.18y8.8y9.17y14.12y23.38y458.58y39.17y9.7y8.16y14.12y21.37y472.52y37.16y9.6y2.22y13.11y21.35y482.51y34.15y8.7y1.21y13.10y20.35y490.50y32.15y7.49y1.1y18.31y1.1y500.49y27.16y2.11y5.1y1.34y2.1y15.32y509.46y17.63y5.9y17.30y1.1y516.46y5.83y16.29y526.44y15.111y537.43y8.108y447.1y22.1y78.158y535.7y7.136y1.1y30.8y507.3y19.128y11.1y24.6y513.5y15.2y2.146y483.1y4.28y43.132y2.7y485.53y5.2y1.1y3.1y3.136y5.3y489.50y5.148y503.166y1.29y506.158y2.2y2.1y1.27y509.7y5.55y1.87y3.1y5.25y526.48y2.2y2.87y10.21y532.45y1.2y2.2y1.82y14.17y536.43y1.2y1.3y1.81y17.12y587.2y3.1y1.1y4.3y1.1y683.2y47.31y643.10y14.17y659.41y667.52y662.21y656.56y634.10y11.45y677.21y645.63y654.18y693.21y663.33y1.5y661.17y8.14y675.15y672.13y12.17y474.1o204.4y487.1o36.1o159.15y485.4o37.2o157.18y2.6y471.7o37.2o1.1o148.1y1.2y23.4y468.10o41.2o3.1o162.11y471.1p5b1p1o42.3o645.1p8b45.1o1.1o640.1o1.11b683.27b1p5.1p8b1p21.1o634.46b1p18.1o16.1o616.50b4.3o13.2o20.2o606.52b1.5o13.1o12.2o9.1o604.54b1p2o31.2o5.1o16.1o1.2o584.65b5p2.1o1.4o11.1o4.1o18.4o584.75b1p12.5o19.4o585.76b3.2o6.5o18.5o584.78b2.3o6.3o18.4o585.79b1.1o4.7o18.3o586.81b7.4o595.1p3b2p4.1p83b5o2.3o18.1o574.1p96b9o592.1p61b1.1p34b1.8o591.1p63b4.33b9o588.1p65b7.31b1p7o584.1p69b10.1p29b2.5o575.2p75b16.1p25b1.2o1.3o572.79b18.25b1.1o1.2o1.1o568.81b1p17.1p26b571.1p83b17.1p27b1p569.84b18.29b567.85b1p17.30b1p564.86b1p17.32b562.1p86b18.33b561.87b18.34b560.1p84b1p9.1o9.1p34b561.83b9.2o9.1p34b562.82b10.1o1.1o8.34b1p562.79b1p22.34b564.1p76b14.2p4b1p4.29b568.1o1.73b1p11.1p42b570.2o70b13.43b1p573.70b12.42b1p576.70b10.42b578.70b1p8.42b579.71b7.42b580.71b6.42b581.72b4.42b582.72b3.41b584.72b2.38b1p587.72b1.35b1p591.105b595.105b595.104b596.104b596.103b1p595.104b594.1p104b594.105b593.1p104b1p593.103b1p594.1p100b598.101b1p596.103b596.103b596.104b595.104b1p595.104b595.1p104b595.1p104b595.106b594.106b1p587.1p112b586.1p114b583.1o1p116b583.117b1p580.1o1p118b580.1p119b580.120b1p578.1p120b1p4.5p48b1p36.3p3.2p470.1o5.192b4p31b473.228b1p470.1o230b233.1o236.231b469.232b469.231b469.1p230b1p469.1o230b470.1o229b471.1b1.227b472.1b1p226b473.2b1.224b474.1p225b474.226b473.226b473.227b472.227b472.227b471.1p227b471.1p136b1p21.6p1.5p56b1p471.1p139b41.46b472.1p141b45.2p38b473.143b1p52.30b473.145b1p51.30b472.1p146b1p49.1p30b472.148b49.1p29b1p472.32b1p3.113b48.1p29b473.23b2p11.113b49.29b301.2p170.19b17.114b48.29b298.7b1p162.1o3.17b1p19.114b1p47.28b297.11b1p4.1p11b3p6b1p136.1p16b1p21.115b47.27b1p295.1p49b1p124.16b1p24.115b46.1p26b295.53b1p118.2p15b1p28.2p113b46.24b1p295.1p54b112.22b31.115b45.1p22b1p296.55b111.21b1p30.1p118b44.20b1p298.55b1p11.1p8b1p88.21b1p30.121b43.1p18b1p298.1p56b8.14b1p86.20b30.125b42.1p15b1p300.1p57b4.1p18b1p43.1p5b35.19b28.131b41.12b303.1p81b42.9b1p4.9b2p7.1p27b26.1p138b2p35.1p8b305.1p82b1.6b1p32.12b1.15b2.1p28b26.149b2p337.43b2.9b1.41b1r29.1p57b25.160b1p319.1p7b1.46b1.52b3.1o1.1o22.1o54b1p24.2p166b1p242.3p7b1p14.2p13b28.1p113b1p24.1o2.47b29.1p173b1p229.1p22b8.1p19b7.135b2o24.1o46b1p25.1p179b1p224.1p25b1p5.1p21b1p2.1p138b26.1o46b23.1p183b224.28b1p1.1p24b1p140b1o26.46b20.1p187b223.196b1p24.1p46b18.1p192b1p220.196b1p23.1p45b1.1o7b1p8.1p197b218.196b1p22.46b2.11b5.201b1p215.207b3p8.46b1p1.1o12b3.205b213.214b1p2.47b1p1.14b1p208b211.264b1p1.225b209.265b1.226b1p207.494b206.495b205.496b204.497b203.176b1p321b1p201.500b200.502b198.504b196.507b1p192.261b1p251b2p18.4p2b1p56.4p18b82.25b1p1.549b1p12.2p45b2p62.25b1.1p616b1p56.24b1p177b1p445b52.200b2.450b48.187b5.1o8.257b1p198b1p31.1p3b2p5.182b3p15.258b1.205b21.1p13b1.182b18.227b1p30b1p208b1p14.199b19.223b1p4.29b1.213b4.2p204b19.217b13.27b1.422b20.212b1p19.1p23b1p1.422b20.207b1p22.2o3.1p20b1.1p421b21.1p203b2p24.2o5.1p17b1p1.421b23.198b1p40.1p13b1p2.420b24.1p178b1p3.2p5b2p51.1p6b1p2.1o2.367b2p50b26.176b79.1p417b28.173b1p81.415b1p29.171b1p71.1o11.413b33.165b2p87.1p411b34.161b74.2o18.410b1p33.161b1p74.1o20.409b1p32.162b75.1o20.410b31.163b76.1o18.1o1.409b29.165b96.1o1.1p407b1p27.165b95.1o7.1p414b2p13.167b111.416b2p170b1p93.2o22.1p581b121.579b123.576b125.1p573b1p127.572b125.3o1p571b130.569b130.1o1.568b133.208b1.1p356b135.207b"}, "crystalcavemask.png":{w:700,h:234,rle:"6003.1p1.4p39.2p652.2p1.3p1.2p36.4p649.11p19.4p13.4p649.11p18.3p2.2p12.4p648.6p1.5p17.3p3.1p14.3p647.5p1.7p1.1p13.2p21.1p164.1r489.6p1.2p2.1p10.2p5.1p50.1p130.8r481.6p1.6p9.4p3.1p47.1p2.1p619.6p1.3p1.2p10.4p49.2p621.7p1.3p2.1p10.8p44.3p621.1p3.2p3.2p14.7p45.5p622.1p4.2p16.4p47.1p1.2p621.1p71.1p626.1p57.1p14.2p683.1p1.1p13.2p681.2p698.3p660.2p8.4p22.4p2.1p659.2p7.3p22.4p3.4p653.5p9.2p22.1p2.7p651.5p9.5p21.3p1.6p649.6p8.6p20.4p2.5p649.4p10.4p1.1p20.5p1.4p128.2r521.1p11.5p1.1p20.5p1.4p126.3r532.5p3.1p20.5p2.3p125.3r533.4p3.2p5.2p13.4p3.3p124.3r534.2p4.3p4.1p15.3p130.2r543.2p4.2p147.1r544.1p6.1p146.1r552.2p145.1r553.2p1079.1p699.1p341.2p355.1p344.1p357.2p337.2p359.1p313.2p23.1p169.1r504.2p192.2r2.2r500.2p176.2r1.17r1.3r498.2p173.6r1.17r1.4r496.3p135.1r35.8r1.16r4.3r496.2p15.1p117.1r5.1r27.9r25.2r512.2p116.1r4.1r28.7r541.2p116.1r4.1r26.8r22.8r1.2r509.3p114.1r4.2r25.6r7.1r13.11r3.1r484.1p1.1p22.3p118.3r24.7r6.1r10.17r2.1r483.2p143.3r25.6r16.20r2.1r483.1p2.1p7.7p126.3r24.6r6.1r8.23r1.2r479.5p8.9p124.4r23.6r5.1r10.24r1.1r478.6p2.1p4.4p4.3p123.3r24.6r15.25r1.2r477.2p1.2p7.4p6.4p120.3r24.6r15.27r1.1r476.1p1.4p7.2p1.1p8.2p119.4r23.6r14.31r477.1p10.2p2.1p8.3p118.4r22.7r14.30r1.2r475.1p6.1p4.1p1.1p8.1p1.2p117.4r6.2r16.5r14.32r1.1r476.3p1.3p3.2p10.2p1.1p117.4r6.1r18.4r7.1r5.33r479.2p8.1p11.1p1.1p117.3r25.4r8.1r5.34r1.2r485.2p10.1p1.1p118.1r25.5r7.1r4.36r1.2r485.3p7.1p3.1p113.3r27.6r7.1r4.38r59.1p427.1p1.2p5.3p1.1p113.4r26.5r7.2r3.4r1.35r57.4p425.2p1.1p1.6p1.1p114.4r26.5r7.2r2.4r1.36r61.1p367.1p57.1p3.5p1.2p113.4r26.6r7.1r4.3r1.36r59.2p427.2p6.2p114.3r8.2r17.6r7.1r5.2r1.36r57.3p410.1p18.7p115.3r9.2r17.6r13.1r2.36r56.2p359.1p2.1p49.3p20.1p116.4r9.2r17.6r15.37r470.4p137.3r9.2r18.5r15.35r59.1p412.4p27.1p108.3r9.3r38.35r59.3p412.3p25.3p107.3r8.4r19.4r7.1r6.36r60.3p408.7p23.1p3.1p106.3r8.4r19.4r7.1r6.36r59.3p409.7p22.1p4.1p105.4r8.3r20.4r7.1r6.36r471.5p15.3p6.1p2.3p105.4r8.3r1.1r18.4r7.1r6.36r473.2p15.4p6.1p4.1p105.4r8.2r1.2r18.4r7.1r6.36r490.5p5.1p3.1p106.4r11.2r18.4r7.1r4.1r1.36r490.6p4.1p1.3p101.1r4.4r11.2r18.4r7.1r3.39r491.6p4.2p103.2r2.5r42.1r3.39r492.2p1.3p108.3r1.5r29.6r7.1r2.40r33.1p431.2p22.1p2.2p1.1p110.3r2.4r28.7r7.1r1.41r1.1r30.4p429.3p21.1p2.2p108.1r4.2r2.4r28.7r7.1r1.41r1.1r30.2p1.1p392.1p36.3p14.2p4.2p2.2p109.1r3.2r2.4r28.7r6.2r1.41r1.1r29.3p431.3p14.4p2.1p3.2p114.2r2.4r7.3p1r16.7r2.1r3.2r1.41r1.1r29.3p395.2p34.4p1.1p11.5p5.2p114.2r2.2r9.5p15.7r2.1r3.2r1.41r1.1r28.2p2.2p395.1p21.1p12.3p13.5p5.2p118.1r6.1r3.2p2.2p14.6r10.41r1.1r28.2p2.1p418.3p10.4p12.5p1.2p2.2p114.2r2.2r5.2r2.2p1.1r1.1p14.6r10.41r1.1r27.3p2.1p386.1p30.4p10.3p13.4p3.1p2.2p114.2r2.2r6.1r2.2p3.1p15.5r10.41r1.1r27.3p2.1p386.1p30.4p23.3p1.3p1.2p3.2p77.2p33.4r2.3r5.1r2.2p3.1p2.1r11.6r10.41r1.1r27.3p2.1p417.4p5.1p17.7p1.2p2.1p77.1p1.2p35.2r3.2r4.2r1.1r2.4p2.1r11.6r10.41r1.1r27.5p419.3p2.1p2.3p15.4p1.1p2.2p79.2p2.1p34.3r4.2r1.1r1.3r5.1r3.1r11.6r2.1r6.42r1.1r28.4p415.3p2.2p2.1p3.2p16.4p6.2p68.1p46.3r4.2r2.1r4.1r1.1r5.1r11.6r2.1r3.1r2.42r1.1r446.5p2.1p2.1p2.3p17.1p1.1p2.1p2.1p67.3p11.1p35.3r2.3r3.2r2.2r6.2r11.6r2.2r5.42r1.1r25.1p419.3p2.3p7.2p17.7p119.3r2.3r3.3r1.2r6.2r11.6r2.2r5.42r1.1r23.4p417.3p4.2p29.4p119.3r2.4r2.7r4.3r11.7r1.2r5.42r1.1r23.4p417.2p1.3p2.2p151.3r3.4r2.6r3.2r13.7r1.3r4.44r23.3p371.2p30.1p13.12p151.2r3.4r2.7r4.1r12.7r1.3r4.42r1.1r22.4p127.9o235.2p30.3p3.1p6.5p3.6p148.1r7.3r3.6r2.1r3p11.7r2.3r3.42r1.1r21.5p121.22o228.3p30.2p2.2p6.5p4.2p1.2p148.1r14.5r2.4p11.7r2.3r4.41r1.1r21.4p79.28o11.31o222.2p1.1p30.3p1.2p5.5p4.2p1.1p1.2p5.1p2.1p13.2p123.3r13.4r1.1r4p11.7r2.3r4.41r1.1r21.2p78.77o253.2p1.2p5.5p7.2p1.2p3.1p2.3p11.3p123.3r14.3r1.5p11.7r2.4r3.41r1.1r100.80o245.4p3.1p1.2p5.2p1.2p7.5p6.1p14.1p124.3r5.2r7.4r5p11.7r2.6r2.42r99.81o244.1p7.3p5.2p2.2p4.1p3.4p6.1p21.3p116.2r4.3r8.2r6p2.2p7.7r2.7r1.42r99.82o242.2p2.4p2.1p5.3p8.2p2.4p1.2p3.2p20.3p116.2r4.2r1.7p2.11p7.7r2.49r100.82o242.1p3.5p7.3p1.2p9.3p1.4p2.1p21.3p122.2r1.8p2.11p6.7r2.49r99.84o241.1p1.5p1.1p7.3p2.1p7.5p1.2p1.1p24.3p125.6p1.2p1.10p1r6.7r2.49r99.84o241.1p1.2p1.2p2.1p6.3p10.3p1.1p1.4p3.2p19.3p5.2p117.8p2.1p1.8p8.7r2.4r2.44r99.83o228.1p11.5p1.2p2.1p6.3p16.4p3.3p4.1p14.2p123.1p5.4p1.4p1.2p1r1p9.7r2.4r2.44r99.83o228.3p9.3p1.1p2.2p1.2p5.3p10.4p2.1p1.3p2.5p1.3p139.1p1.1p2.12p1r10.3r4o2.4r2.44r13.2p85.81o229.4p4.1p3.4p3.2p2.1p5.3p1.2p7.3p6.2p2.9p128.1r10.2p1.1p4.9p1r6p1r3.9o4r2.44r12.3p86.80o229.6p1.3p2.4p4.1p2.1p5.4p9.3p9.7p1.3p126.3r9.2p5.10p1.1p1.4p1r1.1r11o49r12.3p86.79o230.10p2.4p6.3p4.4p7.1p1.3p9.4p1.1p1.4p113.1p12.4r7.1r1.2p1.1p2.10p1.1r5p2.14o2r2.44r10.4p83.81o231.3p1.3p2.1p1.6p1.1p3.3p2.4p2.3p2.3p1.3p10.2p3.5p110.6p10.2r11.2p1.2p1.9p2.1r5p1.17o1r2.43r6.1p3.4p80.54o24.5o233.2p1.3p2.1p4.3p2.1p2.2p2.6p2.10p11.2p2.6p102.3p5.3p2.2p9.1r3p10.2p2.7p1.1p3.5p2.18o45r5.3p1.5p1.2p76.53o255.1p9.5p8.2p6.1p1.7p1.9p14.2p1.1p3.2p101.1p2.2p4.2p2.4p9.3p1.1r8.3p1.7p1r1p1.2p1.3p2.21o43r5.4p1.3p1.3p75.52o253.1p2.3p6.2p1.4p3.2p3.4p3.2p1.3p2.2p1.3p2.3p14.8p103.1p1.1p1.2p3.2p3.2p10.3p7.1r7o1r5p1r1.3p2.1r27o40r4.8p1.3p75.52o237.1p8.1p7.2p1.4p5.3p1.3p3.2p4.8p1.2p3.2p4.1p2.1p14.10p102.1p1.1p2.1p3.2p1.1p1.2p10.4p3.1p1r16o1.2p34o2r1.25r2.3r1.2r5.12p74.51o238.2p8.1p8.1p1.4p5.4p1.4p1.1p5.8p2.1p3.1p5.1p6.2p9.9p103.2p3.1p4.1p3.2p11.3p2.1p58o24r1.2p3.1r1p1r1.3p1.3p1.3p1.3p75.49o240.2p17.1p1.3p8.2p2.4p7.6p8.1p10.3p12.4p105.2p2.2p7.2p13.3p1.1r61o21r1.3p2.2p1r1.4p1.2p1.2p79.48o236.1p5.2p19.2p15.1p21.6p6.3p123.4p6.2p14.3p1.73o2r1.7r1.3p3.1p3.3p2.3p79.45o34.2p204.2p5.1p60.6p3.4p2.3p98.13o15.4r1.17r80o1r3.4p2.1p3.3p8.4p72.41o38.2p206.1p65.6p4.7p97.137o3p15.7p66.38o45.3p272.5p7.3p24.1p73.141o1.4r8.4p3.3p64.38o46.3p4.1p279.2p24.4p70.143o2r8.12p63.39o43.1p3.2p2.3p276.3p26.5p69.144o8.4p3.6p63.39o43.2p2.2p1.4p305.7p66.145o7.9p4.1p62.40o43.2p2.1p2.4p305.8p65.146o5.12p2.1p61.40o1r43.2p2.6p283.2p21.3p2.1p67.146o5.3p1.4p2.2p2.1p61.40o45.1p6.2p258.2p22.6p18.3p1.3p66.146o1p3.8p4.4p61.40o47.1p3.1p261.2p20.7p16.2p1.2p1.3p63.149o2p1.7p3.1p4.2p60.40o47.3p1.2p252.1p1.3p4.3p19.4p19.2p1.5p61.152o2p1.6p5.1p3.2p60.40o305.1p3.2p4.2p19.3p20.3p1.3p60.153o3p1.6p9.2p59.40o305.2p4.1p5.1p42.3p59.1r157o3p1.2p1.3p9.2p59.40o306.1p4.1p4.2p18.1p27.2p24.4o24.161o4p1.2p1.1p1.1p8.2p59.41o306.1p8.3p18.1p24.1p26.8o17.165o5p1.2p12.2p59.40o313.1p29.1p44.10o11.1r167o3p1.2p2.1p13.2p55.44o387.12o6.57o1r104o2r5.9p1.2p12.2p55.44o388.12o1r61o3.95o1r3.2r10.3p1.2p3.2p12.2p55.44o385.63o6.1r4o1r6.1r90o5p16.1p7.1p9.3p56.44o121.2p217.1p1.2p38.66o22.87o3p1.2p9.3p12.2p7.2p58.43o122.2p218.2p36.68o21.2r5.1r80o1.3p1.2p9.4p12.2p5.2p59.43o122.2p218.2p34.67o36.74o4.2p1.2p9.5p12.5p62.42o123.2p172.1p45.1p32.66o1r42.70o6.3p93.43o297.1p28.3p45.65o50.63o7.1p1.2p16.5p15.2r56.42o323.1p3.3p43.65o57.55o1.2p7.4p15.8p13.1r57.42o370.64o68.1r44o1p4.2p7.3p13.3p5.1p72.41o369.60o87.4r24o4p8.7p11.2p2.2p4.2p73.41o367.57o77.2r21.4r1.2r6o1r2.6p2.1p9.4p11.3p1.9p73.41o331.1p32.54o1r104.4r1.2r11.1p31.3p1.9p74.39o331.4p18.6o3.51o110.4r18.1p28.3p1.1p82.39o148.6o177.1p1.3p15.56o168.2p1.1p82.39o136.6o4.10o176.2p13.54o195.2r63.39o134.23o187.50o267.39o93.2p31.32o176.1p6.49o271.39o93.2p28.35o181.48o274.39o39.1b53.5p24.37o178.47o277.39o8.1b6.1b77.3p1.1p2.1p20.38o175.47o281.39o11.3b78.3p24.39o173.46o1r283.39o10.4b1.1b77.1p25.39o171.46o287.39o9.1b1.2b1.1b103.39o168.46o1r290.39o6.3b107.40o157.55o293.40o5.3b107.42o153.54o297.40o5.2b1.1b105.44o8.5o138.51o301.39o8.2b104.84o110.48o306.39o113.87o103.48o312.38o113.88o98.44o320.38o112.91o9.36o48.42o327.35o112.93o5.51o3.1r9o18.1r42o330.35o111.165o11.46o332.35o110.168o3.49o335.35o106.172o2.48o234.2p100.36o89.3o8.225o237.3p99.37o85.234o241.3p1.3p97.36o77.238o245.7p97.36o65.248o53.1p193.7p98.36o49.262o54.2p192.7p99.38o33.132o21.121o55.2p192.7p11.2p87.40o23.139o24.115o52.3p3.3p191.6p11.2p89.40o18.143o26.110o54.9p192.3p27.1p77.42o14.103o1.40o29.107o55.8p193.1p1.1p25.3p78.43o12.102o2.40o30.1g104o56.10p218.4p78.46o8.102o3.39o33.101o59.3p1.1p219.2p1.4p78.50o4.101o5.37o36.97o62.5p216.1p4.3p80.152o7.34o41.93o66.2p1.1p216.2p3.2p80.150o10.29o47.88o70.3p4.1p210.2p86.149o12.24o51.86o74.3p2.2p208.2p88.148o13.20o55.85o18.1p57.2p1.3p191.1p14.4p88.147o14.19o55.84o1r18.1p61.2p184.2p5.1p14.4p3.1p85.146o15.17o57.83o18.3p52.4p190.3p20.3p3.1p87.5o1.138o15.16o60.81o19.2p52.5p1.2p173.2p11.2p21.3p3.1p95.136o16.14o62.80o19.2p58.1p172.3p12.3p12.1p7.2p102.133o22.8o64.80o15.1p7.1p225.3p8.1p6.1p1.1p1.2p17.2p103.131o22.6o67.85o9.2p6.1p224.3p8.2p8.1p19.2p106.128o98.84o8.3p1.1p2.3p223.3p8.2p9.1p12.2p4.2p107.127o102.81o9.1p1.1p2.2p223.4p1.1p4.3p23.2p114.125o104.80o9.1p1.1p2.1p224.3p2.1p31.2p114.123o107.79o8.1p1.1p248.1p131.122o109.78o259.1p132.120o111.77o393.117o114.1r75o274.1p119.114o118.74o256.2p4.2p131.108o124.73o396.9o1.81o141.71o398.5o5.79o145.68o410.76o148.65o412.75o149.63o66.2p348.8o3.4p2.54o150.62o67.3p143.3r211.6p3.52o149.62o69.1p144.1r200.1b12.6p3.51o150.61o82.2p345.6p4.50o149.61o70.4p10.1p345.6p4.49o149.61o69.6p10.1p10.1p67.3p264.6p3.1p48o150.60o8.2p59.6p21.2p66.7p261.6p2.1p1.1r47o150.59o8.3p25.2p32.6p2.1p23.1p62.7p257.1p3.1p1.1p1.2p1.4p46o151.57o10.2p26.2p5.3p23.6p2.2p20.1p66.2p2.2p256.1p1.1p2.1p1.3p2.1p1.3p44o151.1r55o37.1p2.2p3.4p25.4p3.1p2.1p15.4p69.2p257.1p2.1p1.3p1.1p1.1p2.2p2.42o152.53o40.1p2.2p3.3p37.1p14.4p74.1p1.1p256.3p1.1p3.2p5.39o153.50o43.1p2.2p3.2p38.2p90.3p257.1p1.1p5.1p2.2p3.37o154.46o50.1p3.3p1.1p1.2p116.2p5.2p2.1p1.1p261.3p1.2p7.18o2.12o156.41o59.2p3.4p116.2p3.1p5.2p262.1p2.2p9.15o7.5o159.35o51.5p9.2p3.4p119.1p273.1p13.13o171.29o55.3p1.1p2.1p8.1p3.5p119.1p288.11o172.27o57.2p5.1p11.5p121.1p288.9o173.25o58.2p6.1p11.5p121.1p4.1p283.1p2.4o176.22o60.2p5.2p13.2p127.1p466.14o4.1o63.1p6.1p13.2p596.11o72.1p3.2p13.1p599.6o74.6p13.1p2075.1p25.3p671.1p24.1p1.2p276."}, "library mask.png":{w:700,h:234,rle:"69661.1r3500.1o164.4b35.3b492.1o164.7b14.48b631.81b453.1y2.1y162.99b438.1y161.103b598.104b591.2o4.104b588.5o4.104b587.5o4.105b585.7o4.105b583.9o4.105b243.23b189.4p124.9o5.103b242.27b191.1p2.1p120.10o4.103b240.29b117.1g197.10o4.102b240.28b307.4o6.10o5.100b240.27b184.3r120.6o6.9o34.71b240.27b4.4o299.7o6.9o40.64b192.13b35.27b3.6o298.8o6.9o40.63b189.19b12.5b9.32b3.8o297.9o6.8o42.61b185.80b3.9o290.5o3.1r8o6.7o43.4b2.54b170.94b3.10o289.7o4.8o6.6o45.58b164.99b3.10o1r5.2o282.8o4.8o6.4o48.56b161.100b5.10o4.5o281.9o3.9o93.20b142.118b5.10o4.7o281.9o3.9o98.14b139.119b6.10o4.8o281.10o3.9o100.4b5.1b138.119b8.10o3.9o275.5o2.10o3.8o246.117b11.9o4.10o274.8o1.10o3.6o246.113b16.9o4.9o275.9o1.10o4.4o245.111b19.8o4.9o276.10o1.9o251.109b23.7o4.9o1r247.22b7.11o1.9o247.108b27.7o3.10o6.1r197.3b10.56b5.11o1.8o1r242.106b34.4o4.10o5.4o52.2b10.1b130.72b4.10o1r1.8o240.105b36.4o4.10o5.6o51.14b130.71b6.10o1.7o238.104b45.11o5.7o8.41b2.14b131.71b5.1r10o1.5o238.93b56.11o5.8o1.64b132.71b5.10o2.3o237.92b58.11o5.8o1.66b131.72b5.10o240.90b61.10o5.8o1.67b131.73b5.9o238.90b63.10o5.8o68b131.73b6.7o235.92b65.9o5.8o69b131.74b6.6o229.96b68.7o5.8o71b130.75b7.2o222.104b71.4o5.8o1.71b130.76b229.103b81.8o1.72b130.77b227.101b83.8o2.73b129.83b220.101b84.7o2.74b129.84b220.64b13.21b86.6o3.75b128.84b220.23b4.12b57.1b87.6o3.75b128.84b224.16b166.2o4.76b128.83b413.76b76.1g5.1g45.80b416.76b74.4g5.2g43.59b3.8b1.4b424.73b74.6g1.1g2.2g41.52b448.73b39.7r27.2g1.4g2.1g1.2g41.52b450.70b39.10r25.7g2.5g40.52b454.66b32.2p5.1r3.1r7.1r22.2g1.1g4.1g3.1g41.51b457.63b24.1p5.2p1.2p5.1r18.2r7.1r6.4g1.1g2.2g2.1g41.47b463.61b24.2p4.1p2.2p5.1r11.1r6.2r7.1r7.1g1.1g5.1g1.2g41.43b470.62b21.1p6.2p7.1r3.2r4.1r6.3r7.1r7.2g3.3g2.2g41.38b476.22b1.41b35.1r2.2r3.2r7.3r5.2r8.2g5.2g43.36b480.20b2.41b35.8r9.8r10.8g43.34b484.18b3.42b71.2g46.32b488.15b5.42b111.36b493.13b6.42b103.41b497.10b7.43b99.41b502.8b8.45b72.7b14.36b1.5b508.4b8.48b66.64b523.58b37.79b526.75b8.89b529.168b532.166b534.161b540.5b1.151b544.150b552.145b557.141b560.137b565.130b572.122b579.116b586.109b593.104b66.2r531.97b605.92b68.1p542.87b616.80b622.74b628.67b635.62b639.60b643.54b649.47b655.43b659.38b665.33b670.27b675.22b679.18b684.11b690.9b698.2b13454.1p6.1p1410.3p685.1p12.2p655.9p687.14p686.13p693.3p1443.1p2988."}, "mask tower garden.png":{w:700,h:234,rle:"2188.1g695.1g26207.1y4358.1y1012.1y699.1y699.1y699.1y372.1y455.1y699.1y832.1y699.1y1154.1y28.1y10.1y9.1y4.1y168.2y75.1y5.1y331.4p1.1p400.1y290.1p1.12p92.1y592.9p56.1y323.1y310.8p90.1y306.1y294.6p1.3p1.1p1.2p685.5p1.2p3.1p1.4p387.1y294.5p7.1p1.6p64.1y268.1y50.1y295.5p5.1p1.1p1.5p1.1p65.2y265.1y45.1y300.4p6.3p1.2p1.2p378.1y302.3p4.2p1.3p1.2p2.3p678.2p1.1p5.1p1.3p1.2p1.2p1.1p3.1p107.1y566.3p3.1p2.1p1.1p1.1p2.1p1.2p2.2p113.3y560.3p2.2p1.2p1.1p1.1p2.1p1.2p1.1p2.1p329.2y343.5p1.2p2.1p1.3p1.2p1.3p4.3p115.1y250.1y304.5p1.1p3.1p1.3p1.2p1.4p1.2p1.3p326.1y33.1y309.3p1.1p1.1p3.1p1.3p1.2p1.4p1.7p1.1p324.1y342.3p3.1p5.3p1.2p1.4p1.3p1.3p3.1p116.1y1.1y158.2y385.4p3.1p1.1p1.1p1.3p1.2p1.4p1.6p3.2p664.5p2.1p1.1p1.1p1.3p1.2p1.4p1.3p2.2p267.1y5.2y393.5p2.1p1.3p1.3p1.2p1.4p1.2p1.2p1.1p668.3p1.2p1.1p1.1p1.1p1.1p1.1p2.1p1.4p2.1p1.1p2.3p269.1y39.3y355.2p1.2p1.1p3.1p1.3p1.2p1.4p1.5p1.3p314.1y352.2p1.2p1.1p1.1p1.1p1.3p1.2p1.1p1.2p1.4p3.2p666.3p1.2p1.1p1.3p1.3p1.2p1.1p1.2p3.2p3.3p318.2y344.3p1.3p1.1p1.3p1.3p1.2p1.1p1.2p1.1p1.3p2.3p664.3p1.3p1.1p1.3p1.3p1.2p1.1p1.2p1.1p1.3p1.4p1.2p1.2p658.3p1.3p1.1p1.3p1.3p1.2p1.1p1.2p1.5p1.1p1.5p1.2p658.3p1.3p1.1p1.3p1.3p1.2p1.1p1.2p1.2p1.2p1.1p1.8p658.3p1.3p1.1p1.3p1.1p1.1p1.2p1.4p1.5p1.10p658.3p1.3p1.1p1.3p1.1p1.1p2.1p1.4p1.5p1.10p658.3p1.3p1.1p1.3p1.1p1.1p2.1p1.4p1.5p1.2p1.2p1.3p659.3p1.3p1.9p1.2p1.4p1.5p1.2p1.2p1.3p659.3p1.3p1.9p1.2p1.4p1.3p1.4p1.2p1.2p660.3p1.3p1.9p1.2p1.4p1.1p1.6p1.3p662.3p1.3p1.4p1.4p1.2p1.4p1.1p1.7p1.2p662.3p1.3p1.2p1.6p1.2p1.4p1.9p1.2p662.2p2.3p1.2p1.1r4.1p1.2p1.4p1.9p1.2p663.1p2.3p1.2p1.1r2.1r1.1r2.1r2.3p1.7p1.1p1.2p662.3p1.3p1.2p1.1r2.3r2.1r1.3r1p1.2p1.6p1.2p662.3p1.3p1.1p2.1r2.3r2.1r1.3r2.2p1.5p2.2p662.3p1.3p1.1p1r1.1r2.3r1.2r1.3r2.3p1.4p3.1p662.3p1.3p1.1p1r1.1r2.3r1.2r1.3r1p1.3p1.5p2.1p662.3p1.3p1.1p1r1.1r2.3r1.2r1.3r1p1.3p1.5p2.1p662.3p1.3p4.1r2.3r1.2r1.2r1.1p1.9p2.1p662.3p1.5p4r1.3r1.2r6.3p1.5p2.1p662.3p1.5p2.2r1.3r1.2r1.2r1p8.3p2.1p662.3p1.1p1.3p3.1r1.3r1.2r3.9p7.1p660.3p3.3p3.1r1.3r1.2r4.13p1.2p660.3p1.5p3.1r1.3r1.2r4.13p1.1p661.3p1.5p3.1r1.3r1.2r3.5p2.4p1.2p663.3p11.3r1.2r3.14p2.1p660.2p2.3p7.3r1.2r12.4p664.3p1.5p3r2.3r1.2r1.1r2.1p1.6p668.3p1.5p4r1.3r1.2r1.2r1.1p1.5p1.2p4.1p661.3p1.5p4r1.3r1.2r1.2r2p1.5p1.2p666.3p1.4p1.4r1.3r1.2r1.2r2p1.5p1.4p664.3p2.3p1.4r1.1r1.1r2.1r1.2r1.1p1.5p1.4p664.3p1.4p9r1.2r2.3r1.5p1.4p1.1p662.3p1.4p9r1.2r1.6r4p1.4p1.2p661.3p1.3p1.12r1.6r4p2.3p1.2p661.3p1.3p1.12r1.6r4p3.2p1.2p661.3p1.4p19r5p1.3p1.2p1.1p659.3p1.4p19r5p1.3p1.2p1.1p659.3p1.3p1.9r1.12r2p2.2p1.2p1.1p659.3p1.3p1.22r1.2p1.2p1.2p1.1p659.3p1.4p9r1.12r1.5p1.1p2.1p660.2p1.4p23r5p1.2p1.1p660.2p1.4p1.22r5p1.2p1.1p663.4p23r5p1.2p1.1p660.2p1.4p23r5p1.2p1.1p660.2p1.4p23r5p1.2p1.1p660.2p1.4p23r5p1.2p1.1p661.1p1.4p23r5p1.2p1.1p663.4p23r5p1.2p1.1p664.2p6.18r5p1.2p1.1p663.2p5.6r1.8r1.4r5p1.2p665.3p5.2r1.2r1.8r1.4r5p1.2p1.1p663.3p6.1r1.8r1.2r1.4r5p1.2p1.1p663.3p5.1r2.8r2.1r1.4r5p1.2p1.1p663.3p5.2r1.8r2.1r2.3r5p1.2p1.1p663.2p6.2r1.2r1.4r1.1r1.1r3.2r5p1.2p1.1p663.2p4.2r1.1r2.5r1.2r3.1r1.2r5p1.2p665.2p4.1r4.1r1.6r5.1r2.5p1.2p665.2p8.9r3.1r4.5p1.2p665.2p3.1r1.2r1.9r1.1r1.1r4.5p1.2p665.2p3.1r1.2r1.9r1.1r7.4p1.2p665.2p3.1r4.7r1.1r9.4p1.2p104.1g560.2p3.1r4.7r1.1r4.1r1.2r1.4p1.2p665.3p2.2r1.1r2.2r1.9r2.2r1.4p1.2p665.3p3.6r2.5r5.2r2.4p1.1p666.3p9.1r1.7r2.3r1p1.4p1.1p666.3p8.2r1.7r1.4r1p1.4p1.1p666.4p3.1r2.3r1.7r1.4r1p1.4p1.1p666.3p3.2r2.3r1.7r1.4r1p1.4p1.1p666.3p2.3r2.3r1.7r1.4r1p1.4p1.1p666.3p2.4r1.3r1.7r1.4r1p1.4p1.1p666.3p2.4r1.3r1.7r1.4r1p1.4p1.1p666.3p1.1p4r1.3r1.7r1.4r1p1.4p1.1p131.1g1.2g531.3p1.1p4r1.3r1.7r1.4r1p1.4p1.1p128.1g3.5g50.5g42.3g430.2p1.1p4r1.3r1.7r1.3r1.1p1.3p3.2p119.16g38.2g12.4g32.14g428.2p1.1p4r1.3r1.7r1.3r1.1p4.2p1.2p118.18g35.7g7.6g29.4g3.4g2.9g422.3p1.1p4r1.3r1.7r4.8p1.2p119.17g33.22g27.25g43.1g377.5p4r1.3r1.5r3.3r8p1.1p118.4g1.15g30.24g24.29g40.11g7.1g362.4p4r1.3r1.8r3.4p2.2p1.1p81.1g39.18g30.21g25.6g2.2g10.12g37.19g362.3p1.1p1r1.1r2.3r1.9r3.7p1.1p66.1g47.1g4.21g24.5g1.22g23.4g2.4g1.8g1.15g34.23g358.1p1.1p4.2r1.3r1.6r1.3r1.8p48.5g7.15g1.1g3.3g7.52g24.28g23.2g3.31g23.38g356.2p4r1.3r1.5r2.2r1.4p6.2p40.35g2.4g6.51g21.1g2.29g23.35g23.44g348.5p1.3r1.3r1.8r2.1p3.3p3.1p35.1g1.2g3.41g5.50g22.32g23.35g23.47g120.1g3.10g211.5p2.2r1.3r1.6r8.3p36.51g5.48g20.36g26.33g6.2g14.50g113.26g8.6g189.5p2.2r1.3r1.4r1.2r1.2r3p1.3p32.164g41.23g17.56g97.12g1.38g188.1p1.3p2.2r1.3r1.7r1.2r3p1.3p2.2p26.166g42.23g16.59g82.25g1.10g5.22g188.5p3.1r1.3r1.7r1.1r2.2p1.3p2.1p24.168g44.26g11.64g55.84g1.2g187.4p6.3r2.6r1.1r1p1.2p1.3p24.170g46.28g8.67g44.90g1.5g190.1p5.3r2.6r1.1r1p1.6p22.163g3.1g2.3g50.1g2.22g6.71g22.14g4.98g189.1p1.2r4.1r2.6r1.1r8p19.162g64.3g1.17g9.64g1.7g1.21g6.101g1.7g186.2p1.1p3r4.1r2.6r1.1r8p16.159g8.1g63.21g6.80g22.100g1.7g186.2p1.2p2r4.1r1.2r1.4r2.8p15.159g74.23g2.81g19.103g1.5g187.3p1.2p1r5.1r2.1r1.2r2p1.5p1.2p13.160g77.227g1.3g189.3p1.2p1r8.1r1.2r2p1.3p12.163g80.227g193.1p1.1p1.2p9.1r1.2r2p15.164g81.3g1.219g196.1p1.1p1.3p10.1r13.169g81.3g1.221g194.1p1.1p1.4p2.3p1.2p1.1p8.1g2.171g82.2g1.220g195.1p1.1p1.4p2.3p1.2p1.1p8.174g83.1g1.211g1.3g2.1g199.1p1.4p2.3p1.2p3.2g1.178g85.195g1.8g1.2g1.4g205.1p1.4p2.3p5.182g85.195g1.6g1.1g1.1g211.1p1.3p10.183g86.194g1.3g218.1p1.2p2.2p7.183g87.190g1.1g223.1p3.1p9.184g86.189g227.2p10.186g86.186g241.187g86.183g238.1g2.190g85.184g232.4g3.192g83.184g228.4g1.3g2.195g80.185g229.206g78.190g226.206g75.184g234.207g71.191g231.210g64.193g232.216g55.195g232.224g43.202g231.233g24.217g220.1g1.2g2.476g217.485g213.1g1.487g210.492g205.498g199.1g1.43g1.458g197.45g1.459g195.47g1.460g192.511g189.513g186.517g182.521g177.525g178.26g2.2g2.492g172.3g1.16g1.8g1.2g2.2g1.36g1.1g1.451g2.2g170.3g1.12g1.1g1.9g1.46g1.456g168.4g2.6g1.13g1.508g166.3g5.3g1.13g1.8g1.438g1.61g165.3g1.1g8.12g1.9g1.502g164.2g7.3g1.11g2.8g1.504g169.4g1.2g1.3g1.14g1.435g1.69g166.1g1.11g1.12g1.58g2.449g165.1g1.1g1.6g3.4g1.7g1.52g2.1g5.451g2.1g173.5g4.2g1.13g3.35g10.454g174.5g1.2g2.13g1.4g1.33g10.456g2.2g170.2g3.16g1.3g3.32g10.458g3.3g175.12g1.37g11.460g5.1g171.4g1.10g1.34g13.463g1.1g3.1g172.1g1.10g1.1g4.1g1.2g1.10g2.9g71.408g1.2g3.1g172.15g3.2g1.1g1.7g4.4g75.415g1.3g170.28g4.2g77.412g1.8g172.23g84.413g4.7g172.19g85.415g4.4g166.2g6.17g97.406g3.1g178.13g99.1g1.220g2.185g42."}, "park_mask.png":{w:700,h:234,rle:"9766.1y13848.1r376.2r320.3r374.3r119.2y5.3y27.1y1.3y23.2y15.3y4.2y1.2y105.4r36.1y186.1y22.1y1.1y127.2r95.1y3.2y13.1y1.5y10.7y4.2y1.5y8.1y7.1y1.1y1.2y1.3y1.2y2.2y6.1y2.2y1.2y1.8y4.10y4.1y5.1y2.1y3.1y1.1y2.4y4.4y8.2y5.1y1.2y46.2r9.1y29.1y35.1y2.2y1.2y3.1y18.5y6.1y5.3y18.3y17.1y61.4y2.1y2.1y12.3y10.1y1.2y143.4y60.30y3.1y4.3y2.5y1.3y1.6y2.1y9.2y1.3y1.13y6.2y1.7y1.1y6.1y1.10y1.21y1.10y8.3y1.4y1.1y75.3y23.1y31.1y1.1y10.2y20.3y13.1y1.1y20.4y66.3y2.3y13.1y1.1y7.1y1.6y143.2y61.1y5.26y11.16y2.1y12.16y5.1y1.10y9.22y1.1y1.13y4.2y1.1y6.1y2.3y1.4y69.3y75.2y32.2y2.1y8.1y7.8y65.8y17.1y6.8y212.27y2.1y8.10y1.1y1.3y2.2y6.1y4.14y6.16y1.2y1.37y8.1y7.2y1.6y73.2y3.1y1.1y9.1y14.1y8.1y1.1y2.1y2.1y26.2y4.2y17.1y1.2y1.1y15.2y1.1y2.3y1.7y2.2y62.6y25.6y216.27y11.4y5.1y1.4y1.1y7.1y5.5y1.7y7.9y1.2y2.3y1.32y2.3y16.4y4.1y74.3y1.9y2.1y1.1y46.3y4.3y2.2y3.3y7.4y6.6y2.2y1.2y8.5y8.4y67.1y1.1y22.1y5.4y218.3y2.14y6.2y6.1y3.5y1.10y1.2y8.1y2.13y7.4y1.7y3.2y1.13y1.15y4.1y1.1y18.2y80.9y1.10y6.2y9.3y1.3y3.1y1.3y1.3y1.19y1.4y3.1y5.1y1.3y5.2y2.3y1.2y6.2y4.1y1.2y12.2y66.4y23.8y219.17y8.3y1.2y7.15y1.1y5.1y5.13y7.8y1.2y4.3y1.27y108.1y1.7y1.18y1.18y1.4y1.8y1.12y4.2y1.10y1.2y4.2y7.2y8.4y1.3y82.3y20.4y1.5y106.3r111.16y9.6y5.2y1.14y4.2y4.1y1.1y1.12y6.5y1.3y1.4y2.29y104.3r3.9y1.15y1.14y1.11y1.18y1.1y1.4y3.14y1.1y1.1y21.4y83.4y18.12y105.3r111.1y3.8y1.3y9.5y7.1y2.6y1.7y1.4y4.1y3.4y1.7y1.1y4.7y1.1y2.4y1.29y105.2r4.1y1.13y1.5y1.2y1.26y1.13y1.2y1.2y1.2y1.2y3.3y1.8y27.4y84.2y20.4y3.4y106.2r123.1y33.1y38.3y12.1y12.1y6.3y110.4r3.1y1.2y1.4y7.4y7.3y18.2y19.1y11.3y3.4y117.1y21.4y3.4y125.1r104.1y3.1y21.1y7.3y6.1y14.1y3.4y8.3y12.1y21.1y93.1r16.3r4.1y4.5y7.3y9.1y6.1y4.3y16.2y7.3y8.4y4.3y116.2y20.1y4.2y130.1r142.1y1.1y1.3y18.3y21.1y12.2y3.3y95.4r22.1y1.1y6.7y4.2y3.2y6.4y7.4y4.3y4.1y4.5y4.4y3.2y3.2y297.1r126.1y46.1y115.4r22.1y1.1y208.1y30.2y114.3r23.1r118.1y3.1y38.1y27.2y2.1y2.1y92.4r24.1y207.2y29.1y1.1y12.1y102.1r170.3y42.4y127.1y205.1y27.2y1.1y8.3y275.1y2.1y43.1y85.1g118.1y1.1y4.1y41.1y78.3y21.1y5.2y5.2y4.2y258.3y143.1g1.3g46.3y52.1y8.1y15.1y145.2y7.4y27.2y237.3y142.4g49.2y3.1y45.4y6.2y1.1y170.1y27.3y235.1y124.27g22.2r23.2y45.4y570.39g15.2r23.2y43.1y8.1y3.1y171.2y386.43g12.5r21.1y24.1y2.2y8.2y2.5y307.2r260.46g12.4r376.1r261.44g16.1r21.1r322.2r14.3r276.44g37.2r322.2r14.2r25.2r250.44g36.3r365.2r254.36g1.1g3.1r661.37g28.2r634.36g26.5r633.1g3.31g27.5r633.2g5.21g34.4r371.2r261.5g1.13g1.1g2.1g5.3g2.1g28.2r372.1r262.4g7.1g1.3g4.2g2.1g7.3g674.1r40.2r226.2y121.3r305.2r37.4r19.4r202.4y120.2r13.1r331.4r19.4r202.4y468.2r21.2r190.3y9.4y5.7y424.2r245.12y1.4y3.10y422.3r18.2r223.1y1.17y2.10y424.2r18.2r222.25y1.1o5y668.30y393.2r108.1r167.38y384.1r1o1r3.1y71.3r197.12y1.25y1o384.1r76.1r1o2r195.2o2y1.34y412.1y50.2r195.40y313.3g1.13g1.3g1.1g1.4g36.1y84.3r195.39y313.24g3.2g16.1y19.1y14.2r267.40y311.29g50.3r269.17y3.22y306.28g30.3r20.2r269.43y305.32g26.3r171.1r119.3y2.22y1.14y1o305.32g199.1r120.20y1o15y311.31g201.1r114.1r4.20y1.14y277.1y35.33g59.2r56.4r77.2r120.16y3.14y314.33g59.2r56.1o3r199.16y2.13y272.1y44.31g118.3r199.16y1.14y318.29g39.2r280.30y287.1y33.24g43.2r279.30y161.3r159.8g2.1g3.3g61.3r265.30y162.1r1o2r158.1g2.2g1.4g1.14g53.1r1o1r264.29y1o161.4r1o1r117.1y384.29y163.7r108.1y17.5g1.3g2.6g1.1g3.1g5.1g2.1g54.1o1r286.29y297.1g2.1g2.9g1.2g2.3g54.1y7.3r285.25y1.3y169.1y123.1y4.23g7.3g53.1r285.25y101.1o72.1y123.38g41.2r179.3r114.24y157.26g112.40g42.2r53.1r107.3r8.4r4.3r113.25y157.26g112.42g95.1r107.2r9.4r120.26y156.26g112.42g62.1r23.1r250.28y159.26g112.38g61.1r1.1r21.2r116.3r130.30y156.29g112.36g1.1g60.2r273.31y151.32g113.35g2.1g199.1y41.1r92.33y149.32g115.32g71.2r173.1r8.1r83.21y1.13y148.29g124.1g1.15g2.1g1.3g2.1g69.2r26.1y124.6r16.1r6.3r83.36y148.31g122.2g4.1g7.2g6.5g96.2r125.1r1.2r16.1r7.1r83.39y146.32g206.1r164.4r17.1r6.1r1.1r80.25y2.1o14y369.1y177.1r1.2r17.1r89.26y2.15y1o371.1r194.1r9.1r79.28y2.15y215.15g138.3r30.1o1r255.27y1.16y207.27g43.2g120.1o1r8.1r63.1y4.1r98.1r77.28y2.17y202.34g39.2g6.1g3.1g108.3r77.1r1.2r92.2r2.1r76.48y1o197.38g18.31g72.1y117.4r2.1y85.2r83.50y196.39g2.1y9.36g2.1g92.1r270.53y194.40g10.37g2.1g280.2r81.54y49.1y147.36g1.1y6.37g3.1g364.10y1o9.36y190.1o4.35g8.44g73.1y124.2r73.1r88.8y14.35y195.26g15.45g72.2o124.4r160.7y17.63y17.1y147.2r40.43g184.1y15.2r160.7y19.63y87.2r121.34g217.1r1.1r147.6y22.64y83.4r123.31g2.2g189.1y1.1r21.3r29.1r118.3y25.63y82.6r77.1y40.2y9.13g127.2r76.2r61.5r64.1r61.1y9.38y4.18y84.5r345.4r61.7r61.1r1.1r71.35y8.15y161.2r18.1r14.1y39.1g198.3r62.7r29.4r28.2r73.57y160.3r17.2r319.5r18.3r9.2r1.5r35.1o1r64.55y161.1r15.1r3.1r242.2r25.1r71.7r1.1r4.8r34.1o1.1o1r65.51y179.1r5.1r240.2r25.1r2.2r67.9r3.3r1.3r1.1r34.1o1r3o65.46y457.5r66.9r6.6r35.4o1r66.41y462.3r67.8r10.1r37.5r68.35y446.1r53.1r38.5r122.32y185.1y28.1r162.2g1.1g12.3g32.1y19.1r1.1r48.3r73.1y1.1o92.31y375.8g9.1g1.3g28.2y4.1y15.3r8.1r3.1r35.1r74.1o1.2o1r92.32y210.1r163.12g2.7g1.1g3.1g24.1y18.3r9.5r111.1r2o1r94.31y107.1y266.28g19.2y33.3r12.1r97.1r3o2r95.32y126.1r41.1r18.1y161.2r23.16g65.1r13.4r95.4r12.2r83.1o31y124.2r40.3r180.1r18.31g19.1y5.1y43.3r111.1o1.1r1o84.31y166.1r199.33g45.1r135.2o1.2o1r84.32y148.1y195.1r16.36g157.1y1r22.5o1r85.32y203.1r155.37g43.2r1.1r108.1r1o24.1r3o1r88.31y123.1r65.2r166.38g44.2r97.1o2.1o9.2o24.3r90.31y115.2r5.1r49.1r16.1r166.38g64.3r79.1o9.2o1r117.31y170.3r182.35g67.3r76.1r2o1r130.31y146.1y14.2r6.3r183.34g147.2o48.1o1y1o1r80.32y109.1o18y1o19.2r1.3r5.3r6.1r15.1r173.25g200.2o1.2o81.32y104.34y14.1r5.2r20.1r2.1r51.1r123.16g190.2r15.4o1r82.32y96.1o48y4.1y85.2r123.1g1.1g3.8g1.11g165.1o11.1r1o2r14.4r84.32y90.59y48.1y168.8g28y1o122.1o23.1r3o9.1r2o16.2r86.32y65.87y20.1y93.19y84.35y117.1o1y3o21.2o1.2o1r116.32y56.1y1.98y1.2r78.5r1.1r13.41y70.35y117.5o13.1r7.5o1r118.35y50.104y1o75.8r8.51y1o64.36y8.4y106.3o13.1r1o1r6.1r2o2r120.39y44.108y55.1y16.8r5.62y54.39y8.6y106.1r15.1r1o7.4r121.46y34.113y14.2r53.5r4.70y50.36y4.3y2.8y122.2r133.50y27.117y73.76y2.1r48.44y2.2y260.53y21.121y64.84y2r48.47y114.2o145.56y14.126y33.1p28.86y1o45.11y1.39y1o110.3o36.2o1.1r106.58y8.132y27.1p2.1p26.91y43.54y107.3o1r37.3o12.1o95.59y3.136y28.1p23.95y1o4.3r34.25y2o3.26y105.1r1o2r35.2o1r2o1r10.1o1.1o95.200y28.1p12.1r4.1o65y9.26y1.5r38.54y141.1r4o1r10.3o97.200y26.1p2.1p5.1r7.62y18.24y4r41.53y140.4r11.3r98.118y3o4.1r19.56y24.1p8.1r6.60y24.23y44.54y74.2r63.1r15.1r100.44y1.69y3.1o1r3.2o14.1o9.54y33.1y2.56y31.23y42.9y1.46y72.3r180.112y9.2o5.1o1r1o15.1y6.51y15.1p9.1r7.51y39.22y42.56y70.2r182.110y10.2r5.3r4.3p14.1y5.48y13.1p8.2r6.48y46.21y41.57y101.1r8.1r1o142.106y20.2r17.1o3.1y11.44y25.44y54.21y43.56y84.3o9.5o7.2o1r142.102y1r8.1y9.3p17.1y2.1y21.41y20.37y64.20y45.56y53.3r24.5o9.1r4o4.1r3o2r144.98y1.2r2.1r4.1o10.2p5.1r41.40y16.34y68.19y45.11y1.47y51.3r17.1r6.1r3o1r10.3r6.2o2r146.93y1o7.3r8.2r4.3p3.3r45.38y10.36y16.4r48.20y43.12y2.1o1.47y77.3r20.4r29.1r118.1o87y11.3r7.3r4.2p4.3r16.2y27.1r2.38y5.36y18.5r47.20y42.12y4.50y130.2o1r119.84y13.2r8.3r10.3r44.3r4.37y2.35y21.3r48.19y42.12y3.54y56.1r71.2r122.1o77y86.4r7.1o68y11.1g8.1g52.19y42.11y4.57y53.3r45.1o1.1r149.72y90.2r3.4r5.1o62y26.1g46.21y40.12y3.61y42.3r6.3r5.1r39.1r1o1r150.68y61.2y24.2r9.4r8.1o57y74.22y1o38.12y3.14y3.46y41.3r13.3r39.2r151.64y89.4r9.2r13.52y75.44y2.1y14.11y3.14y6.47y55.3r33.1r160.58y94.2r28.48y74.1o57y4.8y6.14y7.1o1.47y69.1o1.1o16.2o1r159.55y1o80.1g7.1g13.3r21.2o16y1o1.11y2.18y24.1g8.1g3.2g31.70y1o4.14y12.47y68.3o16.3r160.67y1o89.3r22.4o13y2.8y1.27y20.37y4.73y5.13y15.48y66.1r1o1r181.73y36.35y12.2r4.3r21.12y1o20y3.4y2.12y2.142y20.48y36.3r14.1r194.99y1o2.55y5.3r12.2o5.2o1.3y1o8y2.16y2.1o162y23.49y34.2r14.2r196.166y15.3o7.1o13y1g171y27.49y34.1r14.2r196.174y5.2o1.1o6y2.13y3g165y13.2o17.2o50y246.203y2g164y14.1o17.2o2.50y246.366y40.50y164.12y67.365y1o42.52y159.17y63.302y1.62y27.1o17.53y65.1g90.22y4.1o52.365y34.1o14.53y153.38y5.401y32.2o17.54y150.380y1.1o64y16.1o14.2o19.54y147.380y5.61y33.1r20.56y75.2r66.371y6.3y5.4y1.49y56.1o7.56y140.9y1.3y1o348y4.2g17.4y2.47y1o24.1o11.1o29.57y22.18y97.8y2.241y3.92y4.3g1.6g1.6g18.4y3.44y40.1o1r29.58y1o12.26y96.7y2.110y6.128y12.2g15.60y12.2g28.49y43.2r25.1o5.58y1o5.30y96.8y1.110y10.126y11.3g16.54y1o44.48y79.59y1o44y85.118y16.1o120y6.1o1.3o2g1.12o2.2o51y49.43y85.105y82.116y28.38y4.65y24.6o2.6o34y9.4y57.30y92.106y79.72y2.41y88.4o34.5y34.2g11.25y11.1o3.3y57.3y5.18y64.1o32.105y1o78.114y166.2g18.1o6y86.2y12.1o20.1o53.2o4.2o1.1o26.104y78.112y7.1y160.2g156.2o47.3o30.102y78.111y377.1o1r31.104y75.6y1.102y311.1y1o99.1g1.103y1.1p72.6y1.100y361.1o29.1r2o23.101y75.6y1.8y1.90y393.2o25.99y77.13y2o86y1o329.1o79.1g4.1g9.96y79.99y299.1o9.1o6.1y110.95y79.98y300.1o128.94y80.96y409.1g22.93y82.91y436.92y82.89y438.93y33.2g14.2g31.85y314.1o121.1g5.73y1.18y40.1g4.2g36.81y316.1o128.78y1.12y34.1g9.1g1.1g35.81y448.75y2.13y81.80y75.1g3.4g368.73y2.14y80.71y1o4.3y72.1g3.1g2.2g1.2g285.1o62.3r17.1r89y80.67y6.5y73.1g4.2g2.2g285.2o61.4r9.3r7.82y1.4y83.62y6.6y74.2g7.1g287.1o60.5r8.4r9.85y87.68y75.3g357.3r9.5r10.89y83.65y76.3g248.1r56.1g64.3r13.93y35.4g41.58y75.1g253.3r6.1r132.95y1.2r6.3r20.1g46.1o50y323.1p10.1r6.3r4.2r127.97y1r1.6r70.47y93.2g229.1p17.3r4.3r128.97y1o1r1.2r1.1r72.35y351.3r4.3r130.98y2.2r76.6y3.15y1o92.1g258.2r133.2r12.97y2r193.1g4.1g55.1o196.4r132.2r14.96y1r193.2g13.2g241.4r48.1o74.2r27.93y199.1g4.1g223.1p8.2p12.3r3.2r8.2r108.3r30.90y186.2g15.1g224.1p9.1p17.4r7.3r12.1r95.2r15.2r16.33y1.53y187.1g32.1g207.1p27.4r7.3r11.4r108.5r18.32y1.1o46y4o188.1g267.3r22.3r110.4r20.2r2.27y2.2o39y1.7o448.2r144.3r14.4r12.23y1.5o27y1.2o5r6o3r206.1g235.2p4.2r36.4r115.1r1.1r3.4r14.22y5r3o26y5o10r184.1g248.1p8.2p4.2r32.1y3.4r115.3r3.4r19.17y7r4o25y3o7r2o1r467.1r18.3r89.1r7.2r18.1r5.2r9.1r1.1r10.17y4o2r1o4r1o23y2o3r3o1r2o1r"}, "sebybossfightmask.png":{w:700,h:234,rle:"1821.1p41.1p657.1p518.1p180.1p8.1p684.1p7.1r1p35.1p478.3p173.1p1.1r5.1r1p38.1p280.1p195.1p1.1p37.1p134.1p6.2r1p243.1p273.4p23.1p15.1p129.1p5.3r1p32.2p3.2r197.1p4.1p80.1p195.4p21.2p15.1p135.3r1p31.2p3.2r198.1p282.4p21.1p15.2p134.4r30.3p2.2r198.4p12.1p73.1p28.1p112.1p12.1p39.4p18.1p1.1p1.1r7.1p6.1p134.4r29.5p2r5.1p2.1p189.3p88.2p28.1p112.1p21.1p1.1p23.1p4.3p18.4p1r7.1p141.1p3r29.5p1r6.1p1.2p2.1p185.4p89.2p29.1r110.1p8.1p3.1p35.1p3.3p18.4p1r7.1p141.1p2r30.4p2r6.1p1.1p3.2p184.3p87.1p2.3p18.1p8.1p1r66.2p58.1p34.1p3.1p17.5p1r7.1p141.1p2r30.5p6.1p2r1.1r2.2p205.1p69.1p1.3p18.1p8.1p2r65.3p4.1p31.1p18.3p7.3p28.1p13.2r2.5p1r7.1p141.1p1r31.1p9.2p3r3.2p277.4p27.2r65.3p4.2p30.1p15.1p2.3p7.3p20.1r7.1p12.3r2.5p150.1p42.1p3r4.2p50.2p152.1p74.2p18.1p10.1r62.5p3.5p45.1r1p1.1p9.2p40.4r3.4p150.1p42.2p2r4.2p49.3p143.2p7.1p66.1p27.3p7.1p1r62.6p4.4p28.1p18.1p10.1p47.3p194.2p7.1p49.2p142.2p8.1p95.3p8.1p1r61.6p5.4p28.1p17.1p58.3p194.2p56.2p143.2p8.1p95.2p9.1p1r61.6p6.5p24.1p1.1p77.1p251.3p144.1p105.2p10.1p60.8p6.4p27.1p66.1r1.1r259.2p220.1p30.1p11.2p59.4p1.3p6.4p27.1p66.2r259.5p36.2p110.1p3.1p66.1p42.1p61.6p7.3p96.1r258.5p7.1p27.3p3.2p105.2p2.1p9.3p60.1p3.1p32.1p60.7p6.4p93.3r259.5p7.1p26.3p2.2p106.3p1.1p10.3p55.1p3.1r5.1p31.1p55.2p3.8p4.5p94.2r157.1r101.4p34.7p107.5p10.3p57.4r1p91.2p3.8p102.1r160.1r100.1p10.1p10.1p15.7p107.4p11.3p57.5r90.2p4.8p102.1r160.1r105.1p5.1p10.1p27.1p100.5p1.2p7.4p57.6r3.1p85.2p5.8p99.2r161.2r104.1p145.5p2.3p5.3p59.5r1p3.1p73.2r9.1p7.7p101.1r161.1r109.1p140.5p4.1p4.4p59.1p5r3.2p72.2r9.1p7.7p263.1r103.1r5.1p140.5p9.4p46.1p13.5r1p75.1r1.1r3.1p13.8p147.1r218.1p147.4p9.4p61.5r76.1r4.1p13.8p97.1r1.1r47.1r217.2r42.1p8.3p93.3p10.4p61.1p4r75.1r5.1p12.9p97.1r49.1r216.3r4.1p12.1p16.2p14.3p94.3p10.3p48.1p14.5r80.1p12.9p146.2r105.1r110.3r3.2p29.7p9.3p94.3p10.3p63.1p4r1p79.2p11.9p146.2r104.2r9.1r100.3r2.2p29.7p4.1p4.4p95.2p11.2p49.1p14.1p3r2p78.2p11.9p146.3r103.2r10.1r98.8p11.1p16.7p4.1p5.3p96.2p11.1p50.1p7.1p6.1p3r2p78.2p12.8p146.3r103.2r10.2r97.7p10.6p3.1p8.7p4.1p1.1p4.3p109.1p65.1p1.5p77.2p14.5p146.4r103.2r11.1r97.8p9.3p6.1p7.7p4.4p4.3p175.1p1.5p77.3p13.5p146.4r103.1r12.2r2.1r94.2p2r2p1.1p8.3p5.1p8.7p3.3p5.4p161.1p7.1p5.1p3.3p77.3p14.4p146.3r104.1r13.2r1.1r94.1p3r2p3.1p6.3p3.1p8.8p4.3p5.3p162.1p13.1p3.1r3p76.3p16.2p146.4r103.1r13.2r96.1p3r1p11.2p3.3p1.1p4.8p5.2p5.4p2.1p159.4p6.1p8.4p76.2p164.3r104.1r111.1p3r1p3.1p7.2p2.2p1.3p4.7p5.1p7.4p2.1p158.1p1.6p13.3p65.1r10.2p164.4r103.1r15.1r95.1p2r1p12.2p2.5p4.7p5.1p9.2p164.6p4.1p1.1p6.3p65.1r10.1p165.3r100.1r3.2r14.1r95.1p2r1p2.1p9.7p6.6p2.1p2.3p8.2p1.1p162.5p7.1p6.3p64.1r11.1p143.2r20.3r99.2r3.2r14.1r96.1p2r1.1p10.5p7.6p3.6p9.2p164.4p6.1p7.3p76.1p164.3r100.2r3.2r14.1r96.1p2r1p11.3p9.6p4.4p10.1p165.4p7.1p2.1r4.2p22.2p196.2r6.1r13.2r99.3r3.3r13.1r97.1p13.2p10.5p6.2p177.3p11.1r4.2p20.4p204.1r12.3r99.3r4.2r13.1r97.1p25.4p7.1p179.2p10.1p1.1r3.2p21.3p203.2r13.2r99.3r4.3r136.4p7.1p179.2p16.2p20.4p197.1r5.2r13.2r99.3r4.3r136.3p5.3p103.1p77.1p17.1p20.4p197.2r4.2r7.1r5.1r100.3r4.3r136.3p111.1p92.1p2.1p20.5p202.1r2.1r112.3r4.3r136.2p111.4p91.3p20.5p202.1r2.1r112.3r4.3r60.1r75.1p112.5p91.2p20.5p196.2r3.2r2.1r111.3r4.4r249.4p93.1p20.4p35.1r145.1r13.4r3.2r1.2r111.3r4.5r247.6p1.2p110.4p34.2r160.2r4.2r1.2r111.3r5.4r247.6p2.1p51.1p59.3p33.3r160.2r4.1r1.3r112.1r6.2r249.6p56.2p56.3p33.2r125.2r33.3r3.1r2.3r39.1p1.5p73.2r51.1r197.6p60.4p39.1p1.1p4.2p2.1p1.1p33.2r125.2r33.3r5.3r40.4p3.1p64.1r8.3r46.1r201.5p3.1p56.5p39.1p1.1p3.2p4.1p34.1r125.2r33.3r5.3r39.3p1.5p38.2p33.1r1.1r45.1r202.5p54.1p1.11p38.1p2.1p1.3p2.1p162.1r17.1r15.3r4.3r40.9p1.1p26.1p1.3p3.4p34.2r14.1r233.6p60.7p43.2p2.1p181.1r14.3r4.2r40.10p1.1p28.1p1.7p35.2r248.4p1.1p60.6p39.1p4.2p2.1p34.1r147.1r13.3r3.2r35.1p5.10p30.8p1.2p33.2r248.4p2.1p9.1p50.4p40.1p5.1p2.1p182.2r12.3r3.1r36.1p2.1p2.11p1.1p26.12p4.1p272.2p5.4p1.1p7.3p50.3p42.1p4.1p10.1r25.1r163.2r3.1r36.1p2.15p1.1p25.12p4.2p37.1r233.3p4.4p9.3p96.1p3.1p10.1r25.1r163.2r40.2p1.15p1.1p24.13p4.2p37.1r233.5p2.4p8.3p98.1p13.2r189.1r40.2p1.16p1.2p20.15p3.3p37.1r53.1r179.6p2.3p8.3p112.1r213.1r17.3p1.16p1.1p19.1p1.21p36.1r39.1r195.5p1.3p2.1p4.3p47.5p61.1r213.2r17.2p1.16p1.1p20.17p1.2p38.1r37.1r197.5p2.2p6.3p42.2p6.4p60.1r25.1r187.3r17.2p1.15p20.1p1.19p55.2r20.1r200.1p4.1p6.2p43.3p6.3p59.2r19.1r5.1r188.1r18.1p2.16p19.20p49.2r4.3r23.1r197.1p11.1p115.1r20.1r4.2r188.1r20.17p18.1p1.19p48.2r6.1r25.1r208.1p114.2r20.2r3.2r188.1r23.14p1.1p18.13p1.4p23.3r24.1r233.2p11.1p109.2r20.2r3.2r212.13p16.1p1.1p2.17p25.1r41.1r217.2p5.1p5.1p108.3r20.1r4.2r170.1r41.1p1.11p2.1p2.1p2.1p9.1p2.16p1.1p65.2r225.2p4.1p107.3r21.1r3.2r211.2p1.11p2.1p2.5p4.2p2.2p1.15p68.2r228.1p109.4r21.2r2.2r171.1r39.13p1.4p1.11p1.3p1.10p1.3p45.1r363.4r22.1r3.2r169.2r40.4p1.9p3.1p1.8p3.16p1.1p409.2r28.2r169.2r43.3p1.3p3.3p3.8p4.3p2.4p2.2p413.3r27.3r213.1p3.1p1.2p5.1p3.5p4.4p2.7p1.2p1r43.2r366.2r28.3r215.2p1.1p8.1p4.2p4.3p6.1p4.1p1r45.1r366.3r28.4r215.2p1r8.2p9.2p9.4p1r1p24.1p17.1r2.1r365.2r30.3r220.4p4.2p4.4p3.3p4.3p1r43.1r2.1r366.2r25.1r4.3r223.1p7.1p8.5p3.1p45.4r367.1r27.1r3.4r225.3p6.3p2.1p52.4r368.1r32.3r146.1p73.1p4.4p3.5p2.1p1.1p49.2r11.1r393.3r11.1p132.3p72.2p5.1p4.3p5.3p455.3r11.1p133.3p71.2p2.1p12.1p2.3p456.3r10.1p133.3p57.2p11.2p4.1p11.1p3.2p456.4r9.1p131.1p1.4p57.1p10.3p3.2p10.1p4.3p455.4r9.1p131.1p2.3p58.1p9.1p6.2p8.2p5.2p455.5r7.2p134.4p58.1p6.1p1.1p15.2p6.3p32.1p291.8p122.4r6.4p134.5p111.1r304.11p119.4r7.3p135.6p108.2r305.7p1.1p115.1r5.2r3.1p5.3p131.1p3.2p1.3p1.1p7.1r39.1p56.3r307.7p115.1r6.2r1.3p7.1p131.1p3.2p2.3p7.4r38.1p55.2r1.1p7.1p298.8p113.2r6.1r2.3p6.2p135.2p2.4p5.4r105.1p301.6p113.2r9.3p6.1p15.3p118.2p2.4p5.2r1.1r410.4p111.2r3.1r6.3p3.1p1.1p14.4p119.2p3.4p4.1r2.1r42.15r3.35r11.1p418.1r4.1r6.2p3.2p1.1p12.6p119.3p2.1p1.2p5.1p1.1r1.2r40.15p2.35p8.1p425.2r7.1p2.2p15.6p114.1p5.5p2.1p4.3p1.2r100.1p417.1r8.2r3.1r6.2p13.1p2.5p63.1p1.1p48.1p5.4p3.1p4.4p1.1r138.1p379.1r7.3r3.2r5.1p2.1r10.1p3.5p26.1r37.2p48.1p5.4p8.4p1.1r50.1r1.2r6.1r1.3r2.8r5.1r3.5r1.3r5.1p39.1p379.2r6.3r3.2r4.2p2.1r14.4p65.1p2.1p52.3p9.5p31.1p10.1r1.1r1.1p3r2p1r1p1r1.4r2p5r3p4r1.1p2r3p1r1.3p3r1p1.3r5.1p38.2p379.2r5.4r3.2r3.3p16.2p2.1p38.4p22.3p1.1p4.1p47.3p9.5p42.1r1.1r1p3r4p2r1p2r5p2r5p1r5p1r8p1r1p2r1p1.3r5.1p38.1p12.1p258.4p112.4r3.3r3.2p15.2p3.1p26.1r9.6p5.2p14.4p1.2p3.2p45.4p9.5p8.1p24.1p8.1r1.2r6p2r2p2r1p1r3p2r2p1r2p1r4p1r1p1r6p1r1p3r1p1.3r2.1p41.1p270.5p106.2r4.4r3.3r3.1r10.1p5.1p3.1p37.3p8.2p13.8p3.2p46.3p9.2p3r7.1p1.1p24.1p7.5r8p4r2p6r2p6r1p1r1p1r1p1r5p3r1p1.3r3.1p40.1p3.2p6.1r3p254.6p106.2r6.2r3.9r7.1p4.2p3.1p48.3p12.9p3.2p47.2p9.2p3r6.1p2.1p25.1p6.4r1p1r7p3r1p1r2p6r1p1r1p5r2p1r1p1r5p3r1p1.3r44.1p2.1r1p1r5.2r4p252.7p106.3r5.3r3.9r5.1p9.1r41.3p5.4p11.10p2.2p47.2p9.1p4r6.1p2.1p32.1r1.3r1p2r4p4r3p1r2p1r3p1r1p1r1p3r3p3r5p3r1p1.3r19.12g16.4r4.2r3p252.7p109.1r5.3r4.8r15.1p39.4p7.3p11.11p1.2p47.2p9.1p4r5.2p2.1p32.9r1p2r1p4r2p1r1p3r1p8r1p3r2.1r1p2r1p3r1p3r17.18g6.4r1.1p5r4.2r2p253.2p1.4p116.2r4.8r13.2p42.2p7.2p13.5p1.3p52.1p9.1p4r4.1p1r3p30.1p10.1r1.7r1.5r1.12r4.8r6.1p11.25g1.4r2.5r3.1r4p49.1r326.2r5.7r8.1p2.1r44.4p7.1p12.4p1.1p1.2p2.1p50.1p2.1r6.1p4r4.2r1p1r1p98.28g5.1r1.4r2.1r4p369.1r6.2r6.6r55.1p25.8p2.2p49.1p9.1p4r5.3r33.2p1.1p4r1.1r1.6r2.14r1.6r1.13r11.31g6.3r1.2r2p1r369.3r5.2r7.5r55.1p9.1p15.4p1.3p2.1p51.1p4.1r3.5r4.4r96.35g4.1r2.3r1p2r161.1p208.3r4.2r7.1r1.3r5.1p3.1r55.2p12.10p2.1p51.1p4.1r3.5r2.6r95.38g3.2r1.3r1.1r160.2p119.2r87.3r13.1r1.3r2.2r3.2r1p48.2p4.2p13.3p1.2p1.3p2.1p51.1p2.1r1.2r2.5r2.5r18.2r12.1p28r3.4g11.10r6.48g1.2r158.4p93.3p22.2r88.2r3.1r9.1r1.3r7.1r51.1p4.2p13.10p2.1p51.1p2.4r2.5r2.4r33.25r1.30g1r6.50g1.1r157.4p91.5p21.3r88.1r3.3r7.1r2.3r6.1r30.1p26.2p13.6p1.1p3.2p53.5r2.5r2.4r33.12r2.2r3.39g4.54g156.4p89.6p23.1r93.4r5.2r1.4r5.1r31.1p13.1p7.1p1.1p3.2p13.5p1.1p58.5r2.3r1p1r2.3r27.125g153.5p89.5p22.3r93.5r4.1r2.5r6.2p27.4p19.4p1.3p14.1p1.1p1.2p2.2p38.4p12.5r2.3r1p3.3r26.128g64.1p85.6p116.2r88.3r4.5r5.7r4.3p11.2p13.5p20.2p2.2p18.1p1.1p2.2p54.5r2.3r1p3.2r22.2g2.131g61.1p86.6p89.6p22.1r96.5r4.7r4.3p11.2p12.1p1.4p20.6p1.2p21.2p3.1p49.1p4r2.4r3.2r13.146g58.1p87.6p93.1p120.5r4.5r1.1r3.3p11.4p13.5p15.1p3.7p1.1p22.1p3.1p37.1p11.5r2.4r3.1r3.1r7.152g54.2p87.6p214.6r3.4r2.2r2.2p12.5p9.1p2.6p15.1p3.1p1.3p1.1p20.1p3.1p53.5r1.4r2.1r10.155g53.2p75.3p8.8p214.5r4.2r3.2r15.6p8.2p2.6p15.1p3.1p1.1p1.1p26.1p53.5r1.4r11.69g10.17g1.62g51.1p77.3p7.1p2.5p215.4r5.1r3.2r15.7p8.1p2.4p1r1p13.1p1.3p1.1p4.1p25.1p3.1r49.1p4r1.4r4.1r5.66g7.3r3.4r14g1.63g50.1p77.3p7.1p3.3p208.2r7.2r10.3r17.4p9.1p1.3p2r1p21.1p3.1p25.1p52.5r1.4r8.55g13.1p15.3r1.10g1.1r65g22.2r23.1p78.4p6.1p5.1p208.3r4.1r2.1r10.2r18.5p9.4p2r1p17.1p2.2p82.5r1.4r1.1r4.50g7.3r2.4r4.1p3.1p15.1r1.7g1.2r67g45.1p78.5p5.1p19.1p195.3r2.4r11.2r15.1p2.5p9.1p1r1p3r7.1p27.1p43.2p25.4r1.3r6.48g3.10r2.2r3p3.2p2.1p1.1p7r11.3r1.3r68g43.1p3.1p1.1p73.5p5.1p18.1p1.1p195.3r2.4r10.3r18.5p8.1p1r1p3r2.2p2.3p16.1p10.1p42.3p24.4r1.2r5.50g1.11r3.2p6.2p4.1p2.4p10r6.3r1.69g41.1p3.1p3.1p71.6p4.1p17.2p193.1r3.3r3.3r11.2r6.1p11.5p8.1p1r1p3r1.1p5.3p23.4p1.1p39.4p25.7r3.51g1.4r2.7p9.3p3.1p4.11p4r4.3r70g39.1p4.1p76.5p21.3p193.2r3.3r2.3r12.1r5.2p11.5p8.1p5r7.1p26.5p39.4p25.7r2.52g2.5p1.2p1.1p11.3p1.3p4.13p1r1p1.3r2.1r1.70g15.1r22.1p81.5p20.4p2.1p190.2r3.3r3.2r2.1r9.2r4.3p11.5p7.1p5r7.1p2.1p13.9g3.2p1.3p35.6p24.3r5.53g2.2p1.2p2.2p3.1p6.5p1.4p5.5p2.5p1.5r3.71g37.2p2.1p78.5p19.4p193.2r3.2r1.1r3.1r2.2r9.2r3.3p11.5p7.1p5r9.2p10.15g3.3p31.1r3.7p23.3r4.54g1.1p2.3p7.1p2.2p1.12p7.4p3.1p1.1p7r2.70g37.4p80.4p18.5p1.1p191.2r3.4r6.3r8.2r2.5p10.5p7.1p5r18.20g1.1p2.2p29.2r1.8p24.1r4.54g2.1p2.3p7.1p2.2p1.11p11.3p2.5p5r1.71g36.4p57.1p22.2p1.1p18.5p1.1p174.1p16.2r3.1r9.3r9.1r2.5p10.6p6.1p5r6.1p9.24g2.2p32.8p28.55g1.1p2.3p8.1p3.1p2.10p2.3p8.2p2.6p4r1.71g28.2p5.3p57.4p20.2p19.7p173.4p15.2r4.2r7.4r9.1r1.4p1.2p8.7p5.1p4r14.28g35.8p27.55g4.4p9.1p3.1p1.10p2.5p7.1p2.1p3.4p2r1.1p70g27.4p4.3p57.5p13.3p23.2p3.2p173.5p30.5r8.1r1.4p1.3p11.3p4.6r12.31g34.1p1.7p7.1p17.55g2.1p2.3p10.1p4.8p1.4p1r9p7.2p2.7p70g7.1p18.4p5.1p57.6p13.4p7.1p14.2p3.1p68.1r105.5p25.2r3.7r7.1r1.2p2.4p8.2r1.2p4.6r10.34g31.1r1.1p2.6p7.3p15.54g1.2p3.2p4.4p12.20p4.1p2.4p1.5p71g25.4p63.6p6.1p6.6p2.1p2.1p13.2p3.2p68.1r104.7p21.6r3.8r1.2r3.2p4.4p7.2r2.1p4.6r5.3p36g2.1p2.5p21.1r1.1p4.4p7.3p11.2p1.54g3p4.1p4.16p2.19p4.1p1.1p1.5p1.4p70g25.3p5.1r16.2p41.5p5.2p6.6p2.1p16.2p3.1p69.1r104.7p22.5r6.3r2.5r2.1p3.6p6.3r1.1p4.5r4.3p39g32.1p4.4p8.2p9.4p1.53g1p1.2p9.17p2.1p1.10p1.7p2.1p1.2p2.3p1.5p70g24.1p10.1r2.1r7.2p45.5p3.3p7.5p18.2p3.2p68.2r105.7p23.3r12.4r7.5p6.3r6.1r1.3r4.2p40g4p28.1p4.4p7.2p1.1p7.5p51g4.3p3.1p3.21p3.23p1.4p1.5p1.69g24.1p6.1r3.1r1.3r5.3p2.1p19.1r22.5p3.3p7.5p19.1r3.1p8.3p57.2r107.6p23.4r12.4r5.6p6.3r6.1r1.3r3.2p1.40g1.3p28.1p4.4p6.3p1.2p7.4p50g5.3p3.1p2.18p3.2p3.20p1.1p1.1p1.2p1.5p1.70g23.1p6.1r2.2r1.3r4.3p46.6p1.4p8.4p18.1p13.3p57.2r104.1p3.5p24.3r13.3r6.6p5.3r6.1r1.3r4.1p42g4p4.1p1.1p4.1p15.1p4.4p5.5p9.4p49g5.14p19.1p3.3p1r16p2.1p2.1p1.5p1.1p70g22.1p5.1r2.7r3.4p22.1r23.6p1.4p8.4p4.1p12.2p12.4p56.3r104.1p4.4p25.2r13.3r6.6p5.3r6.1r1.3r3.1r1.42g4p2.1p1.1p1.1p4.1p16.1p3.4p4.6p1.1p7.3p1.48g1p5.11p26.4p1r5p1r1.1p1.7p1.2p2.8p1.70g21.1p5.1r2.7r2.2p1r2p1.1p20.1r24.5p1.4p9.4p15.2p1r3.1p7.5p56.3r33.2p73.5p26.1r14.2r7.5p7.1r6.1r1.3r3.1p43g4p1.2p1.1p1.1p4.1p16.1p3.5p3.6p1.1p6.4p48g2p6.8p6.13p9.10p2r1p4.7p2.1p1.3p2.1p2.69g27.1r1.7r2.2p2r3p22.2r11.2p9.5p1.4p10.3p4.1p10.1p1r12.3p2.9g47.2r1.1r32.3p72.4p52.4p5.1p8.1r1.3r2.2r43g1.1p3.2p1.1p1.1p4.1p16.1p3.5p2.2p1.4p1.1p6.4p47g1.2p6.6p5.2r6p2r1.7p8.10p1r1p1r4.6p2.1p1.3p1.2p2.69g27.1r1.7r1.1p5r2p34.3p9.5p1.4p11.3p14.1r4.1p8.30g31.1r34.5p71.4p42.2p8.1p1.1p7.1p7.1r1.2r3.1p1r43g1.1p1.1p4.1p23.1p3.5p3.1p1.4p1.1p5.1p1.3p47g1.2p3.1p1.5p5.3r4p1r8.5p8.9p1r2p1r4.5p4.3p1.2p3.68g26.1r2.6r2.7r35.4p8.2p1.2p1.4p12.2p1.1p11.1p9.40g26.1r34.6p69.4p43.2p9.3p7.1p1.1p2.1r4.1r2.1p2r43g8.1p1.3p3.1p15.1p3.5p5.4p1.1p2.1p1.1p2.3p46g2.2p2.2p1.4p5.4r3p1r2.2r6.1r4p8.8p1r2p1r5.5p3.3p1.1p4.68g19.1p6.1r1.13r1p2r35.4p7.4p1.1p1.3p13.4p1.1p1.1p5.3p6.46g23.1r33.8p68.4p27.2p16.1p1.3r5.1p8.1p1.1p2.1r7.2r44g10.3p3.2p14.1p4.6p1.1p1.4p1.1p2.2p2.2p2.46g2.3p1.6p5.5r1p5r8.1r5p7.11p2r4.5p3.2p2.1p3.69g28.12r1p2r36.2p1.1p7.5p2.3p1.1p12.5p7.4p2.52g20.1r12.4p17.9p67.4p26.2p17.1p1.1r8.1p7.2p3.1r7.46g10.3p1.1p1.4p12.1p4.6p3.3p2.1p1.3p1.2p3.46g2.3p1.6p1r2.6r1p4r6.6r4p7.11p3r4.5p3.1p2.1p3.69g25.1r1.12r1p3r37.1p2.1p7.4p1.6p1.1p10.5p7.3p1.59g15.1r12.4p17.3p1.6p29.1p36.4p47.2r7.1p3.1p4.1p10.47g10.3p1.6p12.1p4.5p4.3p4.6p2.46g2.10p1r3.9r7.7r5p5.7p3.2p3r4.6p1.2p1.2p2.71g24.1r1.15r38.2p9.4p1.6p13.3p1.2p5.2p63g13.3r10.4p16.4p1.7p27.3p34.5p46.1p1.1r11.1p13.49g10.3p1.5p18.3p1.1p4.2p1.3p1.2p1.2p2.47g2.9p1r3.4r1p3r6.3p1r2.1r8p5.6p4.3p3r4.8p5.71g24.1r1.10r1p2r3.4p34.2p8.4p1.7p13.2p1.3p4.67g11.1r12.4p16.1p1.2p1.8p25.4p35.3p47.1p25.51g1.2p1.1p5.3p1.5p9.1p8.3p6.1p1.4p1.1p1.3p2.47g3.4p1.2p4.3r1p2r7.2p7.8p2.1p1.7p5.3p3r4.8p4.72g14.6g4.10r1p2r3.1p39.1p9.3p1.4p1.2p17.3p1.70g23.3p17.1p1.2p1.9p23.1p1.3p35.3p43.1r4.1p23.53g4p5.3p1.1p1.2p1.4p5.1p8.3p6.7p2.1p3.47g6.2p6.6r7.1r4.13p2.1p2.5p1.1p5.2p3r8.3p5.76g7.11g2.9r1p2r3.2p1r19.1r27.1p1.2p1.6p1.1p7.84g22.3p19.1p3.9p20.2p2.4p33.4p48.1p22.56g7.3p6.5p3.3p7.3p5.8p1.2p2.48g6.2p1.1p4.1r2p2r11.15p1.2p1.8p2.1p2.4p2r7.3p4.81g2.14g10r2.1r1.2p1r3p47.3p1.5p5.88g22.3p16.1p2.1p3.10p22.5p33.3p45.1r26.66g6.6p2.3p7.3p5.1p1.6p1.1p2.50g5.2p1.1p3.5r11.16p1.2p1.9p1.1p2.3p3r7.3p3.1p99g8r1.2r1p5r23.18g8.3p1.1p1.3p2.90g23.2p19.1p4.10p16.2p3.5p33.3p42.2p6.1p21.68g4.7p1.1p9.2p6.1p1.5p4.51g5.1p2.1p2.5r4.1r6.30p1.1p4.1p3r6.5p2.1p100g1.4r2.9r22.128g25.1p18.1p4.10p16.1p4.5p33.2p11.3p28.4p26.71g3.6p2.1p9.1p8.5p4.52g4.1p2.1p2.5r3.1r6.1r32p5.3r6.4p2.1p103g1r3.8r1p22.129g49.10p15.1p5.5p33.2p10.4p29.3p26.73g2.6p1.2p8.1p8.5p2.1p54g1.1p1.1p2.1p1.5r11.33p4.4r6.4p2.1p104g2.11r20.130g50.9p14.1p6.5p33.2p11.4p28.4p25.74g1.6p1.3p2.1p12.8p1.55g1p4.2p5r3.1r6.2p1r1.30p5.3r6.2p1.1r2.1p105g1.11r20.129g1.1p49.10p12.1p7.5p33.2p11.4p29.3p1.1r22.1p76g5p1.4p14.5p1.2p58g3.2p5r9.1r2p1.4p2.22p1.3p4.3r2.4r2p2r2.106g1.10r20.130g3p48.10p19.7p45.4p29.3p20.4p1.77g1p1.5p1.1p1.1p12.5p1.2p60g2.1p1.4r9.1r1p4.1p3.26p4.3r2.4r2p1r3.107g1.8r21.129g5p48.4p2r2.1p10.1p8.7p46.2p31.1p22.3r2.77g6p1.1p1.1p12.4p5.61g1p1.4r9.2p7.26p3.5r2.3r2p2r3.108g8r21.129g4p2.1p38.1p7.3p4r1.1p18.8p29.8g8.3p58.1r77g2.7p1.1p10.1p2.2p5.63g4r5.1p2.1r1p1r7.22p1.3p3.5r2.3r1p3r2.70g2.37g2r1.5r20.128g2.4p2.2p37.1p7.2p5r1.2p7.1p8.9p27.14g5.2p58.1r78g1p1.6p1.3p11.1p6.64g3r5.1p2.1r1p1r7.22p1.3p3.4r2.3r1.1p1r4.70g7.32g2r1.2r1.1r20.129g2.4p4.1p36.1p7.2p5r1.2p8.1p7.9p25.21g1.1p40.1p18.78g9p1.2p3.3p12.65g1.1r5.1p2.1r1p1r6.22p2.3p3.4r2.3r2p1r3.70g7.33g3.3r20.129g3.5p4.1p32.1p2.1p8.1p5r1.2p16.10p22.27g38.1p18.79g8p1.4p1.3p10.69g8.1r1p1r6.6p1.14p3.2p4.4r2.2r1.1p1r4.70g7.33g3.3r14.1r4.129g4.5p40.1p8.1p5r1.2p11.1p4.10p21.31g54.80g1.10p1.4p3.1p5.70g5.1p2.1r1p1r6.6p3.11p4.2p4.3r3.3r1p2r2.71g7.33g3.3r13.1p1r3.129g5.6p38.2p8.1p5r1.2p13.1p1.11p20.46g39.84g1.12p2.1p1.77g3.2p1.1r1p1r6.7p5.4p8.2p4.3r1.1r1.2r2p3r1.71g6.34g2.4r13.1r3.129g5.7p6.1p20.1p11.2p9.4r2.1p14.12p18.51g35.180g3.1p1.3r7.7p15.2p6.2r1.1r1.1r2p3r72g7.33g4.3r12.2r1.130g6.7p7.2p19.1p12.1p9.2r3.1p14.12p17.54g31.184g1.1p2.2r8.2p2.4p13.2p6.2r1p3.1p3r73g7.33g19.1r132g6.7p8.2p32.1p7.3r18.12p16.56g28.189g2.1r3.1p4.3p3.11p4.2p6.2r1p3.2r1.73g8.32g9.1r10.132g6.9p8.2p18.1p19.1p1.2r18.2p2.4r4p15.58g23.197g2.1p1.1r10.8p5.2p6.1r1.1p3.76g8.31g2.8r1p1r8.132g7.9p8.3p18.1p18.1p1.2r8.1p8.2p1r2.4r3p16.59g13.1p6.203g2r4.2p14.1p1.2p1.1p4.1r1.1p78g9.30g9r3p8.133g7.9p9.3p18.1p17.1p1.2r7.1p9.1p3r1.1r3.3p15.61g18.206g6.1p10.1r2.1p1.2p1.1p3.81g10.29g2.8r3p1r6.133g8.10p8.1p20.1p3.1p13.1p1.1r5.1p13.5r1.4p16.63g14.318g10.29g2.7r4p7.132g9.10p8.1p38.1p1.1r5.1p13.5r1.4p16.65g11.318g11.28g4.6r4p6.1p132g9.10p7.1p20.1p2.1p16.1p1r5.1p1.1p9.1p5r1.4p17.394g10.29g2r2.6r3p1r5.1p1.132g9.11p5.1p20.1p20.1p1.1r4.1p10.1p2.3r1.5p17.393g11.29g2p4.6r1p6.1r132g10.11p26.1p4.1p15.1p1.1r4.1p11.1r1.1r4.1p1.1p18.393g11.28g1.3p1r2.2r1.4r5.1r1.132g9.12p25.1p23.1r4.1p11.3r2p2.3p19.392g11.28g1.3p1r5.4r4.1r2.132g9.13p24.1p23.1r4.1p9.1p4r1p3.3p19.391g12.28g1r3p1r6.2r8.132g9.14p47.1r15.4r1p3.2p20.391g11.29g3r1p2r5.2r4.1r3.132g9.14p52.1p9.5r1p3.2p20.391g11.29g7r4.2r3.1r3.134g8.14p50.1r15.1r1p3.1p21.391g10.30g1.6r4.2r3.1r2.135g8.14p65.1r1p3.2p13.3p2.394g10.30g1.6r9.1r1.137g8.3p8.2p64.2r4.2p10.6p1.395g1p8.31g3.4r10.139g8.2p8.2p70.1p8.6p1.2p1.395g9.31g4.1r10.142g7.2p10.1p68.2p5.1p9.2p1.396g8.31g13.146g6.3p77.1p6.1p8.3p397g7.31g11.151g4.2p1.1p75.1p15.4p398g4.196g4.1p3.1p6.1p65.2p14.5p399g1.199g3.2p9.1p54.3p8.2p14.5p599g3.2p4.1p5.1p51.5p8.1p14.6p1.599g3.1p5.1p55.5p1r7.2p13.7p1.599g3.2p10.1p47.1p1.5p1r7.1p13.8p1.599g4.1p10.1p17.1p28.2p1.4p1.2p5.2p12.8p2.599g4.2p57.1p1.3p2.2p4.3p12.8p2.599g4.2p57.4p3.2p1r3.2p13.8p2.598g6.1p33.4p20.4p3.2p3.2p13.9p2.598g40.6p19.2p3.3p3.2p12.1p7.1r2.599g7.1p33.1p3.4p16.4p2.1p3.2p12.1p8.206g6.389g42.1p5.2p16.3p3.1p3.2p12.1p8.205g7.389g2.1p45.2p26.1p21.206g7.388g49.3p25.1p11.1p7.1p1.204g9.388g3.1p44.4p44.1p1.204g11.387g3.1p26.1p14.1p2.2p1.2p45.203g12.387g1p2.1p25.2p14.1p2.1p2.2p33.1p11.201g15.386g3.1p25.2p15.1p1.1p49.200g16.386g1.3p24.3p15.1p38.1p12.193g1.4g19.385g1.3p24.3p12.1p1.3p6.1p29.1p13.192g27.383g4p24.4p15.1p21.1p17.9p3.190g31.110g6.157g1.106g28.4p15.1p39.9p3.189g35.104g10.155g3.105g28.4p55.9p4.187g37.100g15.153g3.105g1p27.4p16.1p19.1p18.8p6.132g1.51g40.97g19.150g4.105g27.6p35.1p18.8p10.127g1.51g41.94g26.145g6.104g2.1p24.6p34.1p19.8p11.9g1.5p1.109g1.51g44.90g32.141g6.105g26.6p34.1p21.5p21.6p1.160g46.88g34.139g8.104g26.6p58.2p21.8p1.158g48.83g2.1r20.3r13.137g9.104g29.3p49.1p32.7p1.158g49.81g24.1r15.137g10.103g31.1p39.1p42.7p1.156g52.78g43.135g12.102g1p77.2p34.7p1.154g55.76g3.1r40.134g1.1p13.99g60.2p26.1p18.2p7.6p2.151g58.65g2.5g48.132g18.97g60.3p24.1p19.3p6.6p2.149g61.62g58.117g5.7g20.2p2.92g1p60.4p27.3p13.4p5.6p2.148g62.61g60.116g32.4p91g3p59.4p11.1p15.4p12.4p5.6p3.146g64.59g62.116g35.89g4.1p60.4p27.4p11.3p2.2p2.5p5.144g67.56g63.116g35.87g7.2p51.1p7.3p28.1p15.1p2.2p2.5p4.1p1.142g72.52g1r63.115g34.1p1.84g12.1p59.1p28.1p15.1p1.3p2.4p4.2p1.142g72.51g1r64.115g28.1p7.83g14.1p50.2p5.2p26.1p19.2p2.5p3.3p2.140g75.48g2r65.114g36.81g67.3p4.1p25.1p21.1p3.4p4.3p3.137g80.6g1.35g3.2r65.114g26.1p10.77g70.3p28.2p21.2p3.4p2.5p4.117g3.14g91.20g16.2r65.114g31.1p7.73g53."}};
 // Decode an RLE walkability grid (codes: .=block y=yellow g=green r=red p=purple) into a Uint8Array.
 function decodeBaked(bk){
   if(bk._grid) return bk._grid;
@@ -2332,17 +2445,26 @@ function enterHub(fromRight){
   HUB.ducks=(H.mobXf||H.duckXf||[]).map(xf=>{
     let x=xf*HUB.worldW, y=b.top+(0.35+Math.random()*0.55)*(b.bot-b.top);
     if(maskReady()){ const p=nearestWalk(x,y); if(p){x=p.x;y=p.y;} }
-    const rg=70+Math.random()*70, lvl=rollPigeonLevel(), k=(mob==='pigeon'?pigeonKind(lvl):duckKind(lvl));
+    const rg=70+Math.random()*70, lvl=rollPigeonLevel(), k=enemyKind(mob,lvl);
     const sprite=(mob==='pigeon'&&PIGEON_VARIANTS[lvl-1])?PIGEON_VARIANTS[lvl-1].sprite:null;
     return {type:mob, x, x0:x-rg, x1:x+rg, y, homeX:x, homeY:y, range:130, heading:(Math.random()<.5?0:Math.PI),
       dir:Math.random()<.5?-1:1, phase:Math.random()*6, speed:0.55+Math.random()*0.35+lvl*0.03,
       level:lvl, kind:k, sprite, hp:k.hp, maxHp:k.hp, kx:0, hitFlash:0, dead:false, respawnAt:0};
   });
-  HUB.fish=(H.fishXf||[]).map(xf=>{
-    let x=xf*HUB.worldW, y=b.top+(0.4+Math.random()*0.5)*(b.bot-b.top);
-    if(maskReady()){ const p=nearestWalk(x,y); if(p){x=p.x;y=p.y;} }
-    return {x, y, got:false, gotAt:0, bob:Math.random()*6};
-  });
+  HUB.fish=[];                          // fish removed → coins now spawn on walkable ground
+  groundCoins=[]; coinSpawnAt=0;
+  // Queen Seby — the top-down boss (only the sebyboss arena defines hub.boss)
+  HUB.shards=[];
+  if(H.boss){
+    let bx=H.boss.xf*HUB.worldW, by=H.boss.yf*VH;
+    if(maskReady()){ const p=nearestWalk(bx,by); if(p){bx=p.x;by=p.y;} }
+    const sk={hp:420, cdmg:[10,16], xp:350, coins:120};
+    HUB.boss={x:bx, y:by, homeX:bx, homeY:by, kind:sk, hp:sk.hp, maxHp:sk.hp,
+      facing:-1, phase:0, moving:false, state:'walk', stateUntil:0,
+      throwCD:0, meleeCD:0, dashCD:0, meleeAt:0, meleeDone:false, throwAt:0, threw:false,
+      dashUntil:0, dashHit:false, dashA:0, phase2:false, hitFlash:0,
+      defeated:false, respawnAt:0, introShown:false};
+  } else HUB.boss=null;
   HUB.inited=true;
 }
 function hubClampY(){ const b=hubBand(); if(HUB.cat.y<b.top)HUB.cat.y=b.top; if(HUB.cat.y>b.bot)HUB.cat.y=b.bot; }
@@ -2384,6 +2506,101 @@ function landHub(){
   if(cl==='plat'){ c.onPlat=true; c.safeX=c.x; c.safeY=c.y; }
   else if(cl==='walk'){ c.onPlat=false; c.safeX=c.x; c.safeY=c.y; }
   else { c.x=c.safeX; c.y=c.safeY; }   // landed somewhere illegal -> snap back
+}
+// hurt the cat in top-down mode: damage + knockback away from (fx,fy); faint -> back to the area spawn
+function hubHurtPlayer(now,dmg,col,fx,fy,kb){
+  if(now<=(P.iframe||0)) return;
+  const c=HUB.cat;
+  P.hp=Math.max(0,P.hp-dmg); P.iframe=now+IFRAMES; P.lastHit=now;
+  floatText(c.x,c.y-52,'-'+dmg,col); SFX.hit();
+  const a=Math.atan2(c.y-fy,c.x-fx), nx=c.x+Math.cos(a)*kb, ny=c.y+Math.sin(a)*kb*0.7;
+  if(!maskReady() || maskClassify(nx,ny)==='walk'){ c.x=nx; c.y=ny; c.safeX=nx; c.safeY=ny; }
+  if(P.hp<=0){
+    P.hp=P.maxHp; P.iframe=now+1800;
+    const sp=A.hub.spawn; c.x=sp.xf*HUB.worldW; c.y=Math.max(0,Math.min(VH,sp.yf*VH));
+    if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
+    c.safeX=c.x; c.safeY=c.y; HUB.target=null;
+    toast('😿 You fainted! Regroup and try again!');
+  }
+}
+// Queen Seby's top-down AI — claw pinch up close, crystal shards at range, tail dash from afar
+// she's far too big for the painted path, so she IGNORES the walk mask: free movement,
+// just clamped to the arena's depth band + world edges so she never wanders off-screen
+function hubBossMove(b,dx,dy){
+  const mag=Math.hypot(dx,dy); if(mag<0.01) return false;
+  const band=hubBand();
+  b.x=Math.max(80, Math.min(HUB.worldW-80, b.x+dx));
+  b.y=Math.max(band.top, Math.min(band.bot, b.y+dy));
+  return true;
+}
+function spawnHubShards(b){
+  SFX.tone&&SFX.tone(520,0.12,'triangle',0.05);
+  const c=HUB.cat, n=b.phase2?4:2, base=Math.atan2(c.y-b.y,c.x-b.x);
+  for(let k=0;k<n;k++){
+    const a=base+(k-(n-1)/2)*0.22, sp=4.4+Math.random()*0.9;
+    HUB.shards.push({x:b.x+Math.cos(a)*44, y:b.y-34+Math.sin(a)*44,
+      vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, spin:Math.random()*6, life:180, col:(k%2?'#9fe6ff':'#b07cf0')});
+  }
+}
+function updateHubBoss(now){
+  const b=HUB.boss, c=HUB.cat;
+  if(b.defeated){
+    if(b.respawnAt && now>b.respawnAt){
+      b.defeated=false; b.hp=b.maxHp; b.x=b.homeX; b.y=b.homeY;
+      b.state='walk'; b.phase2=false; b.throwCD=0; b.meleeCD=0; b.dashCD=0; b.introShown=true;
+      toast('👑 Queen Seby gathers her shattered crystals… she rises again!');
+    }
+    return;
+  }
+  const ddx=c.x-b.x, ddy=c.y-b.y, dist=Math.hypot(ddx,ddy);
+  if(Math.abs(ddx)>20) b.facing=ddx<0?-1:1;
+  b.phase2 = b.hp<=b.maxHp*0.45;                  // enrage at 45% HP
+  if(!b.throwCD)b.throwCD=now+2000; if(!b.meleeCD)b.meleeCD=now+1300; if(!b.dashCD)b.dashCD=now+3800;
+  if(!b.introShown && dist<560){ b.introShown=true;
+    toast('👑 Queen Seby, the Ancient One stirs… the crystals tremble.');
+    SFX.seq&&SFX.seq([220,175,147,110],'sawtooth',0.07); }
+
+  if(b.state==='shards'){
+    if(now>=b.throwAt && !b.threw){ b.threw=true; spawnHubShards(b); }
+    if(now>b.stateUntil){ b.state='walk'; b.throwCD=now+(b.phase2?1200:2300)+Math.random()*400; }
+    return;
+  }
+  if(b.state==='claw'){
+    if(now>=b.meleeAt && !b.meleeDone){
+      b.meleeDone=true;
+      hubBossMove(b, ddx/Math.max(1,dist)*14, ddy/Math.max(1,dist)*14);   // small lunge
+      if(dist<96 && c.z<6) hubHurtPlayer(now, rnd(13,19), '#5fd4ff', b.x, b.y, 16);
+    }
+    if(now>b.stateUntil){ b.state='walk'; b.meleeCD=now+(b.phase2?900:1500); }
+    return;
+  }
+  if(b.state==='windup'){                          // brief telegraph before the dash
+    if(now>b.stateUntil){ b.state='dash'; b.dashUntil=now+(b.phase2?640:540); b.dashHit=false;
+      b.dashA=Math.atan2(ddy,ddx); SFX.tone&&SFX.tone(140,0.18,'sawtooth',0.06); }
+    return;
+  }
+  if(b.state==='dash'){                            // tail-flip charge across the arena floor
+    const ds=b.phase2?9.5:7.5;
+    hubBossMove(b, Math.cos(b.dashA)*ds, Math.sin(b.dashA)*ds);   // free move (clamped to the band/edges)
+    b.phase+=0.2; b.moving=true;
+    if(!b.dashHit && Math.hypot(c.x-b.x,c.y-b.y)<86 && c.z<6){
+      b.dashHit=true; hubHurtPlayer(now, rnd(16,24), '#bfeeff', b.x, b.y, 20);
+    }
+    if(now>b.dashUntil){ b.state='walk'; b.moving=false; b.dashCD=now+(b.phase2?2800:4400); }
+    return;
+  }
+
+  // walk: close the distance (free move; she ignores the path), keeping a small stop band
+  const spd=b.phase2?2.0:1.3;
+  if(dist>92){ hubBossMove(b, ddx/dist*spd, ddy/dist*spd); b.phase+=0.09; b.moving=true; }
+  else b.moving=false;
+  // contact pinch even while walking
+  if(dist<54 && c.z<6) hubHurtPlayer(now, rnd(b.kind.cdmg[0],b.kind.cdmg[1]), '#5fd4ff', b.x, b.y, 12);
+
+  // choose an attack: dash from afar, claw up close, shards at mid range
+  if(dist>240 && now>b.dashCD){ b.state='windup'; b.stateUntil=now+(b.phase2?300:420); }
+  else if(dist<104 && now>b.meleeCD){ b.state='claw'; b.meleeDone=false; b.meleeAt=now+280; b.stateUntil=now+660; }
+  else if(dist>130 && now>b.throwCD){ b.state='shards'; b.threw=false; b.throwAt=now+320; b.stateUntil=now+700; }
 }
 function updateHub(){
   const _im=hubImg(); if(!_im.complete||!_im.naturalWidth) return;
@@ -2462,7 +2679,7 @@ function updateHub(){
   }
   // ducks (kept on the yellow path when a mask exists)
   for(const d of HUB.ducks){
-    if(d.dead){ if(d.respawnAt&&now>d.respawnAt){ const lvl=rollPigeonLevel(),k=(d.type==='pigeon'?pigeonKind(lvl):duckKind(lvl)); d.level=lvl;d.kind=k;d.maxHp=k.hp;d.hp=k.hp;d.sprite=(d.type==='pigeon'&&PIGEON_VARIANTS[lvl-1])?PIGEON_VARIANTS[lvl-1].sprite:null;d.speed=0.55+Math.random()*0.35+lvl*0.03;d.x=d.homeX;d.y=d.homeY;d.respawnAt=0; } continue; }
+    if(d.dead){ if(d.respawnAt&&now>d.respawnAt){ const lvl=rollPigeonLevel(),k=enemyKind(d.type,lvl); d.level=lvl;d.kind=k;d.maxHp=k.hp;d.hp=k.hp;d.sprite=(d.type==='pigeon'&&PIGEON_VARIANTS[lvl-1])?PIGEON_VARIANTS[lvl-1].sprite:null;d.speed=0.55+Math.random()*0.35+lvl*0.03;d.x=d.homeX;d.y=d.homeY;d.respawnAt=0; } continue; }
     if(d.kx){ // knockback, but never shoved off the path
       const nx=d.x+d.kx;
       if(!maskReady() || maskClassify(nx,d.y)==='walk') d.x=nx; else d.kx=0;
@@ -2489,11 +2706,18 @@ function updateHub(){
       if(P.hp<=0){ P.hp=P.maxHp; P.iframe=now+1500; toast('😿 Watch out for the ducks!'); }
     }
   }
-  // fish: walk over to collect; respawn ~60s later
-  for(const fsh of HUB.fish){
-    if(fsh.got){ if(now-fsh.gotAt>FISH_RESPAWN) fsh.got=false; continue; }
-    if(c.z<8 && Math.hypot(c.x-fsh.x, c.y-fsh.y)<28){ fsh.got=true; fsh.gotAt=now; gainCoin(fsh.x,fsh.y); }
+  // Queen Seby (boss arena only)
+  if(HUB.boss) updateHubBoss(now);
+  // her crystal shard projectiles
+  if(HUB.shards) for(let i=HUB.shards.length-1;i>=0;i--){
+    const s=HUB.shards[i]; s.x+=s.vx; s.y+=s.vy; s.spin+=0.25; s.life--;
+    if(c.z<6 && now>(P.iframe||0) && Math.hypot(c.x-s.x,c.y-s.y)<26){
+      hubHurtPlayer(now, rnd(9,14), '#b07cf0', s.x, s.y, 9); HUB.shards.splice(i,1); continue;
+    }
+    if(s.life<=0 || s.x<-40 || s.x>HUB.worldW+40 || s.y<-40 || s.y>VH+40) HUB.shards.splice(i,1);
   }
+  // coins: spawn over time on walkable ground; walk over to collect
+  updateGroundCoins();
   if(P.hp<P.maxHp && now-(P.lastHit||0)>2600){ P.hpAcc=(P.hpAcc||0)+0.04; if(P.hpAcc>=1){P.hp=Math.min(P.maxHp,P.hp+1);P.hpAcc=0;} }
   for(let i=floats.length-1;i>=0;i--){ const f=floats[i]; f.y+=f.vy; f.vy*=0.96; f.life-=0.018; if(f.life<=0)floats.splice(i,1); }
 }
@@ -2506,8 +2730,25 @@ function hubAttack(){
       const dmg=playerAtkDmg(); d.hp-=dmg; d.hitFlash=now; d.kx=(d.x<c.x?-1:1)*3; hit=true;
       floatText(d.x,d.y-30,'-'+dmg,'#fff');
       if(d.hp<=0){ d.dead=true; d.respawnAt=now+DUCK_RESPAWN; S.coins+=d.kind.coins; addXP(d.kind.xp); S.totalDefeats=(S.totalDefeats||0)+1;
-        const nm=(d.type==='pigeon'?'🐦 Pigeon':'🦆 Duck');
-        toast(nm+' Lv.'+(d.level||1)+' defeated!  +'+d.kind.coins+' 🐟  +'+d.kind.xp+' XP'); questProgress('defeat'); checkAchievements(); syncHUD(); save(); } }
+        const nm=(d.type==='pigeon'?'🐦 Pigeon':d.type==='clobster'?'🦞 Crystal Lobster':'🦆 Duck');
+        toast(nm+' Lv.'+(d.level||1)+' defeated!  +'+moneyText(d.kind.coins)+'  +'+d.kind.xp+' XP'); questProgress('defeat'); checkAchievements(); syncHUD(); save(); } }
+  }
+  // Queen Seby takes hits too
+  const b=HUB.boss;
+  if(b && !b.defeated && Math.hypot(c.x-b.x,c.y-b.y)<96){
+    const dmg=playerAtkDmg(); b.hp-=dmg; b.hitFlash=now; hit=true;
+    floatText(b.x,b.y-110,'-'+dmg,'#fff');
+    if(b.hp<=0){
+      b.defeated=true; b.hp=0; b.respawnAt=now+30000; const k=b.kind;
+      S.coins+=k.coins; addXP(k.xp); S.totalDefeats=(S.totalDefeats||0)+1;
+      S.sebyDefeated=true;
+      if(!S.items.includes('crystalcrown')) S.items.push('crystalcrown');
+      SFX.win();
+      for(let i=0;i<12;i++) floatText(b.x+(Math.random()-.5)*150, b.y-10-Math.random()*110, '✦', i%2?'#9fe6ff':'#b07cf0');
+      toast('👑 Queen Seby, the Ancient One falls!  +'+moneyText(k.coins)+'  +'+k.xp+' XP  + 💎 Crystal Crown!');
+      questProgress('defeat'); checkAchievements(); renderStatbars();
+    }
+    syncHUD(); save();
   }
   if(hit) SFX.hit();
 }
@@ -2516,17 +2757,8 @@ function drawHub(){
   if(!HUB.inited){ if(IM.complete&&IM.naturalWidth) enterHub(); else { g.fillStyle='#7cbb5f'; g.fillRect(0,0,VW,VH); return; } }
   const scale=VH/IM.naturalHeight, w=IM.naturalWidth*scale;
   g.drawImage(IM, -HUB.camx, 0, w, VH);
-  // fish lying on the path (collectibles)
-  const _t=Date.now()*0.004;
-  for(const fsh of HUB.fish){ if(fsh.got) continue;
-    const sx=fsh.x-HUB.camx; if(sx<-30||sx>VW+30) continue;
-    const sc=hubScale(fsh.y), sy=fsh.y+Math.sin(_t+fsh.bob)*3;
-    g.save(); g.shadowColor='#39c8ff'; g.shadowBlur=9;
-    g.fillStyle='#39c8ff'; g.beginPath(); g.ellipse(sx,sy,11*sc,7*sc,0,0,7); g.fill();
-    g.fillStyle='rgba(255,255,255,.3)'; g.beginPath(); g.ellipse(sx-2*sc,sy-2*sc,5*sc,3*sc,-.3,0,7); g.fill();
-    g.fillStyle='#1ea8e0'; g.beginPath(); g.moveTo(sx+10*sc,sy); g.lineTo(sx+18*sc,sy-6*sc); g.lineTo(sx+18*sc,sy+6*sc); g.closePath(); g.fill();
-    g.fillStyle='#04263c'; g.beginPath(); g.arc(sx-5*sc,sy-1*sc,2*sc,0,7); g.fill(); g.restore();
-  }
+  // coins lying on the walkable ground (collectibles)
+  drawGroundCoins(true);
   const items=[];
   for(const d of HUB.ducks){ if(!d.dead) items.push({z:d.y, t:'mob', d}); }
   if(A.hub.rocky) items.push({z:HUB.rocky.y, t:'rocky'});
@@ -2535,6 +2767,7 @@ function drawHub(){
   const poPos=hubPotions(); if(poPos) items.push({z:poPos.y+30, t:'potions', p:poPos});
   const fbPos=hubFishbarrel(); if(fbPos) items.push({z:fbPos.y, t:'fishbarrel', p:fbPos});
   const tyPos=hubTomy(); if(tyPos) items.push({z:tyPos.y, t:'tomy', p:tyPos});
+  if(HUB.boss && !HUB.boss.defeated) items.push({z:HUB.boss.y, t:'boss'});
   items.push({z:HUB.cat.y, t:'cat'});
   items.sort((a,b)=>a.z-b.z);
   for(const it of items){
@@ -2601,11 +2834,11 @@ function drawHub(){
         g.fillStyle='#d6f3d0';g.fillText(lbl,sx,it.p.y-81);g.restore(); }
       continue;
     }
-    if(it.t==='mob'){ const d=it.d, sc=hubScale(d.y), dsx=d.x-HUB.camx, h=(d.type==='pigeon'?60:64)*sc;
-      drawEnemy(g, dsx, d.y, d.dir, d.type, {h, moving:true, phase:d.phase, pigeonSprite:(d.type==='pigeon'?d.sprite:undefined)});
+    if(it.t==='mob'){ const d=it.d, sc=hubScale(d.y), dsx=d.x-HUB.camx, h=(d.type==='pigeon'?60:d.type==='clobster'?66:64)*sc;
+      drawEnemy(g, dsx, d.y, d.dir, d.type, {h, moving:true, phase:d.phase, pigeonSprite:(d.type==='pigeon'?d.sprite:undefined), clobsterLevel:(d.type==='clobster'?d.level:undefined), noLabel:true});
       if(Date.now()-(d.hitFlash||0)<110){ g.save();g.globalAlpha=.5;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(dsx,d.y-30*sc,22*sc,28*sc,0,0,7);g.fill();g.restore(); }
       // name + level label and health bar above the critter
-      const lv=d.level||1, lvCol=levelTierColor(lv), topY=d.y-70*sc, nm=(d.type==='pigeon'?'Pigeon':'Duck');
+      const lv=d.level||1, lvCol=levelTierColor(lv), topY=d.y-70*sc, nm=(d.type==='pigeon'?'Pigeon':d.type==='clobster'?'Crystal Lobster':'Duck');
       g.save(); g.textAlign='center'; g.font=`bold ${lv===10?11:10}px Arial`;
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm+'  Lv.'+lv, dsx+1, topY+1);
       g.fillStyle=lvCol; g.fillText(nm+'  Lv.'+lv, dsx, topY);
@@ -2615,6 +2848,25 @@ function drawHub(){
       g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(dsx-bw/2-1,by-1,bw+2,bh+2,3); g.fill();
       g.fillStyle = pct>0.5?'#5fce4a':pct>0.22?'#e8b53a':'#e0533a';
       g.beginPath(); g.roundRect(dsx-bw/2,by,bw*pct,bh,2); g.fill();
+      g.restore();
+    } else if(it.t==='boss'){ const b=HUB.boss, sc=hubScale(b.y), sx=b.x-HUB.camx, now=Date.now();
+      const key = b.state==='claw' ? 'rear'
+                : b.state==='shards' ? 'throw'
+                : b.state==='windup' ? 'rear'
+                : (Math.floor(b.phase*1.4)%2?'walk1':'walk0');
+      const bob=b.moving?Math.abs(Math.sin(b.phase*Math.PI))*4:0;
+      drawBossSprite(g, sx, b.y, b.facing, 200*sc, key, b.phase2&&!b.defeated, bob, SEBYI, '150,80,230');
+      if(now-(b.hitFlash||0)<110){ g.save();g.globalAlpha=.45;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(sx,b.y-100*sc,70*sc,95*sc,0,0,7);g.fill();g.restore(); }
+      // royal name plate + big HP bar
+      const topY=b.y-205*sc-14;
+      g.save(); g.textAlign='center'; g.font='bold 13px Trebuchet MS';
+      g.fillStyle='rgba(28,16,60,.85)'; const lbl='👑 Queen Seby, the Ancient One'+(b.phase2?'  💢':''), tw=g.measureText(lbl).width+16;
+      roundRectPath(sx-tw/2, topY-16, tw, 22, 8); g.fill();
+      g.fillStyle='#e6c9ff'; g.fillText(lbl, sx, topY);
+      const bw=150*Math.max(0.8,sc), bh=9, by=topY+8, pct=Math.max(0,b.hp/b.maxHp);
+      g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(sx-bw/2-1,by-1,bw+2,bh+2,4); g.fill();
+      g.fillStyle = pct>0.5?'#b07cf0':pct>0.22?'#e8b53a':'#e0533a';
+      g.beginPath(); g.roundRect(sx-bw/2,by,bw*pct,bh,3); g.fill();
       g.restore();
     } else if(it.t==='rocky'){ const r=HUB.rocky, sc=hubScale(r.y)*0.92, sx=r.x-HUB.camx, now=Date.now();
       const key=(now<r.barkUntil)?'bark':(r.moving?(Math.floor(r.phase*1.2)%2?'walk1':'walk0'):(S.companion?'idle':'sit'));
@@ -2638,6 +2890,16 @@ function drawHub(){
       g.fillText(myName, sx, c.y-lift-86*sc);
       if(NET.myBubble && Date.now()-NET.myBubble.t<4000) drawChatBubble(sx, c.y-lift-98*sc, NET.myBubble.text);
     }
+  }
+  // Queen Seby's glowing crystal shards (drawn above everything on the floor)
+  if(HUB.shards) for(const s of HUB.shards){
+    const sx=s.x-HUB.camx; if(sx<-30||sx>VW+30) continue;
+    g.save(); g.translate(sx,s.y); g.rotate(s.spin);
+    g.shadowColor=s.col; g.shadowBlur=14; g.fillStyle=s.col;
+    g.beginPath(); g.moveTo(0,-11); g.lineTo(5,0); g.lineTo(0,11); g.lineTo(-5,0); g.closePath(); g.fill();
+    g.fillStyle='rgba(255,255,255,.7)';
+    g.beginPath(); g.moveTo(0,-11); g.lineTo(2,-2); g.lineTo(-2,-2); g.closePath(); g.fill();
+    g.restore();
   }
   if(NET.connected) NET.drawRemotes();   // other players in the park
   // doors: glow the landmark (e.g. the tower) when you're near + show prompt
@@ -3023,21 +3285,8 @@ function drawPlatforms(){
   }
 }
 
-//──────── coins (fish)
-function drawCoins(){
-  const t=Date.now()*.004;
-  for(const c of coinSprites){
-    if(c.got)continue;
-    const sx=c.x-cam.x;if(sx<-30||sx>VW+30)continue;
-    const sy=c.y+Math.sin(t+c.bob)*4;
-    g.save();g.shadowColor='#39c8ff';g.shadowBlur=10;
-    g.fillStyle='#39c8ff';g.beginPath();g.ellipse(sx,sy,11,7,0,0,7);g.fill();
-    g.fillStyle='rgba(255,255,255,.3)';g.beginPath();g.ellipse(sx-2,sy-2,5,3,-.3,0,7);g.fill();
-    g.fillStyle='#1ea8e0';g.beginPath();g.moveTo(sx+10,sy);g.lineTo(sx+18,sy-6);g.lineTo(sx+18,sy+6);g.closePath();g.fill();
-    g.fillStyle='#04263c';g.beginPath();g.arc(sx-5,sy-1,2,0,7);g.fill();
-    g.restore();
-  }
-}
+//──────── coins (side-scroll areas)
+function drawCoins(){ drawGroundCoins(false); }
 
 //──────── npcs
 function drawNPCs(){
@@ -3232,7 +3481,7 @@ function closeDialogue(){
     const r=q.reward; S.coins+=r.coins; addXP(r.xp);
     if(r.item && !S.items.includes(r.item)){ S.items.push(r.item); if(!S.equipped&&isHat(r.item)) S.equipped=r.item; }
     if(r.companion){ S.companion=true; spawnCompanion(); toast('🐕 Rocky joined your team!'); }
-    else toast('🎁 +'+r.coins+' 🐟  +'+r.xp+' XP'+(r.item?'  +1 item!':''));
+    else toast('🎁 +'+moneyText(r.coins)+'  +'+r.xp+' XP'+(r.item?'  +1 item!':''));
     SFX.win(); checkAchievements(); updateQuestHUD();
     syncHUD(); renderStatbars(); save();
   }
@@ -3363,7 +3612,7 @@ function mgSpawnMerged(x,y,type){
   if(type>=MG.objective && MG.objective<MG_FRUITS.length){
     const t=MG.objective, fish=t*3, xp=t*12;
     S.coins+=fish; addXP(xp);
-    toast('🎯 Objective: '+MG_NAMES[t]+'!  +'+fish+' 🐟  +'+xp+' XP');
+    toast('🎯 Objective: '+MG_NAMES[t]+'!  +'+moneyText(fish)+'  +'+xp+' XP');
     if(SFX&&SFX.seq) SFX.seq([659,784,988],'triangle',0.06);
     MG.objective = (t>=MG_FRUITS.length-1) ? 999 : t+1;
     mgUpdateObjective();
@@ -3550,7 +3799,7 @@ function sortWon(){ return SORT.tubes.every(tb=> tb.length===0 || (tb.length===S
 function sortWin(){
   const fish=2+SORT.level*2, xp=15+SORT.level*8;     // harder level → bigger reward
   S.coins+=fish; addXP(xp); syncHUD();
-  toast('🧪 Level '+SORT.level+' solved!  +'+fish+' 🐟  +'+xp+' XP');
+  toast('🧪 Level '+SORT.level+' solved!  +'+moneyText(fish)+'  +'+xp+' XP');
   if(SORT.level>(S.sortBest||0)){ S.sortBest=SORT.level; } save();
   if(SFX&&SFX.seq)SFX.seq([523,659,784],'triangle',0.05);
   const nb=document.getElementById('sortNextBtn'); if(nb)nb.style.display='inline-block';
@@ -3666,24 +3915,118 @@ const FISH_SPECIES=[
   {key:'lionfish',  name:'Lionfish',     w:8,  coins:36,  xp:44,  speed:1.70, barH:0.31, minL:18, maxL:36,  col:'#d98a5a'},
   {key:'barracuda', name:'Barracuda',    w:6,  coins:52,  xp:66,  speed:1.90, barH:0.30, minL:50, maxL:100, col:'#aebcc8'},
   {key:'tuna',      name:'Bluefin Tuna', w:3,  coins:130, xp:160, speed:2.10, barH:0.28, minL:80, maxL:200, col:'#3a6ea5', legendary:true},
+  // ── big game: very rare, fast & jumpy with a tiny catch bar → hard to land ──
+  {key:'mantaray',  name:'Manta Ray',    w:2.4,coins:200, xp:240, speed:2.10, barH:0.26, minL:200,maxL:400, col:'#4a5a6a', legendary:true, big:true},
+  {key:'hammerhead',name:'Hammerhead',   w:1.5,coins:300, xp:380, speed:2.35, barH:0.24, minL:220,maxL:450, col:'#5a6472', legendary:true, big:true},
+  {key:'greatwhite',name:'Great White',  w:0.9,coins:450, xp:560, speed:2.55, barH:0.22, minL:300,maxL:640, col:'#6b7480', legendary:true, big:true},
 ];
 const FISH_IMG={}; for(const f of FISH_SPECIES){ const im=new Image(); im.src='fishing/sprite_'+f.key+'.png'; FISH_IMG[f.key]=im; }
 function fishSprite(g,key,cx,cy,maxW,maxH){ const im=FISH_IMG[key]; if(!(im&&im.complete&&im.naturalWidth))return false;
   const sc=Math.min(maxW/im.naturalWidth,maxH/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc;
   g.drawImage(im,cx-w/2,cy-h/2,w,h); return true; }
-const FISH={ active:false, ctx:null, W:360, H:540, raf:null, lastT:0,
+// ── Scene assets (drop these PNGs into fishing/ ; everything has a fallback if missing) ──
+function fimg(src){ const im=new Image(); im.src='fishing/'+src; return im; }
+const FSCENE={
+  bg:        fimg('scene_bg.png'),       // 1920x1080 landscape ocean/dock
+  puiutu:{ idle:fimg('puiutu_idle.png'), bite:fimg('puiutu_bite.png'), reel:fimg('puiutu_reel.png') },
+  bobber:    fimg('bobber.png'),         // 128x128 floating
+  bobberDip: fimg('bobber_dip.png'),     // 128x128 dipped underwater
+  splash:    fimg('splash_sheet.png'),   // 4 frames in a row, 256x256 each
+  gauge:     fimg('gauge.png'),          // optional 220x980 wooden reel frame
+  card:      fimg('trophy_card.png'),    // optional wooden "fish caught" banner
+};
+function imgOK(im){ return im && im.complete && im.naturalWidth>0; }
+// draw an image centered & scaled to fit maxW×maxH (returns false if not loaded)
+function drawFit(g,im,cx,cy,maxW,maxH,anchorBottom){ if(!imgOK(im))return false;
+  const sc=Math.min(maxW/im.naturalWidth,maxH/im.naturalHeight),w=im.naturalWidth*sc,h=im.naturalHeight*sc;
+  g.drawImage(im,cx-w/2, anchorBottom?cy-h:cy-h/2, w,h); return true; }
+const FISH={ active:false, ctx:null, cv:null, W:360, H:540, dpr:1, raf:null, lastT:0,
   phase:'ready', fish:null, len:0, barC:0, barV:0, fishP:0, fishTarget:0, retargetAt:0,
-  progress:0, holding:false, biteAt:0, msg:'', msgUntil:0, caughtUntil:0 };
+  progress:0, holding:false, biteAt:0, msg:'', msgUntil:0, caughtUntil:0,
+  jumpers:[], splashes:[], ripples:[], nextJump:0, nextRipple:0 };
 const FISH_TRACK={ x:248, w:74, top:46, bot:498 };
+// Anchors measured as FRACTIONS of the background artwork (scene_bg.png).
+// Tuned to the lateral-dock sunset bg: Puiutu sits on the planks (left),
+// the line casts out into the open sunlit water on the right.
+// Tweak these if the dock art changes — everything else follows.
+const ANCHOR={ horizonF:0.40, catXf:0.02, catYf:0.86, catHF:0.22, bobXf:0.45, bobYf:0.60 };
+// rod-tip position as a fraction of each Puiutu sprite (x,y) — so the cast line
+// starts exactly at the rod tip, not floating in mid-air
+// rod-tip position as a fraction of each sprite (measured from the artwork) so the
+// cast line starts exactly at the rod tip — not the cat's head
+const RODTIP={ idle:[0.684,0.169], reel:[0.876,0.183], bite:[0.939,0.202] };
+// per-frame cat-body metrics (measured): native height, body height (cat without
+// the thin rod), and feet row — so all 3 frames render the cat at the SAME body
+// size with feet on the dock, regardless of how high the rod reaches.
+// mul = small per-frame size boost (standing/startled reads a touch bigger)
+const CATFIT={ idle:{h:520,bodyH:406,bodyBot:506,mul:1}, reel:{h:520,bodyH:423,bodyBot:488,mul:1}, bite:{h:466,bodyH:340,bodyBot:409,mul:1.12} };
+// the rectangle the bg is actually drawn into (contain-fit, centered with letterbox)
+function fishBgRect(){
+  const W=FISH.W, H=FISH.H, im=FSCENE.bg;
+  if(imgOK(im)){ const sc=Math.max(W/im.naturalWidth,H/im.naturalHeight);  // COVER: fill, no bars
+    const w=im.naturalWidth*sc, h=im.naturalHeight*sc;
+    return {x:(W-w)/2, y:(H-h)/2, w, h}; }
+  return {x:0,y:0,w:W,h:H};   // fallback: full canvas
+}
+// recompute scene layout for the current canvas size + bg position
+function fishLayout(){
+  const W=FISH.W, H=FISH.H, r=fishBgRect();
+  FISH.bgRect   = r;
+  FISH.waterTop = r.y + r.h*ANCHOR.horizonF;       // horizon (for jumpers/shimmer)
+  FISH.dockY    = r.y + r.h*ANCHOR.catYf;            // Puiutu baseline (on the planks)
+  // vertical reel track on the right side
+  const m = Math.max(26, W*0.045);
+  if(imgOK(FSCENE.gauge)){
+    // draw the wooden gauge to fit the screen height, then make the playable
+    // track EXACTLY the dark inner groove (fractions measured from gauge.png)
+    const GFX0=0.332, GFX1=0.663, GFY0=0.082, GFY1=0.920;  // groove bounds (measured from gauge.png)
+    const g=FSCENE.gauge, aspect=g.naturalWidth/g.naturalHeight;
+    const gH=H*0.82, gW=gH*aspect;
+    const gx0=W - gW - m, gy0=(H-gH)/2;                    // frame top-left
+    FISH.gauge={x:gx0, y:gy0, w:gW, h:gH};
+    FISH_TRACK.x   = gx0 + gW*GFX0;
+    FISH_TRACK.w   = gW*(GFX1-GFX0);
+    FISH_TRACK.top = gy0 + gH*GFY0;
+    FISH_TRACK.bot = gy0 + gH*GFY1;
+    FISH_TRACK.gauge=true;
+  } else {
+    const tw = Math.max(56, Math.min(108, W*0.07));
+    FISH_TRACK.w=tw; FISH_TRACK.x=W-tw-m; FISH_TRACK.top=H*0.13; FISH_TRACK.bot=H*0.90;
+    FISH_TRACK.gauge=false; FISH.gauge=null;
+  }
+  // Puiutu on the dock planks
+  FISH.catSize = r.h*ANCHOR.catHF;
+  FISH.catX    = r.x + r.w*ANCHOR.catXf;
+  // bobber out on the open water
+  FISH.bobX = r.x + r.w*ANCHOR.bobXf;
+  FISH.bobY = r.y + r.h*ANCHOR.bobYf;
+}
+// relayout once the bg image finishes loading (its size changes the contain rect)
+FSCENE.bg.addEventListener('load', ()=>{ if(FISH.active) fishLayout(); });
+FSCENE.gauge.addEventListener('load', ()=>{ if(FISH.active) fishLayout(); });
+function fishResize(){
+  const cv=FISH.cv; if(!cv) return;
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  const w=window.innerWidth, h=window.innerHeight;
+  FISH.W=w; FISH.H=h; FISH.dpr=dpr;
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  cv.style.width=w+'px'; cv.style.height=h+'px';
+  FISH.ctx.setTransform(dpr,0,0,dpr,0,0);
+  fishLayout();
+}
 function fishRoll(){ let tot=0; for(const f of FISH_SPECIES) tot+=f.w; let r=Math.random()*tot;
   for(const f of FISH_SPECIES){ r-=f.w; if(r<=0) return f; } return FISH_SPECIES[0]; }
 function fishOpen(){
-  const cv=document.getElementById('fishCanvas'); FISH.ctx=cv.getContext('2d');
-  openModal('fishing'); fishHudSync(); fishReset('ready');
+  const cv=document.getElementById('fishCanvas'); FISH.cv=cv; FISH.ctx=cv.getContext('2d');
+  openModal('fishing'); fishResize(); fishHudSync(); fishReset('ready');
+  FISH.jumpers.length=0; FISH.splashes.length=0; FISH.ripples.length=0;
+  FISH.nextJump=performance.now()+1200; FISH.nextRipple=performance.now()+500;
   FISH.active=true; FISH.lastT=performance.now();
+  window.addEventListener('resize', fishResize);
   if(FISH.raf)cancelAnimationFrame(FISH.raf); fishLoop();
 }
-function fishClose(){ FISH.active=false; FISH.holding=false; if(FISH.raf)cancelAnimationFrame(FISH.raf); FISH.raf=null; }
+function fishClose(){ FISH.active=false; FISH.holding=false; window.removeEventListener('resize', fishResize);
+  if(FISH.raf)cancelAnimationFrame(FISH.raf); FISH.raf=null; }
 function fishHudSync(){
   document.getElementById('fishCount').textContent=(S.totalFishCaught||0);
   const b=S.fishBiggest; document.getElementById('fishBest').textContent=b?(b.name+' '+b.len+'cm'):'—';
@@ -3705,21 +4048,62 @@ function fishHook(){
 }
 function fishCatch(){
   const f=FISH.fish; FISH.phase='caught'; FISH.caughtUntil=performance.now()+1700;
-  S.coins+=f.coins; addXP(f.xp); S.totalFishCaught=(S.totalFishCaught||0)+1;
+  // a satisfying splash where the catch breaks the surface — extra big for big game
+  fishSplash(FISH.bobX, FISH.bobY+8, f.big?200:130);
+  if(f.big) fishSplash(FISH.bobX-30, FISH.bobY+14, 150);
+  S.coins+=f.coins; addXP(f.xp);
+  S.totalFishCaught=(S.totalFishCaught||0)+1; S.totalFish=(S.totalFish||0)+1;  // lifetime counter for 'fish' quests + angler achievements
   if(!S.fishBiggest || FISH.len>S.fishBiggest.len) S.fishBiggest={name:f.name,len:FISH.len};
   questProgress&&questProgress('fish'); checkAchievements&&checkAchievements();
   fishHudSync(); syncHUD(); save();
-  FISH.msg=(f.legendary?'🌟 ':'')+f.name+'  '+FISH.len+'cm   +'+f.coins+' 🐟  +'+f.xp+' XP';
+  FISH.msg=(f.legendary?'🌟 ':'')+f.name+'  '+FISH.len+'cm   +'+moneyText(f.coins)+'  +'+f.xp+' XP';
   if(SFX&&SFX.seq)SFX.seq(f.legendary?[523,659,784,1047]:[523,659,784],'triangle',0.07);
 }
 function fishGetAway(reason){
   FISH.phase='ready'; FISH.msg=reason||'It got away…'; FISH.msgUntil=performance.now()+1400;
   if(SFX&&SFX.tone)SFX.tone(180,0.18,'sawtooth',0.05);
 }
+// spawn a splash burst at (x,y)
+function fishSplash(x,y,size){ FISH.splashes.push({x,y,size:size||90,t:performance.now()}); }
+// ambient: fish leaping out of the water in the background
+function fishUpdateAmbient(dt){
+  const now=performance.now();
+  if(now>=FISH.nextJump){
+    FISH.nextJump=now+1600+Math.random()*2800;
+    const f=fishRoll(), dir=Math.random()<0.5?1:-1;
+    const x0=FISH.W*(0.30+Math.random()*0.45);
+    FISH.jumpers.push({key:f.key, x0, dir, amp:FISH.W*(0.05+Math.random()*0.06),
+      hgt:FISH.H*(0.10+Math.random()*0.08), t:now, dur:900+Math.random()*500, splashed:false});
+    fishSplash(x0, FISH.waterTop+ (FISH.dockY-FISH.waterTop)*(0.10+Math.random()*0.5), 70+Math.random()*40);
+  }
+  for(let i=FISH.jumpers.length-1;i>=0;i--){ const j=FISH.jumpers[i]; const p=(now-j.t)/j.dur;
+    if(p>=1){ fishSplash(j.x0+j.dir*j.amp, FISH.waterTop+(FISH.dockY-FISH.waterTop)*0.25, 70); FISH.jumpers.splice(i,1); } }
+  for(let i=FISH.splashes.length-1;i>=0;i--){ if(now-FISH.splashes[i].t>520) FISH.splashes.splice(i,1); }
+  // ambient ripple rings drifting on the water — foreshadows fish moving below
+  if(now>=FISH.nextRipple){
+    FISH.nextRipple=now+700+Math.random()*1100;
+    const x=FISH.W*(0.18+Math.random()*0.72);
+    const y=FISH.waterTop + (FISH.dockY-FISH.waterTop)*(0.12+Math.random()*0.7);
+    FISH.ripples.push({x,y, t:now, dur:1400+Math.random()*900, R:18+Math.random()*26});
+  }
+  for(let i=FISH.ripples.length-1;i>=0;i--){ if(now-FISH.ripples[i].t>FISH.ripples[i].dur) FISH.ripples.splice(i,1); }
+}
+// soft expanding water rings (vector, no sprite needed)
+function drawRipples(g,now){
+  for(const rp of FISH.ripples){
+    const p=Math.min(1,(now-rp.t)/rp.dur);
+    g.save(); g.globalAlpha=(1-p)*0.45; g.strokeStyle='rgba(225,240,255,.85)'; g.lineWidth=2;
+    const r=rp.R*(0.25+p*1.0);
+    g.beginPath(); g.ellipse(rp.x, rp.y, r, r*0.34, 0, 0, 7); g.stroke();
+    if(p>0.25){ g.globalAlpha=(1-p)*0.28; g.beginPath(); g.ellipse(rp.x, rp.y, r*0.55, r*0.55*0.34, 0, 0, 7); g.stroke(); }
+    g.restore();
+  }
+}
 function fishStep(dt){
   const t=FISH_TRACK, now=performance.now();
+  fishUpdateAmbient(dt);
   if(FISH.phase==='waiting'){
-    if(now>=FISH.biteAt){ FISH.phase='bite'; FISH.biteAt=now; if(SFX&&SFX.tone)SFX.tone(880,0.08,'sine',0.06); }
+    if(now>=FISH.biteAt){ FISH.phase='bite'; FISH.biteAt=now; fishSplash(FISH.bobX, FISH.bobY+8, 120); if(SFX&&SFX.tone)SFX.tone(880,0.08,'sine',0.06); }
   } else if(FISH.phase==='bite'){
     if(now-FISH.biteAt>1500){ fishGetAway('It got away…'); }   // missed the bite window
   } else if(FISH.phase==='reel'){
@@ -3749,52 +4133,160 @@ function fishLoop(){
   fishStep(dt); fishDraw();
   FISH.raf=requestAnimationFrame(fishLoop);
 }
+// draw one frame of the 4-frame splash sheet (or a vector fallback)
+function drawSplash(g,sp,now){
+  const p=Math.min(1,(now-sp.t)/520), s=sp.size;
+  if(imgOK(FSCENE.splash)){ const im=FSCENE.splash, fw=im.naturalWidth/4, fh=im.naturalHeight;
+    const fr=Math.min(3,Math.floor(p*4));
+    g.drawImage(im, fr*fw,0,fw,fh, sp.x-s/2, sp.y-s*0.7, s, s);
+  } else {
+    g.save(); g.globalAlpha=(1-p)*0.8; g.strokeStyle='#eaf8ff'; g.lineWidth=3;
+    g.beginPath(); g.arc(sp.x,sp.y,s*0.2+p*s*0.5,0,Math.PI,true); g.stroke();
+    g.globalAlpha=(1-p); g.fillStyle='#dff2ff';
+    for(let k=0;k<4;k++){ const a=-0.4-k*0.5, r=p*s*0.55; g.beginPath();
+      g.arc(sp.x+Math.cos(a)*r, sp.y-Math.sin(a)*r-p*8, 2.5*(1-p)+1, 0, 7); g.fill(); }
+    g.restore();
+  }
+}
+// the whole scene backdrop: bg image scaled to COVER the screen (no bars), else gradient + shimmer
+function drawScene(g,W,H,now){
+  if(imgOK(FSCENE.bg)){
+    // COVER fill — fills the whole canvas, crops a little off the edges, no letterbox bars
+    const r=FISH.bgRect||fishBgRect();
+    g.drawImage(FSCENE.bg, r.x, r.y, r.w, r.h);
+  } else {
+    // fallback: painted sky + water gradient
+    const sky=g.createLinearGradient(0,0,0,FISH.waterTop); sky.addColorStop(0,'#ffd9a6'); sky.addColorStop(1,'#bfe3ff');
+    g.fillStyle=sky; g.fillRect(0,0,W,FISH.waterTop);
+    const wat=g.createLinearGradient(0,FISH.waterTop,0,H); wat.addColorStop(0,'#5fa8d8'); wat.addColorStop(1,'#1f4f86');
+    g.fillStyle=wat; g.fillRect(0,FISH.waterTop,W,H-FISH.waterTop);
+    // animated water shimmer — only for the painted fallback; the real bg
+    // artwork already has detailed water, so we don't overlay lines on it
+    g.save(); g.globalAlpha=0.10; g.strokeStyle='#fff'; g.lineWidth=2;
+    const wt=FISH.waterTop, wb=H;
+    for(let i=0;i<7;i++){ const yy=wt+ (i+1)*(wb-wt)/8 + Math.sin(now*0.002+i)*5;
+      g.beginPath(); g.moveTo(0,yy); g.bezierCurveTo(W*0.3,yy-9,W*0.6,yy+9,W,yy); g.stroke(); }
+    g.restore();
+  }
+}
 function fishDraw(){
   const g=FISH.ctx, W=FISH.W, H=FISH.H, t=FISH_TRACK, now=performance.now();
   g.clearRect(0,0,W,H);
-  // water shimmer
-  g.save(); g.globalAlpha=0.12; g.strokeStyle='#fff'; g.lineWidth=2;
-  for(let i=0;i<5;i++){ const yy=60+i*90+Math.sin(now*0.002+i)*6; g.beginPath(); g.moveTo(20,yy); g.bezierCurveTo(80,yy-10,150,yy+10,210,yy); g.stroke(); }
-  g.restore();
-  // left scene: cat + bobber line, phase prompt
-  g.textAlign='center'; g.fillStyle='#063a63';
-  g.font='bold 16px Trebuchet MS';
-  if(FISH.phase==='ready'){ g.font='40px serif'; g.fillText('🎣',120,200);
-    g.font='bold 17px Trebuchet MS'; g.fillStyle='#fff'; g.fillText('Tap to cast',120,250); }
-  else if(FISH.phase==='waiting'){ g.font='34px serif'; g.fillText('🎣',120,180);
-    const by=300+Math.sin(now*0.006)*4; g.font='22px serif'; g.fillText('🟠',120,by);
-    g.font='bold 15px Trebuchet MS'; g.fillStyle='#eaf6ff'; g.fillText('Waiting for a bite…',120,360); }
-  else if(FISH.phase==='bite'){ g.font='34px serif'; g.fillText('🎣',120,180);
-    const dip=300+18; g.font='22px serif'; g.fillText('🟠',120,dip);
-    g.font='bold 30px Trebuchet MS'; g.fillStyle='#ffe24a'; g.fillText('❗',120,250);
-    g.font='bold 18px Trebuchet MS'; g.fillStyle='#fff'; g.fillText('TAP!',120,360); }
-  else if(FISH.phase==='caught'){ const f=FISH.fish;
-    if(!fishSprite(g,f.key,120,196,152,112)){ g.font='52px serif'; g.fillText('🐟',120,212); }
-    g.font='bold 16px Trebuchet MS'; g.fillStyle=f.legendary?'#ffd24a':'#fff'; g.fillText(f.name,120,250);
-    g.font='13px Trebuchet MS'; g.fillStyle='#eaf6ff'; g.fillText(FISH.len+' cm',120,272); }
-  // transient message
-  if(FISH.msg && (FISH.phase==='ready') && now<FISH.msgUntil){ g.font='bold 14px Trebuchet MS'; g.fillStyle='#fff'; g.fillText(FISH.msg,120,300); }
-  if(FISH.phase==='caught' && FISH.msg){ g.font='bold 12px Trebuchet MS'; g.fillStyle='#fff'; g.fillText(FISH.msg,120,300); }
+  drawScene(g,W,H,now);
+  drawRipples(g,now);          // ambient water rings (fish lurking below)
+
+  // ── leaping fish in the background ──
+  for(const j of FISH.jumpers){ const p=Math.min(1,(now-j.t)/j.dur);
+    const x=j.x0+j.dir*j.amp*p, y=FISH.waterTop - Math.sin(p*Math.PI)*j.hgt + (FISH.dockY-FISH.waterTop)*0.18;
+    g.save(); g.translate(x,y);
+    g.scale(j.dir<0?-1:1, 1);          // sprites face right by default → flip when leaping left
+    g.rotate((p-0.5)*1.2);              // nose-up rising, nose-down falling (arc)
+    if(!fishSprite(g,j.key,0,0,72,48)){ g.font='28px serif'; g.textAlign='center'; g.fillText('🐟',0,10); }
+    g.restore();
+  }
+  // ── splashes ──
+  for(const sp of FISH.splashes) drawSplash(g,sp,now);
+
+  // ── Puiutu on the dock (bottom-left), sprite swapped by phase ──
+  // Anchored by HEIGHT + bottom-left so the cat stays the same size across
+  // frames even though the rod extends a different width in each.
+  const catImg = (FISH.phase==='reel')?FSCENE.puiutu.reel
+               : (FISH.phase==='bite')?FSCENE.puiutu.bite : FSCENE.puiutu.idle;
+  const ph=(FISH.phase==='reel')?'reel':(FISH.phase==='bite')?'bite':'idle';
+  const cx=FISH.catX, cy=FISH.dockY;
+  if(imgOK(catImg)){
+    // Puiutu stays perfectly still while fishing (no breathing / no motion).
+    // scale so the cat BODY equals FISH.catSize in every frame (consistent size),
+    // then anchor the FEET on the dock (rod may extend above/below freely)
+    const fit=CATFIT[ph]||CATFIT.idle;
+    const sc=(FISH.catSize*(fit.mul||1))/fit.bodyH, w=catImg.naturalWidth*sc, dh=catImg.naturalHeight*sc;
+    const drawLeft = cx;
+    const drawTop  = cy - fit.bodyBot*sc;         // places feet (bodyBot) at dockY
+    // cast line from the exact rod tip out to the bobber, with a gentle natural sag
+    if(FISH.phase!=='caught'){
+      const rt=RODTIP[ph]||RODTIP.idle;
+      const tipX=drawLeft+w*rt[0], tipY=drawTop+dh*rt[1];
+      const mx=(tipX+FISH.bobX)/2, my=(tipY+FISH.bobY)/2 + Math.abs(FISH.bobX-tipX)*0.07;
+      g.save(); g.strokeStyle='rgba(245,245,235,.65)'; g.lineWidth=2; g.lineCap='round';
+      g.beginPath(); g.moveTo(tipX,tipY); g.quadraticCurveTo(mx,my,FISH.bobX,FISH.bobY); g.stroke(); g.restore();
+    }
+    g.drawImage(catImg, drawLeft, drawTop, w, dh);
+  } else {
+    const cs=FISH.catSize;
+    g.save(); g.strokeStyle='rgba(255,255,255,.6)'; g.lineWidth=2;
+    g.beginPath(); g.moveTo(cx+cs*0.5, cy-cs*0.6); g.lineTo(FISH.bobX, FISH.bobY); g.stroke(); g.restore();
+    g.font=Math.round(cs*0.6)+'px serif'; g.textAlign='center'; g.fillText('🐱',cx+cs*0.3,cy-cs*0.1);
+  }
+  // ── bobber on the water (dips during waiting/bite) ──
+  const dipping=(FISH.phase==='bite')||(FISH.phase==='waiting'&&Math.sin(now*0.006)>0.6);
+  const bob = dipping&&imgOK(FSCENE.bobberDip)?FSCENE.bobberDip:FSCENE.bobber;
+  const bobY=FISH.bobY + (FISH.phase==='bite'?10:Math.sin(now*0.006)*4);
+  if(FISH.phase!=='caught'){
+    // gentle concentric ripple rings around the bobber's waterline
+    g.save();
+    for(let i=0;i<2;i++){
+      const rp=((now*0.0009)+i*0.5)%1;
+      g.globalAlpha=(1-rp)*0.5; g.strokeStyle='rgba(235,245,255,.9)'; g.lineWidth=2;
+      g.beginPath(); g.ellipse(FISH.bobX, bobY+22, 10+rp*26, (10+rp*26)*0.34, 0, 0, 7); g.stroke();
+    }
+    g.restore();
+    const BOBSZ=56;   // bigger bobber
+    if(!drawFit(g,bob,FISH.bobX,bobY,BOBSZ,BOBSZ)){ g.font='30px serif'; g.textAlign='center';
+      g.fillStyle=dipping?'#c83a3a':'#e8483a'; g.fillText('🔴',FISH.bobX,bobY+9); }
+  }
+
+  // ── centered phase prompts / caught banner ──
+  g.textAlign='center';
+  if(FISH.phase==='bite'){
+    g.font='bold '+Math.round(H*0.05)+'px Trebuchet MS'; g.fillStyle='#ffe24a';
+    g.fillText('❗ TAP!', W*0.46, FISH.waterTop-20);
+  }
+  if(FISH.phase==='caught'){ const f=FISH.fish;
+    const cardW=Math.min(W*0.56, H*0.64), cardH=cardW*0.57, cy0=H*0.40;
+    if(!drawFit(g,FSCENE.card,W/2,cy0,cardW,cardH)){
+      g.save(); g.globalAlpha=0.9; g.fillStyle='rgba(10,18,28,.55)';
+      g.beginPath(); g.roundRect(W/2-cardW/2,cy0-cardH/2,cardW,cardH,16); g.fill(); g.restore();
+    }
+    // parchment centre sits a touch above the card centre (card has a bottom band)
+    const pcy=cy0-cardH*0.05;
+    // fish fills the parchment width-wide; every species fits the SAME height so
+    // wide ones (puffer/barracuda) and narrow ones (parrotfish) look consistent
+    if(!fishSprite(g,f.key,W/2,pcy-cardH*0.05,cardW*0.60,cardH*0.30)){ g.font='52px serif'; g.fillStyle='#5a3a18'; g.fillText('🐟',W/2,pcy); }
+    g.fillStyle=f.legendary?'#b8860b':'#5a3a18';
+    g.font='bold '+Math.round(cardH*0.13)+'px Trebuchet MS'; g.fillText(f.name,W/2,pcy+cardH*0.18);
+    g.font=Math.round(cardH*0.09)+'px Trebuchet MS'; g.fillText(FISH.len+' cm   +'+moneyText(f.coins)+'  +'+f.xp+' XP',W/2,pcy+cardH*0.30);
+  }
+  if(FISH.msg && FISH.phase==='ready' && now<FISH.msgUntil){
+    g.font='bold 16px Trebuchet MS'; g.fillStyle='#fff'; g.fillText(FISH.msg,W*0.46,FISH.waterTop-10);
+  }
+
   // ── reel track (right side) ──
   if(FISH.phase==='reel' || FISH.phase==='caught'){
     g.save();
     const rr=(a,b,c,d,r)=>{ g.beginPath(); g.roundRect(a,b,c,d,r); g.fill(); };
-    // track groove
-    g.fillStyle='rgba(8,40,70,.55)'; rr(t.x,t.top,t.w,t.bot-t.top,14);
+    const usingGauge=FISH_TRACK.gauge && FISH.gauge;
+    if(usingGauge){ const gg=FISH.gauge; g.drawImage(FSCENE.gauge, gg.x, gg.y, gg.w, gg.h); }
+    else { g.fillStyle='rgba(8,40,70,.55)'; rr(t.x,t.top,t.w,t.bot-t.top,14); }
     const f=FISH.fish, halfH=(f.barH*(t.bot-t.top))/2;
     if(FISH.phase==='reel'){
-      // green catch bar
+      // green catch bar — fits exactly inside the dark groove (small inset off the walls)
+      const ins=Math.max(2,t.w*0.06), bw=t.w-ins*2, brd=Math.min(8,bw*0.45);
+      let by=FISH.barC-halfH, bh=halfH*2;                 // clamp into the groove
+      if(by<t.top){ bh-=(t.top-by); by=t.top; } if(by+bh>t.bot) bh=t.bot-by;
       const inside=Math.abs(FISH.fishP-FISH.barC)<=halfH;
       g.fillStyle=inside?'rgba(120,230,110,.95)':'rgba(95,180,95,.7)';
-      rr(t.x+8,FISH.barC-halfH,t.w-16,halfH*2,10);
-      // fish marker (the real sprite)
-      if(!fishSprite(g,f.key,t.x+t.w/2,FISH.fishP,t.w-12,40)){ g.font='24px serif'; g.textAlign='center'; g.fillText('🐟',t.x+t.w/2,FISH.fishP+8); }
-      // progress bar on the left of the track
-      const px=t.x-26, pw=14;
-      g.fillStyle='rgba(8,40,70,.55)'; rr(px,t.top,pw,t.bot-t.top,7);
+      rr(t.x+ins, by, bw, bh, brd);
+      // neutral target marker, centered in the groove
+      const mr=Math.min(14,bw/2.2), mx=t.x+t.w/2, my=Math.max(t.top+mr,Math.min(t.bot-mr,FISH.fishP));
+      g.fillStyle='rgba(20,40,60,.92)'; g.beginPath(); g.arc(mx,my,mr,0,7); g.fill();
+      g.fillStyle='#ffd24a'; g.beginPath(); g.arc(mx,my,mr*0.45,0,7); g.fill();
+      // progress meter as a slim bar just left of the wooden frame
+      const pw=Math.max(10,t.w*0.22), gap=8;
+      const px=(usingGauge?FISH.gauge.x:t.x) - pw - gap;
+      g.fillStyle='rgba(8,40,70,.5)'; rr(px,t.top,pw,t.bot-t.top,pw/2);
       const ph=(t.bot-t.top)*FISH.progress;
       g.fillStyle=FISH.progress>0.66?'#7ed957':FISH.progress>0.33?'#ffd24a':'#ff8a5a';
-      rr(px,t.bot-ph,pw,ph,7);
+      rr(px,t.bot-ph,pw,ph,pw/2);
     }
     g.restore();
   }
@@ -3812,7 +4304,7 @@ function statbarHTML(){
   return `
    <div class="stat"><span class="lbl">Level</span><div class="row">⭐ <b>${S.level}</b></div></div>
    <div class="stat"><span class="lbl">XP</span><div class="xpwrap"><div class="xpfill" style="width:${pct}%"></div></div></div>
-   <div class="stat"><span class="lbl">Coins</span><div class="row">🐟 <b>${S.coins}</b></div></div>
+   <div class="stat"><span class="lbl">Coins</span><div class="row">${moneyHTML(S.coins)}</div></div>
    <div class="stat"><span class="lbl">Items</span><div class="row">🎒 <b>${S.items.length}</b></div></div>`;
 }
 function renderStatbars(){
@@ -3832,7 +4324,7 @@ function renderShop(){
     const owned=S.items.includes(it.id);
     const equipped=S.equipped===it.id;
     let btn;
-    if(!owned)btn=`<button class="buy-btn" data-buy="${it.id}" ${S.coins<it.price?'disabled':''}>🐟 ${it.price}</button>`;
+    if(!owned)btn=`<button class="buy-btn" data-buy="${it.id}" ${S.coins<it.price?'disabled':''}>${moneyHTML(it.price)}</button>`;
     else if(it.type==='hat')btn=`<button class="buy-btn ${equipped?'equipped':'owned'}" data-equip="${it.id}">${equipped?'Equipped ✓':'Equip'}</button>`;
     else btn=`<button class="buy-btn owned" disabled>Owned ✓</button>`;
     return `<div class="shop-item"><div class="shop-emoji">${it.emoji}</div>
@@ -3867,7 +4359,7 @@ function renderProfile(){
       <h3>Puiutu 🐾</h3>
       <div class="prow"><span>Level</span><span>⭐ ${S.level}</span></div>
       <div class="prow"><span>XP</span><span>${S.xp} / ${need}</span></div>
-      <div class="prow"><span>Monede</span><span>🐟 ${S.coins}</span></div>
+      <div class="prow"><span>Monede</span><span>${moneyHTML(S.coins)}</span></div>
       <div class="prow"><span>Items owned</span><span>🎒 ${S.items.length}</span></div>
       <div class="prow"><span>Areas visited</span><span>🗺️ ${Object.keys(S.visited).length} / 4</span></div>
       <div class="prow" style="border:none"><span>Friends met</span><span>🐱 ${Object.keys(S.catsMet).length} / 3</span></div>
@@ -3902,10 +4394,26 @@ function renderProfile(){
     if(confirm('Reset all progress?')){localStorage.removeItem('puiutu_save');S=load();A=null;AREAS=buildAreas();enterArea('garden',false);syncHUD();renderStatbars();renderProfile();updateQuestHUD();toast('Game reset!');}
   };
 }
+function walletHTML(){
+  const p=moneyParts(S.coins);
+  const cell=(label,n,src)=>`<div style="flex:1;text-align:center;background:rgba(0,0,0,.06);border-radius:12px;padding:10px 4px;">
+      <div style="${coinFaceStyle(src,44)}margin:0 auto 4px;"></div>
+      <div style="font-size:20px;font-weight:bold;color:#5a3d18;">${n}</div>
+      <div style="font-size:11px;opacity:.7;color:#5a3d18;">${label}</div></div>`;
+  return `<div style="margin-bottom:14px;">
+    <div style="font-weight:bold;color:#5a3d18;margin-bottom:6px;">💰 Wallet</div>
+    <div style="display:flex;gap:8px;">
+      ${cell('Gold',p.g,'goldcoin.png')}
+      ${cell('Silver',p.s,'silvercoin.png')}
+      ${cell('Bronze',p.b,'bronzecoin.png')}
+    </div>
+    <div style="font-size:11px;opacity:.6;color:#5a3d18;margin-top:5px;text-align:center;">100 bronze = 1 silver · 100 silver = 1 gold</div>
+  </div>`;
+}
 function renderInventory(){
   const body=document.getElementById('invBody');
-  if(S.items.length===0){body.innerHTML=`<div class="empty">🎒 Inventory is empty.<br>Visit the Shop to buy hats and abilities for Puiutu!</div>`;return;}
-  body.innerHTML=S.items.map(id=>{
+  if(S.items.length===0){body.innerHTML=walletHTML()+`<div class="empty">🎒 No items yet.<br>Visit the Shop to buy hats and abilities for Puiutu!</div>`;return;}
+  body.innerHTML=walletHTML()+S.items.map(id=>{
     const it=SHOP.find(s=>s.id===id);
     const equipped=S.equipped===id;
     let btn= it.type==='hat'
@@ -3985,6 +4493,7 @@ document.getElementById('btnPlay').onclick=startGame;
 document.getElementById('btnShop').onclick=()=>openModal('shop');
 document.getElementById('btnProfile').onclick=()=>openModal('profile');
 document.getElementById('btnInv').onclick=()=>openModal('inventory');
+document.getElementById('btnBag').onclick=()=>openModal('inventory');   // in-game backpack (currencies + items)
 document.getElementById('btnBackMenu').onclick=()=>{showScreen('menu');renderStatbars();};
 document.querySelectorAll('.modal-close').forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
 
