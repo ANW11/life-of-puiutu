@@ -3921,6 +3921,7 @@ const FISH_SPECIES=[
   {key:'greatwhite',name:'Great White',  w:0.9,coins:450, xp:560, speed:2.55, barH:0.22, minL:300,maxL:640, col:'#6b7480', legendary:true, big:true},
 ];
 const FISH_IMG={}; for(const f of FISH_SPECIES){ const im=new Image(); im.src='fishing/sprite_'+f.key+'.png'; FISH_IMG[f.key]=im; }
+const SPECIES_BY_KEY=Object.fromEntries(FISH_SPECIES.map(f=>[f.key,f]));
 function fishSprite(g,key,cx,cy,maxW,maxH){ const im=FISH_IMG[key]; if(!(im&&im.complete&&im.naturalWidth))return false;
   const sc=Math.min(maxW/im.naturalWidth,maxH/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc;
   g.drawImage(im,cx-w/2,cy-h/2,w,h); return true; }
@@ -3949,7 +3950,7 @@ const FISH_TRACK={ x:248, w:74, top:46, bot:498 };
 // Tuned to the lateral-dock sunset bg: Puiutu sits on the planks (left),
 // the line casts out into the open sunlit water on the right.
 // Tweak these if the dock art changes — everything else follows.
-const ANCHOR={ horizonF:0.40, catXf:0.02, catYf:0.86, catHF:0.22, bobXf:0.45, bobYf:0.60 };
+const ANCHOR={ horizonF:0.40, catXf:0.02, catYf:0.86, catHF:0.22, bobXf:0.80, bobYf:0.78 };
 // rod-tip position as a fraction of each Puiutu sprite (x,y) — so the cast line
 // starts exactly at the rod tip, not floating in mid-air
 // rod-tip position as a fraction of each sprite (measured from the artwork) so the
@@ -4181,7 +4182,9 @@ function fishDraw(){
     g.save(); g.translate(x,y);
     g.scale(j.dir<0?-1:1, 1);          // sprites face right by default → flip when leaping left
     g.rotate((p-0.5)*1.2);              // nose-up rising, nose-down falling (arc)
-    if(!fishSprite(g,j.key,0,0,72,48)){ g.font='28px serif'; g.textAlign='center'; g.fillText('🐟',0,10); }
+    const big=SPECIES_BY_KEY[j.key]&&SPECIES_BY_KEY[j.key].big;   // sharks/manta leap much bigger
+    const sw=big?168:72, sh=big?112:48;
+    if(!fishSprite(g,j.key,0,0,sw,sh)){ g.font=(big?'56px':'28px')+' serif'; g.textAlign='center'; g.fillText('🐟',0,10); }
     g.restore();
   }
   // ── splashes ──
