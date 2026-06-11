@@ -145,6 +145,60 @@
     justify-content:center;cursor:pointer;user-select:none;backdrop-filter:blur(3px);touch-action:none;}
   #dpUp{left:53px;top:0;} #dpDown{left:53px;bottom:0;} #dpLeft{left:0;top:53px;} #dpRight{right:0;top:53px;}
   #dpad>div:active{background:rgba(120,90,40,.7);transform:scale(.94);}
+  /* ── persistent bottom HUD bar (health · level · money · xp) ── */
+  #uiBar{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);
+    width:min(660px,74%);aspect-ratio:4480/960;z-index:7;pointer-events:none;
+    background:url('UIBar_clean.png?v=1') no-repeat center/contain;
+    image-rendering:pixelated;font-family:'Trebuchet MS',sans-serif;}
+  #uiHpOrb{position:absolute;left:5.0%;top:21.7%;width:11.7%;height:57.5%;border-radius:50%;overflow:hidden;}
+  #uiHpFill{position:absolute;left:0;right:0;bottom:0;height:100%;
+    background:linear-gradient(#ff7363,#d3362a);transition:height .25s ease;}
+  /* HP regeneration: green glow pulse on the orb + a healing shimmer on the fill */
+  #uiHpText.regen{animation:hpRegenGlow 1.1s ease-in-out infinite;}
+  @keyframes hpRegenGlow{0%,100%{box-shadow:0 0 0 0 rgba(126,217,87,0);}
+    50%{box-shadow:0 0 13px 3px rgba(126,217,87,.85),inset 0 0 10px rgba(180,255,140,.5);border-radius:50%;}}
+  #uiHpFill.regen{animation:hpRegenFill 1.1s ease-in-out infinite;}
+  @keyframes hpRegenFill{0%,100%{filter:none;}50%{filter:brightness(1.25) saturate(.9) hue-rotate(-12deg);}}
+  #uiHpText{position:absolute;left:5.0%;top:21.7%;width:11.7%;height:57.5%;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    color:#ffe7b0;font-weight:bold;font-size:13px;line-height:1.05;text-shadow:0 2px 3px #000,0 0 4px #000;}
+  #uiXpTrack{position:absolute;left:36.2%;top:34.6%;width:29.3%;height:5.4%;overflow:hidden;
+    border-radius:999px;box-shadow:inset 0 2px 3px rgba(0,0,0,.55);}
+  #uiXpFill{height:100%;width:0;border-radius:999px;
+    background:linear-gradient(#fff0a0,#ffe24a 45%,#f0b021);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.7);transition:width .3s ease;}
+  .uiSlot{position:absolute;top:55%;width:6.6%;height:30%;display:flex;flex-direction:column;
+    align-items:center;justify-content:flex-start;gap:1px;}
+  .uiSlot .ico{width:82%;height:62%;background:center/contain no-repeat;image-rendering:pixelated;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
+  .uiSlot .num{color:#ffe7b0;font-weight:bold;font-size:12px;text-shadow:0 2px 3px #000,0 0 4px #000;line-height:1;}
+  #uiLevel{position:absolute;left:83.7%;top:21.6%;width:11.7%;height:58.3%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#ffe7b0;text-shadow:0 2px 3px #000,0 0 4px #000;border-radius:50%;overflow:hidden;}
+  #uiLvlFill{position:absolute;left:0;right:0;bottom:0;height:100%;
+    background:linear-gradient(0deg,#c8941e 0%,#f0c950 40%,#ffe98a 70%,rgba(255,233,138,0.3) 100%);
+    transition:height .25s ease;border-radius:50%;}
+  #uiLevel .lvlNum{position:relative;z-index:1;font-weight:bold;font-size:30px;line-height:1;}
+  #uiLevel .lvlLbl{position:relative;z-index:1;font-size:10px;letter-spacing:1px;opacity:.85;}
+  /* ── Dark Souls "YOU FAINTED" screen ── */
+  #faintScreen{position:absolute;inset:0;z-index:90;display:none;pointer-events:none;
+    align-items:center;justify-content:center;overflow:hidden;}
+  #faintScreen.show{display:flex;animation:dsFade 3s ease forwards;}
+  @keyframes dsFade{0%{background:rgba(0,0,0,0);}18%{background:rgba(0,0,0,.78);}
+    80%{background:rgba(0,0,0,.78);}100%{background:rgba(0,0,0,0);}}
+  #faintScreen .dsBar{position:absolute;left:0;right:0;top:50%;height:34%;transform:translateY(-50%) scaleX(0);
+    background:radial-gradient(ellipse at center,rgba(80,0,0,.85) 0%,rgba(40,0,0,.5) 45%,rgba(0,0,0,0) 75%);}
+  #faintScreen.show .dsBar{animation:dsBar 3s ease forwards;}
+  @keyframes dsBar{0%{transform:translateY(-50%) scaleX(0);opacity:0;}
+    20%{transform:translateY(-50%) scaleX(1);opacity:1;}80%{opacity:1;}100%{opacity:0;}}
+  #faintScreen .dsText{position:relative;color:#c0241c;font-family:Georgia,'Times New Roman',serif;
+    font-weight:bold;font-style:italic;font-size:min(58px,9vw);letter-spacing:.18em;
+    text-shadow:0 0 18px rgba(180,0,0,.55),0 2px 4px #000;
+    transform:scale(.82);opacity:0;white-space:nowrap;}
+  #faintScreen.show .dsText{animation:dsText 3s ease forwards;}
+  @keyframes dsText{0%{opacity:0;transform:scale(.82);letter-spacing:.05em;}
+    24%{opacity:1;transform:scale(1);}78%{opacity:1;transform:scale(1.04);letter-spacing:.22em;}
+    100%{opacity:0;transform:scale(1.08);}}
   /* contextual interact button */
   #interactBtn{position:absolute;right:14px;bottom:162px;z-index:7;display:none;width:62px;height:62px;
     border-radius:50%;border:3px solid rgba(255,255,255,.5);background:linear-gradient(#5aa0e0,#3a72b5);
@@ -363,6 +417,75 @@
   .toggle-btn{background:linear-gradient(#caa46a,#9c7233);border:2px solid #6b4a1f;color:#fff;
     padding:8px 12px;border-radius:12px;font-weight:bold;cursor:pointer;font-size:13px;}
 
+  /* ── 📈 Market (Exchange + Bank) ── */
+  .mkt-tabs{display:flex;gap:8px;padding:10px 16px 0;background:linear-gradient(#27190c,#27190c00);}
+  .mkt-tab{flex:1;max-width:300px;margin:0 auto;background:rgba(20,14,8,.55);border:2px solid #6b4a1f;
+    color:#caa46a;font-weight:bold;font-size:14px;padding:9px 10px;border-radius:12px 12px 0 0;cursor:pointer;}
+  .mkt-tab.active{background:linear-gradient(#fff6e2,#f0ddb6);color:#5a3d18;border-bottom-color:#f0ddb6;}
+  .mkt-portfolio{background:linear-gradient(#3a2a16,#27190c);border:3px solid #6b4a1f;border-radius:16px;
+    padding:12px 16px;margin-bottom:12px;color:#ffe7b0;display:flex;justify-content:space-between;align-items:center;}
+  .mkt-portfolio .lbl{font-size:12px;opacity:.8;letter-spacing:.5px;}
+  .mkt-portfolio .val{font-size:20px;font-weight:900;color:#ffd86b;}
+  .mkt-pl{font-size:13px;font-weight:bold;margin-top:3px;}
+  .mkt-pl.up{color:#7fe08a;} .mkt-pl.dn{color:#ef8f7e;} .mkt-pl.flat{color:#caa46a;font-weight:normal;font-style:italic;}
+  .mkt-clock{text-align:center;color:#ffe7b0;font-size:13px;font-weight:bold;margin-top:8px;
+    background:rgba(20,14,8,.5);border:2px solid #6b4a1f;border-radius:12px;padding:6px 12px;}
+  .mkt-clock b{color:#ffd86b;font-variant-numeric:tabular-nums;}
+
+  /* ── 📱 Phone overlay ── */
+  .phone-modal{background:rgba(8,5,3,.82);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+  #phoneClose{position:absolute;top:14px;right:14px;z-index:5;}
+  .phone-frame{position:relative;height:94vh;aspect-ratio:1632/2604;max-width:96vw;
+    background:url('Phone/catphone.png') center/contain no-repeat;}
+  .phone-status{position:absolute;top:18.3%;transform:translateY(-50%);left:0;right:0;text-align:center;color:#fff;
+    font-family:'Trebuchet MS',sans-serif;font-weight:bold;font-size:min(2.2vh,14px);
+    letter-spacing:.5px;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none;}
+  .phone-clock{position:absolute;left:0;right:0;top:21%;text-align:center;color:#4a3320;
+    text-shadow:0 1px 0 rgba(255,255,255,.5);font-family:'Trebuchet MS',sans-serif;pointer-events:none;}
+  .phone-clock .pTime{font-size:min(11vh,62px);font-weight:900;line-height:1;letter-spacing:1px;
+    font-variant-numeric:tabular-nums;}
+  .phone-clock .pDate{font-size:min(3.1vh,18px);font-weight:bold;margin-top:6px;opacity:.85;}
+  .phone-apps{position:absolute;left:18%;right:18%;top:62%;display:flex;justify-content:space-between;}
+  .phone-app{flex:1;min-width:0;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;gap:5px;padding:0 1px;}
+  .pa-ico{width:60%;aspect-ratio:1;background-position:center;background-repeat:no-repeat;background-size:auto 100%;
+    border-radius:22%;box-shadow:0 4px 10px rgba(0,0,0,.35);image-rendering:pixelated;transition:transform .12s;}
+  .phone-app:active .pa-ico{transform:scale(.9);}
+  .pa-lbl{font-size:min(2.2vh,12px);font-weight:bold;color:#4a3320;white-space:nowrap;
+    text-shadow:0 1px 0 rgba(255,255,255,.5);}
+  .stock-row{background:linear-gradient(#fff6e2,#f0ddb6);border:3px solid #6b4a1f;border-radius:16px;
+    padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .stock-row .se{width:46px;height:46px;flex:0 0 46px;border-radius:12px;background:#caa46a;border:2px solid #6b4a1f;
+    display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .stock-row .si{flex:1;min-width:0;}
+  .stock-row .si .tk{font-weight:900;color:#5a3d18;font-size:15px;}
+  .stock-row .si .nm{font-size:11px;color:#7a5a32;}
+  .stock-row .si .pos{font-size:11px;color:#3a6f1c;font-weight:bold;margin-top:1px;}
+  .stock-mid{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:74px;}
+  .stock-mid .px{font-weight:900;color:#5a3d18;font-size:14px;white-space:nowrap;}
+  .stock-mid .chg{font-size:11px;font-weight:bold;padding:1px 6px;border-radius:8px;}
+  .chg.up{color:#1d7a2e;background:#cdeccf;} .chg.dn{color:#a52219;background:#f3d2cf;}
+  .stock-spark{width:54px;height:30px;flex:0 0 54px;}
+  .stock-btns{display:flex;flex-direction:column;gap:4px;}
+  .mkt-btn{border:2px solid #3a6f1c;background:linear-gradient(#7ed957,#4d9a2a);color:#fff;font-weight:bold;
+    font-size:12px;padding:5px 9px;border-radius:10px;cursor:pointer;min-width:42px;}
+  .mkt-btn.sell{border-color:#a04022;background:linear-gradient(#e8895a,#c0512a);}
+  .mkt-btn:disabled{filter:grayscale(.6);opacity:.55;cursor:default;}
+  .mkt-news{background:rgba(20,14,8,.5);border:2px dashed #6b4a1f;border-radius:12px;padding:8px 12px;
+    margin-bottom:12px;color:#ffe1b0;font-size:12px;line-height:1.5;}
+  .mkt-news b{color:#ffd86b;}
+  .bank-card{background:linear-gradient(#fff6e2,#f0ddb6);border:3px solid #6b4a1f;border-radius:18px;padding:18px;text-align:center;}
+  .bank-card .bal{font-size:30px;font-weight:900;color:#5a3d18;margin:4px 0;}
+  .bank-card .sub{font-size:12px;color:#7a5a32;margin-bottom:2px;}
+  .bank-actions{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+  .bank-line{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;}
+  .bank-line .tag{font-weight:bold;color:#5a3d18;font-size:13px;min-width:74px;text-align:right;}
+  .qbtn{border:2px solid #6b4a1f;background:linear-gradient(#caa46a,#9c7233);color:#fff;font-weight:bold;
+    font-size:12px;padding:6px 10px;border-radius:10px;cursor:pointer;}
+  .qbtn.dep{border-color:#3a6f1c;background:linear-gradient(#7ed957,#4d9a2a);}
+  .qbtn.wd{border-color:#a04022;background:linear-gradient(#e8895a,#c0512a);}
+  .qbtn:disabled{filter:grayscale(.6);opacity:.55;cursor:default;}
+
   /* ---------- NEW MENU (custom art) ---------- */
   .menu-bg{position:absolute;inset:0;background:#bcd9ec url('UI.png') center/cover no-repeat;}
   #menu .top::after{content:'';position:absolute;inset:0;pointer-events:none;
@@ -441,6 +564,8 @@
         <div class="back-btn" id="btnMerge">🍉</div>
         <div class="back-btn" id="btnSort">🧪</div>
         <div class="back-btn" id="btnFish">🎣</div>
+        <div class="back-btn" id="btnMarket">📈</div>
+        <div class="back-btn" id="btnPhone">📱</div>
         <div class="back-btn" id="btnBag">🎒</div>
         <div class="back-btn" id="btnRocky" style="display:none;">🐕 Stay</div>
       </div>
@@ -452,6 +577,21 @@
     <div class="area-name" id="areaName">Garden</div>
     <div id="questHUD"></div>
     <canvas id="gameCanvas"></canvas>
+
+    <!-- persistent HUD: health orb · xp bar · coin slots · level orb -->
+    <div id="uiBar" aria-hidden="true">
+      <div id="uiHpOrb"><div id="uiHpFill"></div></div>
+      <div id="uiHpText">0 / 0</div>
+      <div id="uiXpTrack"><div id="uiXpFill"></div></div>
+      <div class="uiSlot" style="left:34.9%"><div class="ico" id="uiIcoI" style="background-image:none;display:flex;align-items:center;justify-content:center;font-size:34px;line-height:1">🎒</div><span class="num" id="uiItems">0</span></div>
+      <div class="uiSlot" style="left:42.6%"><div class="ico" id="uiIcoG"></div><span class="num" id="uiGold">0</span></div>
+      <div class="uiSlot" style="left:50.7%"><div class="ico" id="uiIcoS"></div><span class="num" id="uiSilver">0</span></div>
+      <div class="uiSlot" style="left:58.6%"><div class="ico" id="uiIcoB"></div><span class="num" id="uiBronze">0</span></div>
+      <div id="uiLevel"><div id="uiLvlFill"></div><span class="lvlNum" id="uiLvlNum">1</span><span class="lvlLbl">LVL</span></div>
+    </div>
+
+    <!-- Dark Souls–style faint screen -->
+    <div id="faintScreen"><div class="dsBar"></div><div class="dsText">YOU FAINTED</div></div>
 
     <!-- chat log + input (multiplayer) -->
     <div id="chatLog"></div>
@@ -514,6 +654,30 @@
     <div class="statbar" id="statbarShop"></div>
   </div>
 
+  <!-- ============ MARKET (Stock Exchange + Bank) ============ -->
+  <div id="market" class="modal">
+    <div class="modal-head"><h2>📈 Market</h2><button class="modal-close" data-close="market">✕</button></div>
+    <div class="mkt-tabs">
+      <button class="mkt-tab active" data-mtab="exchange">📈 Exchange</button>
+      <button class="mkt-tab" data-mtab="bank">🏦 Bank</button>
+    </div>
+    <div class="modal-body" id="marketBody"></div>
+  </div>
+
+  <!-- ============ PHONE ============ -->
+  <div id="phone" class="modal phone-modal">
+    <button class="modal-close" data-close="phone" id="phoneClose">✕</button>
+    <div class="phone-frame">
+      <div class="phone-status" id="phStatus">--:--</div>
+      <div class="phone-clock"><div class="pDate" id="phDate">—</div></div>
+      <div class="phone-apps">
+        <button class="phone-app" data-app="bank"><span class="pa-ico" style="background-image:url('Phone/bank.png')"></span><span class="pa-lbl">Bank</span></button>
+        <button class="phone-app" data-app="wallet"><span class="pa-ico" style="background-image:url('Phone/wallet.png')"></span><span class="pa-lbl">Wallet</span></button>
+        <button class="phone-app" data-app="backpack"><span class="pa-ico" style="background-image:url('Phone/backpack.png')"></span><span class="pa-lbl">Inventory</span></button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ PROFILE ============ -->
   <div id="profile" class="modal">
     <div class="modal-head"><h2>🐱 Profile</h2><button class="modal-close" data-close="profile">✕</button></div>
@@ -557,7 +721,7 @@
     <div id="fishWrap">
       <div id="fishHud">🐟 caught: <span id="fishCount">0</span><span style="opacity:.6;margin:0 8px;">·</span>biggest: <span id="fishBest">—</span></div>
       <canvas id="fishCanvas" width="360" height="540"></canvas>
-      <div id="fishHint">Tap & hold to reel</div>
+      <div id="fishHint">Hold <b>Space</b> / tap to reel</div>
     </div>
   </div>
 
@@ -616,7 +780,16 @@ const DEFAULT={
   bossDefeated:false,              // the House boss (beaten once)
   sebyDefeated:false,              // the Crystal Cave boss (Seby) beaten once
   companion:false,                 // Rocky the dog joined as a fighting companion
-  rockyStay:false                  // Rocky told to wait instead of following
+  rockyStay:false,                 // Rocky told to wait instead of following
+  // 💹 financial system (Meow Stock Exchange + Whisker Savings Bank)
+  bank:0,                          // fish parked in the bank (earns interest)
+  bankSince:0,                     // ms timestamp interest was last applied
+  stocks:{},                       // ticker -> shares owned
+  stockCost:{},                    // ticker -> total fish invested (cost basis, for P/L)
+  stockPx:{},                      // ticker -> current price (bronze)
+  stockHist:{},                    // ticker -> recent price points (sparkline)
+  stockSince:0,                    // ms timestamp market was last ticked
+  marketNews:[]                    // recent event headlines
 };
 let S=load();
 function load(){
@@ -1636,7 +1809,7 @@ function startGame(){
   if(!A) enterArea('garden',false);
   P.maxHp=playerMaxHp(); if(P.hp<=0||P.hp>P.maxHp) P.hp=P.maxHp;
   if(S.companion) spawnCompanion();
-  syncHUD();
+  initUIBar(); syncHUD();
   SFX.ac(); MUSIC.start();          // resume audio on user gesture
   updateQuestHUD(); checkAchievements();
   if(!rafRunning){rafRunning=true;requestAnimationFrame(loop);}
@@ -1670,10 +1843,204 @@ function moneyText(v){
   return out.join(' ');
 }
 
+//════════════════════════════════════════════ 💹 MARKET: Stock Exchange + Bank
+// Fictional in-game economy — currency is fish (S.coins, bronze base). No real money.
+const STOCKS=[
+  {t:'PGON', name:'Pigeon Post Co.',   emoji:'🕊️', base:120, vol:0.06},
+  {t:'CLOB', name:'Clobster Seafood',  emoji:'🦞', base:90,  vol:0.09},
+  {t:'CRYS', name:'Crystal Mining',    emoji:'💎', base:320, vol:0.12},
+  {t:'FRUT', name:'Orchard Farms',     emoji:'🍎', base:60,  vol:0.05},
+  {t:'TUNA', name:'Fishmonger Guild',  emoji:'🐟', base:160, vol:0.07},
+];
+const MKT_TICK_MS=90000;       // one market tick = 90s (prices move, interest accrues)
+const MKT_OFFLINE_CAP=200;     // catch up at most ~5h of ticks when you return
+const BANK_RATE=0.0018;        // interest per tick (~0.18%; ≈7%/h, generous but capped)
+let marketTab='exchange';
+function fmtCoins(v){ return moneyHTML(Math.round(v)); }
+function ensureMarket(){
+  if(!S.stocks) S.stocks={}; if(!S.stockPx) S.stockPx={}; if(!S.stockHist) S.stockHist={};
+  if(!S.stockCost) S.stockCost={};
+  if(!S.marketNews) S.marketNews=[];
+  for(const s of STOCKS){
+    if(typeof S.stockPx[s.t]!=='number'){ S.stockPx[s.t]=s.base; }
+    if(!Array.isArray(S.stockHist[s.t])||!S.stockHist[s.t].length){ S.stockHist[s.t]=[S.stockPx[s.t]]; }
+    if(typeof S.stocks[s.t]!=='number') S.stocks[s.t]=0;
+    if(typeof S.stockCost[s.t]!=='number') S.stockCost[s.t]=0;
+    // backfill cost basis for shares bought before P/L tracking existed (assume bought at fair value)
+    if(S.stocks[s.t]>0 && S.stockCost[s.t]<=0) S.stockCost[s.t]=S.stocks[s.t]*s.base;
+  }
+  if(!S.stockSince) S.stockSince=Date.now();
+  if(!S.bankSince) S.bankSince=Date.now();
+}
+// advance prices + bank interest by however many ticks have elapsed (incl. offline)
+function tickMarket(){
+  ensureMarket();
+  const now=Date.now();
+  let ticks=Math.floor((now-S.stockSince)/MKT_TICK_MS);
+  if(ticks>0){
+    const n=Math.min(ticks,MKT_OFFLINE_CAP);
+    for(let i=0;i<n;i++){
+      for(const s of STOCKS){
+        let p=S.stockPx[s.t];
+        const revert=((s.base-p)/s.base)*0.03;          // gentle pull back to fair value
+        const noise=(Math.random()*2-1)*s.vol;
+        let change=revert+noise;
+        if(Math.random()<0.012){                          // ~1.2%/tick: a news shock
+          const up=Math.random()<0.5, mag=0.12+Math.random()*0.22;
+          change+=(up?1:-1)*mag;
+          pushNews(s, up, mag);
+        }
+        p=Math.max(s.base*0.18, p*(1+change));
+        S.stockPx[s.t]=p;
+      }
+    }
+    // record one history point per elapsed real tick (downsampled, last 40)
+    for(const s of STOCKS){ const h=S.stockHist[s.t]; h.push(S.stockPx[s.t]); while(h.length>40) h.shift(); }
+    S.stockSince=now-((now-S.stockSince)%MKT_TICK_MS);
+  }
+  // bank interest (compounded per elapsed tick)
+  let bticks=Math.floor((now-S.bankSince)/MKT_TICK_MS);
+  if(bticks>0 && S.bank>0){
+    const n=Math.min(bticks,MKT_OFFLINE_CAP);
+    S.bank*=Math.pow(1+BANK_RATE,n);
+  }
+  if(bticks>0){ S.bankSince=now-((now-S.bankSince)%MKT_TICK_MS); }
+}
+function mktRemaining(){ ensureMarket(); return Math.ceil(Math.max(0,MKT_TICK_MS-((Date.now()-S.stockSince)%MKT_TICK_MS))/1000); }
+function pushNews(s, up, mag){
+  const pos=['soars','rallies','surges','jumps','climbs'], neg=['tumbles','dips','slides','crashes','sinks'];
+  const w=(up?pos:neg)[Math.floor(Math.random()*5)];
+  S.marketNews.unshift(`${s.emoji} <b>${s.t}</b> ${w} ${(up?'+':'−')}${Math.round(mag*100)}%`);
+  while(S.marketNews.length>4) S.marketNews.pop();
+}
+function portfolioValue(){ let v=0; for(const s of STOCKS) v+=(S.stocks[s.t]||0)*S.stockPx[s.t]; return v; }
+function sparkline(hist){
+  const h=hist.slice(-20); if(h.length<2) h.unshift(h[0]);
+  const min=Math.min(...h), max=Math.max(...h), rng=(max-min)||1;
+  const W=54,H=30,step=W/(h.length-1);
+  const pts=h.map((p,i)=>`${(i*step).toFixed(1)},${(H-4-((p-min)/rng)*(H-8)).toFixed(1)}`).join(' ');
+  const up=h[h.length-1]>=h[0], col=up?'#2e9c3f':'#c0512a';
+  return `<svg class="stock-spark" viewBox="0 0 ${W} ${H}"><polyline fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${pts}"/></svg>`;
+}
+function buyStock(t,qty){
+  tickMarket(); const px=Math.round(S.stockPx[t]); const cost=px*qty;
+  if(qty<=0||S.coins<cost){ SFX.click&&SFX.click(); return; }
+  S.coins-=cost; S.stocks[t]=(S.stocks[t]||0)+qty; S.stockCost[t]=(S.stockCost[t]||0)+cost; SFX.coin&&SFX.coin();
+  save(); syncHUD(); renderMarket(); toast('Bought '+qty+' '+t+' for '+moneyText(cost));
+}
+function sellStock(t,qty){
+  tickMarket(); const own=S.stocks[t]||0; qty=Math.min(qty,own); if(qty<=0){ return; }
+  const px=Math.round(S.stockPx[t]); const gain=px*qty;
+  S.stockCost[t]=(S.stockCost[t]||0)*(own-qty)/own;   // shrink cost basis proportionally to shares sold
+  S.coins+=gain; S.stocks[t]=own-qty; SFX.coin&&SFX.coin();
+  save(); syncHUD(); renderMarket(); toast('Sold '+qty+' '+t+' for '+moneyText(gain));
+}
+function bankDeposit(amt){
+  tickMarket(); amt=Math.min(Math.floor(amt),S.coins); if(amt<=0) return;
+  S.coins-=amt; S.bank+=amt; SFX.coin&&SFX.coin(); save(); syncHUD(); renderMarket();
+}
+function bankWithdraw(amt){
+  tickMarket(); amt=Math.min(Math.floor(amt),Math.floor(S.bank)); if(amt<=0) return;
+  S.bank-=amt; S.coins+=amt; SFX.coin&&SFX.coin(); save(); syncHUD(); renderMarket();
+}
+function switchMarketTab(tab){ marketTab=tab;
+  document.querySelectorAll('.mkt-tab').forEach(b=>b.classList.toggle('active',b.dataset.mtab===tab));
+  renderMarket();
+}
+function renderMarket(){
+  tickMarket();
+  const body=document.getElementById('marketBody'); if(!body) return;
+  if(marketTab==='bank'){
+    const bal=Math.floor(S.bank), tomorrow=Math.floor(S.bank*Math.pow(1+BANK_RATE,40)); // ~1h projection
+    const dep=[10,100,'Max'], wd=[10,100,'Max'];
+    body.innerHTML=`<div class="bank-card">
+      <div class="sub">🏦 Whisker Savings — your fish earn interest, even while you're away</div>
+      <div class="bal">${fmtCoins(bal)}</div>
+      <div class="sub">Interest ≈ ${(BANK_RATE*100).toFixed(2)}% / tick · in ~1h: <b>${fmtCoins(tomorrow)}</b></div>
+      <div class="bank-actions">
+        <div class="bank-line"><span class="tag">Deposit</span>${dep.map(a=>`<button class="qbtn dep" data-dep="${a}" ${S.coins<=0?'disabled':''}>${a==='Max'?'All':'+'+a}</button>`).join('')}</div>
+        <div class="bank-line"><span class="tag">Withdraw</span>${wd.map(a=>`<button class="qbtn wd" data-wd="${a}" ${bal<=0?'disabled':''}>${a==='Max'?'All':'−'+a}</button>`).join('')}</div>
+      </div>
+      <div class="sub" style="margin-top:14px;">In wallet: ${fmtCoins(S.coins)}</div>
+    </div>`;
+    body.querySelectorAll('[data-dep]').forEach(b=>b.onclick=()=>bankDeposit(b.dataset.dep==='Max'?S.coins:+b.dataset.dep));
+    body.querySelectorAll('[data-wd]').forEach(b=>b.onclick=()=>bankWithdraw(b.dataset.wd==='Max'?S.bank:+b.dataset.wd));
+    return;
+  }
+  // Exchange tab
+  const news=S.marketNews.length?`<div class="mkt-news">📰 ${S.marketNews.join(' &nbsp;·&nbsp; ')}</div>`:'';
+  const rows=STOCKS.map(s=>{
+    const px=S.stockPx[s.t], h=S.stockHist[s.t]||[px];
+    const prev=h.length>1?h[h.length-2]:px;
+    const chg=((px-prev)/prev)*100, up=chg>=0;
+    const own=S.stocks[s.t]||0;
+    const canBuy=S.coins>=Math.round(px);
+    return `<div class="stock-row">
+      <div class="se">${s.emoji}</div>
+      <div class="si"><div class="tk">${s.t}</div><div class="nm">${s.name}</div>
+        ${own?`<div class="pos">📦 ${own} sh · ${moneyText(Math.round(own*px))}</div>`:''}</div>
+      ${sparkline(h)}
+      <div class="stock-mid"><div class="px">${fmtCoins(Math.round(px))}</div>
+        <div class="chg ${up?'up':'dn'}">${up?'▲':'▼'} ${Math.abs(chg).toFixed(1)}%</div></div>
+      <div class="stock-btns">
+        <button class="mkt-btn" data-buy="${s.t}" ${canBuy?'':'disabled'}>Buy</button>
+        <button class="mkt-btn sell" data-sell="${s.t}" ${own>0?'':'disabled'}>Sell</button>
+      </div></div>`;
+  }).join('');
+  const pv=portfolioValue();
+  let cost=0; for(const s of STOCKS) cost+=(S.stockCost[s.t]||0);
+  const pl=pv-cost, plPct=cost>0?(pl/cost*100):0, plUp=pl>=0;
+  const plLine=cost>0
+    ? `<div class="mkt-pl ${plUp?'up':'dn'}">${plUp?'▲':'▼'} ${plUp?'+':'−'}${moneyText(Math.abs(Math.round(pl)))} (${plUp?'+':'−'}${Math.abs(plPct).toFixed(1)}%)</div>`
+    : `<div class="mkt-pl flat">— no holdings yet —</div>`;
+  body.innerHTML=`<div class="mkt-portfolio"><div><div class="lbl">PORTFOLIO VALUE</div><div class="val">${fmtCoins(Math.round(pv))}</div>${plLine}</div>
+      <div style="text-align:right"><div class="lbl">WALLET</div><div class="val">${fmtCoins(S.coins)}</div></div></div>
+    ${news}${rows}
+    <div class="mkt-clock">⏱️ Next price update in <b id="mktTimer">${mktRemaining()}s</b></div>
+    <div class="sub" style="text-align:center;color:#caa46a;font-size:11px;margin-top:4px;">Buy low, sell high! 🐾</div>`;
+  body.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buyStock(b.dataset.buy,1));
+  body.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>sellStock(b.dataset.sell,1));
+}
+
 //──────── HUD  (money no longer shown up top — it lives in the 🎒 backpack)
 function syncHUD(){
   document.getElementById('hudLvl').textContent=S.level;
   updateRockyBtn();
+  updateUIBar();
+}
+// show the full-face coin frame in a HUD slot via pure CSS sprite-cropping.
+// (canvas.toDataURL() taints under file://, so we crop with background-position instead — works everywhere)
+const COIN_ICO={uiIcoG:'goldcoin.png',uiIcoS:'silvercoin.png',uiIcoB:'bronzecoin.png'};
+function setCoinIco(id){
+  const el=document.getElementById(id); if(!el) return;
+  const B=el.clientWidth, boxH=el.clientHeight; if(!B) return;          // not laid out yet
+  const f=COIN_FRAMES[2], s=Math.min(B/f.w, boxH/COIN_SH);              // contain: fit the whole face inside the box
+  el.style.backgroundImage="url('"+COIN_ICO[id]+"')";
+  el.style.backgroundRepeat='no-repeat';
+  el.style.backgroundSize=(COIN_SHEET_W*s).toFixed(1)+'px '+(COIN_SHEET_H*s).toFixed(1)+'px';
+  el.style.backgroundPosition=(-f.x*s+(B-f.w*s)/2).toFixed(1)+'px '+(-(COIN_SY*s)+(boxH-COIN_SH*s)/2).toFixed(1)+'px';
+}
+function initUIBar(){ for(const id in COIN_ICO) setCoinIco(id); }
+function updateUIBar(){
+  const bar=document.getElementById('uiBar'); if(!bar) return;
+  const mx=Math.max(1,P.maxHp||1), pct=Math.max(0,Math.min(1,(P.hp||0)/mx));
+  const hpFill=document.getElementById('uiHpFill'), hpText=document.getElementById('uiHpText');
+  hpFill.style.height=(pct*100)+'%';
+  hpText.textContent=Math.max(0,Math.ceil(P.hp||0))+' / '+(P.maxHp||0);
+  // out-of-combat HP regen → green glow pulse on the orb
+  const regen=(P.hp>0 && P.hp<P.maxHp && Date.now()-(P.lastHit||0)>2600);
+  hpFill.classList.toggle('regen',regen);
+  hpText.classList.toggle('regen',regen);
+  const need=xpForLevel(S.level);
+  const xpPct=Math.max(0,Math.min(1,S.xp/need));
+  document.getElementById('uiXpFill').style.width=(xpPct*100)+'%';
+  document.getElementById('uiLvlNum').textContent=S.level;
+  const m=moneyParts(S.coins);
+  document.getElementById('uiGold').textContent=m.g;
+  document.getElementById('uiSilver').textContent=m.s;
+  document.getElementById('uiBronze').textContent=m.b;
+  document.getElementById('uiItems').textContent=S.items.length;
+  for(const id in COIN_ICO) setCoinIco(id);   // re-crop coin faces (handles first layout + resizes)
 }
 
 //──────── update
@@ -1876,9 +2243,17 @@ function killEnemy(e){
   questProgress('defeat'); checkAchievements();
   syncHUD(); renderStatbars(); save();
 }
+// Dark Souls–style "YOU FAINTED" cinematic — call from any death path
+function showFaintScreen(){
+  const fs=document.getElementById('faintScreen');
+  if(!fs) return;
+  fs.classList.remove('show'); void fs.offsetWidth; fs.classList.add('show');
+  setTimeout(()=>fs.classList.remove('show'),3000);
+}
 function playerFaint(){
-  SFX.lose(); toast('😿 You fainted! Respawning...');
+  SFX.lose();
   for(let i=0;i<12;i++)particles.push({x:P.x,y:P.y-30,vx:(Math.random()-.5)*6,vy:-(Math.random()*4),life:1,c:'#ff7a7a'});
+  showFaintScreen();
   P.x=A.spawnX; P.y=480; P.vx=0; P.vy=0;
   P.hp=P.maxHp; P.iframe=Date.now()+1500;
   cam.x=Math.max(0,Math.min(A.w-VW,P.x-VW/2));
@@ -2516,11 +2891,11 @@ function hubHurtPlayer(now,dmg,col,fx,fy,kb){
   const a=Math.atan2(c.y-fy,c.x-fx), nx=c.x+Math.cos(a)*kb, ny=c.y+Math.sin(a)*kb*0.7;
   if(!maskReady() || maskClassify(nx,ny)==='walk'){ c.x=nx; c.y=ny; c.safeX=nx; c.safeY=ny; }
   if(P.hp<=0){
+    SFX.lose(); showFaintScreen();
     P.hp=P.maxHp; P.iframe=now+1800;
     const sp=A.hub.spawn; c.x=sp.xf*HUB.worldW; c.y=Math.max(0,Math.min(VH,sp.yf*VH));
     if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
     c.safeX=c.x; c.safeY=c.y; HUB.target=null;
-    toast('😿 You fainted! Regroup and try again!');
   }
 }
 // Queen Seby's top-down AI — claw pinch up close, crystal shards at range, tail dash from afar
@@ -2703,7 +3078,7 @@ function updateHub(){
       floatText(c.x,c.y-42,'-'+dm,'#ff8a8a'); SFX.hit();
       const a=Math.atan2(c.y-d.y,c.x-d.x); c.x+=Math.cos(a)*10; c.y+=Math.sin(a)*8;
       if(!maskReady())hubClampY();
-      if(P.hp<=0){ P.hp=P.maxHp; P.iframe=now+1500; toast('😿 Watch out for the ducks!'); }
+      if(P.hp<=0){ SFX.lose(); showFaintScreen(); P.hp=P.maxHp; P.iframe=now+1500; }
     }
   }
   // Queen Seby (boss arena only)
@@ -2930,7 +3305,6 @@ function drawHub(){
     g.restore();
   }
   drawFloats();
-  drawPlayerHP();
 }
 function roundRectPath(x,y,w,h,r){ g.beginPath(); g.roundRect(x,y,w,h,r); }
 
@@ -2952,7 +3326,7 @@ function draw(){
   drawPlayer();
   drawParticles();
   drawFloats();
-  drawPlayerHP();
+  updateUIBar();
 }
 
 //──────── BACKGROUNDS (use your own images if present, else simple gradient)
@@ -3395,6 +3769,7 @@ function drawPlayerHP(){
   g.fillStyle='#fff';g.font='bold 11px Trebuchet MS';g.textAlign='center';g.shadowColor='#000';g.shadowBlur=3;
   g.fillText('❤️ '+Math.ceil(P.hp)+' / '+P.maxHp, x+w/2, y+11);
   g.restore();
+  updateUIBar();   // keep the bottom HUD orb in sync with live HP
 }
 
 // speech bubble above a cat
@@ -3502,6 +3877,7 @@ const ACHIEVEMENTS=[
   {id:'rich',     name:'Rich',         desc:'Collect 300 coins',      emoji:'💰', test:()=> S.coins>=300},
   {id:'boss',     name:'Regicide',       desc:'Defeat Evil Coon', emoji:'👑', test:()=> S.bossDefeated},
   {id:'ancient',  name:'Crystal Slayer', desc:'Defeat Queen Seby the Ancient One', emoji:'👑', test:()=> S.sebyDefeated},
+  {id:'molamola', name:'Moon Catcher',   desc:'Catch the elusive Mola Mola — the rarest fish', emoji:'🌕', test:()=> !!S.molaCaught},
 ];
 function checkAchievements(){
   for(const a of ACHIEVEMENTS){
@@ -3910,23 +4286,28 @@ function sortPointer(e){ const cv=document.getElementById('sortCanvas'), rc=cv.g
 const FISH_SPECIES=[
   {key:'clownfish', name:'Clownfish',    w:30, coins:6,   xp:6,   speed:1.00, barH:0.40, minL:6,  maxL:14,  col:'#ff8a3a'},
   {key:'parrotfish',name:'Parrotfish',   w:24, coins:11,  xp:11,  speed:1.15, barH:0.37, minL:14, maxL:30,  col:'#3fb6c8'},
-  {key:'pufferfish',name:'Pufferfish',   w:16, coins:17,  xp:17,  speed:1.30, barH:0.35, minL:12, maxL:26,  col:'#caa24a'},
-  {key:'mahimahi',  name:'Mahi-Mahi',    w:12, coins:26,  xp:28,  speed:1.50, barH:0.33, minL:30, maxL:60,  col:'#7ec850'},
-  {key:'lionfish',  name:'Lionfish',     w:8,  coins:36,  xp:44,  speed:1.70, barH:0.31, minL:18, maxL:36,  col:'#d98a5a'},
-  {key:'barracuda', name:'Barracuda',    w:6,  coins:52,  xp:66,  speed:1.90, barH:0.30, minL:50, maxL:100, col:'#aebcc8'},
-  {key:'tuna',      name:'Bluefin Tuna', w:3,  coins:130, xp:160, speed:2.10, barH:0.28, minL:80, maxL:200, col:'#3a6ea5', legendary:true},
+  {key:'pufferfish',name:'Pufferfish',   w:16, coins:17,  xp:17,  speed:1.30, barH:0.35, minL:12, maxL:26,  col:'#caa24a', leap:1.35},
+  {key:'porcupinefish',name:'Porcupinefish',w:11,coins:30,xp:34,  speed:1.45, barH:0.33, minL:20, maxL:42,  col:'#b98a4a'},
+  {key:'mahimahi',  name:'Mahi-Mahi',    w:12, coins:26,  xp:28,  speed:1.50, barH:0.33, minL:30, maxL:60,  col:'#7ec850', leap:1.5},
+  {key:'lionfish',  name:'Lionfish',     w:8,  coins:36,  xp:44,  speed:1.70, barH:0.31, minL:18, maxL:36,  col:'#d98a5a', leap:1.5},
+  {key:'barracuda', name:'Barracuda',    w:6,  coins:52,  xp:66,  speed:1.90, barH:0.30, minL:50, maxL:100, col:'#aebcc8', leap:1.7},
+  {key:'tuna',      name:'Bluefin Tuna', w:3,  coins:130, xp:160, speed:2.10, barH:0.28, minL:80, maxL:200, col:'#3a6ea5', legendary:true, leap:1.9},
+  {key:'swordfish', name:'Swordfish',    w:1.8,coins:280, xp:340, speed:2.40, barH:0.23, minL:150,maxL:300, col:'#46506a', legendary:true, big:true, leap:2.1},
   // ── big game: very rare, fast & jumpy with a tiny catch bar → hard to land ──
-  {key:'mantaray',  name:'Manta Ray',    w:2.4,coins:200, xp:240, speed:2.10, barH:0.26, minL:200,maxL:400, col:'#4a5a6a', legendary:true, big:true},
-  {key:'hammerhead',name:'Hammerhead',   w:1.5,coins:300, xp:380, speed:2.35, barH:0.24, minL:220,maxL:450, col:'#5a6472', legendary:true, big:true},
-  {key:'greatwhite',name:'Great White',  w:0.9,coins:450, xp:560, speed:2.55, barH:0.22, minL:300,maxL:640, col:'#6b7480', legendary:true, big:true},
+  {key:'mantaray',  name:'Manta Ray',    w:2.4,coins:200, xp:240, speed:2.10, barH:0.26, minL:200,maxL:400, col:'#4a5a6a', legendary:true, big:true, leap:2.3},
+  {key:'hammerhead',name:'Hammerhead',   w:1.5,coins:300, xp:380, speed:2.35, barH:0.24, minL:220,maxL:450, col:'#5a6472', legendary:true, big:true, leap:2.3},
+  {key:'greatwhite',name:'Great White',  w:0.9,coins:450, xp:560, speed:2.55, barH:0.22, minL:300,maxL:640, col:'#6b7480', legendary:true, big:true, leap:2.3},
+  // ── the white whale: rarest of all (rarer than the great white) ──
+  {key:'molamola',  name:'Mola Mola',    w:0.4,coins:700, xp:850, speed:1.70, barH:0.20, minL:180,maxL:330, col:'#8a93a0', legendary:true, big:true, leap:2.7},
 ];
-const FISH_IMG={}; for(const f of FISH_SPECIES){ const im=new Image(); im.src='fishing/sprite_'+f.key+'.png'; FISH_IMG[f.key]=im; }
+const FISH_ASSET_V='2';   // bump to force browsers to reload updated fish sprites
+const FISH_IMG={}; for(const f of FISH_SPECIES){ const im=new Image(); im.src='fishing/sprite_'+f.key+'.png?v='+FISH_ASSET_V; FISH_IMG[f.key]=im; }
 const SPECIES_BY_KEY=Object.fromEntries(FISH_SPECIES.map(f=>[f.key,f]));
 function fishSprite(g,key,cx,cy,maxW,maxH){ const im=FISH_IMG[key]; if(!(im&&im.complete&&im.naturalWidth))return false;
   const sc=Math.min(maxW/im.naturalWidth,maxH/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc;
   g.drawImage(im,cx-w/2,cy-h/2,w,h); return true; }
 // ── Scene assets (drop these PNGs into fishing/ ; everything has a fallback if missing) ──
-function fimg(src){ const im=new Image(); im.src='fishing/'+src; return im; }
+function fimg(src){ const im=new Image(); im.src='fishing/'+src+'?v='+FISH_ASSET_V; return im; }
 const FSCENE={
   bg:        fimg('scene_bg.png'),       // 1920x1080 landscape ocean/dock
   puiutu:{ idle:fimg('puiutu_idle.png'), bite:fimg('puiutu_bite.png'), reel:fimg('puiutu_reel.png') },
@@ -4055,6 +4436,7 @@ function fishCatch(){
   S.coins+=f.coins; addXP(f.xp);
   S.totalFishCaught=(S.totalFishCaught||0)+1; S.totalFish=(S.totalFish||0)+1;  // lifetime counter for 'fish' quests + angler achievements
   if(!S.fishBiggest || FISH.len>S.fishBiggest.len) S.fishBiggest={name:f.name,len:FISH.len};
+  if(f.key==='molamola') S.molaCaught=true;   // unlocks the Moon Catcher achievement
   questProgress&&questProgress('fish'); checkAchievements&&checkAchievements();
   fishHudSync(); syncHUD(); save();
   FISH.msg=(f.legendary?'🌟 ':'')+f.name+'  '+FISH.len+'cm   +'+moneyText(f.coins)+'  +'+f.xp+' XP';
@@ -4118,9 +4500,12 @@ function fishStep(dt){
     FISH.barV += acc*dt; FISH.barV*=0.88; FISH.barC += FISH.barV*dt;
     const halfH=(f.barH*(t.bot-t.top))/2, lo=t.top+halfH, hi=t.bot-halfH;
     if(FISH.barC<lo){FISH.barC=lo;FISH.barV*=-0.3;} if(FISH.barC>hi){FISH.barC=hi;FISH.barV*=-0.3;}
-    // progress fills while the fish sits inside the green bar, drains otherwise
+    // progress fills while the fish sits inside the green bar, drains otherwise.
+    // rarer fish (higher speed) fill SLOWER and drain FASTER → much harder to land.
     const inside = Math.abs(FISH.fishP-FISH.barC)<=halfH;
-    FISH.progress += (inside?0.52:-0.24)*dt;
+    const fill  = Math.max(0.30, 0.62 - 0.06*f.speed);    // clownfish≈0.56 → great white≈0.47
+    const drain = 0.14 + 0.17*f.speed;                    // clownfish≈0.31 → great white≈0.57
+    FISH.progress += (inside? fill : -drain)*dt;
     if(FISH.progress>=1){ fishCatch(); }
     else if(FISH.progress<=0){ FISH.progress=0; fishGetAway('The line snapped!'); }
   } else if(FISH.phase==='caught'){
@@ -4182,9 +4567,9 @@ function fishDraw(){
     g.save(); g.translate(x,y);
     g.scale(j.dir<0?-1:1, 1);          // sprites face right by default → flip when leaping left
     g.rotate((p-0.5)*1.2);              // nose-up rising, nose-down falling (arc)
-    const big=SPECIES_BY_KEY[j.key]&&SPECIES_BY_KEY[j.key].big;   // sharks/manta leap much bigger
-    const sw=big?168:72, sh=big?112:48;
-    if(!fishSprite(g,j.key,0,0,sw,sh)){ g.font=(big?'56px':'28px')+' serif'; g.textAlign='center'; g.fillText('🐟',0,10); }
+    const sp=SPECIES_BY_KEY[j.key]; const lp=(sp&&sp.leap)||1;   // per-species leap size (big game leaps much bigger)
+    const sw=72*lp, sh=48*lp;
+    if(!fishSprite(g,j.key,0,0,sw,sh)){ g.font=Math.round(28*lp)+'px serif'; g.textAlign='center'; g.fillText('🐟',0,10); }
     g.restore();
   }
   // ── splashes ──
@@ -4254,7 +4639,7 @@ function fishDraw(){
     const pcy=cy0-cardH*0.05;
     // fish fills the parchment width-wide; every species fits the SAME height so
     // wide ones (puffer/barracuda) and narrow ones (parrotfish) look consistent
-    if(!fishSprite(g,f.key,W/2,pcy-cardH*0.05,cardW*0.60,cardH*0.30)){ g.font='52px serif'; g.fillStyle='#5a3a18'; g.fillText('🐟',W/2,pcy); }
+    if(!fishSprite(g,f.key,W/2,pcy-cardH*0.05,cardW*0.50,cardH*0.30)){ g.font='52px serif'; g.fillStyle='#5a3a18'; g.fillText('🐟',W/2,pcy); }
     g.fillStyle=f.legendary?'#b8860b':'#5a3a18';
     g.font='bold '+Math.round(cardH*0.13)+'px Trebuchet MS'; g.fillText(f.name,W/2,pcy+cardH*0.18);
     g.font=Math.round(cardH*0.09)+'px Trebuchet MS'; g.fillText(FISH.len+' cm   +'+moneyText(f.coins)+'  +'+f.xp+' XP',W/2,pcy+cardH*0.30);
@@ -4320,6 +4705,7 @@ function renderModal(id){
   if(id==='shop')renderShop();
   if(id==='profile')renderProfile();
   if(id==='inventory')renderInventory();
+  if(id==='market')renderMarket();
 }
 function renderShop(){
   const body=document.getElementById('shopBody');
@@ -4681,10 +5067,45 @@ document.getElementById('sortNextBtn').addEventListener('click',sortNext);
 document.getElementById('sortCanvas').addEventListener('pointerdown',e=>{ if(!SORT.active)return; const p=sortPointer(e); sortClickTube(sortHit(p.x,p.y)); e.preventDefault(); });
 // Fishing minigame
 document.getElementById('btnFish').addEventListener('click',fishOpen);
+document.getElementById('btnMarket').addEventListener('click',()=>openModal('market'));
+// 📱 phone: live clock + app launcher
+function updatePhoneClock(){
+  const d=document.getElementById('phDate'), s=document.getElementById('phStatus');
+  if(!s) return;
+  const now=new Date();
+  s.textContent=now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});  // 24h, no AM/PM
+  if(d) d.textContent=now.toLocaleDateString([], {weekday:'short', day:'numeric', month:'short'});
+}
+document.getElementById('btnPhone').addEventListener('click',()=>{ updatePhoneClock(); openModal('phone'); });
+setInterval(()=>{ const m=document.getElementById('phone'); if(m&&m.classList.contains('active')) updatePhoneClock(); }, 1000);
+document.querySelectorAll('.phone-app').forEach(b=>b.addEventListener('click',()=>{
+  const app=b.dataset.app; closeModal('phone');
+  if(app==='bank'){ openModal('market'); switchMarketTab('bank'); }
+  else if(app==='wallet'){ openModal('market'); switchMarketTab('exchange'); }
+  else if(app==='backpack'){ openModal('inventory'); }
+}));
+document.querySelectorAll('.mkt-tab').forEach(b=>b.addEventListener('click',()=>switchMarketTab(b.dataset.mtab)));
+// keep the market live: tick prices/interest on a timer, refresh the panel if it's open
+ensureMarket(); tickMarket(); save();   // process any offline price drift / interest on load
+setInterval(()=>{ tickMarket(); save(); const m=document.getElementById('market'); if(m&&m.classList.contains('active')) renderMarket(); }, MKT_TICK_MS);
+// live countdown to the next price tick (updates the timer text without re-rendering the whole list)
+setInterval(()=>{ const el=document.getElementById('mktTimer'), m=document.getElementById('market');
+  if(el&&m&&m.classList.contains('active')&&marketTab==='exchange') el.textContent=mktRemaining()+'s'; }, 1000);
 (function(){ const cv=document.getElementById('fishCanvas');
   cv.addEventListener('pointerdown',e=>{ if(!FISH.active)return; FISH.holding=true; fishTap(); e.preventDefault(); });
   window.addEventListener('pointerup',()=>{ FISH.holding=false; });
   cv.addEventListener('pointercancel',()=>{ FISH.holding=false; });
+  // keyboard: Space / Enter = cast / hook / hold-to-reel (raises the green bar)
+  window.addEventListener('keydown',e=>{
+    if(!FISH.active) return;
+    if(e.code==='Space'||e.code==='Enter'){
+      e.preventDefault();
+      if(!FISH.holding){ FISH.holding=true; fishTap(); }   // first press also casts/hooks; ignore key auto-repeat
+    }
+  });
+  window.addEventListener('keyup',e=>{
+    if(e.code==='Space'||e.code==='Enter') FISH.holding=false;
+  });
 })();
 document.getElementById('btnRocky').addEventListener('click',toggleRocky);
 document.getElementById('mapClose').addEventListener('click',closeMap);
