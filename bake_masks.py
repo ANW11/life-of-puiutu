@@ -22,6 +22,7 @@ def classify(r, g, b, a):
     if a < 40: return 0
     if r > 210 and g > 210 and b < 180: return 1            # yellow
     if g > 110 and (g - r) > 40 and (g - b) > 40: return 2  # green
+    if r > 120 and b > 150 and (r - g) > 45 and (b - g) > 60: return 4  # bright violet (town plaza) — before blue
     if b > 170 and (b - r) > 100 and (b - g) > 60: return 5 # blue (library floor)
     if r > 90 and b > 90 and (r - g) > 40 and (b - g) > 40: return 4  # purple
     if r > 190 and 120 < g < 205 and b < 110 and (g - b) > 50: return 6  # orange (library stairs)
@@ -45,7 +46,7 @@ def bake(fn):
 
 def main():
     src = open(HTML).read()
-    masks = sorted(set(re.findall(r"mask:'([^']+)'", src)))
+    masks = sorted(set(re.findall(r"mask(?:Solved)?:'([^']+)'", src)))
     if not masks:
         print('Nu am gasit nicio masca in HTML.'); return
     parts = []
