@@ -399,6 +399,25 @@
     box-shadow:0 0 22px 4px rgba(120,230,255,.6);}
   .lightCell:active{transform:scale(.94);}
   #lightsHint{color:#7fa8c2;font-size:13px;max-width:340px;text-align:center;}
+  /* ⚡ Power Conduit (circuit rotate) puzzle */
+  #circuit{background:linear-gradient(160deg,#06231aee,#03110bf6);}
+  #circuit .modal-head{background:linear-gradient(#0d3326,#06190f);border-bottom:3px solid #1f9c6a;}
+  #circuitWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px;min-height:0;overflow:auto;}
+  #circuitMsg{color:#bfeecb;font-weight:bold;font-size:17px;text-align:center;text-shadow:0 2px 6px #000;min-height:22px;}
+  #circuitHint{color:#7fae93;font-size:13px;max-width:340px;text-align:center;}
+  #circuitDevBtn{position:absolute;left:12px;top:14px;background:rgba(40,28,14,.7);border:none;color:#ffe7b0;font-size:17px;cursor:pointer;border-radius:8px;width:34px;height:34px;z-index:5;}
+  #circuitDev{display:none;position:absolute;left:10px;bottom:10px;z-index:6;background:rgba(6,22,15,.94);border:1px solid #1f9c6a;border-radius:10px;padding:10px 12px;color:#bfeecb;font:12px monospace;min-width:210px;}
+  #circuitDev.on{display:block;}
+  #circuitDev label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:5px 0;}
+  #circuitDev input[type=range]{width:115px;}
+  #circuitDevRead{margin-top:8px;color:#8fd6ad;font-size:10px;word-break:break-all;user-select:all;cursor:text;}
+  #circuitFrame{position:relative;width:min(86vw,440px);aspect-ratio:1;background:url('circuit/board.png') center/100% 100% no-repeat;display:flex;align-items:center;justify-content:center;}
+  #circuitGrid{width:68%;display:grid;gap:0;}
+  .cCell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;position:relative;}
+  .cCell img{width:100%;height:100%;image-rendering:pixelated;transform-origin:center;transition:transform .13s ease,filter .2s ease;filter:brightness(.38) saturate(.45);}
+  .cCell.powered img,.cCell.fixed img{filter:brightness(1.15) saturate(1.25) drop-shadow(0 0 5px #4dffb0);}
+  .cCell.rot{cursor:pointer;}
+  .cCell.rot:hover{background:rgba(80,255,180,.10);}
   /* Fossil Dig minigame */
   #dig{background:linear-gradient(160deg,#3a2a16ee,#241606f4);}
   #digWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px;min-height:0;}
@@ -407,6 +426,37 @@
   #digMsg{color:#ffd86b;font-weight:bold;font-size:14px;text-align:center;min-height:18px;}
   #digRestart{background:linear-gradient(#c89a4a,#9a6f2a);border:2px solid #6b4a1f;color:#fff;font-weight:bold;font-size:15px;padding:9px 20px;border-radius:12px;cursor:pointer;}
   #digRestart:active{transform:scale(.96);}
+  /* Gacha — Lucky Capsule */
+  #gacha{background:linear-gradient(160deg,#2a1640ee,#160a26f4);}
+  #gacha .modal-head{background:linear-gradient(#3a2360,#22113e);border-bottom:3px solid #7a4ad0;}
+  #gachaWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px;min-height:0;}
+  #gachaStage{position:relative;display:flex;align-items:center;justify-content:center;}
+  #gachaCanvas{height:62vh;max-height:540px;width:auto;max-width:94vw;touch-action:none;}
+  #gachaCard{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    width:160px;height:160px;border-radius:18px;background:rgba(10,6,20,.82);}
+  #gachaCard.show{display:flex;animation:gPop .4s cubic-bezier(.2,1.4,.5,1);}
+  #gachaCard.skin-reveal{width:210px;height:auto;min-height:240px;padding:6px 6px 10px;}
+  @keyframes gPop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+  #gachaCard.r-common{box-shadow:0 0 30px 6px rgba(180,190,200,.6);}
+  #gachaCard.r-rare{box-shadow:0 0 34px 8px rgba(90,170,255,.7);}
+  #gachaCard.r-epic{box-shadow:0 0 38px 10px rgba(190,110,255,.8);}
+  #gachaCard.r-legendary{box-shadow:0 0 48px 14px rgba(255,200,70,.9);animation:gPop .4s cubic-bezier(.2,1.4,.5,1),gGlow 1s ease-in-out infinite alternate;}
+  @keyframes gGlow{from{box-shadow:0 0 40px 10px rgba(255,200,70,.7)}to{box-shadow:0 0 64px 20px rgba(255,140,200,.95)}}
+  #gcIcon{font-size:80px;}
+  #gcArtCanvas{border-radius:10px;display:none;image-rendering:pixelated;}
+  #gcArtCanvas.show{display:block;}
+  #gcStars{display:flex;gap:2px;justify-content:center;min-height:18px;margin-top:2px;}
+  #gcStars img{width:17px;height:17px;image-rendering:pixelated;}
+  #gcName{color:#fff;font-weight:bold;font-size:15px;text-shadow:0 2px 6px #000;text-align:center;}
+  #gcRarity{font-weight:bold;font-size:12px;letter-spacing:2px;}
+  #gachaMsg{color:#dcc8ff;font-weight:bold;font-size:15px;text-align:center;min-height:20px;}
+  #gachaRoll{background:linear-gradient(#b46ad8,#7a3fb0);border:2px solid #4a2670;color:#fff;font-weight:bold;font-size:17px;padding:11px 28px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 #3a1d5a;}
+  #gachaRoll:active{transform:translateY(2px);}
+  #gachaRoll:disabled{opacity:.5;cursor:default;}
+  #gachaBtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  #gachaLegend{background:linear-gradient(#ffd24a,#e0a020);border:2px solid #9a6a10;color:#5a3a00;font-weight:bold;font-size:15px;padding:11px 20px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 #9a6a10;}
+  #gachaLegend:active{transform:translateY(2px);}
+  #gachaPity{color:#b9a6d8;font-size:12px;}
   /* Fishing minigame — FULLSCREEN scenic (breaks out of the phone frame) */
   #fishing{position:fixed;inset:0;z-index:60;background:#0a1722;}
   #fishing .modal-head{position:absolute;top:0;left:0;right:0;z-index:3;height:54px;flex:0 0 54px;
@@ -612,6 +662,7 @@
         <div class="back-btn" id="btnMarket">📈</div>
         <div class="back-btn" id="btnPhone">📱</div>
         <div class="back-btn" id="btnBag">🎒</div>
+        <div class="back-btn" id="btnGacha" title="Lucky Capsule">🎰</div>
         <div class="back-btn" id="btnBeach" title="Teleport to the Beach">🏖️</div>
         <div class="back-btn" id="btnRocky" style="display:none;">🐕 Stay</div>
       </div>
@@ -794,6 +845,25 @@
     </div>
   </div>
 
+  <!-- ============ POWER CONDUIT (circuit rotate) puzzle — gates Seby's Lair ============ -->
+  <div id="circuit" class="modal">
+    <div class="modal-head"><h2>⚡ Power Conduit</h2><button class="modal-close" data-close="circuit">✕</button></div>
+    <button id="circuitDevBtn" title="layout dev tool">⚙</button>
+    <div id="circuitWrap">
+      <div id="circuitMsg">⚡ Reroute the conduit — power all 3 sockets.</div>
+      <div id="circuitFrame"><div id="circuitGrid"></div></div>
+      <div id="circuitHint">Tap a pipe to rotate it. Connect the ⚡ source to all 3 sockets.</div>
+    </div>
+    <div id="circuitDev">
+      <div style="font-weight:bold;margin-bottom:4px;color:#ffe7b0;">CIRCUIT LAYOUT (dev)</div>
+      <label>frame px <input type="range" min="300" max="720" step="2" id="cdFrame"></label>
+      <label>grid % <input type="range" min="40" max="94" step="1" id="cdGrid"></label>
+      <label>gap % <input type="range" min="0" max="12" step="0.5" id="cdGap"></label>
+      <label>piece scale <input type="range" min="0.85" max="1.6" step="0.01" id="cdScale"></label>
+      <div id="circuitDevRead"></div>
+    </div>
+  </div>
+
   <!-- ============ FOSSIL DIG MINIGAME (Dino-Quest-style excavation) ============ -->
   <div id="dig" class="modal">
     <div class="modal-head"><h2>🦴 Fossil Dig</h2><button class="modal-close" data-close="dig">✕</button></div>
@@ -802,6 +872,23 @@
       <canvas id="digCanvas" width="448" height="336"></canvas>
       <div id="digMsg">Dig to uncover the fossil! Numbers show nearby bones.</div>
       <button id="digRestart">↺ New Dig</button>
+    </div>
+  </div>
+
+  <!-- ============ GACHA — Lucky Capsule ============ -->
+  <div id="gacha" class="modal">
+    <div class="modal-head"><h2>🎰 Lucky Capsule</h2><button class="modal-close" data-close="gacha">✕</button></div>
+    <div id="gachaWrap">
+      <div id="gachaStage">
+        <canvas id="gachaCanvas" width="360" height="536"></canvas>
+        <div id="gachaCard"><canvas id="gcArtCanvas" width="196" height="196"></canvas><div id="gcIcon">❔</div><div id="gcName">???</div><div id="gcStars"></div><div id="gcRarity"></div></div>
+      </div>
+      <div id="gachaMsg">Turn the crank for a surprise!</div>
+      <div id="gachaBtns">
+        <button id="gachaRoll">Roll · 1 🥇</button>
+        <button id="gachaLegend" style="display:none;">✨ Open Legendary Capsule</button>
+      </div>
+      <div id="gachaPity"></div>
     </div>
   </div>
 
@@ -871,6 +958,8 @@ const DEFAULT={
   sebyDefeated:false,              // the Crystal Cave boss (Seby) beaten once
   ocean2Solved:false,              // the Sealed Sanctum portal puzzle solved (barrier broken)
   abyssDefeated:false,             // The Dreamer in the Deep (abyss boss) beaten once
+  gachaPity:0, gachaCapProg:0, legendaryCapsules:0,   // gacha: rolls since legendary / toward a legendary capsule / capsules owned
+  catSkins:[],                       // unlocked cat skins from gacha
   oceanFlags:{},                   // underwater interactables: solved puzzles / opened chests (keyed by flag)
   companion:false,                 // Rocky the dog joined as a fighting companion
   rockyStay:false,                 // Rocky told to wait instead of following
@@ -1090,6 +1179,29 @@ function drawHat(ctx,type,x,y,bob){
     [[-14,-20],[0,-28],[14,-20]].forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.6,0,7);ctx.fill();});
     ctx.fillStyle='#d8b6ff';ctx.beginPath();ctx.arc(0,-14,2.4,0,7);ctx.fill();
     ctx.restore();
+  }else if(type==='tophat'){
+    ctx.fillStyle='#1c1c22';ctx.fillRect(-15,-12,30,4); ctx.fillRect(-10,-30,20,18);
+    ctx.fillStyle='#c0392b';ctx.fillRect(-10,-18,20,4);
+  }else if(type==='strawhat'){
+    ctx.fillStyle='#d9a441';ctx.beginPath();ctx.ellipse(0,-11,17,5,0,0,7);ctx.fill();
+    ctx.fillStyle='#e7b85a';ctx.beginPath();ctx.arc(0,-12,9,Math.PI,0);ctx.fill();
+    ctx.fillStyle='#9c5a2a';ctx.fillRect(-9,-13,18,3);
+  }else if(type==='ninja'){
+    ctx.fillStyle='#2b2f3a';ctx.fillRect(-15,-15,30,6);
+    ctx.fillStyle='#2b2f3a';ctx.beginPath();ctx.moveTo(15,-14);ctx.lineTo(26,-10);ctx.lineTo(26,-6);ctx.lineTo(15,-9);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#d8453a';ctx.fillRect(-4,-14,8,5);
+  }else if(type==='halo'){
+    const pl=0.6+0.4*Math.sin(Date.now()*0.005); ctx.save(); ctx.shadowColor='#ffe680'; ctx.shadowBlur=12*pl;
+    ctx.strokeStyle='#ffe066';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,-26,12,4.5,0,0,7);ctx.stroke(); ctx.restore();
+  }else if(type==='devilhorns'){
+    ctx.fillStyle='#b3231b';
+    ctx.beginPath();ctx.moveTo(-12,-10);ctx.quadraticCurveTo(-16,-24,-7,-26);ctx.quadraticCurveTo(-10,-18,-6,-11);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(12,-10);ctx.quadraticCurveTo(16,-24,7,-26);ctx.quadraticCurveTo(10,-18,6,-11);ctx.closePath();ctx.fill();
+  }else if(type==='rainbowcrown'){
+    const pl=0.6+0.4*Math.sin(Date.now()*0.004); ctx.save(); ctx.shadowColor='#ff7ad9'; ctx.shadowBlur=10*pl;
+    ctx.fillStyle='#ffd029';ctx.beginPath();ctx.moveTo(-14,-10);ctx.lineTo(-14,-22);ctx.lineTo(-7,-15);ctx.lineTo(0,-26);ctx.lineTo(7,-15);ctx.lineTo(14,-22);ctx.lineTo(14,-10);ctx.closePath();ctx.fill();
+    const gem=['#ff4d4d','#ffd24d','#4dff88','#4dd2ff','#c87cff'];
+    [[-14,-22],[-7,-15],[0,-26],[7,-15],[14,-22]].forEach((p,i)=>{ctx.fillStyle=gem[i];ctx.beginPath();ctx.arc(p[0],p[1],2.4,0,7);ctx.fill();}); ctx.restore();
   }
   ctx.restore();
 }
@@ -1229,10 +1341,45 @@ const BANANA=new Image(); BANANA.src='mobs/coon_banana.png?v=4';
 // Queen Seby, the Ancient One — Crystal Cave boss (royal purple lobster).
 // 3 normalized poses (same dimensions so frames don't resize): 1=walk, 2=claw-out, 3=claws-raised
 const SEBYI={};
-Object.entries({walk0:'qseby1',walk1:'qseby2',rear:'qseby3',throw:'qseby2',def:'qseby1'})
-  .forEach(([k,f])=>{ const im=new Image(); im.src='mobs/'+f+'.png'; SEBYI[k]=im; });
-function drawBossSprite(ctx,sx,sy,facing,h,key,enraged,bob,sprites,aura){
-  bob=bob||0;
+Object.entries({walk0:'s1',walk1:'s2',rear:'s4',throw:'s6',def:'s3',dash:'s5'})
+  .forEach(([k,f])=>{ const im=new Image(); im.src='mobs/seby/'+f+'.png'; SEBYI[k]=im; });
+// Seby's crystal barrier — shatter all of these before she can be harmed.
+// Drop in props/seby_crystal.png (whole) + props/seby_crystal_crack.png (damaged); until then a
+// procedural purple shard is drawn as fallback.
+const CRYSTALI={ whole:new Image(), crack:new Image() };
+CRYSTALI.whole.src='mobs/seby/crystalseby.png';   // crack variant optional — falls back to whole
+function drawSebyCrystal(ctx,sx,sy,h,hurt,dmgPct){
+  const img = (dmgPct>0.5 && CRYSTALI.crack.complete && CRYSTALI.crack.naturalWidth) ? CRYSTALI.crack
+            : (CRYSTALI.whole.complete && CRYSTALI.whole.naturalWidth) ? CRYSTALI.whole : null;
+  const pulse=0.5+0.5*Math.sin(Date.now()*0.005);
+  ctx.save();
+  ctx.globalAlpha=0.2;ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(sx,sy+1,h*0.26,h*0.07,0,0,7);ctx.fill();ctx.globalAlpha=1;
+  // pulsing magic aura behind the crystal
+  { const gy=sy-h*0.55, gr=h*(0.55+pulse*0.12);
+    const rad=ctx.createRadialGradient(sx,gy,h*0.08,sx,gy,gr);
+    rad.addColorStop(0,'rgba(190,120,255,'+(0.30+pulse*0.28)+')');
+    rad.addColorStop(0.5,'rgba(150,77,221,'+(0.14+pulse*0.12)+')');
+    rad.addColorStop(1,'rgba(150,77,221,0)');
+    ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.fillStyle=rad;
+    ctx.beginPath(); ctx.arc(sx,gy,gr,0,7); ctx.fill(); ctx.restore(); }
+  if(img){ const w=img.naturalWidth/img.naturalHeight*h;
+    if(hurt){ ctx.globalAlpha=0.85; }
+    ctx.drawImage(img,sx-w/2,sy-h,w,h);
+  } else {
+    // procedural faceted purple crystal
+    const w=h*0.5;
+    ctx.translate(sx,sy);
+    ctx.shadowColor='rgba(176,124,240,'+(0.5+pulse*0.4)+')'; ctx.shadowBlur=18;
+    ctx.beginPath(); ctx.moveTo(0,-h); ctx.lineTo(w*0.5,-h*0.55); ctx.lineTo(w*0.32,0); ctx.lineTo(-w*0.32,0); ctx.lineTo(-w*0.5,-h*0.55); ctx.closePath();
+    const grd=ctx.createLinearGradient(-w*0.5,-h,w*0.5,0); grd.addColorStop(0,'#d9a8ff'); grd.addColorStop(0.5,'#9a4ddd'); grd.addColorStop(1,'#5a2a9a');
+    ctx.fillStyle=hurt?'#fff':grd; ctx.fill();
+    ctx.shadowBlur=0; ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(0,-h); ctx.lineTo(0,0); ctx.moveTo(0,-h); ctx.lineTo(-w*0.5,-h*0.55); ctx.moveTo(0,-h); ctx.lineTo(w*0.5,-h*0.55); ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawBossSprite(ctx,sx,sy,facing,h,key,enraged,bob,sprites,aura,footPad){
+  bob=bob||0; footPad=footPad||0;   // footPad = fraction of transparent space below the feet in the art
   sprites=sprites||BOSSI; aura=aura||'255,40,28';
   const img=sprites[key]||sprites.walk0;
   const w = (img&&img.naturalWidth) ? img.naturalWidth/img.naturalHeight*h : h;
@@ -1245,13 +1392,13 @@ function drawBossSprite(ctx,sx,sy,facing,h,key,enraged,bob,sprites,aura){
   rg.addColorStop(0,'rgba('+aura+','+auraA+')'); rg.addColorStop(1,'rgba('+aura+',0)');
   ctx.fillStyle=rg; ctx.beginPath(); ctx.ellipse(sx,cy,h*0.62,h*0.72,0,0,7); ctx.fill();
   ctx.restore();
-  // ground shadow
-  ctx.save();ctx.globalAlpha=0.2;ctx.fillStyle='#000';
-  ctx.beginPath();ctx.ellipse(sx,sy+1,h*0.30*(1-bob/22),h*0.08*(1-bob/22),0,0,7);ctx.fill();ctx.restore();
+  // ground shadow — sized to the sprite's actual width so wide bosses read as grounded, not floating
+  ctx.save();ctx.globalAlpha=0.28;ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(sx,sy+1,w*0.40*(1-bob/26),h*0.07*(1-bob/26),0,0,7);ctx.fill();ctx.restore();
   if(img&&img.complete&&img.naturalWidth){
     ctx.save();ctx.translate(sx,sy-bob);if(facing<0)ctx.scale(-1,1);
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-    ctx.drawImage(img,-w/2,-h,w,h);
+    ctx.drawImage(img,-w/2,-h+footPad*h,w,h);   // push the art down so its real feet land on sy
     ctx.restore();
   }
 }
@@ -1281,6 +1428,8 @@ const ABYSS_CORE=new Image(); ABYSS_CORE.src='mobs/core.png?v=2';
 const PIG_IMG={}; ['siroink','misterpig','piggyjunior'].forEach(k=>{ const im=new Image(); im.src='npcs/'+k+'.png'; PIG_IMG[k]=im; });
 // the Evil Coon stalker (4-frame sheet) that hunts you in the sewers
 const COON_STALK=new Image(); COON_STALK.src='mobs/racoonstalker.png';
+// stolen treasures (sliced from props/losttreasure.png)
+const LOOT_IMG={}; ['sack','piggy','crown','chest'].forEach(k=>{ const im=new Image(); im.src='props/loot_'+k+'.png'; LOOT_IMG[k]=im; });
 // 9 pigeon variety sprites (sliced from pigeons.png)
 const PIGEON_SPRITES={};
 for(let i=1;i<=9;i++){ const im=new Image(); im.src='mobs/pigeon_v'+i+'.png'; PIGEON_SPRITES['v'+i]=im; }
@@ -1506,6 +1655,13 @@ const SHOP=[
   {id:'speed', emoji:'⚡', name:'Fast Paws',desc:'Run faster (ability)',price:120,type:'ability'},
   // trophy — not sold; only dropped by Seby the Ancient One (hidden from the shop list)
   {id:'crystalcrown',emoji:'💎',name:'Crystal Crown',desc:'Trophy: vanquished Queen Seby the Ancient One',price:99999,type:'hat',trophy:true},
+  // gacha-exclusive cosmetics (not sold; won from the Lucky Capsule)
+  {id:'tophat',     emoji:'🎩',name:'Top Hat',      desc:'Dapper.',                 price:0,type:'hat',trophy:true,gacha:true},
+  {id:'strawhat',   emoji:'👒',name:'Straw Hat',    desc:'Sunny days.',             price:0,type:'hat',trophy:true,gacha:true},
+  {id:'ninja',      emoji:'🥷',name:'Ninja Band',   desc:'Silent paws.',            price:0,type:'hat',trophy:true,gacha:true},
+  {id:'halo',       emoji:'😇',name:'Angel Halo',   desc:'Such a good kitty.',      price:0,type:'hat',trophy:true,gacha:true},
+  {id:'devilhorns', emoji:'😈',name:'Devil Horns',  desc:'Mischief incarnate.',     price:0,type:'hat',trophy:true,gacha:true},
+  {id:'rainbowcrown',emoji:'🌈',name:'Rainbow Crown',desc:'Legendary capsule prize!',price:0,type:'hat',trophy:true,gacha:true},
 ];
 
 //──────────────────────────────────────────────────────────────── AREAS
@@ -1524,16 +1680,16 @@ function buildAreas(){
         maskWalk:['yellow','green'],     // yellow path + green patches are both walkable
         walkTop:0.60, walkBot:0.93,      // walkable depth band (fraction of view height)
         scaleFar:0.62, scaleNear:1.05,   // depth scaling within the band
-        spawn:{xf:0.13, yf:0.84},        // start (fraction of world width / view height)
+        spawn:{xf:0.223, yf:0.761},        // start (fraction of world width / view height)
         cityExit:true, cityExitTo:'street',   // walk far right on the path -> City
-        cave:{xf:0.05, yf:0.70, r:120, to:'cave', label:'🔮 Crystal Cave'},  // interact to enter
-        merge:{xf:0.71, yf:0.80, r:95, label:'🍉 Fruit Merge'},   // fruit barrel by the orange tree
+        cave:{xf:0.074, yf:0.804, r:120, to:'cave', label:'🔮 Crystal Cave'},  // interact to enter
+        merge:{xf:0.742, yf:0.674, r:95, label:'🍉 Fruit Merge'},   // fruit barrel by the orange tree
         // the stone tower (top-left): glows when you're near, E -> Tower Garden (arrive by the gate)
-        doors:[{xf:0.07, yf:0.36, r:42, to:'towergarden', label:'Tower Garden', icon:'🏰', glowXf:0.062, glowYf:0.30, glowR:46,
+        doors:[{xf:0.076, yf:0.355, r:42, to:'towergarden', label:'Tower Garden', icon:'🏰', glowXf:0.059, glowYf:0.287, glowR:46,
                 toSpawn:{xf:0.25, yf:0.89}}],   // arrive in the courtyard right in front of the wooden gate
         mobXf:[0.26,0.40,0.54,0.66,0.78],    // duck spawn positions (fraction of world width)
         fishXf:[0.18,0.34,0.50,0.62,0.74],   // collectible fish along the path (respawn ~60s)
-        tomy:{xf:0.26, yf:0.70},             // Tomy 💛 — dozing in the sun (in loving memory)
+        tomy:{xf:0.258, yf:0.688},             // Tomy 💛 — dozing in the sun (in loving memory)
       },
       platforms:[
         {x:0,y:560,w:3800,h:120,t:'grass'},
@@ -1574,9 +1730,9 @@ function buildAreas(){
         rocky:{xf:0.63, yf:0.83},            // Rocky the dog — now hangs out by the fountain
         mobXf:[0.34,0.48,0.62,0.72,0.84],    // pigeon spawn spots (on the courtyard green)
         // left wooden gate -> park; central castle gate -> Library; right wall arch -> Beach
-        doors:[{xf:0.205, yf:0.85, r:78, glowXf:0.16, glowYf:0.43, glowR:66, to:'garden', label:'Back to Garden', icon:'↩', toSpawn:{xf:0.07, yf:0.44}},
-               {xf:0.50, yf:0.78, r:120, glowXf:0.485, glowYf:0.50, glowR:62, to:'library', label:'Library', icon:'📚', toSpawn:{xf:0.78, yf:0.50}},
-               {xf:0.83, yf:0.80, r:82, glowXf:0.875, glowYf:0.55, glowR:60, to:'beach', label:'Beach', icon:'🏖️', toSpawn:{xf:0.22, yf:0.83}}],
+        doors:[{xf:0.210, yf:0.825, r:78, glowXf:0.187, glowYf:0.674, glowR:66, to:'garden', label:'Back to Garden', icon:'↩', toSpawn:{xf:0.07, yf:0.44}},
+               {xf:0.487, yf:0.707, r:120, glowXf:0.507, glowYf:0.537, glowR:62, to:'library', label:'Library', icon:'📚', toSpawn:{xf:0.78, yf:0.50}},
+               {xf:0.83, yf:0.80, r:82, glowXf:0.887, glowYf:0.617, glowR:60, to:'beach', label:'Beach', icon:'🏖️', toSpawn:{xf:0.22, yf:0.83}}],
       },
       platforms:[], npcs:[],
     },
@@ -1588,11 +1744,11 @@ function buildAreas(){
         maskWalk:'blue', maskPlat:'orange',   // blue floor walkable; orange stairs reached by jumping (Space)
         walkTop:0.45, walkBot:0.88,
         scaleFar:0.80, scaleNear:1.02,
-        spawn:{xf:0.80, yf:0.50},               // arrive on the right platform
+        spawn:{xf:0.798, yf:0.490},               // arrive on the right platform
         merlin:{xf:0.12, yf:0.60},              // Merlin the wizard-dog, by the chair on the left
-        potions:{xf:0.47, yf:0.66, r:82},       // the alchemy table of potions -> Color Sort minigame
+        potions:{xf:0.500, yf:0.720, r:82},       // the alchemy table of potions -> Color Sort minigame
         // the big castle gate (far right): back to the Tower Garden courtyard
-        doors:[{xf:0.875, yf:0.50, r:56, glowXf:0.95, glowYf:0.50, glowR:55, to:'towergarden', label:'Back to Tower Garden', icon:'↩', toSpawn:{xf:0.45, yf:0.92}}],
+        doors:[{xf:0.819, yf:0.474, r:56, glowXf:0.817, glowYf:0.359, glowR:55, to:'towergarden', label:'Back to Tower Garden', icon:'↩', toSpawn:{xf:0.45, yf:0.92}}],
       },
       platforms:[], npcs:[],
     },
@@ -1605,11 +1761,11 @@ function buildAreas(){
         walkTop:0.50, walkBot:0.97,
         scaleFar:0.60, scaleNear:1.06,
         spawn:{xf:0.22, yf:0.83},                // arrive on the sand near the castle gate
-        fishbarrel:{xf:0.715, yf:0.65, r:78},    // Fisher's Barrel at the dock junction -> Fishing minigame
+        fishbarrel:{xf:0.717, yf:0.644, r:82},    // Fisher's Barrel at the dock junction -> Fishing minigame
         digsite:{xf:0.44, yf:0.52, r:74},        // the whale-rib skeleton on the sand -> Fossil Dig minigame
         // the castle gate (left): back to the Tower Garden; the open sea (right) -> Ocean Depths
-        doors:[{xf:0.13, yf:0.80, r:74, glowXf:0.10, glowYf:0.55, glowR:60, to:'towergarden', label:'Back to Tower Garden', icon:'↩', toSpawn:{xf:0.78, yf:0.86}},
-               {xf:0.82, yf:0.86, r:74, glowXf:0.85, glowYf:0.80, glowR:62, glowRGB:'90,180,255', to:'ocean1', label:'Dive into the Ocean', icon:'🌊', toSpawn:{xf:0.50, yf:0.72}}],
+        doors:[{xf:0.173, yf:0.741, r:74, glowXf:0.175, glowYf:0.609, glowR:60, to:'towergarden', label:'Back to Tower Garden', icon:'↩', toSpawn:{xf:0.78, yf:0.86}},
+               {xf:0.851, yf:0.863, r:74, glowXf:0.849, glowYf:0.791, glowR:62, glowRGB:'90,180,255', to:'ocean1', label:'Dive into the Ocean', icon:'🌊', toSpawn:{xf:0.50, yf:0.72}}],
       },
       platforms:[], npcs:[],
     },
@@ -1625,10 +1781,10 @@ function buildAreas(){
         mobXf:[0.16,0.28,0.40,0.52,0.64,0.76,0.88],
         walkTop:0.40, walkBot:0.96,
         scaleFar:0.62, scaleNear:1.05,
-        spawn:{xf:0.50, yf:0.72},                 // sink down onto the seabed in the middle
+        spawn:{xf:0.798, yf:0.463},                 // sink down onto the seabed
         // far-right reef -> surface (Beach); top-left cave archway -> deeper (ocean 2)
-        doors:[{xf:0.90, yf:0.62, r:82, glowXf:0.93, glowYf:0.38, glowR:62, to:'beach', label:'Surface (Beach)', icon:'↩', toSpawn:{xf:0.80, yf:0.74}},
-               {xf:0.12, yf:0.46, r:60, glowXf:0.12, glowYf:0.25, glowR:58, glowRGB:'90,180,255', to:'ocean2', label:'Sunken Sanctum', icon:'🕳️', toSpawn:{xf:0.30, yf:0.72}}],
+        doors:[{xf:0.835, yf:0.446, r:82, glowXf:0.861, glowYf:0.427, glowR:62, to:'beach', label:'Surface (Beach)', icon:'↩', toSpawn:{xf:0.80, yf:0.74}},
+               {xf:0.130, yf:0.353, r:60, glowXf:0.133, glowYf:0.252, glowR:58, glowRGB:'90,180,255', to:'ocean2', label:'Sunken Sanctum', icon:'🕳️', toSpawn:{xf:0.30, yf:0.72}}],
       },
       platforms:[], npcs:[],
     },
@@ -1649,10 +1805,10 @@ function buildAreas(){
         mobXf:[0.16,0.27,0.38,0.49,0.60,0.71,0.82,0.90],
         walkTop:0.40, walkBot:0.96,
         scaleFar:0.64, scaleNear:1.06,
-        spawn:{xf:0.30, yf:0.78},                 // arrive from the cave passage on the left
-        seal:{xf:0.50, yf:0.56, r:96, portalXf:0.575, portalYf:0.60},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
+        spawn:{xf:0.088, yf:0.648},                 // arrive from the cave passage on the left
+        seal:{xf:0.567, yf:0.669, r:96, portalXf:0.568, portalYf:0.608},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
         // the left ruins archway -> back up to Ocean Depths
-        doors:[{xf:0.09, yf:0.55, r:60, glowXf:0.085, glowYf:0.47, glowR:56, glowRGB:'90,180,255', to:'ocean1', label:'Back to Ocean Depths', icon:'↩', toSpawn:{xf:0.13, yf:0.66}}],
+        doors:[{xf:0.061, yf:0.562, r:60, glowXf:0.060, glowYf:0.503, glowR:56, glowRGB:'90,180,255', to:'ocean1', label:'Back to Ocean Depths', icon:'↩', toSpawn:{xf:0.13, yf:0.66}}],
       },
       platforms:[], npcs:[],
     },
@@ -1673,7 +1829,7 @@ function buildAreas(){
         tentY:0.82,                               // the band the tentacles rise from (on the floor)
         // the only way out: back up through the portal to the Sanctum
         // return portal — hidden until the boss is beaten, then a big blue swirl in the arena's middle
-        doors:[{xf:0.50, yf:0.86, r:86, glowXf:0.50, glowYf:0.80, glowR:92, glowRGB:'90,180,255', to:'ocean2', label:'Return through the portal', icon:'🌀', toSpawn:{xf:0.575, yf:0.62}}],
+        doors:[{xf:0.520, yf:0.799, r:86, glowXf:0.520, glowYf:0.767, glowR:92, glowRGB:'90,180,255', to:'ocean2', label:'Return through the portal', icon:'🌀', toSpawn:{xf:0.575, yf:0.62}}],
       },
       platforms:[], npcs:[],
     },
@@ -1691,7 +1847,7 @@ function buildAreas(){
         // the same archway leads back up to the garden
         doors:[{xf:0.085, yf:0.60, r:80, glowXf:0.105, glowYf:0.32, glowR:70, to:'garden', label:'Back to Garden', icon:'↩', toSpawn:{xf:0.10, yf:0.74}},
                // the glowing RED tunnel — descend into Queen Seby's lair
-               {xf:0.935, yf:0.57, r:88, glowXf:0.875, glowYf:0.42, glowR:88, to:'sebyboss', label:'Seby Boss Fight', icon:'👑', toSpawn:{xf:0.90, yf:0.70}}],
+               {xf:0.9009, yf:0.5386, r:88, glowXf:0.9224, glowYf:0.3946, glowR:88, to:'sebyboss', label:'Seby Boss Fight', icon:'👑', toSpawn:{xf:0.90, yf:0.70}}],
       },
       platforms:[], npcs:[],
     },
@@ -1703,10 +1859,13 @@ function buildAreas(){
         maskWalk:'green',
         walkTop:0.47, walkBot:0.99,
         scaleFar:0.72, scaleNear:1.06,
-        spawn:{xf:0.90, yf:0.70},                 // step out of the dark tunnel at the far right
-        boss:{xf:0.53, yf:0.74},                  // Queen Seby guards the magic circle
-        // the same tunnel is the only way back out
-        doors:[{xf:0.90, yf:0.70, r:80, glowXf:0.925, glowYf:0.55, glowR:64, to:'cave', label:'Back to Crystal Cave', icon:'↩', toSpawn:{xf:0.86, yf:0.60}}],
+        spawn:{xf:0.9208, yf:0.7306},             // step out of the dark tunnel at the far right
+        boss:{xf:0.5182, yf:0.6744},              // Queen Seby guards the magic circle
+        // her crystal barrier — drag each shard with the dev placement tool (P); positions persist
+        crystals:[{xf:0.2945, yf:0.5793, h:128}, {xf:0.6746, yf:0.6887, h:128}, {xf:0.1863, yf:0.8569, h:128}, {xf:0.4351, yf:0.5164, h:128}, {xf:0.5908, yf:0.4859, h:128}],
+        // the dark tunnel back to the cave + a violet swirl portal that rises straight to the surface
+        doors:[{xf:0.90, yf:0.70, r:80, glowXf:0.925, glowYf:0.55, glowR:64, to:'cave', label:'Back to Crystal Cave', icon:'↩', toSpawn:{xf:0.86, yf:0.60}},
+               {xf:0.5174, yf:0.6889, r:80, glowXf:0.5199, glowYf:0.666, glowR:120, glowRGB:'180,90,255', swirl:true, to:'garden', label:'Rise to the surface', icon:'🌀', toSpawn:{xf:0.10, yf:0.74}}],
       },
       platforms:[], npcs:[],
     },
@@ -1718,12 +1877,12 @@ function buildAreas(){
         maskWalk:'purple',                       // purple = the walkable cobblestone plaza
         walkTop:0.60, walkBot:0.98,
         scaleFar:0.55, scaleNear:1.04,
-        spawn:{xf:0.31, yf:0.70},                // arrive from the Garden, right in front of the gate by the lamp
+        spawn:{xf:0.293, yf:0.691},                // arrive from the Garden, right in front of the gate by the lamp
         npc:{id:'lucian', cat:'lucian', quest:'q_lucian', xf:0.44, yf:0.85},   // Lucian, right beside the fountain
         // left -> back to the Garden; right -> the House
-        doors:[{xf:0.24, yf:0.71, r:84, glowXf:0.24, glowYf:0.57, glowR:62, to:'garden', label:'Back to Garden', icon:'↩', toSpawn:{xf:0.90, yf:0.86}},
-               {xf:0.90, yf:0.82, r:84, glowXf:0.94, glowYf:0.66, glowR:60, to:'slum', label:'The Slums', icon:'🏚️', toSpawn:{xf:0.085, yf:0.80}},
-               {xf:0.498, yf:0.66, r:78, glowXf:0.498, glowYf:0.585, glowR:54, glowRGB:'255,210,120', to:'bank', label:'Whisker Savings Bank', icon:'🏦', toSpawn:{xf:0.50, yf:0.90}}],
+        doors:[{xf:0.252, yf:0.673, r:84, glowXf:0.245, glowYf:0.602, glowR:62, to:'garden', label:'Back to Garden', icon:'↩', toSpawn:{xf:0.90, yf:0.86}},
+               {xf:0.911, yf:0.718, r:84, glowXf:0.933, glowYf:0.694, glowR:60, to:'slum', label:'The Slums', icon:'🏚️', toSpawn:{xf:0.085, yf:0.80}},
+               {xf:0.504, yf:0.650, r:80, glowXf:0.505, glowYf:0.563, glowR:54, glowRGB:'255,210,120', to:'bank', label:'Whisker Savings Bank', icon:'🏦', toSpawn:{xf:0.50, yf:0.90}}],
       },
       platforms:[], npcs:[],
     },
@@ -1734,13 +1893,13 @@ function buildAreas(){
       hub:{
         img:'maps/slum.png', mask:'maps/slummask.png', maskWalk:'green',
         walkTop:0.55, walkBot:0.95, scaleFar:0.55, scaleNear:1.04,
-        spawn:{xf:0.085, yf:0.80},               // arrive at the foot of the stone bridge (from the City)
+        spawn:{xf:0.067, yf:0.736},               // arrive at the foot of the stone bridge (from the City)
         mob:'pigeon', mobXf:[0.30,0.42,0.54,0.66,0.78],   // pigeons scavenge the slum
         npc:{id:'nomnom', cat:'nomnom', quest:'q_nomnom', xf:0.27, yf:0.70},   // NomNom hangs by the forge
         warn:'😿 NomNom: Careful, Puiutu… something really BAD lives deeper in here.',
         // back across the bridge -> the City; the dark alley (right) -> the Sewers (Evil Coon's chase)
-        doors:[{xf:0.085, yf:0.82, r:78, glowXf:0.05, glowYf:0.78, glowR:54, glowRGB:'255,210,120', to:'street', label:'Back to the City', icon:'↩', toSpawn:{xf:0.90, yf:0.82}},
-               {xf:0.92, yf:0.62, r:74, glowXf:0.95, glowYf:0.50, glowR:54, glowRGB:'120,40,40', to:'sewerentrance', label:'Into the sewers…', icon:'🕳️', toSpawn:{xf:0.22, yf:0.80}}],
+        doors:[{xf:0.095, yf:0.726, r:78, glowXf:0.031, glowYf:0.768, glowR:54, glowRGB:'255,210,120', to:'street', label:'Back to the City', icon:'↩', toSpawn:{xf:0.90, yf:0.82}},
+               {xf:0.937, yf:0.474, r:74, glowXf:0.938, glowYf:0.384, glowR:54, glowRGB:'120,40,40', to:'sewerentrance', label:'Into the sewers…', icon:'🕳️', toSpawn:{xf:0.244, yf:0.657}}],
       },
       platforms:[], npcs:[],
     },
@@ -1751,13 +1910,13 @@ function buildAreas(){
       hub:{
         img:'maps/sewerentrance.png', mask:'maps/sewer entrance mask.png', maskWalk:'purple',
         walkTop:0.60, walkBot:0.93, scaleFar:0.6, scaleNear:0.98,
-        spawn:{xf:0.22, yf:0.80},                 // arrive from the slum alley (left)
+        spawn:{xf:0.244, yf:0.657},                 // arrive from the slum alley (left)
         mob:'pigeon', mobXf:[0.30,0.42,0.54,0.66],
         npc:{id:'nomnom', cat:'nomnom', quest:'q_nomnom', xf:0.62, yf:0.80},   // NomNom, fretting near the dark door
         warn:'😿 NomNom: Don’t go right, Puiutu… something EVIL is waiting in the dark ahead.',
         // left -> back to the slum; far-right dark doorway -> the Coon chase
-        doors:[{xf:0.20, yf:0.82, r:74, glowXf:0.16, glowYf:0.74, glowR:54, glowRGB:'255,210,120', to:'slum', label:'Back to the Slums', icon:'↩', toSpawn:{xf:0.90, yf:0.62}},
-               {xf:0.90, yf:0.80, r:74, glowXf:0.93, glowYf:0.68, glowR:54, glowRGB:'120,40,40', to:'sewer', label:'Enter the dark sewer', icon:'🕳️'}],
+        doors:[{xf:0.225, yf:0.633, r:74, glowXf:0.193, glowYf:0.534, glowR:54, glowRGB:'255,210,120', to:'slum', label:'Back to the Slums', icon:'↩', toSpawn:{xf:0.90, yf:0.62}},
+               {xf:0.969, yf:0.614, r:72, glowXf:0.980, glowYf:0.518, glowR:48, glowRGB:'120,40,40', to:'sewer', label:'Enter the dark sewer', icon:'🕳️'}],
       },
       platforms:[], npcs:[],
     },
@@ -1770,7 +1929,10 @@ function buildAreas(){
         walkTop:0.10, walkBot:0.92, scaleFar:0.66, scaleNear:0.92,
         spawn:{xf:0.74, yf:0.30},                 // drop in on the upper-right ledge
         coonStart:{xf:0.88, yf:0.22},             // the stalker lurks behind you (waits a few seconds before the hunt)
-        exit:{xf:0.21, yf:0.88, r:62, to:'slum', toSpawn:{xf:0.90, yf:0.62}},   // the light up to the surface
+        exit:{xf:0.21, yf:0.88, r:62, to:'slum', toSpawn:{xf:0.90, yf:0.62}},   // the light up to the surface (bail out)
+        loot:[{xf:0.46, yf:0.55, img:'sack', name:'sack of stolen fish-coins'},
+              {xf:0.30, yf:0.84, img:'piggy', name:'Sir Oink’s golden piggy bank'},
+              {xf:0.62, yf:0.42, img:'crown', name:'the town’s jeweled crown'}],   // grab all 3 to corner the Coon
         doors:[],
       },
       platforms:[], npcs:[],
@@ -1790,7 +1952,7 @@ function buildAreas(){
                   lines:['Piggy Junior: Oink oink! I keep the big vault all shiny! ✨','One day I’ll count EVERY fish in here. Maybe two days.']} ],
         bankdesk:{xf:0.505, yf:0.678, r:170, img:'siroink', h:116, cut:0.76, name:'Sir Oink',   // -> banking UI
                   lines:['Oink~ Welcome to Whisker Savings Bank, Puiutu! 🐷','Every little fish counts in here — deposit them and they’ll grow with interest.','Here, take the bank on your phone. Manage your fish anytime!']},
-        doors:[{xf:0.50, yf:0.95, r:80, glowXf:0.50, glowYf:0.985, glowR:54, glowRGB:'255,210,120', to:'street', label:'Leave the Bank', icon:'↩', toSpawn:{xf:0.498, yf:0.70}}],
+        doors:[{xf:0.50, yf:0.95, r:80, glowXf:0.505, glowYf:0.849, glowR:54, glowRGB:'255,210,120', to:'street', label:'Leave the Bank', icon:'↩', toSpawn:{xf:0.498, yf:0.70}}],
       },
       platforms:[], npcs:[],
     },
@@ -1979,7 +2141,7 @@ function interactTarget(){
   if(nearPortal) return 'portal'; if(nearNpc) return 'npc'; return null;
 }
 function doInteract(){
-  if(!inGame || loreActive || LIGHTS.active) return;
+  if(!inGame || loreActive || LIGHTS.active || CIRC.active) return;
   const t=interactTarget();
   if(t==='rocky') openDialogue(HUB_ROCKY_NPC);
   else if(t==='tomy') tomyTalk();
@@ -1992,7 +2154,11 @@ function doInteract(){
   else if(t==='bankdesk'){ const bd=A.hub.bankdesk; loreOpen(bd.name||'Sir Oink', bd.lines||[], ()=>{ openModal('market'); switchMarketTab('bank'); }); }
   else if(t==='staff'){ const s=HUB.nearStaff; if(s) loreOpen(s.name||'Pig', s.lines||[]); }
   else if(t==='merge') mgOpen();
-  else if(t==='door'){ const dr=HUB.nearDoor; if(dr){ if(dr.toSpawn) HUB._spawnOverride=dr.toSpawn; enterArea(dr.to, !!dr.fromRight); } }
+  else if(t==='door'){ const dr=HUB.nearDoor; if(dr){
+      const go=()=>{ if(dr.toSpawn) HUB._spawnOverride=dr.toSpawn; enterArea(dr.to, !!dr.fromRight); };
+      if(dr.to==='sebyboss'){ circOpen(go); }   // gate the Lair behind the Power Conduit puzzle — every time
+      else go();
+    } }
   else if(t==='cave') enterArea(A.hub.cave.to,false);
   else if(t==='portal') enterPortal(nearPortal);
   else if(t==='hubnpc') openDialogue(A.hub.npc);
@@ -2002,7 +2168,7 @@ function doInteract(){
 function updateInteractBtn(){
   const b=document.getElementById('interactBtn'); if(!b) return;
   const t=interactTarget();
-  if(!t || !inGame || dialogueActive || battleActive || mapOpen || loreActive || LIGHTS.active){ b.style.display='none'; return; }
+  if(!t || !inGame || dialogueActive || battleActive || mapOpen || loreActive || LIGHTS.active || CIRC.active){ b.style.display='none'; return; }
   b.style.display='flex';
   b.textContent = t==='merge' ? '🍉' : t==='tomy' ? '💛' : t==='merlin' ? '🧙' : t==='potions' ? '🧪' : t==='fishbarrel' ? '🎣' : t==='digsite' ? '⛏️' : t==='bankdesk' ? '🏦' : t==='staff' ? '🐷' : t==='spot' ? spotIcon(HUB.nearSpot) : t==='seal' ? (S.ocean2Solved?'🌀':'🔒') : t==='cave' ? '🔮' : t==='door' ? (HUB.nearDoor&&HUB.nearDoor.icon||'🏰') : '💬';
 }
@@ -2827,7 +2993,7 @@ function drawEnemies(){
         g.beginPath(); g.ellipse(sx,fy-e.dh*0.5,e.dh*0.5,e.dh*0.6,0,0,7); g.fill(); g.restore();
       }
       g.save(); if(e.defeated) g.globalAlpha=fade;
-      drawBossSprite(g,sx,fy,e.facing||e.dir,e.dh,key,e.phase2&&!e.defeated,bbob,sprites,aura);
+      drawBossSprite(g,sx,fy,e.facing||e.dir,e.dh,key,e.phase2&&!e.defeated,bbob,sprites,aura,sprites===SEBYI?0.15:0);
       g.restore();
       // claw slash effect (cyan for Seby, warm for Coon)
       if(e.slashUntil && now<e.slashUntil){
@@ -3272,7 +3438,7 @@ function enterHub(fromRight){
   HUB.fish=[];                          // fish removed → coins now spawn on walkable ground
   groundCoins=[]; coinSpawnAt=0;
   // Queen Seby — the top-down boss (only the sebyboss arena defines hub.boss)
-  HUB.shards=[];
+  HUB.shards=[]; HUB.crystals=[];   // clear every hub so her crystal barrier never bleeds onto other maps
   if(H.boss){
     let bx=H.boss.xf*HUB.worldW, by=H.boss.yf*VH;
     if(maskReady()){ const p=nearestWalk(bx,by); if(p){bx=p.x;by=p.y;} }
@@ -3282,6 +3448,7 @@ function enterHub(fromRight){
       throwCD:0, meleeCD:0, dashCD:0, meleeAt:0, meleeDone:false, throwAt:0, threw:false,
       dashUntil:0, dashHit:false, dashA:0, phase2:false, hitFlash:0,
       defeated:false, respawnAt:0, introShown:false};
+    spawnSebyCrystals();
   } else HUB.boss=null;
   // The Dreamer in the Deep — abyss boss arena
   if(H.abyssBoss){
@@ -3366,10 +3533,15 @@ function abyssVictory(now){
   toast('🐙 The Dreamer recoils into the abyss!  +'+moneyText(coins)+'  +'+xp+' XP');
 }
 //═══════════════════════════════════════════════ THE SEWERS — survival-horror stalker chase
-const SEWER={ on:false, coon:{x:0,y:0,phase:0,facing:-1}, speed:3.1, dist:null, GW:72, GH:26, gridT:0, beatAt:0 };
+const SEWER={ on:false, mode:'hunt', coon:{x:0,y:0,phase:0,facing:-1}, speed:3.1, dist:null, GW:72, GH:26, gridT:0, beatAt:0,
+  loot:[], got:0, frenzyUntil:0, frenzyCD:0, bossHp:0, bossMax:0, hitFlash:0, growlAt:0 };
 function sewerInit(){
-  const H=A.hub, cs=H.coonStart||{xf:0.8,yf:0.3};
-  SEWER.on=true; SEWER.dist=null; SEWER.gridT=0; SEWER.beatAt=0; SEWER.chaseStart=Date.now()+4000; SEWER.warned=false;
+  const H=A.hub, cs=H.coonStart||{xf:0.8,yf:0.3}, now=Date.now();
+  SEWER.on=true; SEWER.mode='hunt'; SEWER.dist=null; SEWER.gridT=0; SEWER.beatAt=0; SEWER.chaseStart=now+4000; SEWER.warned=false;
+  SEWER.frenzyUntil=0; SEWER.frenzyCD=now+7000; SEWER.hitFlash=0; SEWER.growlAt=0;
+  // keep already-found treasures across retries this session; rebuild positions
+  SEWER.loot=(H.loot||[]).map((l,i)=>{ let x=l.xf*HUB.worldW, y=l.yf*VH; if(maskReady()){const p=nearestWalk(x,y);if(p){x=p.x;y=p.y;}} return {x,y,img:l.img,name:l.name,got:(SEWER.loot[i]&&SEWER.loot[i].got)||false}; });
+  SEWER.got=SEWER.loot.filter(l=>l.got).length;
   let cx=cs.xf*HUB.worldW, cy=cs.yf*VH; if(maskReady()){ const p=nearestWalk(cx,cy); if(p){cx=p.x;cy=p.y;} }
   SEWER.coon.x=cx; SEWER.coon.y=cy; SEWER.coon.phase=0; SEWER.coon.facing=-1;
 }
@@ -3385,35 +3557,73 @@ function sewerBFS(tx,ty){   // flood the maze from the player so the stalker can
   SEWER.dist=dist;
 }
 function updateSewer(now){
-  const H=A.hub, c=HUB.cat, co=SEWER.coon; if(!maskReady()) return;
-  // reached the light -> climb back to the surface
-  const ex=H.exit; if(ex && !PLACE_ON && Math.hypot(c.x-ex.xf*HUB.worldW, c.y-ex.yf*VH)<(ex.r||60)){
+  const H=A.hub, c=HUB.cat, co=SEWER.coon, boss=SEWER.mode==='boss'; if(!maskReady()) return;
+  // bail out via the light (only while still hunting — no running once the fight is on)
+  const ex=H.exit; if(!boss && ex && !PLACE_ON && Math.hypot(c.x-ex.xf*HUB.worldW, c.y-ex.yf*VH)<(ex.r||60)){
     SEWER.on=false; if(ex.toSpawn) HUB._spawnOverride=ex.toSpawn; SFX.win&&SFX.win(); toast('🌅 You scramble up to the surface — safe!'); enterArea(ex.to,false); return; }
-  // ~4s head start: the stalker only stirs after chaseStart (it lurks, eyes glowing, before the hunt)
-  const chasing = now > SEWER.chaseStart;
+  // collect the stolen treasures; grabbing all 3 corners the Coon into a real fight
+  if(!boss) for(const l of SEWER.loot){ if(l.got)continue; if(Math.hypot(c.x-l.x,c.y-l.y)<40){ l.got=true; SEWER.got++; SFX.coin&&SFX.coin();
+    for(let i=0;i<10;i++)particles.push({x:l.x,y:l.y-10,vx:(Math.random()-.5)*4,vy:-(Math.random()*4),life:1,c:'#ffd86b'});
+    toast('💰 Recovered '+(l.name||'stolen treasure')+'!  ('+SEWER.got+'/'+SEWER.loot.length+')');
+    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=150+S.level*10; SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); toast('😼 “MY treasure!” — the Evil Coon turns to FIGHT!'); } } }
+  const chasing = boss || now>SEWER.chaseStart;
   if(chasing && !SEWER.warned){ SEWER.warned=true; SFX.lose&&SFX.lose(); toast('🔴 It’s coming — RUN!'); }
+  // periodic FRENZY bursts (faster + growl + red flash)
+  if(chasing && !boss && now>SEWER.frenzyCD){ SEWER.frenzyCD=now+7000+Math.random()*3000; SEWER.frenzyUntil=now+2200; SFX.tone&&SFX.tone(90,0.5,'sawtooth',0.08); SFX.tone&&SFX.tone(60,0.5,'square',0.06); }
+  const frenzy = now<SEWER.frenzyUntil;
+  const spd = (boss?3.4:SEWER.speed) * (frenzy?1.6:1);
   if(chasing){
-    if(now-SEWER.gridT>320){ SEWER.gridT=now; sewerBFS(c.x,c.y); }
+    if(now-SEWER.gridT>(frenzy?180:320)){ SEWER.gridT=now; sewerBFS(c.x,c.y); }
     if(SEWER.dist){ const GW=SEWER.GW,GH=SEWER.GH, [cgx,cgy]=sewerCell(co.x,co.y); let tgx=cgx,tgy=cgy,tbest=1e9;
       for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[0,0]]){ const nx=cgx+dx,ny=cgy+dy; if(nx<0||ny<0||nx>=GW||ny>=GH)continue; const dv=SEWER.dist[ny*GW+nx]; if(dv>=0&&dv<tbest){tbest=dv;tgx=nx;tgy=ny;} }
       const twx=(tgx+0.5)/GW*HUB.worldW, twy=(tgy+0.5)/GH*VH, dxx=twx-co.x, dyy=twy-co.y, dd=Math.hypot(dxx,dyy)||1;
-      co.x+=dxx/dd*SEWER.speed; co.y+=dyy/dd*SEWER.speed; if(Math.abs(dxx)>0.4)co.facing=dxx<0?-1:1; co.phase+=0.12;
+      co.x+=dxx/dd*spd; co.y+=dyy/dd*spd; if(Math.abs(dxx)>0.4)co.facing=dxx<0?-1:1; co.phase+=0.12;
     }
   }
   const D=Math.hypot(c.x-co.x,c.y-co.y);
-  // heartbeat — slow & ominous during the head start, then faster the closer it gets
-  if(now>SEWER.beatAt){ SEWER.beatAt=now + (chasing?Math.max(250,Math.min(1100,D*1.5)):1200); SFX.tone&&SFX.tone(46,0.12,'sine',0.11); SFX.tone&&SFX.tone(38,0.12,'sine',0.09,0.13); }
-  // caught -> hurt + scramble back to the entrance, stalker resets behind you
-  if(chasing && D<36 && now>(P.iframe||0)){ hubHurtPlayer(now, rnd(14,22), '#ff3a3a', co.x, co.y, 12);
+  // growl when it's close or frenzied
+  if((frenzy||D<200) && now>SEWER.growlAt){ SEWER.growlAt=now+ (frenzy?700:1400); SFX.tone&&SFX.tone(58,0.22,'sawtooth',0.05); }
+  // heartbeat — slow during the head start, racing when close
+  if(now>SEWER.beatAt){ SEWER.beatAt=now + (chasing?Math.max(220,Math.min(1100,D*1.5)):1200); SFX.tone&&SFX.tone(46,0.12,'sine',0.11); SFX.tone&&SFX.tone(38,0.12,'sine',0.09,0.13); }
+  if(boss){
+    // FIGHT: it rams you (damage + knockback, no reset); strike back with attack
+    if(D<44 && now>(P.iframe||0)){ hubHurtPlayer(now, rnd(12,20), '#ff3a3a', co.x, co.y, 13); }
+  } else if(chasing && D<36 && now>(P.iframe||0)){
+    // caught while hunting -> hurt + scramble back to the entrance
+    hubHurtPlayer(now, rnd(14,22), '#ff3a3a', co.x, co.y, 12);
     const sp=H.spawn; c.x=sp.xf*HUB.worldW; c.y=sp.yf*VH; if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} } c.safeX=c.x; c.safeY=c.y;
-    sewerInit(); toast('🩸 The Coon lunges — you scramble back!'); }
+    SEWER.coon.x=(H.coonStart.xf*HUB.worldW); SEWER.coon.y=(H.coonStart.yf*VH); SEWER.chaseStart=now+2500; SEWER.warned=false;
+    toast('🩸 The Coon lunges — you scramble back!');
+  }
+}
+function sewerCoonHit(now){   // player struck the Coon during the boss fight
+  if(!SEWER.on || SEWER.mode!=='boss') return false;
+  const c=HUB.cat, co=SEWER.coon; if(Math.hypot(c.x-co.x,c.y-co.y)>78) return false;
+  SEWER.bossHp-=playerAtkDmg(); SEWER.hitFlash=now; co.x+=(co.x<c.x?-1:1)*6;
+  floatText(co.x,co.y-90,'-'+playerAtkDmg(),'#fff');
+  if(SEWER.bossHp<=0){ // defeated
+    SEWER.on=false; const coins=300+S.level*8, xp=320; S.coins+=coins; addXP(xp); S.totalDefeats=(S.totalDefeats||0)+1; S.bossDefeated=true;
+    SFX.win&&SFX.win(); save(); syncHUD(); questProgress('defeat'); checkAchievements();
+    for(let i=0;i<24;i++) floatText(co.x+(Math.random()-.5)*160, co.y-30-Math.random()*90,'✦', i%2?'#ffd86b':'#ff8a3a');
+    HUB._spawnOverride={xf:0.90,yf:0.62}; toast('👑 The Evil Coon is defeated!  +'+moneyText(coins)+'  +'+xp+' XP'); enterArea('slum',false);
+  }
+  return true;
 }
 function drawSewer(){
-  const H=A.hub, c=HUB.cat, co=SEWER.coon, now=Date.now(), psx=c.x-HUB.camx, pcy=c.y-22, lr=160;
-  // exit light (a faint guiding glow, always visible through the dark)
-  if(H.exit){ const exx=H.exit.xf*HUB.worldW-HUB.camx, exy=H.exit.yf*VH, pr=0.6+0.4*Math.sin(now*0.004);
+  const H=A.hub, c=HUB.cat, co=SEWER.coon, now=Date.now(), psx=c.x-HUB.camx, pcy=c.y-22;
+  const boss=SEWER.mode==='boss', frenzy=now<SEWER.frenzyUntil, lr=boss?230:160;
+  // exit light (only while hunting — a guiding glow / bail-out)
+  if(!boss && H.exit){ const exx=H.exit.xf*HUB.worldW-HUB.camx, exy=H.exit.yf*VH, pr=0.6+0.4*Math.sin(now*0.004);
     const gr=g.createRadialGradient(exx,exy,4,exx,exy,100); gr.addColorStop(0,'rgba(150,205,255,'+(0.55*pr)+')'); gr.addColorStop(1,'rgba(150,205,255,0)');
     g.save(); g.fillStyle=gr; g.beginPath(); g.arc(exx,exy,100,0,7); g.fill(); g.restore(); }
+  // stolen treasures — glowing loot to grab (hunt phase)
+  if(!boss) for(const l of SEWER.loot){ if(l.got)continue; const lx=l.x-HUB.camx, ly=l.y, pr=0.6+0.4*Math.sin(now*0.005+l.x);
+    g.save();
+    const gr=g.createRadialGradient(lx,ly-18,3,lx,ly-18,48); gr.addColorStop(0,'rgba(255,210,90,'+(0.55*pr)+')'); gr.addColorStop(1,'rgba(255,210,90,0)');
+    g.fillStyle=gr; g.beginPath(); g.arc(lx,ly-18,48,0,7); g.fill();
+    const im=LOOT_IMG[l.img]; if(im&&im.complete&&im.naturalWidth){ const h=46, w=im.naturalWidth/im.naturalHeight*h; g.imageSmoothingEnabled=true; g.drawImage(im, lx-w/2, ly-h, w, h); }
+    else { g.textAlign='center'; g.font='22px serif'; g.fillText('💰',lx,ly+2); }
+    g.restore(); }
   // darkness everywhere except a light circle around Puiutu
   const grd=g.createRadialGradient(psx,pcy,28,psx,pcy,lr);
   grd.addColorStop(0,'rgba(0,0,0,0)'); grd.addColorStop(0.62,'rgba(2,3,6,0.5)'); grd.addColorStop(1,'rgba(1,2,4,0.97)');
@@ -3433,6 +3643,23 @@ function drawSewer(){
     // far / in the dark: only the glowing red eyes pierce the black
     const hy=co.y-86;
     for(const ox of [-7,7]){ const ex=csx+co.facing*10+ox; const gr=g.createRadialGradient(ex,hy,1,ex,hy,15); gr.addColorStop(0,'rgba(255,45,30,'+eg+')'); gr.addColorStop(1,'rgba(255,30,20,0)'); g.fillStyle=gr; g.beginPath(); g.arc(ex,hy,15,0,7); g.fill(); g.fillStyle='rgba(255,210,200,'+eg+')'; g.beginPath(); g.arc(ex,hy,2.6,0,7); g.fill(); }
+  }
+  if(boss && now-SEWER.hitFlash<110){ g.globalAlpha=.5; g.globalCompositeOperation='lighter'; g.fillStyle='#fff'; g.beginPath(); g.ellipse(csx,co.y-60,30,40,0,0,7); g.fill(); }
+  g.restore();
+  // ── HORROR FX overlays ──
+  // frenzy: a pulsing red edge vignette
+  if(frenzy){ g.save(); const v=g.createRadialGradient(VW/2,VH/2,VH*0.3,VW/2,VH/2,VH*0.75); v.addColorStop(0,'rgba(180,0,0,0)'); v.addColorStop(1,'rgba(170,0,0,'+(0.32+0.12*Math.sin(now*0.03))+')'); g.fillStyle=v; g.fillRect(0,0,VW,VH); g.restore(); }
+  // low HP: blood creeps in from the edges
+  const hp=P.hp/P.maxHp; if(hp<0.4){ g.save(); const a=(0.4-hp)/0.4*0.5; const v=g.createRadialGradient(VW/2,VH/2,VH*0.35,VW/2,VH/2,VH*0.8); v.addColorStop(0,'rgba(120,0,0,0)'); v.addColorStop(1,'rgba(120,0,0,'+a+')'); g.fillStyle=v; g.fillRect(0,0,VW,VH); g.restore(); }
+  g.save(); g.textAlign='center';
+  if(boss){ // boss HP bar
+    const bw=Math.min(VW*0.6,360), x=(VW-bw)/2, y=72, pct=Math.max(0,SEWER.bossHp/SEWER.bossMax);
+    g.fillStyle='rgba(10,8,6,.75)'; roundRectPath(x-3,y-3,bw+6,18,6); g.fill();
+    g.fillStyle='#3a1010'; roundRectPath(x,y,bw,10,5); g.fill(); g.fillStyle='#e0402a'; roundRectPath(x,y,bw*pct,10,5); g.fill();
+    g.fillStyle='#ffd9cf'; g.font='bold 11px Trebuchet MS'; g.fillText('👑 Evil Coon', VW/2, y+9);
+  } else { // treasure counter
+    g.font='bold 14px Trebuchet MS'; g.fillStyle='rgba(10,8,6,.7)'; const t='💰 '+SEWER.got+' / '+SEWER.loot.length, tw=g.measureText(t).width+18;
+    roundRectPath(VW/2-tw/2,12,tw,24,8); g.fill(); g.fillStyle='#ffe7b0'; g.fillText(t, VW/2, 29);
   }
   g.restore();
 }
@@ -3517,12 +3744,23 @@ function spawnHubShards(b){
       vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, spin:Math.random()*6, life:180, col:(k%2?'#9fe6ff':'#b07cf0')});
   }
 }
+// ── Seby's crystal barrier: a ring of shards that must all be shattered before she can be hit ──
+function spawnSebyCrystals(){
+  HUB.crystals=[];
+  const b=HUB.boss; if(!b) return;
+  const pts=(A.hub&&A.hub.crystals)||[];
+  pts.forEach((p,i)=>{
+    HUB.crystals.push({x:p.xf*HUB.worldW, y:p.yf*VH, hp:80, maxHp:80, dead:false, hitFlash:0, h:p.h||128});
+  });
+}
+function crystalsRemain(){ return (HUB.crystals||[]).some(k=>!k.dead); }
 function updateHubBoss(now){
   const b=HUB.boss, c=HUB.cat;
   if(b.defeated){
     if(b.respawnAt && now>b.respawnAt){
       b.defeated=false; b.hp=b.maxHp; b.x=b.homeX; b.y=b.homeY;
       b.state='walk'; b.phase2=false; b.throwCD=0; b.meleeCD=0; b.dashCD=0; b.introShown=true;
+      spawnSebyCrystals();   // her barrier reforms when she rises again
       toast('👑 Queen Seby gathers her shattered crystals… she rises again!');
     }
     return;
@@ -3667,6 +3905,7 @@ function updateHub(){
   // in the abyss arena there's no way out until the boss is beaten
   const doorsLive = !A.hub.abyssBoss || (HUB.abyss && HUB.abyss.state==='dead');
   if(doorsLive && A.hub.doors) for(const dr of A.hub.doors){
+    if(dr.swirl && A.hub.boss && HUB.boss && !HUB.boss.defeated) continue;
     let near=false;
     if(dr.maskColor && HUB._redCx!=null){
       const dxr=HUB._redCx*HUB.worldW, dyr=HUB._redCy*VH, rr=(dr.r||60);   // small zone right at the gate
@@ -3776,6 +4015,7 @@ function hubAttack(){
   const now=Date.now(); if(now<(P.atkCD||0)) return;
   P.atkCD=now+ATK_CD; P.atkAnim=now; SFX.swipe();
   const c=HUB.cat; let hit=false;
+  if(sewerCoonHit(now)) hit=true;   // Evil Coon boss fight in the sewers
   // Abyss boss: cut down tentacles anytime; strike the core only while it's exposed
   if(HUB.abyss && HUB.abyss.state!=='intro' && HUB.abyss.state!=='dead'){
     const ab=HUB.abyss;
@@ -3794,9 +4034,26 @@ function hubAttack(){
         const nm=d.sea?d.kind.name:(d.type==='pigeon'?'🐦 Pigeon':d.type==='clobster'?'🦞 Crystal Lobster':'🦆 Duck')+' Lv.'+(d.level||1);
         toast(nm+' defeated!  +'+moneyText(d.kind.coins)+'  +'+d.kind.xp+' XP'); questProgress('defeat'); checkAchievements(); syncHUD(); save(); } }
   }
-  // Queen Seby takes hits too
+  // Seby's crystal barrier: shatter shards within reach
+  if(HUB.crystals) for(const k of HUB.crystals){ if(k.dead) continue;
+    if(Math.hypot(c.x-k.x,c.y-k.y)<70){
+      const dmg=playerAtkDmg(); k.hp-=dmg; k.hitFlash=now; hit=true;
+      floatText(k.x,k.y-k.h*0.6,'-'+dmg,'#e6c9ff');
+      SFX.tone&&SFX.tone(620,0.05,'square',0.04);
+      if(k.hp<=0){ k.dead=true; SFX.tone&&SFX.tone(260,0.18,'sawtooth',0.06);
+        for(let i=0;i<16;i++)particles.push({x:k.x,y:k.y-k.h*0.5,vx:(Math.random()-.5)*6,vy:-(Math.random()*5),life:1,c:i%2?'#d9a8ff':'#9a4ddd'});
+        if(!crystalsRemain()){ toast('💥 The crystal barrier shatters — Queen Seby is exposed!'); SFX.seq&&SFX.seq([523,659,784,1047],'triangle',0.06); }
+      }
+    }
+  }
+  // Queen Seby takes hits too — but only once her barrier is down
   const b=HUB.boss;
   if(b && !b.defeated && Math.hypot(c.x-b.x,c.y-b.y)<96){
+    if(crystalsRemain()){
+      b.hitFlash=now; hit=true; floatText(b.x,b.y-110,'🛡 SHIELDED','#bda8ff');
+      SFX.tone&&SFX.tone(180,0.1,'sine',0.05);
+      syncHUD(); return;
+    }
     const dmg=playerAtkDmg(); b.hp-=dmg; b.hitFlash=now; hit=true;
     floatText(b.x,b.y-110,'-'+dmg,'#fff');
     if(b.hp<=0){
@@ -3834,6 +4091,7 @@ function drawHub(){
   const tyPos=hubTomy(); if(tyPos) items.push({z:tyPos.y, t:'tomy', p:tyPos});
   const npPos=hubNpc(); if(npPos) items.push({z:npPos.y, t:'hubnpc', p:npPos});
   if(HUB.boss && !HUB.boss.defeated) items.push({z:HUB.boss.y, t:'boss'});
+  if(HUB.crystals) for(const k of HUB.crystals){ if(!k.dead) items.push({z:k.y, t:'crystal', k}); }
   items.push({z:HUB.cat.y, t:'cat'});
   items.sort((a,b)=>a.z-b.z);
   for(const it of items){
@@ -3977,15 +4235,22 @@ function drawHub(){
         g.restore();
       }
     } else if(it.t==='boss'){ const b=HUB.boss, sc=hubScale(b.y), sx=b.x-HUB.camx, now=Date.now();
+      const bsz=200*sc;   // boss render height (the new Seby art is wide, so keep height modest)
       const key = b.state==='claw' ? 'rear'
                 : b.state==='shards' ? 'throw'
                 : b.state==='windup' ? 'rear'
+                : b.state==='dash' ? 'dash'
                 : (Math.floor(b.phase*1.4)%2?'walk1':'walk0');
       const bob=b.moving?Math.abs(Math.sin(b.phase*Math.PI))*4:0;
-      drawBossSprite(g, sx, b.y, b.facing, 200*sc, key, b.phase2&&!b.defeated, bob, SEBYI, '150,80,230');
-      if(now-(b.hitFlash||0)<110){ g.save();g.globalAlpha=.45;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(sx,b.y-100*sc,70*sc,95*sc,0,0,7);g.fill();g.restore(); }
+      drawBossSprite(g, sx, b.y, b.facing, bsz, key, b.phase2&&!b.defeated, bob, SEBYI, '150,80,230', 0.15);
+      // crystal-barrier shield bubble — shimmers while any shard still stands
+      if(crystalsRemain()){ const pulse=0.5+0.5*Math.sin(now*0.006);
+        g.save(); g.globalCompositeOperation='lighter'; g.strokeStyle='rgba(176,124,240,'+(0.25+pulse*0.35)+')'; g.lineWidth=3;
+        g.beginPath(); g.ellipse(sx, b.y-bsz*0.45, bsz*0.62, bsz*0.5, 0, 0, 7); g.stroke();
+        g.fillStyle='rgba(150,80,230,'+(0.06+pulse*0.06)+')'; g.fill(); g.restore(); }
+      if(now-(b.hitFlash||0)<110){ g.save();g.globalAlpha=.45;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(sx,b.y-bsz*0.5,bsz*0.35,bsz*0.47,0,0,7);g.fill();g.restore(); }
       // royal name plate + big HP bar
-      const topY=b.y-205*sc-14;
+      const topY=b.y-bsz-14;
       g.save(); g.textAlign='center'; g.font='bold 13px Trebuchet MS';
       g.fillStyle='rgba(28,16,60,.85)'; const lbl='👑 Queen Seby, the Ancient One'+(b.phase2?'  💢':''), tw=g.measureText(lbl).width+16;
       roundRectPath(sx-tw/2, topY-16, tw, 22, 8); g.fill();
@@ -3995,6 +4260,9 @@ function drawHub(){
       g.fillStyle = pct>0.5?'#b07cf0':pct>0.22?'#e8b53a':'#e0533a';
       g.beginPath(); g.roundRect(sx-bw/2,by,bw*pct,bh,3); g.fill();
       g.restore();
+    } else if(it.t==='crystal'){ const k=it.k, sc=hubScale(k.y), sx=k.x-HUB.camx, now=Date.now();
+      drawSebyCrystal(g, sx, k.y, k.h*sc, now-(k.hitFlash||0)<90, 1-k.hp/k.maxHp);
+      // damage shows through the crack sprite / flash — no floating HP bar
     } else if(it.t==='rocky'){ const r=HUB.rocky, sc=hubScale(r.y)*0.92, sx=r.x-HUB.camx, now=Date.now();
       const key=(now<r.barkUntil)?'bark':(r.moving?(Math.floor(r.phase*1.2)%2?'walk1':'walk0'):(S.companion?'idle':'sit'));
       drawDogSprite(g,sx,r.y,r.facing,86*sc,key);
@@ -4031,6 +4299,7 @@ function drawHub(){
   if(NET.connected) NET.drawRemotes();   // other players in the park
   // doors: glow the landmark (e.g. the tower) when you're near + show prompt
   if((!A.hub.abyssBoss || (HUB.abyss && HUB.abyss.state==='dead')) && A.hub.doors) for(const dr of A.hub.doors){
+    if(dr.swirl && A.hub.boss && HUB.boss && !HUB.boss.defeated) continue;
     const useRed = dr.maskColor==='red' && HUB._redCx!=null;
     const gx=(useRed?HUB._redCx*HUB.worldW:(dr.glowXf!=null?dr.glowXf:dr.xf)*HUB.worldW) - HUB.camx;
     const gy=(useRed?HUB._redCy*VH:(dr.glowYf!=null?dr.glowYf:dr.yf)*VH);
@@ -4041,6 +4310,12 @@ function drawHub(){
     const gr=g.createRadialGradient(gx,gy,4,gx,gy,glowR);
     gr.addColorStop(0,'rgba('+rgb+','+(near?0.85:0.30)*pr+')'); gr.addColorStop(0.6,'rgba('+rgb+','+(near?0.35:0.12)*pr+')'); gr.addColorStop(1,'rgba('+rgb+',0)');
     g.fillStyle=gr; g.beginPath(); g.arc(gx,gy,glowR,0,7); g.fill();
+    if(dr.swirl){ const now=Date.now(); g.globalAlpha=0.5+0.3*pr; g.strokeStyle='rgba('+rgb+',1)'; g.lineWidth=3; g.lineCap='round';
+      for(let a=0;a<3;a++){ g.beginPath();
+        for(let t=0;t<1;t+=0.04){ const ang=t*7.2+now*0.0018+a*2.1, rr=12+t*(glowR*0.82);
+          const px=gx+Math.cos(ang)*rr, py=gy+Math.sin(ang)*rr*0.6; t===0?g.moveTo(px,py):g.lineTo(px,py); }
+        g.stroke(); }
+      g.globalAlpha=1; }
     if(near){ g.globalAlpha=0.55+0.35*pr; g.strokeStyle=dr.glowRGB?'rgba('+rgb+',1)':'#ffe066'; g.lineWidth=3; g.beginPath(); g.ellipse(gx,gy,glowR*0.66,glowR*0.66,0,0,7); g.stroke(); }
     g.restore();
     if(near){ g.save(); g.textAlign='center'; g.font='bold 14px Trebuchet MS';
@@ -4897,7 +5172,7 @@ function showScreen(id){
   if(id!=='game')inGame=false;
 }
 function openModal(id){document.getElementById(id).classList.add('active');renderModal(id);}
-function closeModal(id){document.getElementById(id).classList.remove('active'); if(id==='merge')mgClose(); if(id==='sort')sortClose(); if(id==='fishing')fishClose(); if(id==='seal')sealClose(); if(id==='lore')loreClose(); if(id==='lights')lightsClose();}
+function closeModal(id){document.getElementById(id).classList.remove('active'); if(id==='merge')mgClose(); if(id==='sort')sortClose(); if(id==='fishing')fishClose(); if(id==='seal')sealClose(); if(id==='lore')loreClose(); if(id==='lights')lightsClose(); if(id==='gacha')gachaClose(); if(id==='circuit')circClose();}
 
 //═══════════════════════════════════════════════ PORTAL SEAL puzzle (rune memory / Simon)
 // growing Simon: the sequence starts at `start` runes and grows by one each round up to
@@ -5066,6 +5341,196 @@ function lightsWin(){
   }, 800);
 }
 
+//═══════════════════════════════════════════════ POWER CONDUIT puzzle (RE-style rotate-the-pipes)
+// A 6×6 board of conduit pieces. Tap a piece to rotate it 90°. Route power from the fixed ⚡ source
+// to all 3 sockets simultaneously. Solving it unlocks Queen Seby's Lair.
+// Directions: 0=N 1=E 2=S 3=W. A piece's connections rotate clockwise: (dir + rot) % 4.
+const CIRC={ n:6, cells:[], won:false, active:false, cb:null,
+  BASE:{straight:[1,3], corner:[0,1], t:[3,1,2], cross:[0,1,2,3], source:[1], target:[3]},
+  FILES:{straight:'norm/straight', corner:'norm/corner', t:'norm/t', cross:'norm/cross', source:'norm/source', target:'norm/target'} };
+const CIMG={};
+(function circLoadImgs(){ for(const k in CIRC.FILES){ const im=new Image(); im.src='circuit/'+CIRC.FILES[k]+'.png'; CIMG[k]=im; } })();
+// per-piece scale so each connector reaches the cell edge (the art has different transparent
+// margins per type: straight/corner pipes end ~16% in, T/cross arms ~8% in). Measured → 1/(1-2·margin).
+// normalized sprites already touch the cell edges, so all pieces use the same scale now
+const CIRC_SCALE={ straight:1.0, corner:1.0, t:1.0, cross:1.0, source:1.0, target:1.0 };
+// ── dev layout tool (live tweak frame/grid/gap/piece scale; persisted) ──
+const CIRC_DEV=Object.assign({frame:582, grid:54, gap:0, scale:1.03},
+  (()=>{ try{ return JSON.parse(localStorage.getItem('puiutu_circ3')||'{}'); }catch(e){ return {}; } })());
+function circApplyDev(){
+  const f=document.getElementById('circuitFrame'), gr=document.getElementById('circuitGrid');
+  if(f) f.style.width='min(94vw,'+CIRC_DEV.frame+'px)';
+  if(gr){ gr.style.width=CIRC_DEV.grid+'%'; gr.style.gap=CIRC_DEV.gap+'%'; }
+  document.querySelectorAll('#circuitGrid .cCell img').forEach(im=>{
+    im.style.transform='rotate('+((+im.dataset.rot||0)*90)+'deg) scale('+((+im.dataset.base||1.2)*CIRC_DEV.scale)+')'; });
+  const ro=document.getElementById('circuitDevRead'); if(ro) ro.textContent=JSON.stringify(CIRC_DEV);
+}
+function circDevSet(k,v){ CIRC_DEV[k]=parseFloat(v); localStorage.setItem('puiutu_circ3',JSON.stringify(CIRC_DEV)); circApplyDev(); }
+function circDevInit(){
+  const map={cdFrame:'frame',cdGrid:'grid',cdGap:'gap',cdScale:'scale'};
+  for(const id in map){ const el=document.getElementById(id); if(!el) continue; el.value=CIRC_DEV[map[id]]; el.oninput=()=>circDevSet(map[id],el.value); }
+  const btn=document.getElementById('circuitDevBtn'); if(btn) btn.onclick=()=>document.getElementById('circuitDev').classList.toggle('on');
+  circApplyDev();
+}
+// direction from cell a to adjacent cell b (0=N 1=E 2=S 3=W)
+function circDirTo(a,b,n){ const ar=Math.floor(a/n),ac=a%n,br=Math.floor(b/n),bc=b%n;
+  if(br===ar-1)return 0; if(bc===ac+1)return 1; if(br===ar+1)return 2; return 3; }
+// randomized DFS: find a (winding) self-avoiding path of grid indices from start → end
+function circFindPath(n,start,end,blocked){
+  const visited=new Array(n*n).fill(false), path=[];
+  (blocked||[]).forEach(b=>{ visited[b]=true; });
+  (function dfs(cell){
+    visited[cell]=true; path.push(cell);
+    if(cell===end) return true;
+    const r=Math.floor(cell/n),c=cell%n;
+    const nb=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
+    for(let i=nb.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nb[i],nb[j]]=[nb[j],nb[i]]; }
+    for(const [nr,nc] of nb){ if(nr<0||nr>=n||nc<0||nc>=n) continue; const k=nr*n+nc;
+      if(!visited[k] && dfs(k)) return true; }
+    path.pop(); return false;
+  })(start);
+  return path;
+}
+function circBuild(){
+  const n=CIRC.n; CIRC.won=false;
+  let g;
+  for(let attempt=0;attempt<200;attempt++){
+    g=[]; for(let i=0;i<n*n;i++) g.push({type:'empty',rot:0,fixed:false});
+    // source on left edge, 3 targets on right edge at different rows
+    const sr=1+Math.floor(Math.random()*(n-2));
+    const srcI=sr*n+0;
+    // pick 3 distinct rows for targets on the right edge
+    const rows=[]; while(rows.length<3){ const r=Math.floor(Math.random()*n);
+      if(!rows.includes(r)) rows.push(r); }
+    rows.sort((a,b)=>a-b);
+    const tgtIs=rows.map(r=>r*n+(n-1));
+    const fixed=new Set([srcI,...tgtIs]);
+    // build paths: source→first target, then branch from existing path to each additional target
+    const used=new Set();
+    let ok=true;
+    const allChains=[];
+    for(let t=0;t<3;t++){
+      const endI=tgtIs[t]; const endInner=rows[t]*n+(n-2);
+      let startCell, startI;
+      if(t===0){
+        startI=sr*n+1; startCell=startI;
+      } else {
+        // branch from a random cell already on a laid path
+        const candidates=[...used].filter(c=>!fixed.has(c));
+        if(!candidates.length){ ok=false; break; }
+        startCell=candidates[Math.floor(Math.random()*candidates.length)];
+        startI=startCell;
+      }
+      const blocked=[...fixed].filter(f=>f!==endI && f!==startI);
+      const busyCells=[...used].filter(c=>c!==startCell);
+      const path=circFindPath(n,startI,endInner,[...blocked,...busyCells]);
+      if(!path.length || path[path.length-1]!==endInner){ ok=false; break; }
+      const chain=t===0?[srcI,...path,endI]:[...path,endI];
+      allChains.push(chain);
+      for(const c of path) used.add(c);
+    }
+    if(!ok) continue;
+    // lay pipes based on connectivity: collect all neighbours per cell
+    const nbMap=new Map();
+    function addNb(a,b){ if(!nbMap.has(a)) nbMap.set(a,new Set()); nbMap.get(a).add(b);
+                          if(!nbMap.has(b)) nbMap.set(b,new Set()); nbMap.get(b).add(a); }
+    for(const chain of allChains) for(let i=0;i<chain.length-1;i++) addNb(chain[i],chain[i+1]);
+    // assign pipe types based on connection count and directions
+    for(const [cell,nbs] of nbMap){
+      if(fixed.has(cell)) continue;
+      const dirs=[...nbs].map(nb=>circDirTo(cell,nb,n));
+      if(dirs.length===1){ g[cell]={type:'straight',rot:0,fixed:false}; // dead end — make straight pointing that way
+        const d=dirs[0]; g[cell].rot=(d===1||d===3)?0:1;
+      } else if(dirs.length===2){
+        const [d1,d2]=dirs;
+        g[cell].type=((d1+2)%4===d2)?'straight':'corner';
+      } else if(dirs.length===3){ g[cell].type='t';
+      } else { g[cell].type='cross'; }
+    }
+    // compute correct rotations for path cells
+    for(const [cell,nbs] of nbMap){
+      if(fixed.has(cell)) continue;
+      const dirs=[...nbs].map(nb=>circDirTo(cell,nb,n));
+      const base=CIRC.BASE[g[cell].type];
+      for(let rot=0;rot<4;rot++){
+        const rotated=base.map(d=>(d+rot)%4);
+        if(dirs.every(d=>rotated.includes(d))){ g[cell].rot=rot; break; }
+      }
+    }
+    // place fixed endpoints
+    g[srcI]={type:'source',rot:0,fixed:true};
+    for(const ti of tgtIs){
+      const r=Math.floor(ti/n);
+      g[ti]={type:'target',rot:0,fixed:true};
+    }
+    // verify all targets are reachable before scrambling
+    CIRC.cells=g;
+    const pw=circPowered();
+    if(!tgtIs.every(t=>pw.has(t))) continue;
+    // pack remaining empty cells with decoy pipes
+    const decoy=['straight','straight','corner','corner','t','cross'];
+    for(const cell of g){ if(cell.type==='empty') cell.type=decoy[Math.floor(Math.random()*decoy.length)]; }
+    // scramble every non-fixed rotation
+    for(const cell of g){ if(!cell.fixed) cell.rot=Math.floor(Math.random()*4); }
+    CIRC.cells=g;
+    return;
+  }
+  // fallback: shouldn't happen but build a simple board if generation fails
+  g=[]; for(let i=0;i<n*n;i++) g.push({type:'straight',rot:Math.floor(Math.random()*4),fixed:false});
+  g[0]={type:'source',rot:0,fixed:true};
+  g[n-1]={type:'target',rot:0,fixed:true};
+  g[n*n-n]={type:'target',rot:0,fixed:true};
+  g[n*n-1]={type:'target',rot:0,fixed:true};
+  CIRC.cells=g;
+}
+function circConn(i){ const c=CIRC.cells[i]; return (CIRC.BASE[c.type]||[]).map(d=>(d+c.rot)%4); }
+function circPowered(){
+  const n=CIRC.n, off=[[-1,0],[0,1],[1,0],[0,-1]];   // N,E,S,W
+  const src=CIRC.cells.findIndex(c=>c.type==='source');
+  const seen=new Set([src]), stack=[src];
+  while(stack.length){ const i=stack.pop(), r=Math.floor(i/n), c=i%n;
+    for(const d of circConn(i)){ const nr=r+off[d][0], nc=c+off[d][1];
+      if(nr<0||nr>=n||nc<0||nc>=n) continue; const j=nr*n+nc;
+      if(seen.has(j)) continue;
+      if(circConn(j).includes((d+2)%4)){ seen.add(j); stack.push(j); }   // neighbour points back
+    } }
+  return seen;
+}
+function circRender(){
+  const wrap=document.getElementById('circuitGrid'); if(!wrap) return;
+  wrap.style.gridTemplateColumns='repeat('+CIRC.n+',1fr)';
+  const powered=circPowered(); wrap.innerHTML='';
+  CIRC.cells.forEach((cell,i)=>{
+    const d=document.createElement('div');
+    d.className='cCell'+(cell.fixed?' fixed':' rot')+(powered.has(i)?' powered':'');
+    const img=document.createElement('img'); img.src=CIMG[cell.type].src;
+    const base=CIRC_SCALE[cell.type]||1.2; img.dataset.rot=cell.rot; img.dataset.base=base;
+    img.style.transform='rotate('+(cell.rot*90)+'deg) scale('+(base*CIRC_DEV.scale)+')';   // per-type scale so connectors reach the cell edges and touch neighbours
+    d.appendChild(img);
+    if(!cell.fixed) d.onclick=()=>circTap(i);
+    wrap.appendChild(d);
+  });
+  const tgts=[]; CIRC.cells.forEach((c,i)=>{ if(c.type==='target') tgts.push(i); });
+  const poweredCount=tgts.filter(t=>powered.has(t)).length;
+  if(poweredCount===tgts.length){ circWin(); }
+  else { const m=document.getElementById('circuitMsg'); if(m&&!CIRC.won) m.textContent='⚡ Reroute the conduit — power all 3 sockets. ('+poweredCount+'/'+tgts.length+')'; }
+}
+function circTap(i){ if(CIRC.won) return; const c=CIRC.cells[i]; if(c.fixed) return;
+  c.rot=(c.rot+1)%4; SFX&&SFX.tone&&SFX.tone(360+(i%5)*40,0.06,'square',0.04); circRender(); }
+function circOpen(onSolve){
+  CIRC.cb=onSolve||null;
+  circBuild(); CIRC.active=true;   // always rebuild — the puzzle is required on every entry
+  document.getElementById('circuit').classList.add('active');
+  circRender(); circDevInit(); SFX&&SFX.tone&&SFX.tone(300,0.1,'sine',0.05);
+}
+function circClose(){ CIRC.active=false; document.getElementById('circuit').classList.remove('active'); }
+function circWin(){
+  if(CIRC.won) return; CIRC.won=true;
+  const m=document.getElementById('circuitMsg'); if(m) m.textContent='✨ All 3 sockets powered — the gate to the Lair opens!';
+  SFX&&SFX.win&&SFX.win();   // not persisted — must be re-solved every time you enter the Lair
+  setTimeout(()=>{ circClose(); const cb=CIRC.cb; CIRC.cb=null; if(cb) cb(); }, 950);
+}
+
 //═══════════════════════════════════════════════ FOSSIL DIG minigame (Dino-Quest-style excavation)
 // Reveal the buried fossil before your energy runs out. Dug-up empty tiles show how many of the
 // 8 neighbours hide a bone (minesweeper-style deduction). Rock tiles take 2 hits, dirt 1.
@@ -5131,6 +5596,193 @@ function digDraw(){
     }
   }
   g2.textBaseline='alphabetic';
+}
+
+//═══════════════════════════════════════════════ GACHA — Lucky Capsule machine (bouncy physics)
+const RAR_COL={common:'#aeb6c0',rare:'#5aaaff',epic:'#be6eff',legendary:'#ffc846'};
+const RAR_REFUND={common:60,rare:200,epic:600,legendary:2000};
+const RAR_STARS={common:0,rare:3,epic:4,legendary:5};
+const CAT_SKINS=[
+  {id:'skin_abyssinian', name:'Abyssinian',        rarity:'epic',      art:'skins/abysian_art.png',        skin:'skins/Abyssinian.png'},
+  {id:'skin_american',   name:'American Shorthair', rarity:'common',    art:'skins/american_short_art.png', skin:'skins/american.png'},
+  {id:'skin_angora',     name:'Turkish Angora',     rarity:'legendary', art:'skins/angora_art.png',         skin:'skins/turkishangora.png'},
+  {id:'skin_silvbengal', name:'Silver Bengal',      rarity:'rare',      art:'skins/bengalsilver_art.png',   skin:'skins/silverbengal.png'},
+  {id:'skin_british',    name:'British Shorthair',  rarity:'rare',      art:'skins/british_art.png',        skin:'skins/britishshort.png'},
+  {id:'skin_calico',     name:'Calico',             rarity:'common',    art:'skins/calico_art.png',         skin:'skins/calico.png'},
+  {id:'skin_goldbengal', name:'Golden Bengal',      rarity:'epic',      art:'skins/golden_bengal_art.png',  skin:'skins/goldenbengalcat.png'},
+  {id:'skin_mainecoon',  name:'Maine Coon',         rarity:'legendary', art:'skins/maincoon_art.png',       skin:'skins/mainecoon.png'},
+  {id:'skin_ragdoll',    name:'Ragdoll',            rarity:'rare',      art:null,                           skin:'skins/ragdoll.png'},
+  {id:'skin_russianblue',name:'Russian Blue',       rarity:'legendary', art:'skins/russian_blue_art.png',   skin:'skins/russianblue.png'},
+  {id:'skin_scottish',   name:'Scottish Fold',      rarity:'epic',      art:'skins/scottish_art.png',       skin:'skins/scottishfold.png'},
+  {id:'skin_siamese',    name:'Siamese',            rarity:'rare',      art:'skins/siamense_art.png',       skin:'skins/siamese.png'},
+  {id:'skin_sphynx',     name:'Sphynx',             rarity:'legendary', art:'skins/sphinx_art.png',         skin:'skins/sphinx.png'},
+];
+const GACHA_RPOOL={
+  common:[{hat:'bow'},{hat:'cap'},{hat:'party'},{coins:120},
+    ...CAT_SKINS.filter(c=>c.rarity==='common').map(c=>({skin:c.id}))],
+  rare:[{hat:'crown'},{hat:'strawhat'},{hat:'ninja'},{coins:400},
+    ...CAT_SKINS.filter(c=>c.rarity==='rare').map(c=>({skin:c.id}))],
+  epic:[{hat:'wizard'},{hat:'tophat'},{coins:1200},
+    ...CAT_SKINS.filter(c=>c.rarity==='epic').map(c=>({skin:c.id}))],
+  legendary:[{hat:'halo'},{hat:'devilhorns'},{hat:'rainbowcrown'},{coins:5000},
+    ...CAT_SKINS.filter(c=>c.rarity==='legendary').map(c=>({skin:c.id}))],
+};
+function gachaDrawArt(artSrc){
+  const cv=document.getElementById('gcArtCanvas');
+  const ctx2=cv.getContext('2d');
+  const img=new Image();
+  img.crossOrigin='anonymous';
+  img.onload=()=>{
+    cv.width=img.naturalWidth; cv.height=img.naturalHeight;
+    ctx2.drawImage(img,0,0);
+    try{
+      const id=ctx2.getImageData(0,0,cv.width,cv.height);
+      const d=id.data;
+      for(let i=0;i<d.length;i+=4){
+        const r=d[i],g=d[i+1],b=d[i+2];
+        if(g>160 && r<120 && b<120){ d[i+3]=0; }  // chroma-key lime green
+      }
+      ctx2.putImageData(id,0,0);
+    }catch(e){}
+    cv.classList.add('show');
+  };
+  img.src=artSrc;
+}
+function gachaShowStars(rar){
+  const el=document.getElementById('gcStars'); if(!el) return;
+  const n=RAR_STARS[rar]||0;
+  el.innerHTML='';
+  for(let i=0;i<n;i++){
+    const s=document.createElement('img'); s.src='skins/star.png'; s.alt='★'; el.appendChild(s);
+  }
+}
+const GACHA={ cost:10000, busy:false, open:false, caps:[], raf:null, ctx:null, W:360, H:536,
+  dome:{cx:178,cy:152,rx:124,ry:107},
+  img:(()=>{const i=new Image();i.src='gacha/gacha.png';return i;})(),
+  capImg:{ normal:(()=>{const i=new Image();i.src='gacha/cap_normal.png';return i;})(),
+           legendary:(()=>{const i=new Image();i.src='gacha/cap_legendary.png';return i;})() } };
+function gachaAddCap(type){ const d=GACHA.dome; GACHA.caps.push({x:d.cx+(Math.random()-0.5)*d.rx, y:d.cy-d.ry*0.5+Math.random()*d.ry*0.4, vx:(Math.random()-0.5)*2, vy:0, r:28*(0.92+Math.random()*0.16), type}); }
+function gachaInitCaps(){ GACHA.caps=[]; GACHA.drop=null;
+  const nLeg=Math.max(1,Math.min(3,S.legendaryCapsules||0));   // always at least one legendary on display
+  for(let i=0;i<11-nLeg;i++) gachaAddCap('normal'); for(let i=0;i<nLeg;i++) gachaAddCap('legendary'); }
+// pull a capsule out of the dome: it falls to the dome base, vanishes INSIDE the machine,
+// then pops out of the dispenser hole into the tray (so it never floats over the wooden body)
+function gachaStartDrop(type,from){ GACHA.drop={x:from?from.x:GACHA.dome.cx, y:from?from.y:GACHA.dome.cy, vy:1.5, type, t:Date.now(), phase:'enter', hideAt:0}; }
+function gachaStep(){ const d=GACHA.dome, caps=GACHA.caps;
+  for(const c of caps){ c.vy+=0.35; c.x+=c.vx; c.y+=c.vy; c.vx*=0.99;
+    const ex=(c.x-d.cx)/(d.rx-c.r), ey=(c.y-d.cy)/(d.ry-c.r), dist=Math.hypot(ex,ey);
+    if(dist>1){ const nx=ex/dist, ny=ey/dist; c.x=d.cx+nx*(d.rx-c.r); c.y=d.cy+ny*(d.ry-c.r);
+      let wx=nx/(d.rx-c.r), wy=ny/(d.ry-c.r); const wl=Math.hypot(wx,wy)||1; wx/=wl; wy/=wl;
+      const vn=c.vx*wx+c.vy*wy; c.vx-=1.5*vn*wx; c.vy-=1.5*vn*wy; c.vx*=0.6; c.vy*=0.6; }
+  }
+  for(let i=0;i<caps.length;i++) for(let j=i+1;j<caps.length;j++){ const a=caps[i],b=caps[j], dx=b.x-a.x,dy=b.y-a.y, dd=Math.hypot(dx,dy)||1, mn=a.r+b.r;
+    if(dd<mn){ const ov=(mn-dd)/2, nx=dx/dd, ny=dy/dd; a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+      const vn=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny; if(vn<0){ a.vx+=nx*vn*0.5;a.vy+=ny*vn*0.5;b.vx-=nx*vn*0.5;b.vy-=ny*vn*0.5; } } }
+  // dispensed capsule: dome base -> hidden inside -> pops out of the hole into the tray
+  if(GACHA.drop){ const dp=GACHA.drop, now=Date.now(), W=GACHA.W, H=GACHA.H, holeX=0.485*W, base=0.47*H, holeY=0.80*H, trayY=0.86*H;
+    if(dp.phase==='enter'){ dp.vy+=0.6; dp.y+=dp.vy; dp.x+=(holeX-dp.x)*0.10;
+      if(dp.y>=base){ dp.phase='hidden'; dp.hideAt=now; } }
+    else if(dp.phase==='hidden'){ if(now-dp.hideAt>360){ dp.phase='exit'; dp.x=holeX; dp.y=holeY; dp.vy=1.0; } }
+    else if(dp.phase==='exit'){ dp.vy+=0.5; dp.y+=dp.vy; if(dp.y>=trayY){ dp.y=trayY; if(dp.vy>1){ dp.vy*=-0.32; } else dp.vy=0; } }
+    if(now-dp.t>2800) GACHA.drop=null;
+  }
+}
+function gachaDraw(){ const g2=GACHA.ctx; if(!g2) return; g2.clearRect(0,0,GACHA.W,GACHA.H);
+  if(GACHA.img.complete&&GACHA.img.naturalWidth) g2.drawImage(GACHA.img,0,0,GACHA.W,GACHA.H);
+  const d=GACHA.dome; g2.save(); g2.beginPath(); g2.ellipse(d.cx,d.cy,d.rx,d.ry,0,0,7); g2.clip();
+  for(const c of GACHA.caps){ const im=GACHA.capImg[c.type];
+    if(c.type==='legendary'){ g2.save(); g2.globalAlpha=0.5; g2.shadowColor='#ffd24a'; g2.shadowBlur=12; }
+    if(im&&im.complete&&im.naturalWidth){ const s=c.r*2.3; g2.drawImage(im,c.x-s/2,c.y-s/2,s,s); }
+    else { g2.fillStyle=c.type==='legendary'?'#ffd24a':'#7fd0d0'; g2.beginPath(); g2.arc(c.x,c.y,c.r,0,7); g2.fill(); }
+    if(c.type==='legendary') g2.restore();
+  }
+  g2.restore();
+  // dispensed capsule — visible only entering the dome base and popping out of the hole (hidden inside)
+  if(GACHA.drop && GACHA.drop.phase!=='hidden'){ const dp=GACHA.drop, im=GACHA.capImg[dp.type], s=64;
+    g2.save();
+    if(dp.phase==='enter'){ g2.globalAlpha=Math.max(0,Math.min(1,(0.47*GACHA.H-dp.y)/40+0.3)); }   // fade as it sinks into the machine
+    if(dp.type==='legendary'){ g2.shadowColor='#ffd24a'; g2.shadowBlur=14; }
+    if(im&&im.complete&&im.naturalWidth) g2.drawImage(im,dp.x-s/2,dp.y-s/2,s,s);
+    else { g2.fillStyle=dp.type==='legendary'?'#ffd24a':'#7fd0d0'; g2.beginPath(); g2.arc(dp.x,dp.y,30,0,7); g2.fill(); }
+    g2.restore(); }
+}
+function gachaLoop(){ if(!GACHA.open) return; gachaStep(); gachaDraw(); GACHA.raf=requestAnimationFrame(gachaLoop); }
+function gachaOpen(){ openModal('gacha'); GACHA.open=true; GACHA.busy=false;
+  GACHA.ctx=document.getElementById('gachaCanvas').getContext('2d');
+  GACHA.dome={cx:0.496*GACHA.W, cy:0.283*GACHA.H, rx:0.345*GACHA.W, ry:0.200*GACHA.H};
+  gachaInitCaps(); document.getElementById('gachaCard').className='';
+  document.getElementById('gachaMsg').textContent='Turn the crank for a surprise!';
+  gachaSyncUI(); if(GACHA.raf)cancelAnimationFrame(GACHA.raf); gachaLoop(); }
+function gachaClose(){ GACHA.open=false; if(GACHA.raf)cancelAnimationFrame(GACHA.raf); GACHA.raf=null; }
+function gachaSyncUI(){ const lb=document.getElementById('gachaLegend');
+  if(lb){ lb.style.display=(S.legendaryCapsules>0)?'':'none'; lb.textContent='✨ Open Legendary Capsule ('+(S.legendaryCapsules||0)+')'; }
+  const p=document.getElementById('gachaPity'); if(p) p.textContent='Legendary in '+(100-(S.gachaPity||0))+' rolls · capsule in '+(50-((S.gachaCapProg||0)))+''; }
+function gachaJolt(){ for(const c of GACHA.caps){ c.vy-=7+Math.random()*4; c.vx+=(Math.random()-0.5)*7; } }
+function gachaRoll(){ if(GACHA.busy) return;
+  if(S.coins<GACHA.cost){ document.getElementById('gachaMsg').textContent='Need 1 🥇 gold to roll.'; SFX.lose&&SFX.lose(); return; }
+  GACHA.busy=true; S.coins-=GACHA.cost; document.getElementById('gachaCard').className='';
+  document.getElementById('gachaMsg').textContent='Rolling…'; gachaJolt();
+  // eject the lowest NORMAL capsule into the tray, then refill one from the top
+  let lo=-1, ly=-1e9; for(let i=0;i<GACHA.caps.length;i++){ const c=GACHA.caps[i]; if(c.type==='normal' && c.y>ly){ ly=c.y; lo=i; } }
+  if(lo>=0){ const c=GACHA.caps.splice(lo,1)[0]; gachaStartDrop('normal',c); gachaAddCap('normal'); }
+  else gachaStartDrop('normal');
+  SFX.tone&&SFX.tone(300,0.1,'square',0.04); SFX.tone&&SFX.tone(420,0.1,'square',0.04,0.45); SFX.tone&&SFX.tone(540,0.1,'square',0.04,0.9);
+  S.gachaPity=(S.gachaPity||0)+1; let rar;
+  if(S.gachaPity>=100 || Math.random()<0.01){ rar='legendary'; S.gachaPity=0; }
+  else { const r=Math.random(); rar=r<0.05?'epic':r<0.29?'rare':'common'; }
+  // ~1 legendary CAPSULE per 50 normal rolls (counter-based so it's reliable, plus a little luck)
+  S.gachaCapProg=(S.gachaCapProg||0)+1; let gotCap=false;
+  if(S.gachaCapProg>=50 || Math.random()<0.012){ S.gachaCapProg=0; S.legendaryCapsules=(S.legendaryCapsules||0)+1; gotCap=true; gachaAddCap('legendary'); }
+  save(); syncHUD();
+  setTimeout(()=>{ gachaReveal(rar, gachaPick(rar), gotCap); GACHA.busy=false; }, 1100);
+}
+function gachaOpenLegendary(){ if(GACHA.busy || (S.legendaryCapsules||0)<=0) return;
+  GACHA.busy=true; S.legendaryCapsules--; const lc=GACHA.caps.find(c=>c.type==='legendary'); gachaStartDrop('legendary',lc);
+  document.getElementById('gachaCard').className=''; document.getElementById('gachaMsg').textContent='Opening the legendary capsule…'; gachaJolt();
+  SFX.seq&&SFX.seq([523,659,784,1046],'triangle',0.06); save(); syncHUD(); gachaSyncUI();
+  setTimeout(()=>{ gachaReveal('legendary', gachaPick('legendary'), false); GACHA.busy=false; }, 1100);
+}
+function gachaPick(rar){ const p=GACHA_RPOOL[rar]; return p[Math.floor(Math.random()*p.length)]; }
+function gachaReveal(rar,pick,gotCap){
+  // reset art canvas
+  const artCv=document.getElementById('gcArtCanvas');
+  artCv.classList.remove('show');
+  document.getElementById('gcIcon').style.display='';
+  document.getElementById('gachaCard').classList.remove('skin-reveal');
+
+  let emoji,label,msg;
+  if(pick.coins){
+    emoji='🐟'; label=moneyText(pick.coins); S.coins+=pick.coins; msg='Won '+moneyText(pick.coins)+'!';
+  } else if(pick.skin){
+    const cs=CAT_SKINS.find(c=>c.id===pick.skin);
+    emoji='🐱'; label=cs?cs.name:pick.skin;
+    const already=(S.catSkins||[]).includes(pick.skin);
+    if(already){ const ref=RAR_REFUND[rar]||50; S.coins+=ref; msg='Duplicate — '+moneyText(ref)+' refunded.'; }
+    else { S.catSkins=S.catSkins||[]; S.catSkins.push(pick.skin); msg='✨ NEW cat skin unlocked!'; }
+    // show art illustration
+    if(cs&&cs.art){
+      document.getElementById('gcIcon').style.display='none';
+      document.getElementById('gachaCard').classList.add('skin-reveal');
+      gachaDrawArt(cs.art);
+    }
+  } else {
+    const it=SHOP.find(s=>s.id===pick.hat); emoji=it?it.emoji:'🎩'; label=it?it.name:pick.hat;
+    if(S.items.includes(pick.hat)){ const ref=RAR_REFUND[rar]||50; S.coins+=ref; msg='Duplicate — '+moneyText(ref)+' refunded.'; }
+    else { S.items.push(pick.hat); if(!S.equipped&&isHat(pick.hat)) S.equipped=pick.hat; msg='✨ NEW cosmetic unlocked!'; }
+  }
+  if(gotCap) msg+='   ✨ +1 Legendary Capsule!';
+  document.getElementById('gcIcon').textContent=emoji;
+  document.getElementById('gcName').textContent=label;
+  const ra=document.getElementById('gcRarity'); ra.textContent=rar.toUpperCase(); ra.style.color=RAR_COL[rar];
+  gachaShowStars(rar);
+  const _gc=document.getElementById('gachaCard');
+  const _skinCls=_gc.classList.contains('skin-reveal')?'skin-reveal ':'';
+  _gc.className=_skinCls+'show r-'+rar;
+  document.getElementById('gachaMsg').textContent=msg;
+  save(); syncHUD(); gachaSyncUI();
+  if(rar==='legendary') SFX.seq&&SFX.seq([659,784,988,1318],'triangle',0.07);
+  else if(rar==='epic') SFX.seq&&SFX.seq([523,659,784],'triangle',0.06);
+  else SFX.coin&&SFX.coin();
 }
 
 //═══════════════════════════════════════════════ FRUIT MERGE minigame (Suika-style)
@@ -6031,7 +6683,7 @@ document.addEventListener('keydown',e=>{
   if(PLACE_ON && e.code==='KeyO'){ const txt=JSON.stringify(PLACE_OV,null,2); console.log('PLACE OVERRIDES:\n'+txt);
     if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>toast('🛠️ Placements copied to clipboard!'),()=>toast('🛠️ Exported to console (clipboard blocked)')); }
     else toast('🛠️ Exported to console'); e.preventDefault(); return; }
-  if(PLACE_ON && PLACE_SEL){ const r=PLACE_SEL.r, sk=placeSizeKey(r);
+  if(PLACE_ON && PLACE_SEL){ const r=PLACE_SEL.r, sk=PLACE_SEL.sk;
     if(e.code==='ArrowUp'){ if(sk)r[sk]+=4; placeLog(); placeSave(); e.preventDefault(); return; }
     if(e.code==='ArrowDown'){ if(sk)r[sk]=Math.max(4,r[sk]-4); placeLog(); placeSave(); e.preventDefault(); return; }
     if(e.code==='BracketLeft'){ r.cut=Math.max(0.1,(r.cut||1)-0.02); placeLog(); placeSave(); e.preventDefault(); return; }
@@ -6039,7 +6691,7 @@ document.addEventListener('keydown',e=>{
   }
   if(battleActive) return;                     // battle uses on-screen move buttons
   // Enter opens chat (when connected & not in dialogue)
-  if(e.code==='Enter'&&!dialogueActive&&inGame&&NET.connected){openChatBar();e.preventDefault();return;}
+  if(e.code==='Enter'&&!dialogueActive&&inGame){openChatBar();e.preventDefault();return;}   // chat / commands (works offline too)
   if(dialogueActive){if(e.code==='Space'||e.code==='Enter'||e.code==='KeyE'){advanceDialogue();e.preventDefault();}return;}
   if(e.code==='ArrowLeft'||e.code==='KeyA')input.left=true;
   if(e.code==='ArrowRight'||e.code==='KeyD')input.right=true;
@@ -6178,12 +6830,18 @@ function pushChat(name,text,me){
 function sendChat(){
   const inp=document.getElementById('chatInput');
   const t=inp.value.trim();
+  if(t && chatCommand(t)){ inp.value=''; closeChatBar(); return; }   // cheat/dev commands
   if(t) NET.send({type:'chat',text:t,name:NET.name});
   inp.value='';
   closeChatBar();
 }
+// in-chat cheat commands (start with !) — handled locally, not broadcast
+function chatCommand(t){
+  const c=t.toLowerCase();
+  if(c==='!money'){ S.coins+=100*10000; save(); syncHUD(); SFX.coin&&SFX.coin(); toast('💰 +100 🥇 gold!'); return true; }
+  return false;
+}
 function openChatBar(){
-  if(!NET.connected) return;
   document.getElementById('chatBar').classList.add('show');
   document.getElementById('chatInput').focus();
 }
@@ -6256,35 +6914,40 @@ function travelTo(id){
 // ── dev sprite-placement tool ──
 let PLACE_ON=false, PLACE_SEL=null, PLACE_DRAG=false;
 const PLACE_OV=(()=>{ try{ return JSON.parse(localStorage.getItem('puiutu_place')||'{}'); }catch(e){ return {}; } })();
-function placeSave(){ if(!PLACE_SEL) return; const r=PLACE_SEL.r, o={xf:+r.xf.toFixed(4), yf:+r.yf.toFixed(4)};
-  const sk=placeSizeKey(r); if(sk) o[sk]=Math.round(r[sk]); if('cut' in r) o.cut=+Number(r.cut).toFixed(3);
-  (PLACE_OV[curArea]=PLACE_OV[curArea]||{})[PLACE_SEL.label]=o;
-  localStorage.setItem('puiutu_place', JSON.stringify(PLACE_OV)); }
-// re-apply saved placements to the current hub (called from enterHub)
-function applyPlaceOverrides(){ const ov=PLACE_OV[curArea]; if(!ov) return; for(const it of placeItems()){ const o=ov[it.label]; if(o) Object.assign(it.r,o); } }
-// every static, positioned prop in the current hub (NPCs, objects, doors, spots) — not mobs
+function placeSizeKey(r){ return ('h' in r)?'h':('r' in r)?'r':('glowR' in r)?'glowR':null; }
+// every editable handle in the hub. Each handle has its own field pair (fx,fy) + size key (sk),
+// so doors expose BOTH a trigger handle (xf/yf,r) and a GLOW handle (glowXf/glowYf,glowR = the prompt/text spot).
 function placeItems(){ const H=A&&A.hub, arr=[]; if(!H) return arr;
-  const add=(o,label)=>{ if(o && typeof o.xf==='number' && typeof o.yf==='number') arr.push({r:o,label}); };
+  const add=(o,label,fx,fy,sk)=>{ fx=fx||'xf'; fy=fy||'yf'; if(o && typeof o[fx]==='number' && typeof o[fy]==='number') arr.push({r:o,label,fx,fy,sk:(sk!==undefined?sk:placeSizeKey(o))}); };
   ['bankdesk','fishbarrel','digsite','seal','cave','merge','potions','merlin','rocky','tomy','npc','boss','spawn','exit','coonStart'].forEach(k=>add(H[k],k));
   if(H.staff) H.staff.forEach((s,i)=>add(s,'staff['+i+'] '+(s.img||'')));
+  if(H.crystals) H.crystals.forEach((c,i)=>add(c,'crystal['+i+']','xf','yf','h'));
   if(H.spots) H.spots.forEach((s,i)=>add(s,'spot['+i+'] '+s.type));
-  if(H.doors) H.doors.forEach((d,i)=>add(d,'door['+i+']→'+d.to));
+  if(H.loot) H.loot.forEach((l,i)=>add(l,'loot['+i+']'));
+  if(H.doors) H.doors.forEach((d,i)=>{ add(d,'door['+i+']→'+d.to,'xf','yf','r'); if('glowXf' in d) add(d,'door['+i+'] GLOW/text','glowXf','glowYf','glowR'); });
+  if(H.seal && 'portalXf' in H.seal) add(H.seal,'seal SWIRL','portalXf','portalYf');
   return arr; }
-function placeSizeKey(r){ return ('h' in r)?'h':('r' in r)?'r':('glowR' in r)?'glowR':null; }
-function placeLog(){ if(!PLACE_SEL) return; const r=PLACE_SEL.r; let s=PLACE_SEL.label+' → xf:'+r.xf.toFixed(3)+', yf:'+r.yf.toFixed(3);
-  if('h' in r) s+=', h:'+Math.round(r.h); if('r' in r) s+=', r:'+Math.round(r.r); if('glowR' in r) s+=', glowR:'+Math.round(r.glowR); if('cut' in r) s+=', cut:'+Number(r.cut).toFixed(2);
+function placeLog(){ if(!PLACE_SEL) return; const it=PLACE_SEL, r=it.r;
+  let s=it.label+' → '+it.fx+':'+(+r[it.fx].toFixed(3))+', '+it.fy+':'+(+r[it.fy].toFixed(3));
+  if(it.sk) s+=', '+it.sk+':'+Math.round(r[it.sk]); if('cut' in r) s+=', cut:'+Number(r.cut).toFixed(2);
   console.log(s); }
-function placePick(sx,sy){ let best=null,bd=1e9; for(const it of placeItems()){ const r=it.r, ix=r.xf*HUB.worldW-HUB.camx, iy=r.yf*VH, d=Math.hypot(sx-ix,sy-iy); if(d<bd){bd=d;best=it;} } return bd<300?best:null; }
+function placeSave(){ if(!PLACE_SEL) return; const it=PLACE_SEL, r=it.r, o={};
+  o[it.fx]=+r[it.fx].toFixed(4); o[it.fy]=+r[it.fy].toFixed(4);
+  if(it.sk) o[it.sk]=Math.round(r[it.sk]); if('cut' in r) o.cut=+Number(r.cut).toFixed(3);
+  const a=PLACE_OV[curArea]=PLACE_OV[curArea]||{}; a[it.label]=Object.assign(a[it.label]||{}, o);
+  localStorage.setItem('puiutu_place', JSON.stringify(PLACE_OV)); }
+function applyPlaceOverrides(){ const ov=PLACE_OV[curArea]; if(!ov) return; for(const it of placeItems()){ const o=ov[it.label]; if(o) Object.assign(it.r,o); } }
+function placePick(sx,sy){ let best=null,bd=1e9; for(const it of placeItems()){ const ix=it.r[it.fx]*HUB.worldW-HUB.camx, iy=it.r[it.fy]*VH, d=Math.hypot(sx-ix,sy-iy); if(d<bd){bd=d;best=it;} } return bd<300?best:null; }
 function drawPlaceOverlay(){ if(!A||!A.hub) return; g.save(); g.font='11px monospace'; g.textAlign='left';
-  for(const it of placeItems()){ const r=it.r, ix=r.xf*HUB.worldW-HUB.camx, iy=r.yf*VH, sel=(PLACE_SEL===it);
+  for(const it of placeItems()){ const r=it.r, ix=r[it.fx]*HUB.worldW-HUB.camx, iy=r[it.fy]*VH, sel=(PLACE_SEL===it), glow=(it.fx!=='xf');
     if(ix<-60||ix>VW+60) continue;
-    g.strokeStyle=sel?'#ffe066':'#5fd4ff'; g.lineWidth=sel?2:1;
-    g.beginPath(); g.moveTo(ix-30,iy); g.lineTo(ix+30,iy); g.stroke(); g.strokeRect(ix-4,iy-4,8,8);
-    if(sel){ g.fillStyle='#ffe066'; let t=it.label+'  xf'+r.xf.toFixed(3)+' yf'+r.yf.toFixed(3); const sk=placeSizeKey(r); if(sk)t+=' '+sk+Math.round(r[sk]); if('cut' in r)t+=' cut'+Number(r.cut).toFixed(2); g.fillText(t, ix+8, iy-8); }
-    else { g.fillStyle='rgba(150,220,255,.7)'; g.fillText(it.label, ix+8, iy-8); } }
-  g.fillStyle='rgba(0,0,0,.65)'; g.fillRect(8,8,380,44); g.fillStyle='#ffe066';
-  g.fillText('PLACE MODE — click a prop, drag to move · ↑/↓ size · [ ] crop · P exits', 14, 24);
-  g.fillText('(values printed to the browser console on change)', 14, 38); g.restore(); }
+    g.strokeStyle=sel?'#ffe066':(glow?'#ff8a4a':'#5fd4ff'); g.lineWidth=sel?2:1;
+    g.beginPath(); g.moveTo(ix-26,iy); g.lineTo(ix+26,iy); g.stroke(); g.strokeRect(ix-4,iy-4,8,8);
+    if(sel){ g.fillStyle='#ffe066'; let t=it.label+'  '+it.fx+r[it.fx].toFixed(3)+' '+it.fy+r[it.fy].toFixed(3); if(it.sk)t+=' '+it.sk+Math.round(r[it.sk]); if('cut' in r)t+=' cut'+Number(r.cut).toFixed(2); g.fillText(t, ix+8, iy-8); }
+    else { g.fillStyle=glow?'rgba(255,160,100,.75)':'rgba(150,220,255,.7)'; g.fillText(it.label, ix+8, iy-8); } }
+  g.fillStyle='rgba(0,0,0,.65)'; g.fillRect(8,8,430,44); g.fillStyle='#ffe066';
+  g.fillText('PLACE MODE — drag props/door trigger/GLOW · ↑/↓ size · [ ] crop · P exits', 14, 24);
+  g.fillText('(orange = door GLOW & prompt-text position · logged to console)', 14, 38); g.restore(); }
 cv.addEventListener('pointerdown',e=>{
   if(!inGame||paused||dialogueActive||battleActive||mapOpen) return;
   if(!A||A.mode!=='topdown') return;
@@ -6294,9 +6957,12 @@ cv.addEventListener('pointerdown',e=>{
 });
 cv.addEventListener('pointermove',e=>{ if(!PLACE_ON||!PLACE_DRAG||!PLACE_SEL) return;
   const r=cv.getBoundingClientRect(), sx=(e.clientX-r.left)*(VW/r.width), sy=(e.clientY-r.top)*(VH/r.height);
-  PLACE_SEL.r.xf=Math.max(0,Math.min(1,(sx+HUB.camx)/HUB.worldW)); PLACE_SEL.r.yf=Math.max(0,Math.min(1,sy/VH)); });
+  PLACE_SEL.r[PLACE_SEL.fx]=Math.max(0,Math.min(1,(sx+HUB.camx)/HUB.worldW)); PLACE_SEL.r[PLACE_SEL.fy]=Math.max(0,Math.min(1,sy/VH)); });
 cv.addEventListener('pointerup',()=>{ if(PLACE_DRAG){ placeLog(); placeSave(); } PLACE_DRAG=false; });
 document.getElementById('btnMap').addEventListener('click',openMap);
+document.getElementById('btnGacha').addEventListener('click',gachaOpen);
+document.getElementById('gachaRoll').addEventListener('click',gachaRoll);
+document.getElementById('gachaLegend').addEventListener('click',gachaOpenLegendary);
 document.getElementById('btnBeach').addEventListener('click',()=>{
   if(!inGame || curArea==='beach') return;
   if(mapOpen) closeMap();
