@@ -435,20 +435,50 @@
   #gachaCard{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;
     width:160px;height:160px;border-radius:18px;background:rgba(10,6,20,.82);}
   #gachaCard.show{display:flex;animation:gPop .4s cubic-bezier(.2,1.4,.5,1);}
-  #gachaCard.skin-reveal{width:210px;height:auto;min-height:240px;padding:6px 6px 10px;}
+  #gachaCard.skin-reveal{top:38%;width:min(92vw,348px);height:auto;min-height:0;padding:8px 6px 12px;background:rgba(8,4,16,.92);overflow:visible;gap:4px;}
   @keyframes gPop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
   #gachaCard.r-common{box-shadow:0 0 30px 6px rgba(180,190,200,.6);}
   #gachaCard.r-rare{box-shadow:0 0 34px 8px rgba(90,170,255,.7);}
   #gachaCard.r-epic{box-shadow:0 0 38px 10px rgba(190,110,255,.8);}
   #gachaCard.r-legendary{box-shadow:0 0 48px 14px rgba(255,200,70,.9);animation:gPop .4s cubic-bezier(.2,1.4,.5,1),gGlow 1s ease-in-out infinite alternate;}
   @keyframes gGlow{from{box-shadow:0 0 40px 10px rgba(255,200,70,.7)}to{box-shadow:0 0 64px 20px rgba(255,140,200,.95)}}
-  #gcIcon{font-size:80px;}
-  #gcArtCanvas{border-radius:10px;display:none;image-rendering:pixelated;}
+  #gcIcon{font-size:80px;position:relative;z-index:2;}
+  /* rotating ray burst behind a cat reveal */
+  #gcRays{position:absolute;left:50%;top:46%;width:560px;height:560px;margin:-280px 0 0 -280px;pointer-events:none;display:none;z-index:0;
+    background:repeating-conic-gradient(from 0deg, var(--ray,#ffd24a) 0deg 3deg, transparent 3deg 14deg);
+    -webkit-mask:radial-gradient(circle, transparent 15%, #000 33%, #000 58%, transparent 78%);
+            mask:radial-gradient(circle, transparent 15%, #000 33%, #000 58%, transparent 78%);}
+  #gachaCard.skin-reveal #gcRays{display:block;opacity:.5;animation:gRays 14s linear infinite, gRayFade .7s ease-out;}
+  @keyframes gRays{to{transform:rotate(360deg)}}
+  @keyframes gRayFade{from{opacity:0}to{opacity:.5}}
+  /* SUSPENSE buildup: a charging orb of light grows and spins faster, then bursts */
+  #gcCharge{position:absolute;left:50%;top:44%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;display:none;z-index:3;pointer-events:none;
+    background:radial-gradient(circle,#fff 0%,var(--ray,#ffd24a) 45%,rgba(255,255,255,0) 72%);}
+  #gachaCard.charging #gcCharge{display:block;animation:gCharge .8s ease-in forwards;}
+  @keyframes gCharge{0%{transform:scale(.2);opacity:.3}70%{transform:scale(3);opacity:1}100%{transform:scale(6);opacity:0}}
+  #gachaCard.charging #gcRays{animation:gRaysSpin 1.6s cubic-bezier(.4,0,.9,.6) forwards;opacity:.85;}
+  @keyframes gRaysSpin{from{transform:rotate(0)}to{transform:rotate(420deg)}}
+  /* during charging, hide the prize until the flash */
+  #gachaCard.charging #gcArtCanvas,#gachaCard.charging #gcName,#gachaCard.charging #gcStars,#gachaCard.charging #gcRarity{visibility:hidden;}
+  #gcArtCanvas{border-radius:10px;display:none;image-rendering:pixelated;width:196px;height:196px;object-fit:contain;position:relative;z-index:2;}
   #gcArtCanvas.show{display:block;}
-  #gcStars{display:flex;gap:2px;justify-content:center;min-height:18px;margin-top:2px;}
-  #gcStars img{width:17px;height:17px;image-rendering:pixelated;}
-  #gcName{color:#fff;font-weight:bold;font-size:15px;text-shadow:0 2px 6px #000;text-align:center;}
-  #gcRarity{font-weight:bold;font-size:12px;letter-spacing:2px;}
+  #gachaCard.skin-reveal #gcArtCanvas{width:100%;max-width:340px;height:auto;max-height:min(58vh,440px);
+    filter:drop-shadow(0 6px 16px rgba(0,0,0,.55));}
+  #gachaCard.skin-reveal:not(.charging) #gcArtCanvas{animation:gArtPop .7s cubic-bezier(.16,1.6,.4,1);}
+  @keyframes gArtPop{0%{transform:scale(.25) rotate(-12deg);opacity:0;filter:brightness(4)}50%{filter:brightness(1.6)}100%{transform:scale(1) rotate(0);opacity:1;filter:brightness(1)}}
+  #gcStars{display:flex;gap:3px;justify-content:center;min-height:20px;margin-top:2px;position:relative;z-index:2;}
+  #gcStars img{width:20px;height:20px;image-rendering:pixelated;animation:gStarPop .4s cubic-bezier(.2,1.6,.4,1) backwards;
+    filter:drop-shadow(0 0 4px rgba(255,210,90,.9));}
+  @keyframes gStarPop{0%{transform:scale(0) rotate(-90deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+  #gcName{color:#fff;font-weight:bold;font-size:15px;text-shadow:0 2px 6px #000;text-align:center;position:relative;z-index:2;}
+  #gachaCard.skin-reveal #gcName{font-size:23px;}
+  #gcRarity{font-weight:bold;font-size:12px;letter-spacing:2px;position:relative;z-index:2;}
+  #gachaCard.skin-reveal #gcRarity{font-size:14px;}
+  /* reveal flash over the whole machine */
+  #gcFlash{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:5;
+    background:radial-gradient(circle at 50% 44%, #fff 0%, #fff 22%, rgba(255,255,255,0) 64%);}
+  #gcFlash.go{animation:gFlash .6s ease-out;}
+  @keyframes gFlash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
   #gachaMsg{color:#dcc8ff;font-weight:bold;font-size:15px;text-align:center;min-height:20px;}
   #gachaRoll{background:linear-gradient(#b46ad8,#7a3fb0);border:2px solid #4a2670;color:#fff;font-weight:bold;font-size:17px;padding:11px 28px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 #3a1d5a;}
   #gachaRoll:active{transform:translateY(2px);}
@@ -881,7 +911,8 @@
     <div id="gachaWrap">
       <div id="gachaStage">
         <canvas id="gachaCanvas" width="360" height="536"></canvas>
-        <div id="gachaCard"><canvas id="gcArtCanvas" width="196" height="196"></canvas><div id="gcIcon">❔</div><div id="gcName">???</div><div id="gcStars"></div><div id="gcRarity"></div></div>
+        <div id="gcFlash"></div>
+        <div id="gachaCard"><div id="gcRays"></div><div id="gcCharge"></div><canvas id="gcArtCanvas" width="196" height="196"></canvas><div id="gcIcon">❔</div><div id="gcName">???</div><div id="gcStars"></div><div id="gcRarity"></div></div>
       </div>
       <div id="gachaMsg">Turn the crank for a surprise!</div>
       <div id="gachaBtns">
@@ -960,6 +991,7 @@ const DEFAULT={
   abyssDefeated:false,             // The Dreamer in the Deep (abyss boss) beaten once
   gachaPity:0, gachaCapProg:0, legendaryCapsules:0,   // gacha: rolls since legendary / toward a legendary capsule / capsules owned
   catSkins:[],                       // unlocked cat skins from gacha
+  equippedSkin:null,                 // active cat skin id (null = default Puiutu)
   oceanFlags:{},                   // underwater interactables: solved puzzles / opened chests (keyed by flag)
   companion:false,                 // Rocky the dog joined as a fighting companion
   rockyStay:false,                 // Rocky told to wait instead of following
@@ -1333,6 +1365,16 @@ const RUN=[]; for(let i=0;i<6;i++){ const im=new Image(); im.src='puiutu/runf_'+
 // Puiutu diving-suit frames (used underwater) — 3-frame swim paddle
 const SWIM=[]; for(let i=0;i<3;i++){ const im=new Image(); im.src='puiutu/swim_'+i+'.png'; SWIM.push(im); }
 const SWIM_IDLE=new Image(); SWIM_IDLE.src='puiutu/swim_idle.png';   // sitting diver pose (floating still)
+// Cat skin animation frames — sliced from the gacha sprite sheets (6-frame run + idle).
+// Lazy-loaded per skin (only the equipped one) to keep memory light.
+const SKIN_FRAMES={};
+function loadSkinFrames(id){
+  if(!id || SKIN_FRAMES[id]) return SKIN_FRAMES[id];
+  const base='skins/frames/'+id+'/';
+  const run=[]; for(let i=0;i<6;i++){ const im=new Image(); im.src=base+'f'+i+'.png'; run.push(im); }
+  const idle=new Image(); idle.src=base+'idle.png';
+  return (SKIN_FRAMES[id]={run,idle});
+}
 // Rocky the dog (NPC + companion) frames
 const ROCKY={}; ['sit','idle','walk0','walk1','bark'].forEach(k=>{ const im=new Image(); im.src='npcs/rocky_'+k+'.png'; ROCKY[k]=im; });
 // Evil Coon boss frames + banana projectile
@@ -1551,13 +1593,22 @@ let enemies=[];
 function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
   const key=C&&C.key?C.key:'puiutu';
   const moving=opt.moving;
+  // When a cat skin is equipped, animate its sliced frames instead of Puiutu's sprite
+  const _skId=(key==='puiutu'&&typeof S!=='undefined'&&S.equippedSkin)?S.equippedSkin:null;
+  const _skf=_skId?(SKIN_FRAMES[_skId]||loadSkinFrames(_skId)):null;
+  const _useSkin=!!(_skf&&_skf.idle&&_skf.idle.complete&&_skf.idle.naturalWidth);
   // Puiutu uses a 2-frame RUN cycle while moving; everyone else uses the sitting sprite
   let running=false, swimming=false, swimIdle=false, img=SPRITES[key];
+  if(_useSkin){
+    if(moving && _skf.run[0] && _skf.run[0].complete && _skf.run[0].naturalWidth){
+      running=true; img=_skf.run[Math.floor((phase||0)*1.4)%_skf.run.length];   // run cycle
+    } else { img=_skf.idle; }   // sitting / idle pose
+  }
   let swimCp=0, swimSurge=0, swimTilt=0.2;   // underwater kick→glide cycle state
   // underwater: Puiutu wears the diving suit. Instead of a constant mechanical paddle, he
   // does a quick flipper KICK (fast frames + a forward lunge) and then GLIDES/coasts — a more
   // natural swim rhythm. The cycle advances on `phase`, which only ticks while he's moving.
-  if(key==='puiutu' && opt.swim && SWIM[0] && SWIM[0].complete && SWIM[0].naturalWidth){
+  if(!_useSkin && key==='puiutu' && opt.swim && SWIM[0] && SWIM[0].complete && SWIM[0].naturalWidth){
     swimming=true;
     if(moving){
       swimCp = ((phase||0)*0.10) % 1;                 // 0..1 over one kick→glide cycle (~1s)
@@ -1566,7 +1617,7 @@ function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
       else { img = SWIM[0]; }                         // GLIDE: hold the streamlined frame
     }
     else { swimIdle=true; img = (SWIM_IDLE.complete&&SWIM_IDLE.naturalWidth)?SWIM_IDLE:SWIM[0]; }
-  } else if(key==='puiutu' && moving && RUN[0] && RUN[0].complete && RUN[0].naturalWidth){
+  } else if(!_useSkin && key==='puiutu' && moving && RUN[0] && RUN[0].complete && RUN[0].naturalWidth){
     running=true;
     img = RUN[Math.floor((phase||0)*1.25)%RUN.length];   // ~12fps gallop
   }
@@ -5617,6 +5668,7 @@ const CAT_SKINS=[
   {id:'skin_siamese',    name:'Siamese',            rarity:'rare',      art:'skins/siamense_art.png',       skin:'skins/siamese.png'},
   {id:'skin_sphynx',     name:'Sphynx',             rarity:'legendary', art:'skins/sphinx_art.png',         skin:'skins/sphinx.png'},
 ];
+if(typeof S!=='undefined' && S.equippedSkin) loadSkinFrames(S.equippedSkin);   // resume the equipped skin
 const GACHA_RPOOL={
   common:[{hat:'bow'},{hat:'cap'},{hat:'party'},{coins:120},
     ...CAT_SKINS.filter(c=>c.rarity==='common').map(c=>({skin:c.id}))],
@@ -5631,21 +5683,34 @@ function gachaDrawArt(artSrc){
   const cv=document.getElementById('gcArtCanvas');
   const ctx2=cv.getContext('2d');
   const img=new Image();
-  img.crossOrigin='anonymous';
   img.onload=()=>{
-    cv.width=img.naturalWidth; cv.height=img.naturalHeight;
-    ctx2.drawImage(img,0,0);
+    const W=img.naturalWidth, H=img.naturalHeight;
+    // draw to an offscreen buffer, chroma-key the lime bg, then trim the transparent margins
+    const off=document.createElement('canvas'); off.width=W; off.height=H;
+    const oc=off.getContext('2d'); oc.drawImage(img,0,0);
+    let x0=W,y0=H,x1=0,y1=0, trimmed=false;
     try{
-      const id=ctx2.getImageData(0,0,cv.width,cv.height);
-      const d=id.data;
+      const id=oc.getImageData(0,0,W,H), d=id.data;
       for(let i=0;i<d.length;i+=4){
         const r=d[i],g=d[i+1],b=d[i+2];
-        if(g>160 && r<120 && b<120){ d[i+3]=0; }  // chroma-key lime green
+        if(g>160 && r<120 && b<120){ d[i+3]=0; }      // kill lime green
+        if(d[i+3]>16){ const p=i/4, px=p%W, py=(p/W)|0;  // track content bounds
+          if(px<x0)x0=px; if(px>x1)x1=px; if(py<y0)y0=py; if(py>y1)y1=py; }
       }
-      ctx2.putImageData(id,0,0);
+      oc.putImageData(id,0,0);
+      if(x1>x0 && y1>y0){ trimmed=true; }
     }catch(e){}
+    // crop to content (with a little breathing room) so the cat fills the whole card
+    let cx0=0,cy0=0,cw=W,ch=H;
+    if(trimmed){ const pad=Math.round(Math.max(W,H)*0.015);
+      cx0=Math.max(0,x0-pad); cy0=Math.max(0,y0-pad);
+      cw=Math.min(W,x1+pad)-cx0; ch=Math.min(H,y1+pad)-cy0; }
+    cv.width=cw; cv.height=ch;
+    ctx2.clearRect(0,0,cw,ch);
+    ctx2.drawImage(off, cx0,cy0,cw,ch, 0,0,cw,ch);
     cv.classList.add('show');
   };
+  img.onerror=()=>{ cv.classList.add('show'); };
   img.src=artSrc;
 }
 function gachaShowStars(rar){
@@ -5653,7 +5718,9 @@ function gachaShowStars(rar){
   const n=RAR_STARS[rar]||0;
   el.innerHTML='';
   for(let i=0;i<n;i++){
-    const s=document.createElement('img'); s.src='skins/star.png'; s.alt='★'; el.appendChild(s);
+    const s=document.createElement('img'); s.src='skins/star.png'; s.alt='★';
+    s.style.animationDelay=(0.35+i*0.12)+'s';   // pop in one by one after the art lands
+    el.appendChild(s);
   }
 }
 const GACHA={ cost:10000, busy:false, open:false, caps:[], raf:null, ctx:null, W:360, H:536,
@@ -5744,13 +5811,13 @@ function gachaOpenLegendary(){ if(GACHA.busy || (S.legendaryCapsules||0)<=0) ret
 }
 function gachaPick(rar){ const p=GACHA_RPOOL[rar]; return p[Math.floor(Math.random()*p.length)]; }
 function gachaReveal(rar,pick,gotCap){
-  // reset art canvas
+  const card=document.getElementById('gachaCard');
   const artCv=document.getElementById('gcArtCanvas');
+  card.className='';                       // clear all state classes
   artCv.classList.remove('show');
   document.getElementById('gcIcon').style.display='';
-  document.getElementById('gachaCard').classList.remove('skin-reveal');
 
-  let emoji,label,msg;
+  let emoji,label,msg,skinArt=null;
   if(pick.coins){
     emoji='🐟'; label=moneyText(pick.coins); S.coins+=pick.coins; msg='Won '+moneyText(pick.coins)+'!';
   } else if(pick.skin){
@@ -5759,12 +5826,7 @@ function gachaReveal(rar,pick,gotCap){
     const already=(S.catSkins||[]).includes(pick.skin);
     if(already){ const ref=RAR_REFUND[rar]||50; S.coins+=ref; msg='Duplicate — '+moneyText(ref)+' refunded.'; }
     else { S.catSkins=S.catSkins||[]; S.catSkins.push(pick.skin); msg='✨ NEW cat skin unlocked!'; }
-    // show art illustration
-    if(cs&&cs.art){
-      document.getElementById('gcIcon').style.display='none';
-      document.getElementById('gachaCard').classList.add('skin-reveal');
-      gachaDrawArt(cs.art);
-    }
+    if(cs&&cs.art) skinArt=cs.art;
   } else {
     const it=SHOP.find(s=>s.id===pick.hat); emoji=it?it.emoji:'🎩'; label=it?it.name:pick.hat;
     if(S.items.includes(pick.hat)){ const ref=RAR_REFUND[rar]||50; S.coins+=ref; msg='Duplicate — '+moneyText(ref)+' refunded.'; }
@@ -5775,14 +5837,30 @@ function gachaReveal(rar,pick,gotCap){
   document.getElementById('gcName').textContent=label;
   const ra=document.getElementById('gcRarity'); ra.textContent=rar.toUpperCase(); ra.style.color=RAR_COL[rar];
   gachaShowStars(rar);
-  const _gc=document.getElementById('gachaCard');
-  const _skinCls=_gc.classList.contains('skin-reveal')?'skin-reveal ':'';
-  _gc.className=_skinCls+'show r-'+rar;
   document.getElementById('gachaMsg').textContent=msg;
   save(); syncHUD(); gachaSyncUI();
-  if(rar==='legendary') SFX.seq&&SFX.seq([659,784,988,1318],'triangle',0.07);
-  else if(rar==='epic') SFX.seq&&SFX.seq([523,659,784],'triangle',0.06);
-  else SFX.coin&&SFX.coin();
+
+  if(skinArt){
+    // ── cinematic cat reveal: suspense charge → flash → big art pops ──
+    document.getElementById('gcIcon').style.display='none';
+    card.style.setProperty('--ray', RAR_COL[rar]);
+    gachaDrawArt(skinArt);
+    card.classList.add('skin-reveal','r-'+rar,'show','charging');   // buildup phase
+    SFX.tone&&SFX.tone(160,0.8,'sawtooth',0.035);                   // rising charge hum
+    SFX.tone&&SFX.tone(240,0.8,'sawtooth',0.025,0.1);
+    setTimeout(()=>{
+      if(!GACHA.open) return;
+      card.classList.remove('charging');                           // BURST: reveal the cat
+      const fl=document.getElementById('gcFlash');
+      if(fl){ fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); }
+      SFX.seq&&SFX.seq([523,659,880,1175,1568],'triangle',0.07);    // triumphant sparkle
+    }, 820);
+  } else {
+    card.classList.add('show','r-'+rar);
+    if(rar==='legendary') SFX.seq&&SFX.seq([659,784,988,1318],'triangle',0.07);
+    else if(rar==='epic') SFX.seq&&SFX.seq([523,659,784],'triangle',0.06);
+    else SFX.coin&&SFX.coin();
+  }
 }
 
 //═══════════════════════════════════════════════ FRUIT MERGE minigame (Suika-style)
@@ -6579,6 +6657,11 @@ function equip(idv){
   S.equipped=(S.equipped===idv)?null:idv;
   save();renderShop();
 }
+function equipSkin(id){
+  if(id==='__puiutu__'){ S.equippedSkin=null; }           // back to the default hero
+  else { S.equippedSkin=(S.equippedSkin===id)?null:id; if(S.equippedSkin) loadSkinFrames(S.equippedSkin); }
+  save();renderInventory();
+}
 function renderProfile(){
   const body=document.getElementById('profileBody');
   const need=xpForLevel(S.level);
@@ -6649,17 +6732,57 @@ function walletHTML(){
 }
 function renderInventory(){
   const body=document.getElementById('invBody');
-  if(S.items.length===0){body.innerHTML=walletHTML()+`<div class="empty">🎒 No items yet.<br>Visit the Shop to buy hats and abilities for Puiutu!</div>`;return;}
-  body.innerHTML=walletHTML()+S.items.map(id=>{
-    const it=SHOP.find(s=>s.id===id);
-    const equipped=S.equipped===id;
-    let btn= it.type==='hat'
-      ? `<button class="buy-btn ${equipped?'equipped':'owned'}" data-equip="${id}">${equipped?'Equipped ✓':'Equip'}</button>`
-      : `<span style="color:#3a8f3a;font-weight:bold;">Activ ✓</span>`;
-    return `<div class="inv-item"><div class="shop-emoji">${it.emoji}</div>
-      <div class="shop-info"><div class="nm">${it.name}</div><div class="ds">${it.desc}</div></div>${btn}</div>`;
-  }).join('');
+  const skins=S.catSkins||[];
+  const hasItems=S.items.length>0;
+  const RAR_CLR_INV={common:'#aeb6c0',rare:'#5aaaff',epic:'#be6eff',legendary:'#ffc846'};
+  const RAR_LBL={common:'Common',rare:'Rare',epic:'Epic',legendary:'Legendary'};
+  let html=walletHTML();
+  // Cat Skins section always shows — Puiutu (the default hero) is the first tile
+  {
+    html+=`<div style="font-weight:900;color:#5a3d18;font-size:15px;margin-bottom:8px;">🐱 Cat Skins</div>`;
+    const puiEq=!S.equippedSkin;
+    html+=`<div class="inv-item">
+      <div class="shop-emoji" style="background:#cfe6a8;border-color:#6b4a1f;">
+        <img src="puiutu/sprite_puiutu.png" style="width:50px;height:50px;object-fit:contain;image-rendering:pixelated;">
+      </div>
+      <div class="shop-info">
+        <div class="nm">Puiutu</div>
+        <div class="ds" style="color:#7a5a32;font-weight:bold;">The original ⭐</div>
+      </div>
+      <button class="buy-btn ${puiEq?'equipped':'owned'}" data-equipskin="__puiutu__">${puiEq?'Equipped ✓':'Equip'}</button>
+    </div>`;
+    html+=skins.map(id=>{
+      const cs=CAT_SKINS.find(c=>c.id===id); if(!cs) return '';
+      const eq=S.equippedSkin===id;
+      const n=RAR_STARS[cs.rarity]||0;
+      const stars='<span style="color:'+RAR_CLR_INV[cs.rarity]+';font-size:13px;">'+'★'.repeat(n)+'</span>';
+      return `<div class="inv-item">
+        <div class="shop-emoji" style="background:#1a0a2e;border-color:${RAR_CLR_INV[cs.rarity]};">
+          <img src="skins/frames/${id}/idle.png" style="width:50px;height:50px;object-fit:contain;image-rendering:pixelated;">
+        </div>
+        <div class="shop-info">
+          <div class="nm">${cs.name}</div>
+          <div class="ds" style="color:${RAR_CLR_INV[cs.rarity]};font-weight:bold;">${RAR_LBL[cs.rarity]} ${stars}</div>
+        </div>
+        <button class="buy-btn ${eq?'equipped':'owned'}" data-equipskin="${id}">${eq?'Equipped ✓':'Equip'}</button>
+      </div>`;
+    }).join('');
+  }
+  if(hasItems){
+    html+=`<div style="font-weight:900;color:#5a3d18;font-size:15px;margin:10px 0 8px;">🎩 Cosmetics</div>`;
+    html+=S.items.map(id=>{
+      const it=SHOP.find(s=>s.id===id); if(!it) return '';
+      const equipped=S.equipped===id;
+      let btn=it.type==='hat'
+        ?`<button class="buy-btn ${equipped?'equipped':'owned'}" data-equip="${id}">${equipped?'Equipped ✓':'Equip'}</button>`
+        :`<span style="color:#3a8f3a;font-weight:bold;">Activ ✓</span>`;
+      return `<div class="inv-item"><div class="shop-emoji">${it.emoji}</div>
+        <div class="shop-info"><div class="nm">${it.name}</div><div class="ds">${it.desc}</div></div>${btn}</div>`;
+    }).join('');
+  }
+  body.innerHTML=html;
   body.querySelectorAll('[data-equip]').forEach(b=>b.onclick=()=>{equip(b.dataset.equip);renderInventory();});
+  body.querySelectorAll('[data-equipskin]').forEach(b=>b.onclick=()=>equipSkin(b.dataset.equipskin));
 }
 
 //═══════════════════════════════════════════════════════════════ MENU CAT
@@ -6676,6 +6799,21 @@ function drawMenuCat(){
 //═══════════════════════════════════════════════════════════════ INPUT WIRING
 // keyboard
 function typingInField(e){const t=e.target;return t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA');}
+// ── cheat codes (testing): type the code anywhere, even on the menu / in a field ──
+function unlockAllCats(){
+  S.catSkins=CAT_SKINS.map(c=>c.id); save();
+  try{ if(typeof renderInventory==='function') renderInventory(); }catch(_){}
+  try{ toast('🐱 All '+CAT_SKINS.length+' cat skins unlocked!'); }catch(_){}
+  try{ SFX.win&&SFX.win(); }catch(_){}
+  console.log('[cheat] unlocked all '+CAT_SKINS.length+' cat skins');
+}
+window.unlockAllCats=unlockAllCats;            // also callable from the console
+let _cheatBuf='';
+const CHEATS={ '!allcatsforone':unlockAllCats };
+window.addEventListener('keydown',e=>{          // capture phase → fires before any stopPropagation
+  if(e.key&&e.key.length===1){ _cheatBuf=(_cheatBuf+e.key).slice(-24).toLowerCase();
+    for(const code in CHEATS){ if(_cheatBuf.endsWith(code)){ _cheatBuf=''; CHEATS[code](); break; } } }
+}, true);
 document.addEventListener('keydown',e=>{
   if(typingInField(e)) return;                 // don't move the cat while chatting
   // dev sprite-placement tool: P toggles; while on, arrows resize and [ ] crop the selected prop
