@@ -3310,6 +3310,10 @@ const RO = {
   'Direct hit!  -':'Lovitura directa!  -',
   'Crystal Lobster Lv.':'Homar de cristal Niv.',
   'Pigeon Lv.':'Porumbel Niv.',
+  'The <span class="accent">Green Forest</span>.<br>A border woodland both empires forgot to want.':'<span class="accent">Padurea Verde</span>.<br>O padure de granita pe care ambele imperii au uitat s-o vrea.',
+  'Puiutu lives here.<br>No clan. No flag. No opinion about the war.':'Aici traieste Puiutu.<br>Fara clan. Fara steag. Fara pareri despre razboi.',
+  'This morning, that stopped being possible.':'Azi-dimineata, asta a incetat sa mai fie posibil.',
+  'tap to continue':'apasa pentru a continua',
 };
 function T(s){
   if(S.lang!=='ro' || typeof s!=='string' || !s) return s;
@@ -8396,7 +8400,7 @@ function playIntro(then){
   introIdx=0; introBusy=false; el.classList.add('show');
   const showCard=()=>{
     tx.classList.remove('in'); introBusy=true;
-    setTimeout(()=>{ tx.innerHTML=INTRO_CARDS[introIdx]; tx.classList.add('in'); introBusy=false; },
+    setTimeout(()=>{ tx.innerHTML=T(INTRO_CARDS[introIdx]); tx.classList.add('in'); introBusy=false; },
       introIdx===0?60:420);
   };
   const next=()=>{
