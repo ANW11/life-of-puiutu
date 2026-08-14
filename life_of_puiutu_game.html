@@ -5350,6 +5350,9 @@ const HUB={ cat:{x:0,y:0,z:0,vz:0,onPlat:false,safeX:0,safeY:0,facing:1,phase:0,
 const HUB_ROCKY_NPC={id:'rocky', dog:true};   // for openDialogue (recruit quest)
 // Merlin the wizard-dog (Library NPC) + the alchemy potions
 const MERLIN_IMG=new Image(); MERLIN_IMG.src='npcs/merlin_npc.png';
+// The Glow's portrait. Until the art exists the dialogue box falls back to a plain circle,
+// so this is safe to ship before the file is dropped in.
+const GLOW_IMG=new Image(); GLOW_IMG.src='npcs/glow_icon.png';
 const MERLIN_LINES=[
   'Ah, a curious cat enters my library!',
   'Those potions on the table must be sorted by colour… care to try?',
@@ -7126,10 +7129,11 @@ function updateHub(){
       floatText(c.x,c.y-42,'-'+dm,'#ff8a8a'); SFX.hit();
       const a=Math.atan2(c.y-d.y,c.x-d.x); c.x+=Math.cos(a)*10; c.y+=Math.sin(a)*8;
       if(!maskReady())hubClampY();
-      if(P.hp<=0){ SFX.lose(); showFaintScreen(); P.hp=P.maxHp; P.iframe=now+1500; }
+      if(P.hp<=0){ SFX.lose(); showFaintScreen(); P.hp=P.maxHp; P.iframe=now+1500; setTimeout(()=>tutorialFire('faint'),1200); }
     }
   }
   if(A.hub.tutorial) combatTutorial();
+  tutorialWatch(now);
   // Queen Seby (boss arena only)
   if(HUB.boss) updateHubBoss(now);
   if(HUB.abyss) updateAbyssBoss(now);
@@ -8465,35 +8469,81 @@ function glowLines(){
 function shroomTalk(){
   storySet('seek_wizard');            // the mushroom is the only thing that opens the west road
   const first=!S.metGlow;
-  sayLines('The Glow', glowLines(), {icon:'', bg:'#1d2416', tone:300, then:()=>{
+  sayLines('The Glow', glowLines(), {img:GLOW_IMG.naturalWidth?GLOW_IMG:null, icon:'', bg:'#1d2416', tone:300, then:()=>{
     if(first){ S.metGlow=true; save();
       toast('The Glow remembers. Come back when you have seen something.'); }
   }});
 }
 
 
-//──────── COMBAT TUTORIAL — the flock at the wizard's gate ────────────────────────────────
-// The first real fight in the game, so it teaches the fight. Rocky does the talking because he
-// is already standing there and he is the only one in the courtyard who has done this before.
-// Each beat fires once and only in CAMPAIGN mode — in TEST nobody lectures you.
+//──────── TUTORIAL — one lesson per mechanic, at the moment it first matters ────────────────
+// Not a wall of instructions at the start. Each beat waits for the situation that makes it
+// useful and fires once, then never again. Rocky teaches fighting because he is the one
+// standing in the fight; the Glow teaches everything else, because it is the voice in your head.
 const TUT_BEATS=[
-  {id:'open',  lines:['Heads up! They have seen you.',
-                      'Rocky: Get close and hit F, or tap the F button. Claws only work in reach.']},
-  {id:'hurt',  lines:['That is your health, top left. It does not come back on its own.',
-                      'Rocky: Back off and let them come to you. Do not stand in the middle of them.']},
-  {id:'first', lines:['One down. Keep moving between swings.']},
-  {id:'last',  lines:['That is the lot of them. Woof.',
-                      'Rocky: The old man is inside. He has been listening the whole time.']},
+  // ── moving and looking ──
+  {id:'move',    who:'glow', when:()=>curArea==='garden' && (S.story||0)<1,
+   lines:['Arrows or WASD to walk. Or just click where you want to go.',
+          'Press E when something is worth touching. The button in the corner does the same.']},
+  {id:'jump',    who:'glow', when:()=>curArea==='garden' && HUB.cat && HUB.cat.x>HUB.worldW*0.60 && (S.story||0)<1,
+   lines:['Space jumps. You will need it to get up to me.',
+          'Hold the direction while you jump — a cat that lets go mid-air lands where it started.']},
+  // ── fighting ──
+  {id:'open',    who:'rocky', lines:['Heads up! They have seen you.',
+          'Get close and hit F, or tap the F button. Claws only work in reach.']},
+  {id:'hurt',    who:'rocky', lines:['That is your health, top left. It does not come back on its own.',
+          'Back off and let them come to you. Do not stand in the middle of them.']},
+  {id:'first',   who:'rocky', lines:['One down. Keep moving between swings.']},
+  {id:'last',    who:'rocky', lines:['That is the lot of them. Woof.',
+          'The old man is inside. He has been listening the whole time.']},
+  // ── spells and mana ──
+  {id:'spell',   who:'glow', when:()=>S.spellbook && S.spellbook.length>1,
+   lines:['You have a spell now. It sits in the bar at the bottom — press 1 to 4, or tap it.',
+          'The blue orb is mana. Spells eat it and it refills slowly, so a spell you waste is a spell you do not have.',
+          'Open your bag to drag a spell into a different slot.']},
+  // ── money ──
+  {id:'coins',   who:'glow', when:()=>(S.coins||0)>=60,
+   lines:['A hundred bronze make a silver. A hundred silver make a gold.',
+          'The bank in the City pays you to leave it there. That is the only place in this world that gives you something for waiting.']},
+  // ── fishing ──
+  {id:'fishing', who:'glow', when:()=>curArea==='beach' && (S.totalFish||0)===0,
+   lines:['That barrel on the pier is a fishing spot. Cast, then keep the marker over the fish while it runs.',
+          'Fish are money, and some of them are worth telling people about.']},
+  // ── the map ──
+  {id:'map',     who:'glow', when:()=>(S.visited && Object.keys(S.visited).length>=3),
+   lines:['You have been to enough places to keep a map now. It is the button at the top.',
+          'It only takes you where you have already walked. Nothing is skipped.']},
+  // ── taking damage / fainting ──
+  {id:'faint',   who:'glow', lines:['You woke up. You always do — this world is not finished with you.',
+          'You dropped some coins where you fell. Nothing else is lost.']},
+  // ── the first choice ──
+  {id:'choice',  who:'glow', when:()=>S.pledge!=null || (S.allegiance||0)!==0,
+   lines:['They will keep asking you to pick a side. The bar in your journal remembers what you actually did, not what you said.',
+          'Standing in the middle is a choice too. It is just the one nobody thanks you for.']},
 ];
+function tutSpeaker(who){
+  if(who==='rocky') return {name:'Rocky', opt:{img:ROCKY.idle, bg:'#2b2a20', tone:380}};
+  return {name:'The Glow', opt:{img:(typeof GLOW_IMG!=='undefined'&&GLOW_IMG.naturalWidth)?GLOW_IMG:null,
+                                icon:'', bg:'#1d2416', tone:300}};
+}
 function tutorialFire(id){
   if(testMode()) return;
   S.tut=S.tut||{}; if(S.tut[id]) return;
   const beat=TUT_BEATS.find(b=>b.id===id); if(!beat) return;
-  if(sayActive||choiceActive||dialogueActive) return;   // never talk over another line
+  if(sayActive||choiceActive||dialogueActive||loreActive) return;   // never talk over another line
   S.tut[id]=true; save();
-  sayLines('Rocky', beat.lines, {img:ROCKY.idle, bg:'#2b2a20', tone:380});
+  const sp=tutSpeaker(beat.who);
+  sayLines(sp.name, beat.lines, sp.opt);
 }
-// called every frame while a hub with `tutorial:'combat'` still has live hostiles
+// checked on a slow tick: every beat with a `when` fires itself the first time it is true
+let _tutTick=0;
+function tutorialWatch(now){
+  if(testMode() || !inGame) return;
+  if(now-_tutTick < 900) return; _tutTick=now;
+  S.tut=S.tut||{};
+  for(const b of TUT_BEATS){ if(b.when && !S.tut[b.id] && b.when()){ tutorialFire(b.id); return; } }
+}
+// the combat lesson still keys off the flock itself
 function combatTutorial(){
   if(A.hub.tutorial!=='combat') return;
   const live=HUB.ducks.filter(d=>!d.dead && d.hostile).length;
