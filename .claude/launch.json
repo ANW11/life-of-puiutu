@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "puiutu-test",
-      "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/pgame_serve.py"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/Users/andreicraciun/Desktop/claude/preview_server.js", "4567"],
       "port": 4567
     }
   ]

@@ -11,3 +11,6 @@ node_modules/
 
 # local backups / temp
 *.backup.png
+
+# scratch copies of sprite sheets kept while slicing frames
+army/frames/_backup/

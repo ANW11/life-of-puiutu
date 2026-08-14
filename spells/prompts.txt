@@ -1,0 +1,122 @@
+=====================================================================
+ PROMPTURI ASSETS — ICOANE DE SPELURI (Life of Puiutu)
+ Stil: cozy 32-bit pixel art, Stardew-meets-children's-book
+ Sfat: atașează-i lui Gemini o captură din joc (bara de speluri sau
+ un reveal de gacha) ca referință de stil înainte de a cere icoanele.
+=====================================================================
+
+CUM FUNCȚIONEAZĂ ÎN JOC
+- Codul caută automat  spells/<id>.png  (numele exacte mai jos).
+- Dacă fișierul lipsește, se afișează emoji-ul ca rezervă — deci poți
+  genera icoanele pe rând și testa după fiecare, fără să aștepți tot setul.
+- Icoana apare în 3 locuri: bara de speluri (30px), spellbook din
+  inventar (44px) și magazin (44px), plus mare de tot în reveal-ul de
+  gacha pentru Fish Storm și Nine Lives.
+- IMPORTANT: pentru că se vede și la 30px, cere-i explicit forme
+  SIMPLE și citibile, cu contrast mare — nu detalii mărunte.
+
+REGULI DE PUS ÎN FIECARE PROMPT (copy-paste la final):
+- "solid flat lime-green background (pure RGB 0,255,0), completely
+  uniform, no gradient, no shadow on the background"
+  (tu scoți verdele; jocul primește PNG deja transparent)
+- "no text, no labels, no watermark, no border, no frame, no grid"
+- "single centered object filling about 80% of the square canvas"
+- "chunky readable pixel-art shapes with bold dark outlines, high
+  contrast, must stay legible when scaled down to 30x30 pixels"
+- "cozy warm storybook palette, cute not scary — this is a game about
+  a kitten"
+- 512x512, square
+
+---------------------------------------------------------------------
+1. HAIRBALL VOLLEY  →  spells/hairball.png
+---------------------------------------------------------------------
+Pixel-art spell icon, 512x512. A swirling ball of tangled brown-and-
+ginger cat fur flying forward, with two small motion swooshes behind it
+and a few loose fur strands trailing. Cute and slightly silly, not
+gross. Warm brown/amber palette.
+
+---------------------------------------------------------------------
+2. ZOOMIES  →  spells/zoomies.png
+---------------------------------------------------------------------
+Pixel-art spell icon, 512x512. A bright yellow lightning-bolt dash
+streak shaped like a fast motion trail, with a tiny cat-paw silhouette
+at its leading tip and small speed lines behind. Conveys sudden
+blink-forward speed. Electric yellow and warm white palette.
+
+---------------------------------------------------------------------
+3. CATNIP CLOUD  →  spells/catnip.png
+---------------------------------------------------------------------
+Pixel-art spell icon, 512x512. A puffy green cloud of catnip haze with
+a few small catnip leaves floating inside it and tiny sparkle dots.
+Soft rounded cloud shape, dreamy and playful. Fresh green palette.
+
+---------------------------------------------------------------------
+4. PURR WARD  →  spells/purrward.png
+---------------------------------------------------------------------
+Pixel-art spell icon, 512x512. A glowing pale-blue protective bubble
+shield, translucent, with a soft highlight arc on the upper left and
+three tiny sound-wave arcs (a purr) radiating inside it. Calm, cozy,
+protective. Ice-blue and white palette.
+
+---------------------------------------------------------------------
+5. CRYSTAL SPIKES  →  spells/crystalspikes.png   (drop de la Queen Seby)
+---------------------------------------------------------------------
+Pixel-art spell icon, 512x512. A cluster of sharp violet crystal shards
+erupting upward from a small cracked ground base, the tallest shard in
+the middle, faint magical glow and a couple of floating sparkle motes.
+Violet and cyan palette, mystical but still cute.
+
+---------------------------------------------------------------------
+6. THUNDER PAW  →  spells/thunderpaw.png   (drop de la King)
+---------------------------------------------------------------------
+Pixel-art spell icon, 512x512. A cat paw print made of crackling
+electric-blue lightning, with a jagged bolt arcing out of it to one
+side. Regal and powerful but friendly. Electric blue and pale gold
+palette.
+
+---------------------------------------------------------------------
+7. FISH STORM  →  spells/fishstorm.png   (gacha EPIC — se vede și mare)
+---------------------------------------------------------------------
+Pixel-art spell icon, 512x512. Three or four cartoon fish raining down
+diagonally out of a small blue storm cloud, with tiny water droplets
+between them. Absurd and funny on purpose. Blue and silver palette with
+warm orange fish. Extra polish welcome — this one is also shown large
+in a gacha reveal card.
+
+---------------------------------------------------------------------
+8. NINE LIVES  →  spells/ninelives.png   (gacha LEGENDARY — se vede și mare)
+---------------------------------------------------------------------
+Pixel-art spell icon, 512x512. A radiant golden cat silhouette sitting
+inside a glowing halo/aura, with the numeral 9 subtly formed by the
+swirl of the aura around it, plus small golden sparkles. Warm, magical,
+triumphant — the rarest prize in the game. Gold, cream and soft amber
+palette. Make this the most impressive of the eight.
+
+=====================================================================
+ NUME EXACTE DE FIȘIERE (pune-le fix așa, în folderul spells/)
+=====================================================================
+ spells/hairball.png
+ spells/zoomies.png
+ spells/catnip.png
+ spells/purrward.png        <- "shield"
+ spells/crystalspikes.png   <- "crystal"
+ spells/thunderpaw.png      <- "paw weapon"
+ spells/fishstorm.png       <- "fish rain"
+ spells/ninelives.png
+
+ STATUS: toate 8 sunt generate si integrate (august 2026).
+ Originalele la rezolutie completa (2048x2048) sunt pastrate in
+ spells/src/ ; ce foloseste jocul sunt versiunile de 512x512 din
+ spells/ (11MB -> 1.5MB, conteaza pentru PWA-ul offline de pe iPhone).
+ Daca regenerezi ceva: pune originalul in spells/src/ si ruleaza
+ din nou pasul de redimensionare, sau salveaza direct la 512x512.
+
+=====================================================================
+ CHEAT PENTRU TESTAT
+=====================================================================
+ Scrie oriunde în joc (nu într-un câmp de text):  allspells
+ → deblochează toate cele 8 speluri, le pune în sloturile libere din
+   bara de jos și îți umple mana. Merge și din consolă:
+   unlockAllSpells()
+ (există deja și  !allcatsforone  pentru toate skinurile de pisici)
+=====================================================================
