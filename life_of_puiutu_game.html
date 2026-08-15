@@ -1799,8 +1799,10 @@ const ARMY_SPR={};
 const ARMY_FRAMES={ cat_commander:5, cat_emissary:6, pig_agent:6, rat_emissary:6 };
 ['cat_soldier','rat_soldier','cat_commander','rat_commander','cat_emissary','pig_agent','rat_emissary'].forEach(n=>{
   const walk=[], N=ARMY_FRAMES[n]||4;
-  for(let i=0;i<N;i++){ const im=new Image(); im.src='army/frames/'+n+'_walk'+i+'.png'; walk.push(im); }
-  const atk=new Image(); atk.src='army/frames/'+n+'_atk.png';
+  // ?v= busts the cache: the pig and rat emissary frames were re-exported onto a shared canvas,
+  // and anyone holding the old tight-cropped ones would still see the sprite jump every frame
+  for(let i=0;i<N;i++){ const im=new Image(); im.src='army/frames/'+n+'_walk'+i+'.png?v=2'; walk.push(im); }
+  const atk=new Image(); atk.src='army/frames/'+n+'_atk.png?v=2';
   ARMY_SPR[n]={walk, atk};
 });
 
@@ -2167,7 +2169,10 @@ function buildAreas(){
         airYDamp:0.35, platLift:5,
         // every standing point on the climb, in order — landings quantise onto these
         snapRXF:0.032, snapRYF:0.078,   // tall enough to catch the first hop up off the path
-        climbNodes:[{xf:0.686,yf:0.562},{xf:0.625,yf:0.541},{xf:0.565,yf:0.520},
+        // node 0 is the ledge PAINTED INTO THE MAP, not one of the drawn platforms — measured off
+        // 'new park 2.jpg', its grass surface is at yf 0.584, so 0.562 left the cat standing 26px
+        // above it in mid-air. Every other node is a sprite the game draws, so they cannot drift.
+        climbNodes:[{xf:0.686,yf:0.584},{xf:0.625,yf:0.541},{xf:0.565,yf:0.520},
                     {xf:0.504,yf:0.500},{xf:0.443,yf:0.479},{xf:0.383,yf:0.458},
                     {xf:0.322,yf:0.437}],
         // ── the climb to The Glow. The two painted ledges (right end and the mushroom's
@@ -5697,13 +5702,14 @@ function updateGarrison(now){
       // seconds turn to survey the other side of the square.
       if(u.duel){ u.phase+=0.14; }        // locked in: never turns, never tires, never lands one
       else if(u.idle){
-        u.phase+=0.045;
+        u.phase+=0.045;                   // drives the breathing bob only — the frame is held
         if(!u.turnAt || now>u.turnAt){ u.turnAt=now+3200+Math.random()*3600; u.facing=-u.facing; }
       }
       continue;
     }
     const half=u.patrol*HUB.worldW;
-    u.x+=u.dir*0.6; u.moving=true; u.phase+=0.15; u.facing=u.dir;
+    // step rate tied to how far they actually travel, so the legs match the ground
+    u.x+=u.dir*0.6; u.moving=true; u.phase+=0.075; u.facing=u.dir;
     if(u.x>u.homeX+half){ u.x=u.homeX+half; u.dir=-1; u.pauseUntil=now+1400+Math.random()*2600; }
     if(u.x<u.homeX-half){ u.x=u.homeX-half; u.dir= 1; u.pauseUntil=now+1400+Math.random()*2600; }
   }
@@ -7337,7 +7343,11 @@ function drawHub(){
       const spr=ARMY_SPR[u.key];
       // a duellist alternates between his walk cycle and his attack frame, on his own rhythm
       const swinging = u.duel && (((now+u.duelPhase)%1100) < 420);
-      const img = spr ? (swinging && spr.atk ? spr.atk : spr.walk[Math.floor(u.phase)%spr.walk.length]) : null;
+      // Standing still holds a single frame. Cycling a walk animation on the spot is what made
+      // them twitch — the bob below is what sells "alive", not flicking through poses.
+      const img = spr ? (swinging && spr.atk ? spr.atk
+                        : (u.moving || u.duel) ? spr.walk[Math.floor(u.phase)%spr.walk.length]
+                        : spr.walk[0]) : null;
       const h=(u.rank==='commander'?92:78)*sc*1.32*u.scale;
       // walking bobs; standing still breathes
       const bob = u.moving ? Math.abs(Math.sin(u.phase*Math.PI))*3*sc
@@ -8676,7 +8686,9 @@ const PORTRAITS={
   'npcs/merlin_npc.png':{ex:0.8164,ey:0.2869,vw:0.4767},
   // The Glow's eyes sit low, under the cap. Framing dead-centre on them would crop off the
   // cap, which is the whole silhouette — so the face rides a little below centre instead.
-  'npcs/Voice_of_the_forest_icon.jpeg':{ex:0.485,ey:0.580,vw:0.90},
+  // measured off the art: the mushroom's own bounding box is x 0.055-0.944, y 0.165-1.000, so
+  // its visual centre is (0.500, 0.582) and it needs a 0.98 view to sit inside the circle whole
+  'npcs/Voice_of_the_forest_icon.jpeg':{ex:0.500,ey:0.582,vw:0.98},
   'army/frames/cat_soldier_walk0.png':{ex:0.8145,ey:0.4468,vw:0.649},
   'army/frames/cat_commander_walk0.png':{ex:0.7858,ey:0.4408,vw:0.6219},
   'army/frames/cat_emissary_walk0.png':{ex:0.7853,ey:0.227,vw:0.5303},
