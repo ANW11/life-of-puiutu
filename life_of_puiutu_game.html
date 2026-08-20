@@ -4346,7 +4346,7 @@ function hubMobKilled(d,now){
 }
 // Queen Seby falls (hub version — the side-scroll boss path lives in killEnemy)
 function sebyDefeated(b,now){
-  b.defeated=true; b.hp=0; b.respawnAt=now+30000; const k=b.kind;
+  b.defeated=true; b.hp=0; b.respawnAt=0; const k=b.kind;   // stays down: the cave beat depends on it
   S.coins+=k.coins; addXP(k.xp); S.totalDefeats=(S.totalDefeats||0)+1;
   S.sebyDefeated=true; storySet('seby');
   setTimeout(refreshGarrison, 900);   // he does not wait for you to leave — he turns up over her body
@@ -6059,7 +6059,12 @@ function enterHub(fromRight){
       b.throneF=th; b.placed=false;
       b.stageUntil=0; b.roarAt=0; b.roared=false;
       if(S.ratKingDown){ b.stage='stagger'; b.defeated=true; b.hp=0; }
-    } else spawnSebyCrystals();
+    } else {
+      // walking back into her lair after she has fallen must not put her back on her feet —
+      // the piglet is standing right there telling you she is gone
+      if(S.sebyDefeated){ HUB.boss.defeated=true; HUB.boss.hp=0; HUB.boss.respawnAt=0; }
+      else spawnSebyCrystals();
+    }
   } else HUB.boss=null;
   // The Dreamer in the Deep — abyss boss arena
   if(H.abyssBoss){
@@ -6247,7 +6252,10 @@ function hurtSewerCoon(dmg,now,col,fromX){
   floatText(co.x,co.y-90,'-'+dmg,col||'#fff');
   if(SEWER.bossHp<=0){ // defeated — no teleport: the sewers light up and you walk out the normal exit
     SEWER.mode='cleared'; SEWER.clearedAt=now; storySet('coon');
-    S.coonLoot=Math.max(S.coonLoot||0, SEWER.loot.length||3);   // they come up out of the dark with you const coins=300+S.level*8, xp=320; S.coins+=coins; addXP(xp); S.totalDefeats=(S.totalDefeats||0)+1; S.bossDefeated=true;
+    // the treasures come up out of the dark with you, for NomNom to melt down
+    S.coonLoot=Math.max(S.coonLoot||0, SEWER.loot.length||3);
+    const coins=300+S.level*8, xp=320;
+    S.coins+=coins; addXP(xp); S.totalDefeats=(S.totalDefeats||0)+1; S.bossDefeated=true;
     SFX.win&&SFX.win(); save(); syncHUD(); questProgress('defeat'); checkAchievements();
     for(let i=0;i<24;i++) floatText(co.x+(Math.random()-.5)*160, co.y-30-Math.random()*90,'', i%2?'#ffd86b':'#ff8a3a');
     toast('The Evil Coon is defeated! +'+moneyText(coins)+'  +'+xp+'XP — the sewers fall quiet. Head for the light to leave.');
