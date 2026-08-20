@@ -444,6 +444,13 @@
   #mergeRestart{background:linear-gradient(#7ed957,#4d9a2a);border:2px solid #3a6f1c;color:#fff;font-weight:bold;
     font-size:15px;padding:9px 20px;border-radius:12px;cursor:pointer;}
   #mergeRestart:active{transform:scale(.96);}
+  /* story / free-play picker on the menu */
+  #modePick{position:absolute;left:12px;top:12px;display:flex;gap:8px;z-index:6;}
+  .mode-btn{padding:6px 12px;border:2px solid #6b4a1f;border-radius:8px;cursor:pointer;
+    background:rgba(20,14,8,.62);color:#e8d2a0;font:bold 12px Trebuchet MS;letter-spacing:.5px;
+    opacity:.6;transition:opacity .15s,transform .1s,border-color .15s,color .15s;}
+  .mode-btn:hover{opacity:.9;}
+  .mode-btn.on{opacity:1;border-color:#ffd76a;color:#ffe7b0;transform:scale(1.05);}
   /* language picker on the menu */
   #langPick{position:absolute;right:12px;top:12px;display:flex;gap:8px;z-index:6;}
   .lang-btn{width:46px;height:30px;padding:0;border:2px solid #6b4a1f;border-radius:6px;overflow:hidden;
@@ -883,6 +890,10 @@
       <button class="img-btn play" id="btnPlay"><img src="ui/btn_play.png" alt="Play"></button>
 
       <!-- language: drawn as inline SVG so it needs no art and stays crisp at any size -->
+      <div id="modePick">
+        <button class="mode-btn" id="modeStory">STORY</button>
+        <button class="mode-btn" id="modeFree">FREE PLAY</button>
+      </div>
       <div id="langPick">
         <button class="lang-btn" id="langEN" title="English" aria-label="English">
           <svg viewBox="0 0 60 30"><clipPath id="uk-c"><rect width="60" height="30"/></clipPath>
@@ -3398,7 +3409,17 @@ const STORY=[
   {id:'organization', grants:[],                hint:'Down.'},
 ];
 const STORY_IX={}; STORY.forEach((s,i)=>STORY_IX[s.id]=i);
-function testMode(){ return S.mode==='test'; }
+// Two ways to play. STORY runs the campaign: gates apply, bosses stay beaten, the world
+// remembers. FREE PLAY opens everything and puts it all back — every boss respawns, including
+// both kings, and the rune puzzle re-seals itself so it can be solved again.
+function freeMode(){ return S.mode==='free' || S.mode==='test'; }
+function testMode(){ return freeMode(); }
+function setMode(m){
+  S.mode=(m==='free'||m==='test')?'free':'campaign'; save();
+  const a=document.getElementById('modeStory'), b=document.getElementById('modeFree');
+  if(a) a.classList.toggle('on', !freeMode());
+  if(b) b.classList.toggle('on', freeMode());
+}
 function storyAt(id){ const i=STORY_IX[id]; return i!=null && (S.story||0)>=i; }
 // A gate is open in TEST mode, or when the campaign has granted its flag.
 function gateOpen(flag){ return testMode() || !!S[flag]; }
@@ -4346,7 +4367,9 @@ function hubMobKilled(d,now){
 }
 // Queen Seby falls (hub version — the side-scroll boss path lives in killEnemy)
 function sebyDefeated(b,now){
-  b.defeated=true; b.hp=0; b.respawnAt=0; const k=b.kind;   // stays down: the cave beat depends on it
+  // In STORY she stays down — the crystal, the piglet and the runes all depend on it.
+  // In FREE PLAY she gets back up, like every other boss.
+  b.defeated=true; b.hp=0; b.respawnAt=freeMode()?now+30000:0; const k=b.kind;
   S.coins+=k.coins; addXP(k.xp); S.totalDefeats=(S.totalDefeats||0)+1;
   S.sebyDefeated=true; storySet('seby');
   setTimeout(refreshGarrison, 900);   // he does not wait for you to leave — he turns up over her body
@@ -5597,12 +5620,18 @@ function nearestPlat(x,y,maxRX,maxRY){
 // preload the opened assets so the swap is seamless (no loading flash).
 function resolveSolvedHub(H){
   if(!H || !H.solveFlag) return;
+  // remember the sealed look the first time we touch this hub — the swap used to be one-way,
+  // so once solved there was no way back to the puzzle
+  if(H._imgSealed===undefined){ H._imgSealed=H.img; H._maskSealed=H.mask; H._mobsSealed=H.mobTypes; }
   if(H.imgSolved){ if(!HUB_IMGS[H.imgSolved]){ const im=new Image(); im.src=H.imgSolved; HUB_IMGS[H.imgSolved]=im; } }
   if(H.maskSolved){ if(!HUB_MASKS[H.maskSolved]){ const im=new Image(); im.src=H.maskSolved; HUB_MASKS[H.maskSolved]=im; } }
+  if(freeMode() && S[H.solveFlag]){ S[H.solveFlag]=false; save(); }   // free play re-seals it
   if(S[H.solveFlag]){
     if(H.imgSolved) H.img=H.imgSolved;
     if(H.maskSolved) H.mask=H.maskSolved;
     if(H.mobSolved) H.mobTypes=H.mobSolved;
+  } else {
+    H.img=H._imgSealed; H.mask=H._maskSealed; H.mobTypes=H._mobsSealed;
   }
 }
 // (re)spawn this hub's critters from H.mobTypes / H.mob — used on entry and after a morph
@@ -6052,17 +6081,17 @@ function enterHub(fromRight){
       b.throneF=th; b.lionF={xf:H.boss.xf, yf:H.boss.yf}; b.placed=false;
       b.stageUntil=0; b.spawnT0=0; b.roarAt=0; b.roared=false;
       // he has been beaten before: the hall stays as you left it — a cat asleep in a big chair
-      if(S.catKingDown){ b.stage='down'; b.defeated=true; b.hp=0; }
+      if(S.catKingDown && !freeMode()){ b.stage='down'; b.defeated=true; b.hp=0; }
     } else if(rk){
       const b=HUB.boss, th=H.throne||{xf:0.5,yf:0.85};
       b.rk=true; b.stage='idle';                 // idle → low → rising → tall → stagger
       b.throneF=th; b.placed=false;
       b.stageUntil=0; b.roarAt=0; b.roared=false;
-      if(S.ratKingDown){ b.stage='stagger'; b.defeated=true; b.hp=0; }
+      if(S.ratKingDown && !freeMode()){ b.stage='stagger'; b.defeated=true; b.hp=0; }
     } else {
       // walking back into her lair after she has fallen must not put her back on her feet —
       // the piglet is standing right there telling you she is gone
-      if(S.sebyDefeated){ HUB.boss.defeated=true; HUB.boss.hp=0; HUB.boss.respawnAt=0; }
+      if(S.sebyDefeated && !freeMode()){ HUB.boss.defeated=true; HUB.boss.hp=0; HUB.boss.respawnAt=0; }
       else spawnSebyCrystals();
     }
   } else HUB.boss=null;
@@ -11174,10 +11203,11 @@ function chatCommand(t){
   // ── campaign / test ──
   if(c==='!mode' || c.indexOf('!mode ')===0){
     const want=c.slice(6).trim();
-    if(want==='test'||want==='campaign'){ S.mode=want; save();
-      toast(want==='test' ? 'TEST mode — every gate is open,!warp enabled'
-                          : 'CAMPAIGN mode — the story gates are back on'); }
-    else toast('mode: '+(S.mode||'campaign')+'  ·  use !mode test / !mode campaign');
+    if(want==='test'||want==='free'||want==='story'||want==='campaign'){
+      setMode(want==='story'?'campaign':want);   // keeps the menu buttons in sync
+      toast(freeMode() ? 'FREE PLAY — every gate is open and every boss comes back'
+                       : 'STORY — the campaign gates are back on'); }
+    else toast('mode: '+(freeMode()?'free':'story')+'  ·  use !mode free / !mode story');
     return true; }
   if(c==='!story'){
     const i=S.story||0;
@@ -11429,6 +11459,12 @@ cv.addEventListener('pointerup',()=>{ if(PLACE_DRAG){ placeLog(); placeSave(); }
 document.getElementById('btnMap').addEventListener('click',openMap);
 document.getElementById('btnGacha').addEventListener('click',gachaOpen);
 document.getElementById('gachaRoll').addEventListener('click',gachaRoll);
+{ const _ms=document.getElementById('modeStory'), _mf=document.getElementById('modeFree');
+  if(_ms) _ms.addEventListener('click',()=>{ setMode('campaign'); SFX&&SFX.click&&SFX.click();
+    toast('Story mode — the campaign gates apply.'); });
+  if(_mf) _mf.addEventListener('click',()=>{ setMode('free'); SFX&&SFX.click&&SFX.click();
+    toast('Free play — everything is open and every boss comes back.'); });
+  setMode(S.mode||'campaign'); }
 { const _en=document.getElementById('langEN'), _ro=document.getElementById('langRO');
   if(_en) _en.addEventListener('click',()=>{ setLang('en'); SFX&&SFX.click&&SFX.click(); });
   if(_ro) _ro.addEventListener('click',()=>{ setLang('ro'); SFX&&SFX.click&&SFX.click(); });
