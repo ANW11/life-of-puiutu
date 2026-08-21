@@ -9762,23 +9762,30 @@ function sortGen(lvl){
 }
 function sortLayout(){
   const n=SORT.tubes.length, W=SORT.W, H=SORT.H;
-  const perRow = n<=5 ? n : Math.ceil(n/2);
-  const rows = Math.ceil(n/perRow);
-  // bottles keep their aspect; size to fit the row width, then cap by row height
-  let bw = Math.floor((W-28)/perRow) - 10;
-  let bh = bw/SORT_BOTTLE_AR;
-  const maxRowH = (H-50)/rows - 30;
-  if(bh>maxRowH){ bh=maxRowH; bw=bh*SORT_BOTTLE_AR; }
-  bw=Math.min(bw,128); bh=bw/SORT_BOTTLE_AR;
+  // The row count used to be fixed (all in one row up to five, otherwise two), which threw away
+  // the canvas's height: five bottles across left them 80px wide while six across two rows got
+  // 128. Try every sensible row count and keep whichever makes the bottles biggest — the board
+  // is tall, so more rows almost always beats more columns.
+  const GAP=12, VGAP=30, PAD=28, TOPBOT=56, CAPW=170;
+  let perRow=n, rows=1, bw=0;
+  for(let r=1; r<=4; r++){
+    const pr=Math.ceil(n/r);
+    const wLim=(W-PAD)/pr - GAP;
+    const hLim=(H-TOPBOT-(r-1)*VGAP)/r;
+    const cand=Math.min(wLim, hLim*SORT_BOTTLE_AR, CAPW);
+    if(cand>bw){ bw=cand; rows=r; perRow=pr; }
+  }
+  bw=Math.floor(bw);
+  let bh=bw/SORT_BOTTLE_AR;
   SORT.tubeW=bw; SORT.tubeH=bh; SORT.segH=(0.66*bh)/SORT.cap;   // liquid fills the round body band
-  const rowAreaH=rows*bh + (rows-1)*34;
+  const rowAreaH=rows*bh + (rows-1)*VGAP;
   SORT.layout=[];
   for(let i=0;i<n;i++){
     const r=Math.floor(i/perRow), c=i%perRow;
     const rowCount=Math.min(perRow, n-r*perRow);
-    const rowW=rowCount*(bw+12)-12;
-    const x=(W-rowW)/2 + c*(bw+12);
-    const y=(H-rowAreaH)/2 + r*(bh+34) + 10;
+    const rowW=rowCount*(bw+GAP)-GAP;
+    const x=(W-rowW)/2 + c*(bw+GAP);
+    const y=(H-rowAreaH)/2 + r*(bh+VGAP) + 10;
     SORT.layout.push({x, y, w:bw, h:bh});
   }
 }
