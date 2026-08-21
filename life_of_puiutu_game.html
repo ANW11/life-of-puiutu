@@ -2439,7 +2439,7 @@ function buildAreas(){
         // you to clear this room. The player armed the mech and will not know it for hours.
         garrison:[
           {unit:'pig_agent', xf:0.625, yf:0.760, facing:-1, idle:true, patrol:0.008, scale:0.88,
-           name:'Delighted Piglet', talkFn:'piglet', showIf:'sebyDefeated', lines:[
+           name:'Delighted Piglet', talkFn:'piglet', showFn:'sebyGone', lines:[
             'Delighted Piglet: Oh, marvellous. Marvellous! Is she gone? She is gone.',
             'Delighted Piglet: Do you know how long we have wanted at these? Years. YEARS.',
             'Delighted Piglet: Finest grade anywhere. Enormous output. And nobody guarding them any more.',
@@ -5702,6 +5702,12 @@ const ARMY_NATIVE={ cat_soldier:1, cat_commander:1, rat_soldier:-1, rat_commande
 // flag flips mid-scene: the whole point of the piglet is that he walks in over Seby's body while
 // the player is still there, and a garrison built on entry can never show him.
 function refreshGarrison(){ if(A&&A.hub) initGarrison(); }
+// Conditions that depend on what is happening in the room RIGHT NOW rather than on a save flag.
+// The piglet only turns up over Seby's body — and in Free Play, where she gets back up, he has
+// to leave again. `sebyDefeated` alone would keep him standing next to a living boss.
+const GARRISON_SHOW={
+  sebyGone(){ return !!(HUB.boss && HUB.boss.defeated); },
+};
 function initGarrison(){
   HUB.garrison=[];
   const list=A.hub&&A.hub.garrison; if(!list) return;
@@ -5713,6 +5719,7 @@ function initGarrison(){
     // bridge opens, long before the rest of the garrison is recalled
     if(g.hideIf && S[g.hideIf]) continue;
     if(g.showIf && !S[g.showIf]) continue;
+    if(g.showFn && !(GARRISON_SHOW[g.showFn] && GARRISON_SHOW[g.showFn]())) continue;
     const x=g.xf*HUB.worldW, y=g.yf*VH;
     HUB.garrison.push({ key:g.unit||'cat_soldier', x, y, homeX:x,
       facing:g.facing||-1, nativeFacing:ARMY_NATIVE[g.unit||'cat_soldier']||1,
@@ -6095,6 +6102,8 @@ function enterHub(fromRight){
       else spawnSebyCrystals();
     }
   } else HUB.boss=null;
+  refreshGarrison();   // the garrison is built before the boss exists; anyone waiting on the
+                       // boss's state (the piglet) can only be judged once it is there
   // The Dreamer in the Deep — abyss boss arena
   if(H.abyssBoss){
     if(H.imgCalm) H.img=H.imgCalm;                 // always enter on the calm temple
@@ -6851,6 +6860,7 @@ function updateHubBoss(now){
       b.defeated=false; b.hp=b.maxHp; b.x=b.homeX; b.y=b.homeY;
       b.state='walk'; b.phase2=false; b.throwCD=0; b.meleeCD=0; b.dashCD=0; b.introShown=true;
       spawnSebyCrystals();   // her barrier reforms when she rises again
+      refreshGarrison();     // and the piglet stops celebrating
       toast('Queen Seby gathers her shattered crystals… she rises again!');
     }
     return;
