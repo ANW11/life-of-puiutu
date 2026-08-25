@@ -2787,7 +2787,7 @@ const RO = {
   'Something in the garden wants to talk to you.':'Ceva din gradina vrea sa vorbeasca cu tine.',
   'Find the old wizard\u2019s castle, west of the garden.':'Gaseste castelul batranului vrajitor, la vest de gradina.',
   'The flock is down. The library door is clear.':'Stolul e la pamant. Usa bibliotecii e libera.',
-  'Merlin wants five potions sorted before he says more.':'Merlin vrea cinci potiuni sortate inainte sa spuna mai mult.',
+  'Merlin wants three potions sorted before he says more.':'Merlin vrea trei potiuni sortate inainte sa spuna mai mult.',
   'You have Zoomies. The rat at the shore has less to say now.':'Ai Zoomies. Sobolanul de pe drum are mai putine de spus acum.',
   'The pig kept his word. The road east is open.':'Porcul s-a tinut de cuvant. Drumul spre est e deschis.',
   'Lucian paid. The bank sells what you need.':'Lucian a platit. Banca vinde ce-ti trebuie.',
@@ -2901,13 +2901,13 @@ const RO = {
   'Ah. A curious cat enters my library.':'Ah. O pisica curioasa intra in biblioteca mea.',
   'There is a prophecy about one who puts this land back together. It is not very specific.':'Exista o profetie despre cel care va reface taramul asta. Nu e foarte precisa.',
   'They never are. They leave the work to whoever turns up.':'Niciodata nu sunt. Lasa munca pe seama celui care apare.',
-  'Sort five of my potions by colour. Then I will know whether the rest is worth telling you.':'Sorteaza cinci dintre potiunile mele dupa culoare. Apoi voi sti daca merita sa-ti spun restul.',
+  'Sort three of my potions by colour. Then I will know whether the rest is worth telling you.':'Sorteaza trei dintre potiunile mele dupa culoare. Apoi voi sti daca merita sa-ti spun restul.',
   'The table is right there, still bubbling.':'Masa e chiar acolo, inca clocoteste.',
-  'Five. Good.':'Cinci. Bine.',
+  'Three. Good.':'Trei. Bine.',
   'Here. The old cats called it Zoomies. Everyone else calls it running away very fast.':'Poftim. Pisicile batrane ii spuneau Zoomies. Toti ceilalti ii spun fugit foarte repede.',
   'It is the same thing, and it has saved more lives than any claw.':'E acelasi lucru, si a salvat mai multe vieti decat orice gheara.',
   'Now go down to the shore. Whoever is standing on that road will find he has nothing left to say to you.':'Acum coboara la tarm. Cine sta pe drumul ala va descoperi ca nu mai are nimic sa-ti spuna.',
-  'Another five potions and I will show you how to keep the rain off.':'Inca cinci potiuni si iti arat cum sa te feresti de ploaie.',
+  'Another three potions and I will show you how to keep the rain off.':'Inca trei potiuni si iti arat cum sa te feresti de ploaie.',
   'Ten. Nobody does ten.':'Zece. Nimeni nu face zece.',
   'Take the ward. It will not win you anything. It will let you lose more slowly.':'Ia scutul. Nu-ti va castiga nimic. Te va lasa sa pierzi mai incet.',
   'Fishing, are we? Good. Honest work.':'Pescuim, va sa zica? Bine. Munca cinstita.',
@@ -3309,7 +3309,7 @@ const RO = {
   'Press E to ':'Apasa E ca sa ',
   'Press E — ':'Apasa E — ',
   'Five fish. You are at ':'Cinci pesti. Esti la ',
-  'Five potions. You have done ':'Cinci potiuni. Ai facut ',
+  'Three potions. You have done ':'Trei potiuni. Ai facut ',
   'Two sharks. You have done ':'Doi rechini. Ai facut ',
   'You have done ':'Ai facut ',
   'You went DOWN there? And came back? With ':'Ai coborat ACOLO? Si te-ai intors? Cu ',
@@ -3389,7 +3389,7 @@ const STORY=[
   {id:'awake',        hint:'Something in the garden wants to talk to you.'},
   {id:'seek_wizard',  grants:['towerOpen'],     hint:'Find the old wizard’s castle, west of the garden.'},
   {id:'pigeons',      grants:['libraryOpen'],   hint:'The flock is down. The library door is clear.'},
-  {id:'prophecy',     grants:[],                hint:'Merlin wants five potions sorted before he says more.'},
+  {id:'prophecy',     grants:[],                hint:'Merlin wants three potions sorted before he says more.'},
   {id:'zoomies',      grants:['beachOpen'],     hint:'You have Zoomies. The rat at the shore has less to say now.'},
   {id:'fivefish',     grants:['cityOpen'],      hint:'The pig kept his word. The road east is open.'},
   {id:'gold',         grants:[],                hint:'Lucian paid. The bank sells what you need.'},
@@ -5390,9 +5390,9 @@ const MERLIN_LINES=[
 let _merlinLine=0;
 // S.sortLevel is the NEXT Colour Sort level to play, so five finished means it has moved past 5.
 function sortDone(){ return Math.max(0,(S.sortLevel||1)-1); }
-const MERLIN_TOLL=5;                       // potions before the prophecy pays out
+const MERLIN_TOLL=3;                       // potions before the prophecy pays out — three is the wall, not five
 function merlinSay(lines,then){ sayLines('Merlin', lines, {img:MERLIN_IMG, bg:'#2a2038', tone:560, then}); }
-// Merlin carries the middle of Act I: the prophecy, the toll of five potions, and the spell that
+// Merlin carries the middle of Act I: the prophecy, the toll of three potions, and the spell that
 // finally gets the Rat Emissary off the road to the shore. The emissary is not scripted to walk
 // away — he simply has `hideIf:'beachOpen'`, and this is the only thing in the game that sets it.
 function merlinTalk(){
@@ -5401,18 +5401,18 @@ function merlinTalk(){
       'Ah. A curious cat enters my library.',
       'There is a prophecy about one who puts this land back together. It is not very specific.',
       'They never are. They leave the work to whoever turns up.',
-      'Sort five of my potions by colour. Then I will know whether the rest is worth telling you.'
+      'Sort three of my potions by colour. Then I will know whether the rest is worth telling you.'
     ], ()=>storySet('prophecy'));
     return;
   }
   if(!storyAt('zoomies') && sortDone()<MERLIN_TOLL){
-    merlinSay(['Five potions. You have done '+sortDone()+'.',
+    merlinSay(['Three potions. You have done '+sortDone()+'.',
                'The table is right there, still bubbling.']);
     return;
   }
   if(!storyAt('zoomies')){
     merlinSay([
-      'Five. Good.',
+      'Three. Good.',
       'Here. The old cats called it Zoomies. Everyone else calls it running away very fast.',
       'It is the same thing, and it has saved more lives than any claw.',
       'Now go down to the shore. Whoever is standing on that road will find he has nothing left to say to you.'
@@ -5421,7 +5421,7 @@ function merlinTalk(){
   }
   // the second five are optional for ever — a shield, not a key
   if(sortDone()<MERLIN_TOLL*2){
-    merlinSay(['Another five potions and I will show you how to keep the rain off.',
+    merlinSay(['Another three potions and I will show you how to keep the rain off.',
                'You have done '+sortDone()+' of '+(MERLIN_TOLL*2)+'.']);
     return;
   }
