@@ -10670,7 +10670,7 @@ function mcLoad(){ if(MC.loaded) return; MC.loaded=true;
   const f={cart:'cart',cartback:'cart_back',cartfront:'cart_front',bg:'cave_rails',barricade:'obstacle_trim',beam:'beam',tnt:'tnt',hole:'hole',tower:'tower',lamp:'lamp',fog:'fog',coinspin:'coin_spin'};
   for(const k in f){ const im=new Image(); im.src='cart_game/proc/'+f[k]+'.png'; MC.img[k]=im; }
   // parallax tunnel assets (live in cart_game/, not proc/): streaming arches + rock walls + floor + broken-rail obstacle
-  for(const [k,p] of [['arch','arch'],['rocks','rocks'],['ground','ground'],['brail','broken_seg'],['track','track_sym'],['cartL','left'],['cartR','right']]){ const im=new Image(); im.src='cart_game/'+p+'.png'; MC.img[k]=im; }
+  for(const [k,p] of [['arch','arch'],['rocks','rocks'],['ground','ground'],['brail','rail_broken_seg'],['track','track_sym'],['cartL','left'],['cartR','right']]){ const im=new Image(); im.src='cart_game/'+p+'.png'; MC.img[k]=im; }
 }
 const MC_CART={ar:1.832, wImg:0.557, cx:0.500, wheelY:0.856, seatX:0.505, seatY:0.443};   // cart_final layer geometry (full-image fractions)
 // angled 3/4 carts (left.png / right.png) shown when on a side lane so the cart follows the rail.
