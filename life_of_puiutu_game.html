@@ -10670,7 +10670,7 @@ function mcLoad(){ if(MC.loaded) return; MC.loaded=true;
   const f={cart:'cart',cartback:'cart_back',cartfront:'cart_front',bg:'cave_rails',barricade:'obstacle_trim',beam:'beam',tnt:'tnt',hole:'hole',tower:'tower',lamp:'lamp',fog:'fog',coinspin:'coin_spin'};
   for(const k in f){ const im=new Image(); im.src='cart_game/proc/'+f[k]+'.png'; MC.img[k]=im; }
   // parallax tunnel assets (live in cart_game/, not proc/): streaming arches + rock walls + floor + broken-rail obstacle
-  for(const [k,p] of [['arch','arch'],['rocks','rocks'],['ground','ground'],['brail','rail_broken_seg'],['track','track_sym'],['cartL','left'],['cartR','right']]){ const im=new Image(); im.src='cart_game/'+p+'.png'; MC.img[k]=im; }
+  for(const [k,p] of [['arch','arch'],['rocks','rocks'],['ground','ground'],['brail','rail_broken_seg'],['track','track_sym'],['trackB','rail_broken'],['cartL','left'],['cartR','right']]){ const im=new Image(); im.src='cart_game/'+p+'.png'; MC.img[k]=im; }
 }
 const MC_CART={ar:1.832, wImg:0.557, cx:0.500, wheelY:0.856, seatX:0.505, seatY:0.443};   // cart_final layer geometry (full-image fractions)
 // angled 3/4 carts (left.png / right.png) shown when on a side lane so the cart follows the rail.
@@ -10821,16 +10821,39 @@ function mcDraw(mg){
     for(const lane of MC_LANES){
       const wl=lane+(0-TRK_RAILMID)*k, wr=lane+(1-TRK_RAILMID)*k;   // world-x of the strip's edges
       for(let inst=-1; inst*TRK_D-offv<MC_ZFAR; inst++){ const zN=inst*TRK_D-offv;
+        const tex = timg, txw = tw, txh = th;
         for(let s2=0;s2<N;s2++){ const zn=zN+(s2/N)*TRK_D, zf=zN+((s2+1)/N)*TRK_D;
           if(zf<-0.5||zn>MC_ZFAR) continue;
-          const vFar=(1-(s2+1)/N)*th, vNear=(1-s2/N)*th;    // strip top(0)=far, bottom(th)=near
+          const vFar=(1-(s2+1)/N)*txh, vNear=(1-s2/N)*txh;  // strip top(0)=far, bottom=near
           // Symmetric affine anchor: keep the far edge exact and average the two side-edges'
           // "down" vectors, so the mapping error is split evenly L/R (no drift) instead of
           // piling onto the right edge. Y stays exact (both near corners share a depth).
           const fL=mcProj(wl,zf), fR=mcProj(wr,zf), nL=mcProj(wl,zn), nR=mcProj(wr,zn);
           const d2={x:fL.x+((nL.x-fL.x)+(nR.x-fR.x))/2, y:fL.y+(nL.y-fL.y)};
-          mcTexQuad(mg,timg, 0,vFar, tw, vNear-vFar, fL, fR, d2);
+          mcTexQuad(mg,tex, 0,vFar, txw, vNear-vFar, fL, fR, d2);
         } } }
+    // A broken rail is not a decal laid on top of the track — it is the SAME track texture,
+    // swapped for the broken one and warped through the same projection, so the rails meet the
+    // intact rails at both ends. rail_broken.png was authored at track_sym.png's exact size for
+    // this. The tile is anchored so the break lands on the obstacle rather than snapping to the
+    // repetition grid: the break sits at v/height 0.45, which maps to zN + 0.55*TRK_D.
+    const tbimg=MC.img.trackB;
+    if(mcImgOk(tbimg)){
+      const bw2=tbimg.naturalWidth, bh2=tbimg.naturalHeight, BREAK_AT=0.55;
+      for(const o of s.obs){
+        if(o.k!=='brail'||o.done) continue;
+        const zz=o.z-s.scroll; if(zz>MC_ZFAR+TRK_D||zz<-TRK_D) continue;
+        const zN=zz-BREAK_AT*TRK_D;
+        const wl=o.lane+(0-TRK_RAILMID)*k, wr=o.lane+(1-TRK_RAILMID)*k;
+        for(let s2=0;s2<N;s2++){ const zn=zN+(s2/N)*TRK_D, zf=zN+((s2+1)/N)*TRK_D;
+          if(zf<-0.5||zn>MC_ZFAR) continue;
+          const vFar=(1-(s2+1)/N)*bh2, vNear=(1-s2/N)*bh2;
+          const fL=mcProj(wl,zf), fR=mcProj(wr,zf), nL=mcProj(wl,zn), nR=mcProj(wr,zn);
+          const d2={x:fL.x+((nL.x-fL.x)+(nR.x-fR.x))/2, y:fL.y+(nL.y-fL.y)};
+          mcTexQuad(mg,tbimg, 0,vFar, bw2, vNear-vFar, fL, fR, d2);
+        }
+      }
+    }
     mg.imageSmoothingEnabled=true;
   }
   // 5) wooden arches the cart rides through — the hero motion element. Spaced well apart
@@ -10882,7 +10905,8 @@ function mcDrawObs(mg,o,zz){
   else { // barricade / tnt / hole / broken-rail billboards
     const im=MC.img[o.k]; const bw=(o.k==='tnt'?MC_H*0.66:o.k==='hole'?MC_H*0.62:o.k==='brail'?MC_H*0.82:MC_H*0.55)*sc;
     if(mcImgOk(im)){ const h=bw*im.naturalHeight/im.naturalWidth;
-      if(o.k==='hole'||o.k==='brail') mg.drawImage(im,p.x-bw/2,p.y-h*0.68,bw,h);   // lies on the track
+      if(o.k==='brail') { /* drawn as part of the track itself, above */ }
+      else if(o.k==='hole') mg.drawImage(im,p.x-bw/2,p.y-h*0.68,bw,h);   // lies on the track
       else mg.drawImage(im,p.x-bw/2,p.y-h,bw,h); }
     else { mg.fillStyle='#4b4551'; mg.fillRect(p.x-bw/2,p.y-bw*0.8,bw,bw*0.8); } }
   mg.restore();
