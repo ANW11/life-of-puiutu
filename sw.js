@@ -1,10 +1,14 @@
 /* Life of Puiutu — service worker
-   Strategy: cache-first runtime caching.
-   Assets (images, audio, json) are loaded dynamically from JS, so instead of
-   pre-listing everything we cache each file the first time it's fetched.
-   After playing once, the game works fully offline.                       */
+   Strategy: network-first, cache as the fallback.
+   Online, every file comes fresh from the server (and the copy in the cache is
+   refreshed), so a changed sprite or a new build shows up on the next load.
+   Offline, the last copy that was fetched is served instead — after playing
+   once, the game still works fully offline.
+   (It used to be cache-first, which meant a file, once cached, was never
+   fetched again: edits to the game never reached a device that had played it.)
+   Bump CACHE to throw away every old copy at once.                         */
 
-const CACHE = 'puiutu-v1';
+const CACHE = 'puiutu-v2';
 
 // Minimal app shell to cache on install so the game opens offline.
 const SHELL = [
@@ -34,16 +38,13 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
 
   e.respondWith(
-    caches.match(req).then((hit) => {
-      if (hit) return hit;
-      return fetch(req).then((res) => {
-        // Only cache successful same-origin responses.
-        if (res.ok && new URL(req.url).origin === self.location.origin) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-        }
-        return res;
-      }).catch(() => hit);
-    })
+    fetch(req).then((res) => {
+      // Only cache successful same-origin responses.
+      if (res.ok && new URL(req.url).origin === self.location.origin) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy));
+      }
+      return res;
+    }).catch(() => caches.match(req))            // offline: the last copy we had
   );
 });
