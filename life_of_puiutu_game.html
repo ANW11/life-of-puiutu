@@ -498,6 +498,13 @@
   .sealRune:active{transform:scale(.95);}
   .sealRune.lit{filter:brightness(1.6);box-shadow:0 0 28px 6px var(--rc);transform:scale(1.06);}
   .sealRune.bad{animation:sealShake .3s;}
+  /* carved rune glyphs: one per stone, in the stone's own colour, glowing when it lights */
+  .sealRune{display:flex;align-items:center;justify-content:center;padding:0;}
+  .runeGlyph{width:66%;height:66%;fill:none;stroke:var(--rc);stroke-width:4.5;stroke-linecap:square;stroke-linejoin:miter;
+    filter:drop-shadow(0 0 3px var(--rc));pointer-events:none;}
+  .runeGlyph .fill{fill:var(--rc);stroke:none;}
+  .sealRune.lit .runeGlyph{stroke:#fff;filter:drop-shadow(0 0 6px var(--rc)) drop-shadow(0 0 12px var(--rc));}
+  .sealRune.lit .runeGlyph .fill{fill:#fff;}
   @keyframes sealShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
   #sealDots{display:flex;gap:9px;}
   #sealDots span{width:13px;height:13px;border-radius:50%;background:rgba(150,210,255,.22);border:1px solid rgba(150,210,255,.5);}
@@ -700,6 +707,9 @@
   #sortBtns button:active{transform:scale(.96);}
   .modal-close{cursor:pointer;background:#6b4a1f;border:none;color:#ffe7b0;font-size:20px;font-weight:bold;
     width:38px;height:38px;border-radius:12px;}
+  /* the buttons carry no text of their own — the X is drawn here so every one of them has it */
+  .modal-close{display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
+  .modal-close:empty::before{content:'\00D7';font-size:30px;font-weight:bold;margin-top:-3px;}
   .modal-body{flex:1;overflow-y:auto;padding:16px;}
   /* keep modal content readable on big/fullscreen screens */
   .modal-body>*{max-width:600px;margin-left:auto;margin-right:auto;}
@@ -1087,10 +1097,10 @@
     <div id="sealWrap">
       <div id="sealMsg">Watch the ancient runes…</div>
       <div id="sealRunes">
-        <button class="sealRune" data-i="0" style="--rc:#5fd4ff;"></button>
-        <button class="sealRune" data-i="1" style="--rc:#7ed957;"></button>
-        <button class="sealRune" data-i="2" style="--rc:#ffb84a;"></button>
-        <button class="sealRune" data-i="3" style="--rc:#c87cff;"></button>
+        <button class="sealRune" data-i="0" style="--rc:#5fd4ff;" title="the Eye"><svg class="runeGlyph" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 32 Q32 8 58 32 Q32 56 6 32 Z"/><path d="M32 20 L32 44"/><path d="M20 47 L17 55 M32 50 L32 58 M44 47 L47 55"/></svg></button>
+        <button class="sealRune" data-i="1" style="--rc:#7ed957;" title="the Tide"><svg class="runeGlyph" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 L32 58"/><path d="M8 20 Q16 13 24 20 T40 20 T56 20"/><path d="M8 32 Q16 25 24 32 T40 32 T56 32"/><path d="M8 44 Q16 37 24 44 T40 44 T56 44"/></svg></button>
+        <button class="sealRune" data-i="2" style="--rc:#ffb84a;" title="the Coil"><svg class="runeGlyph" viewBox="0 0 64 64" aria-hidden="true"><path d="M14 56 C10 36 22 14 40 14 C52 14 56 28 46 34 C38 39 30 32 34 26 C37 22 42 25 40 28"/><circle cx="17" cy="44" r="2.6" class="fill"/><circle cx="21" cy="32" r="2.6" class="fill"/><circle cx="28" cy="22" r="2.6" class="fill"/></svg></button>
+        <button class="sealRune" data-i="3" style="--rc:#c87cff;" title="the Gate"><svg class="runeGlyph" viewBox="0 0 64 64" aria-hidden="true"><path d="M14 58 L14 28 L32 6 L50 28 L50 58"/><path d="M32 22 L40 34 L32 46 L24 34 Z"/><path d="M8 58 L56 58"/><path d="M14 40 L8 34 M50 40 L56 34"/></svg></button>
       </div>
       <div id="sealDots"></div>
     </div>
@@ -1405,7 +1415,6 @@ const BOSS_MUSIC={
       const ab=HUB.abyss;
       // only while actively fighting; once it sinks/dies (or you leave) fade back to the calm theme
       if(!S.musicOn || !ab || ab.state==='dead' || ab.state==='sinking'){ this.stop(); MUSIC.start(); return; }
-      if(ab.state==='intro') return;               // silence while it wakes; the fight brings the music
       if(!SFX.ac()) return;
       const ci=this.step%4, ch=this.chords[ci], root=this.roots[ci];
       const enraged = ab.headHp < ab.headMax*0.5;
@@ -1670,6 +1679,170 @@ const MECH_MUSIC=Object.assign(Object.create(SLUM_MUSIC),{
     const t=c.currentTime+0.05; this.out(c);
     this.crash(c,t,0.1); this.timpani(c,t,82.41,0.32); this.clang(c,t,0.06);
     this.power(c,t,82.41,3.4,0.06,false); this.choir(c,t,this.chords[0],3.8,0.03);
+  }
+});
+
+// ── Queen Seby's Lair: the Ancient One's theme ──
+// Crystal and ceremony, not machinery: D harmonic minor at 104bpm, Dm · Bb · Gm · A — the A
+// major is what makes it sound old. Glass bells run arpeggios high over a choir and a low drone,
+// with timpani on a slow "ta-dum" like a court drum. A royal melody walks in every other round.
+// Before she stirs only the drone and a few bells; enraged, the bells double, a snare joins, the
+// melody never stops and doubles an octave up, and every round opens on a crystal cracking.
+const SEBY_MUSIC=Object.assign(Object.create(MECH_MUSIC),{
+  timer:null, step:0, bus:null, noise:null, curve:null, fuzz:null, gain:0.32,
+  B:60/104,
+  roots:[73.42, 58.27, 49.00, 55.00],                // D · Bb · G · A (drone)
+  chords:[
+    [146.83,174.61,220.00],                          // Dm
+    [116.54,146.83,174.61],                          // Bb
+    [98.00,116.54,146.83],                           // Gm
+    [110.00,138.59,164.81],                          // A
+  ],
+  melody:[                                           // quarter notes, 0 = hold
+    [440.00,0,349.23,329.63],
+    [587.33,0,523.25,466.16],
+    [466.16,440.00,392.00,0],
+    [554.37,0,659.25,440.00],
+  ],
+  // a glass bell: a sine and its inharmonic glass partial, struck and left to ring
+  bell(c,t,fr,dur,v){
+    const g1=this.env(c,t,v,0.004,dur), g2=this.env(c,t,v*0.3,0.003,dur*0.45);
+    g1.connect(this.out(c)); g2.connect(this.out(c));
+    const o1=c.createOscillator(), o2=c.createOscillator(); o1.type='sine'; o2.type='sine';
+    o1.frequency.value=fr; o2.frequency.value=fr*2.76;
+    o1.connect(g1); o2.connect(g2); o1.start(t); o2.start(t); o1.stop(t+dur+0.05); o2.stop(t+dur+0.05);
+  },
+  start(){
+    if(this.timer||!S.musicOn) return;
+    const bar=()=>{
+      const b=HUB.boss;
+      if(!S.musicOn || !A || !A.hub || !A.hub.sebyMusic || !b || b.defeated){ this.stop(); return; }
+      const c=SFX.ac(); if(!c) return;
+      this.out(c);
+      const t0=c.currentTime+0.05, x=this.B/4, bl=this.B*4, ci=this.step%4, root=this.roots[ci], ch=this.chords[ci];
+      const arp=[ch[0]*4, ch[1]*4, ch[2]*4, ch[0]*8];  // the bells, two octaves up
+      if(!b.introShown){                               // asleep in the circle: drone and a few bells
+        this.bass(c,t0,root,bl,0.05); this.choir(c,t0,ch,bl,0.024);
+        [0,6,11].forEach((k,i)=>this.bell(c,t0+k*x,arp[(this.step+i)%4],1.6,0.032));
+        this.step++; return;
+      }
+      const hot=!!b.phase2;
+      if(ci===0){ if(hot) this.clang(c,t0,0.04); else this.bell(c,t0,arp[3]*2,2.4,0.03); }   // a crystal cracks / chimes
+      this.bass(c,t0,root,bl*0.95,0.045);
+      this.choir(c,t0,ch,bl,0.03);
+      this.timpani(c,t0,root*2,0.24); this.timpani(c,t0+x*6,root*2,0.16);                  // ta — dum
+      this.timpani(c,t0+x*8,root*2,0.2);
+      if(hot){ this.timpani(c,t0+x*12,root*2,0.16); this.timpani(c,t0+x*14,root*2,0.12);
+               this.snare(c,t0+x*4,0.08); this.snare(c,t0+x*12,0.08); }
+      for(let k=0;k<16;k+=(hot?1:2)){                                                        // the crystal run
+        const seq=[0,1,2,3,2,1,0,1], f=arp[seq[(k/(hot?1:2))%8|0]];
+        this.bell(c,t0+k*x, f, hot?0.5:0.8, hot?0.016:0.022);
+        if(k%4===2) this.hiss(c,t0+k*x,0.012,0.03,'highpass',9000);
+      }
+      if(hot || Math.floor(this.step/4)%2===1){                                              // the queen's melody
+        const M=this.melody[ci];
+        M.forEach((fr,k)=>{ if(!fr) return; let n=1; while(k+n<4 && !M[k+n]) n++;
+          this.lead2(c,t0+k*this.B, fr, this.B*n*0.95, 0.018);
+          if(hot) this.lead2(c,t0+k*this.B, fr*2, this.B*n*0.95, 0.010); });
+      }
+      this.step++;
+    };
+    bar(); this.timer=setInterval(bar, this.B*4*1000);
+  },
+  // she falls: the bells come down the scale, the choir holds, one last drum
+  finale(){
+    this.stop(); if(!S.musicOn) return; const c=SFX.ac(); if(!c) return;
+    const t=c.currentTime+0.05; this.out(c);
+    [1760,1318.5,1174.66,880,698.46,587.33,440].forEach((f,i)=>this.bell(c,t+i*0.16,f,2.2,0.03));
+    this.timpani(c,t,73.42*2,0.3); this.choir(c,t,this.chords[0],3.8,0.03); this.bass(c,t,73.42,3.2,0.05);
+  }
+});
+
+// ── The Throne Hall: the Cat King's battle theme ──
+// A royal war march, not a lullaby: D minor at 138bpm, Dm · Bb · C · A — the A major pulls it
+// back to D every round. Strings saw a sixteenth-note ostinato underneath, timpani gallop,
+// low brass hits the accents, a full choir, and horns carry a heroic tune doubled at the octave.
+// The lion being summoned is a swell; the lion cracking is one great hit. When the King has to
+// fight himself it turns frantic: strings doubled, snare on every eighth, the tune high and fast.
+const CAT_MUSIC=Object.assign(Object.create(SEBY_MUSIC),{
+  timer:null, step:0, bus:null, noise:null, curve:null, fuzz:null, gain:0.20,   // dense: kept under the Hangar's theme
+  B:60/138,
+  roots:[73.42, 58.27, 65.41, 55.00],                // D · Bb · C · A
+  chords:[
+    [146.83,174.61,220.00],                          // Dm
+    [116.54,146.83,174.61],                          // Bb
+    [130.81,164.81,196.00],                          // C
+    [110.00,138.59,164.81],                          // A
+  ],
+  theme:[                                            // eighth notes, 0 = hold
+    [587.33,0,587.33,698.46, 880.00,0,783.99,698.46],
+    [698.46,0,587.33,0,      466.16,0,523.25,587.33],
+    [659.25,0,523.25,659.25, 783.99,0,698.46,659.25],
+    [659.25,0,554.37,0,      440.00,0,0,0],
+  ],
+  // staccato strings: three detuned saws, bright, short
+  strings(c,t,fr,dur,v){ const f=c.createBiquadFilter(), g=this.env(c,t,v,0.006,dur); f.type='lowpass'; f.frequency.value=2400;
+    f.connect(g); g.connect(this.out(c));
+    [0.995,1,1.006].forEach(m=>{ const o=c.createOscillator(); o.type='sawtooth'; o.frequency.value=fr*m; o.connect(f); o.start(t); o.stop(t+dur+0.05); }); },
+  // a warm horn: saw + square, darker filter, a little swell into the note
+  horn(c,t,fr,dur,v){ const f=c.createBiquadFilter(), g=c.createGain(); f.type='lowpass';
+    f.frequency.setValueAtTime(700,t); f.frequency.linearRampToValueAtTime(1700,t+Math.min(0.12,dur*0.5));
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(v,t+0.04); g.gain.setValueAtTime(v,t+dur*0.8); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    f.connect(g); g.connect(this.out(c));
+    [['sawtooth',1],['square',1.004],['sawtooth',0.5]].forEach(([ty,m])=>{ const o=c.createOscillator(); o.type=ty; o.frequency.value=fr*m; o.connect(f); o.start(t); o.stop(t+dur+0.05); }); },
+  start(){
+    if(this.timer||!S.musicOn) return;
+    const bar=()=>{
+      const b=HUB.boss;
+      if(!S.musicOn || !A || !A.hub || !A.hub.catMusic || !b || b.defeated){ this.stop(); return; }
+      const c=SFX.ac(); if(!c) return;
+      this.out(c);
+      const t0=c.currentTime+0.05, e=this.B/2, x=this.B/4, bl=this.B*4, ci=this.step%4, root=this.roots[ci], ch=this.chords[ci];
+      const Th=this.theme[ci];
+      const line=(mult,fn)=>Th.forEach((fr,k)=>{ if(!fr) return; let n=1; while(k+n<8 && !Th[k+n]) n++; fn(t0+k*e, fr*mult, e*n); });
+      const ost=[root*2, root*3, root*4, root*3];                // the string figure
+      if(b.stage==='idle'){                                      // the hall, waiting: a drone, a choir, a far drum
+        this.bass(c,t0,root,bl,0.05); this.choir(c,t0,ch,bl,0.03);
+        this.timpani(c,t0,root*2,0.14); this.timpani(c,t0+this.B*2.5,root*2,0.1);
+        this.step++; return;
+      }
+      if(b.stage==='summon'){                                    // the lion condensing: a swell
+        this.riser(c,t0,bl,0.07); this.choir(c,t0,ch,bl,0.04); this.bass(c,t0,root,bl,0.05);
+        for(let k=0;k<16;k++) this.timpani(c,t0+k*x,root*2,0.05+k*0.012);
+        this.step++; return;
+      }
+      if(b.stage==='crack'){                                     // the lion breaking: one great hit, held
+        this.crash(c,t0,0.1); this.timpani(c,t0,root*2,0.34); this.stab(c,t0,ch.map(f=>f/2),0.06);
+        this.choir(c,t0,ch,bl,0.045); this.bass(c,t0,root,bl,0.06);
+        this.step++; return;
+      }
+      const frantic = b.stage==='cat';
+      // strings ostinato
+      for(let k=0;k<16;k++){ this.strings(c,t0+k*x, ost[k%4], x*0.6, frantic?0.022:0.018);
+        if(frantic) this.strings(c,t0+k*x, ost[k%4]*2, x*0.5, 0.012); }
+      // drums: gallop timpani, kick on the beat, snare on 2 & 4 (every eighth when frantic)
+      [0,3,4,8,11,12].forEach(k=>this.timpani(c,t0+k*x,root*2,k%4===0?0.24:0.15));
+      if(frantic) for(let k=1;k<16;k+=2) this.timpani(c,t0+k*x,root*2,0.1);
+      for(let k=0;k<4;k++) this.kick(c,t0+k*this.B,0.2);
+      if(frantic) for(let k=0;k<8;k++) this.snare(c,t0+k*e,k%2?0.05:0.09);
+      else { this.snare(c,t0+this.B,0.1); this.snare(c,t0+this.B*3,0.1); }
+      if(ci===0 || (!frantic && ci===2)) this.crash(c,t0,0.07);
+      this.bass(c,t0,root,bl*0.95,0.055);
+      if(!frantic){ this.stab(c,t0,ch.map(f=>f/2),0.05); this.stab(c,t0+e*3,ch.map(f=>f/2),0.04);   // low brass
+                    this.choir(c,t0,ch,bl,0.04); }
+      // the tune: horns doubled at the octave — or, when frantic, the same tune high and biting
+      if(frantic) line(2,(t,f,d)=>this.lead2(c,t,f,d*0.9,0.022));
+      else line(1,(t,f,d)=>{ this.horn(c,t,f,d*0.95,0.034); this.horn(c,t,f/2,d*0.95,0.022); });
+      this.step++;
+    };
+    bar(); this.timer=setInterval(bar, this.B*4*1000);
+  },
+  // asleep in the big chair: the horns sag down three notes, a last drum, the choir lets go
+  finale(){
+    this.stop(); if(!S.musicOn) return; const c=SFX.ac(); if(!c) return;
+    const t=c.currentTime+0.05; this.out(c);
+    [[587.33,0],[523.25,0.5],[440.00,1.0]].forEach(([f,dt])=>{ this.horn(c,t+dt,f,0.48,0.032); this.horn(c,t+dt,f/2,0.48,0.02); });
+    this.timpani(c,t+1.0,73.42*2,0.26); this.choir(c,t+1.0,this.chords[0],3.4,0.035); this.bass(c,t+1.0,73.42,3.0,0.05);
   }
 });
 
@@ -2663,6 +2836,7 @@ function buildAreas(){
       name:"Queen Seby's Lair", theme:'cave', mode:'topdown',
       hub:{
         img:'maps/sebybossfight.png', mask:'maps/sebybossfightmask.png',
+        sebyMusic:true,                            // the Ancient One's theme while she stands
         maskWalk:'green',
         walkTop:0.47, walkBot:0.99,
         scaleFar:0.72, scaleNear:1.06,
@@ -2693,6 +2867,7 @@ function buildAreas(){
       name:'City', theme:'street', mode:'topdown',
       hub:{
         img:'maps/city_final.png', mask:'maps/city_final_mask.png',
+        occ:'maps/city_final_occ.png',             // the fountain: walk behind it and it covers you
         maskWalk:'purple',                       // purple = the walkable cobblestone plaza
         walkTop:0.60, walkBot:1.00,
         scaleFar:0.55, scaleNear:1.04,
@@ -2875,7 +3050,7 @@ function buildAreas(){
         walkTop:0.10, walkBot:0.92, scaleFar:0.66, scaleNear:0.92,
         spawn:{xf:0.74, yf:0.30},                 // drop in on the upper-right ledge
         coonStart:{xf:0.88, yf:0.22},             // the stalker lurks behind you (waits a few seconds before the hunt)
-        exit:{xf:0.21, yf:0.88, r:62, to:'slum', toSpawn:{xf:0.90, yf:0.62}},   // the light up to the surface (bail out)
+        exit:{xf:0.21, yf:0.88, r:62, to:'slum', toSpawn:{xf:0.90, yf:0.62}},   // the light up to the surface — only once the Coon is beaten, and only with E
         loot:[{xf:0.46, yf:0.55, img:'sack', name:'sack of stolen fish-coins'},
               {xf:0.30, yf:0.84, img:'piggy', name:'Sir Oink’s golden piggy bank'},
               {xf:0.62, yf:0.42, img:'crown', name:'the town’s jeweled crown'}],   // grab all 3 to corner the Coon
@@ -2952,6 +3127,7 @@ function buildAreas(){
       name:'Throne Hall', theme:'street', mode:'topdown',
       hub:{
         img:'maps/throneroom_catking.png', mask:'maps/throneroom_catking_newmask.png', maskWalk:'red',
+        catMusic:true,                             // the royal theme — until he is asleep
         // walkTop MUST stay at/below the painted band: this hall's own art (the rose window, the
         // red curtain, the gilt frames) reads as 'red' to the mask classifier, so anything above
         // the floor would otherwise become walkable. The paint itself runs yf 0.78-0.96.
@@ -3707,6 +3883,34 @@ const P={x:80,y:500,vx:0,vy:0,w:30,h:54,onGround:false,canDjump:false,facing:1,p
 const COMP={x:80,y:480,facing:1,phase:0,moving:false,atkCD:0,barkUntil:0,staying:false};
 function spawnCompanion(){ COMP.x=P.x-P.facing*46; COMP.y=P.groundY; COMP.staying=!!S.rockyStay; updateRockyBtn(); }
 function playerMaxHp(){ return 24+S.level*6; }
+// ── Level scaling ─────────────────────────────────────────────────────────────────────────
+// Every fight was tuned for the level you would usually have when you reach it, and then never
+// moved: past that level the bosses folded in a few hits and barely scratched you. Each area now
+// has the level it was built for; when you are above it, what lives there grows with you —
+// HP with how much your hits have grown, damage with how much your HP has (see LVL_SCALE_K
+// for how much of it). Under-levelled, nothing shrinks: the game is as it always was.
+const AREA_LVL={ garden:1, towergarden:2, library:3, beach:4, ocean1:5, ocean2:6, cave:6, sebyboss:7,
+  street:8, abyssboss:9, slum:10, sewerentrance:10, sewer:11, castleentrance:12, throneroom:13,
+  slum2:14, ratking:15, bank:16, organization:18 };
+const AREA_BOSS={ sebyboss:1, abyssboss:1, sewer:1, throneroom:1, ratking:1, organization:1 };
+// LVL_SCALE_K: how much of that growth they actually take. 1 = they keep pace with you exactly;
+// 0.5 (now) = they close half the gap, so out-levelling an area still makes it easier, just
+// not trivially. Bosses get +10% on top.
+const LVL_SCALE_K=0.5, LVL_BOSS=1.1;
+function lvlScale(boss){
+  const base=AREA_LVL[curArea]||1, eff=Math.max(S.level||1, base), k=boss?LVL_BOSS:1;
+  const part=r=>1+(r-1)*LVL_SCALE_K;
+  return { hp:part((6.5+1.3*eff)/(6.5+1.3*base))*k,    // your hit:  ~6.5 + 1.3·level
+           dmg:part((24+6*eff)/(24+6*base))*k,         // your HP:   24 + 6·level
+           bonus:Math.round((eff-base)*LVL_SCALE_K) }; // levels shown on top of a mob's own
+}
+// a hub mob's HP and XP for the room it is in (its own rolled level stays what it was)
+function scaleMob(d){
+  const L=HUB.lvMob||{hp:1,bonus:0};
+  d.kind=Object.assign({}, d.kind, {xp:Math.round(d.kind.xp*L.hp)});
+  d.maxHp=d.hp=Math.max(1,Math.round(d.kind.hp*L.hp));
+  return d;
+}
 function playerMaxMana(){ return 30+S.level*10; }
 let curArea='garden', A=null, cam={x:0,y:0};
 // 🪙 coins spawn on walkable ground (bronze common · silver rare · never gold).
@@ -3813,12 +4017,19 @@ const input={left:false,right:false,up:false,down:false,jumpQueued:false,jumpHel
 function topdownMode(){ return inGame && A && A.mode==='topdown'; }
 // what (if anything) the player can interact with right now
 function interactTarget(){
-  if(topdownMode()){ if(HUB.nearRocky) return 'rocky'; if(HUB.nearTomy) return 'tomy'; if(HUB.nearHubNpc) return 'hubnpc'; if(HUB.nearMerlin) return 'merlin'; if(HUB.nearPotions) return 'potions'; if(HUB.nearFishbarrel) return 'fishbarrel'; if(HUB.nearDivesuit) return 'divesuit'; if(HUB.nearDigsite) return 'digsite'; if(HUB.nearBankdesk) return 'bankdesk'; if(HUB.nearStaff) return 'staff'; if(HUB.nearSpot) return 'spot'; if(HUB.nearSeal) return 'seal'; if(HUB.nearGarrison) return 'garrison'; if(HUB.nearShroom) return 'shroom'; if(HUB.nearMerge) return 'merge'; if(HUB.nearDoor) return 'door'; if(HUB.nearCave) return 'cave'; return null; }
+  if(topdownMode()){ if(HUB.nearSewerExit && SEWER.on && SEWER.mode==='cleared') return 'sewerexit'; if(HUB.nearRocky) return 'rocky'; if(HUB.nearTomy) return 'tomy'; if(HUB.nearHubNpc) return 'hubnpc'; if(HUB.nearMerlin) return 'merlin'; if(HUB.nearPotions) return 'potions'; if(HUB.nearFishbarrel) return 'fishbarrel'; if(HUB.nearDivesuit) return 'divesuit'; if(HUB.nearDigsite) return 'digsite'; if(HUB.nearBankdesk) return 'bankdesk'; if(HUB.nearStaff) return 'staff'; if(HUB.nearSpot) return 'spot'; if(HUB.nearSeal) return 'seal'; if(HUB.nearGarrison) return 'garrison'; if(HUB.nearShroom) return 'shroom'; if(HUB.nearMerge) return 'merge'; if(HUB.nearDoor) return 'door'; if(HUB.nearCave) return 'cave'; return null; }
   if(nearPortal) return 'portal'; if(nearNpc) return 'npc'; return null;
+}
+// the sewers' way up, once the Coon is beaten
+function sewerClimbOut(){
+  const ex=A.hub.exit; if(!ex) return;
+  SEWER.on=false; HUB.nearSewerExit=false; if(ex.toSpawn) HUB._spawnOverride=ex.toSpawn;
+  SFX.win&&SFX.win(); toast('You climb out of the sewers.'); enterArea(ex.to,false);
 }
 function doInteract(){
   if(!inGame || loreActive || LIGHTS.active || CIRC.active || LOCK.active) return;
   const t=interactTarget();
+  if(t==='sewerexit'){ sewerClimbOut(); return; }
   if(t==='rocky') openDialogue(HUB_ROCKY_NPC);
   else if(t==='tomy') tomyTalk();
   else if(t==='merlin') merlinTalk();
@@ -4003,7 +4214,7 @@ function enterArea(id,fromRight,toX){
   if(id==='sewerentrance' && !S.sewerSeen) S.sewerSeen=true;   // The Glow asks about this later
   save();
   // platformer areas (e.g. House) get the calm theme; hub music is handled in enterHub
-  if(A && A.mode!=='topdown'){ OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); if(S.musicOn) MUSIC.start(); }
+  if(A && A.mode!=='topdown'){ OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); if(S.musicOn) MUSIC.start(); }
   // coins now spawn over time on the walkable platforms (see updateGroundCoins)
   groundCoins=[]; coinSpawnAt=0;
   // build enemies for this area
@@ -4638,6 +4849,8 @@ function sebyDefeated(b,now){
   b.defeated=true; b.hp=0; b.respawnAt=freeMode()?now+30000:0; const k=b.kind;
   S.coins+=k.coins; addXP(k.xp); S.totalDefeats=(S.totalDefeats||0)+1;
   S.sebyDefeated=true; storySet('seby');
+  SEBY_MUSIC.finale();                                     // the bells come down; then the cave is quiet
+  setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.sebyMusic) MUSIC.start(); }, 4200);
   setTimeout(refreshGarrison, 900);   // he does not wait for you to leave — he turns up over her body
   if(!S.items.includes('crystalcrown')) S.items.push('crystalcrown');
   // the crystal is NOT loot. The piglet by the portal hands you one, and that is the point.
@@ -5641,6 +5854,75 @@ function hubVar(key){
 }
 function hubImg(){ const s=hubVar('img')||'maps/new park 2.jpg'; let im=HUB_IMGS[s]; if(!im){im=new Image();im.src=s;HUB_IMGS[s]=im;} return im; }
 const HUB={ cat:{x:0,y:0,z:0,vz:0,onPlat:false,safeX:0,safeY:0,facing:1,phase:0,moving:false}, rocky:{x:0,y:0,facing:1,phase:0,moving:false,barkUntil:0,atkCD:0}, camx:0, worldW:0, cityX:Infinity, target:null, nearCave:false, nearRocky:false, nearMerge:false, nearDoor:null, ducks:[], fish:[], garrison:[], inited:false, _maskData:null, _maskGrid:null, _maskGW:0, _maskGH:0, _maskW:0, _maskH:0, _maskSrc:undefined };
+// ── Occlusion: walking BEHIND things that are painted into the map ───────────────────────────
+// A map is one flat painting, so everything walking on it is drawn on top of it — including on
+// top of a fountain the cat is standing behind. A hub can name an occlusion mask (`occ`): a PNG
+// the size of the map, transparent except over the tall objects (any opaque colour). Each blob
+// in it is one object. It is cut out of the map art and dropped into the same depth sort as the
+// characters, so whoever stands above its foot line is drawn first and the object goes over them.
+// The foot line is measured per vertical strip, not per object, so a round fountain covers you
+// at its back rim and not when you walk along its sides. Nothing to configure but the paint.
+// (Needs pixel access, like the walk masks: on file:// the canvas is tainted and it switches off.)
+const OCC_IMGS={};
+function hubOccluders(){
+  const src=A&&A.hub&&A.hub.occ; if(!src) return null;
+  const bgIm=hubImg(); let mk=OCC_IMGS[src]; if(!mk){ mk=new Image(); mk.src=src; OCC_IMGS[src]=mk; }
+  if(!(bgIm.complete&&bgIm.naturalWidth&&mk.complete&&mk.naturalWidth)) return null;
+  const key=src+'|'+bgIm.src;
+  if(HUB._occKey===key) return HUB._occ;
+  HUB._occKey=key; HUB._occ=[];
+  try{
+    const MW=mk.naturalWidth, MH=mk.naturalHeight, c=document.createElement('canvas'); c.width=MW; c.height=MH;
+    const cx=c.getContext('2d'); cx.drawImage(mk,0,0);
+    const md=cx.getImageData(0,0,MW,MH).data;
+    // label blobs on a quarter-resolution grid (fast), then cut each one out at full resolution
+    const Q=4, GW=Math.ceil(MW/Q), GH=Math.ceil(MH/Q), grid=new Int32Array(GW*GH);
+    for(let gy=0;gy<GH;gy++) for(let gx=0;gx<GW;gx++){
+      const px=Math.min(MW-1,gx*Q+1), py=Math.min(MH-1,gy*Q+1);
+      grid[gy*GW+gx] = md[(py*MW+px)*4+3]>100 ? -1 : 0; }
+    let id=0; const blobs=[];
+    for(let i=0;i<grid.length;i++){ if(grid[i]!==-1) continue;
+      id++; const st=[i]; grid[i]=id; let x0=1e9,y0=1e9,x1=-1,y1=-1;
+      while(st.length){ const k=st.pop(), gx=k%GW, gy=(k/GW)|0;
+        if(gx<x0)x0=gx; if(gx>x1)x1=gx; if(gy<y0)y0=gy; if(gy>y1)y1=gy;
+        if(gx>0&&grid[k-1]===-1){grid[k-1]=id;st.push(k-1);} if(gx<GW-1&&grid[k+1]===-1){grid[k+1]=id;st.push(k+1);}
+        if(gy>0&&grid[k-GW]===-1){grid[k-GW]=id;st.push(k-GW);} if(gy<GH-1&&grid[k+GW]===-1){grid[k+GW]=id;st.push(k+GW);} }
+      blobs.push({id,x0,y0,x1,y1}); }
+    const BW=bgIm.naturalWidth, BH=bgIm.naturalHeight;
+    for(const bl of blobs){
+      if((bl.x1-bl.x0+1)*(bl.y1-bl.y0+1)<6) continue;            // specks of stray paint
+      const mx0=bl.x0*Q, my0=bl.y0*Q, mw=Math.min(MW,(bl.x1+1)*Q)-mx0, mh=Math.min(MH,(bl.y1+1)*Q)-my0;
+      // this blob's own alpha (a neighbour's paint inside the same box is left out)
+      const mc=document.createElement('canvas'); mc.width=mw; mc.height=mh;
+      const mcx=mc.getContext('2d'), od=mcx.createImageData(mw,mh);
+      for(let y=0;y<mh;y++) for(let x=0;x<mw;x++){
+        const X=mx0+x, Y=my0+y; if(grid[((Y/Q)|0)*GW+((X/Q)|0)]!==bl.id) continue;
+        od.data[(y*mw+x)*4+3]=md[(Y*MW+X)*4+3]; }
+      mcx.putImageData(od,0,0);
+      // the map art under it, clipped to that alpha
+      const fx=mx0/MW, fy=my0/MH, fw=mw/MW, fh=mh/MH;
+      const cw=Math.max(1,Math.round(fw*BW)), ch=Math.max(1,Math.round(fh*BH));
+      const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+      const vx=cv.getContext('2d'); vx.drawImage(bgIm, fx*BW, fy*BH, fw*BW, fh*BH, 0,0,cw,ch);
+      vx.globalCompositeOperation='destination-in'; vx.drawImage(mc,0,0,cw,ch);
+      // vertical strips, each sorted by its own lowest painted row
+      const SG=3;                                                  // grid columns per strip (12 mask px)
+      for(let gx=bl.x0; gx<=bl.x1; gx+=SG){
+        let base=-1; const ge=Math.min(bl.x1,gx+SG-1);
+        for(let x=gx;x<=ge;x++) for(let y=bl.y1;y>=bl.y0;y--){ if(grid[y*GW+x]===bl.id){ if(y>base) base=y; break; } }
+        if(base<0) continue;
+        const sx0=(gx-bl.x0)*Q/mw, sx1=Math.min(1,(ge+1-bl.x0)*Q/mw);
+        HUB._occ.push({cv, sx:sx0*cw, sw:Math.max(1,(sx1-sx0)*cw), fx:fx+sx0*fw, fw:(sx1-sx0)*fw, fy, fh,
+                       fBase:Math.min(1,(base+1)*Q/MH)});
+      }
+    }
+  }catch(e){ HUB._occ=[]; }                                     // tainted canvas (file://): no occlusion
+  return HUB._occ;
+}
+function drawOccStrip(s){
+  const x=s.fx*HUB.worldW-HUB.camx, w=s.fw*HUB.worldW;
+  g.drawImage(s.cv, s.sx, 0, s.sw, s.cv.height, x, s.fy*VH, w+0.75, s.fh*VH);   // +0.75: no hairline seams
+}
 const HUB_ROCKY_NPC={id:'rocky', dog:true};   // for openDialogue (recruit quest)
 // Merlin the wizard-dog (Library NPC) + the alchemy potions
 const MERLIN_IMG=new Image(); MERLIN_IMG.src='npcs/merlin_npc.png';
@@ -5922,12 +6204,14 @@ function spawnHubMobs(){
           HUB.ducks.push({type, sea:true, schoolRef:sc, ox, oy, x:x+ox, y:y+oy, homeX:x, homeY:y, range:160,
             dir:Math.random()<.5?-1:1, phase:Math.random()*6, speed:1.0+Math.random()*0.6,
             level:0, kind:k, sprite:null, hp:k.hp, maxHp:k.hp, kx:0, hitFlash:0, dead:false, respawnAt:0});
+          scaleMob(HUB.ducks[HUB.ducks.length-1]);
         }
         return;
       }
       HUB.ducks.push({type, sea:true, x, x0:x-rg, x1:x+rg, y, homeX:x, homeY:y, range:160, heading:(Math.random()<.5?0:Math.PI),
         dir:Math.random()<.5?-1:1, phase:Math.random()*6, speed:(k.big?0.85:0.6)+Math.random()*0.4,
         level:0, kind:k, sprite:null, hp:k.hp, maxHp:k.hp, kx:0, hitFlash:0, dead:false, respawnAt:0});
+      scaleMob(HUB.ducks[HUB.ducks.length-1]);
       return;
     }
     const lvl=rollPigeonLevel(), k=enemyKind(type,lvl);
@@ -5936,6 +6220,7 @@ function spawnHubMobs(){
       dir:Math.random()<.5?-1:1, phase:Math.random()*6, speed:0.55+Math.random()*0.35+lvl*0.03,
       hostile:!!H.mobHostile, noRespawn:!!H.mobOnce,
       level:lvl, kind:k, sprite, hp:k.hp, maxHp:k.hp, kx:0, hitFlash:0, dead:false, respawnAt:0});
+    scaleMob(HUB.ducks[HUB.ducks.length-1]);
   });
 }
 // shatter the seal in place: morph this cavern to its opened form, keep Puiutu exactly where
@@ -6327,6 +6612,8 @@ function enterHub(fromRight){
     r.facing=1; r.moving=false; r.phase=0;
   }
   HUB._needSolvedMobs=false;
+  HUB.lvMob=lvlScale(false); HUB.lvBoss=lvlScale(true);
+  HUB.dmgScale=(AREA_BOSS[curArea] ? HUB.lvBoss : HUB.lvMob).dmg;   // every hit you take in this room
   spawnHubMobs();
   armyInit();   // Feline Union vs Rat Federation (zones with hub.battle)
   initGarrison();   // stationed troops (no combat) — see the City
@@ -6334,7 +6621,7 @@ function enterHub(fromRight){
   groundCoins=[]; coinSpawnAt=0;
   // Queen Seby — the top-down boss (only the sebyboss arena defines hub.boss)
   HUB.shards=[]; HUB.crystals=[];   // clear every hub so her crystal barrier never bleeds onto other maps
-  HUB.spirit=null; HUB.spores=[]; HUB.carry=false; HUB.ride=null; HUB.hangar=null; HUB.cut=null; HUB.flashAt=0;
+  HUB.spirit=null; HUB.spores=[]; HUB.carry=false; HUB.ride=null; HUB.hangar=null; HUB.cut=null; HUB.flashAt=0; HUB.nearSewerExit=false;
   if(H.boss){
     let bx=H.boss.xf*HUB.worldW, by=H.boss.yf*VH;
     if(maskReady()){ const p=nearestWalk(bx,by); if(p){bx=p.x;by=p.y;} }
@@ -6343,7 +6630,10 @@ function enterHub(fromRight){
              : rk ? {hp:460, cdmg:[11,17], xp:480, coins:170}   // one bar, no second entity
              : mb ? {hp:640, cdmg:[12,18], xp:650, coins:260}
              : {hp:420, cdmg:[10,16], xp:350, coins:120};
-    HUB.boss={x:bx, y:by, homeX:bx, homeY:by, kind:sk, hp:sk.hp, maxHp:sk.hp,
+    // the Mech Boar's health is the Glow's fight, not yours — only its damage scales (in hubHurtPlayer)
+    const bhp = mb ? sk.hp : Math.round(sk.hp*HUB.lvBoss.hp);
+    sk.xp=Math.round(sk.xp*HUB.lvBoss.hp);
+    HUB.boss={x:bx, y:by, homeX:bx, homeY:by, kind:sk, hp:bhp, maxHp:bhp,
       facing:-1, phase:0, moving:false, state:'walk', stateUntil:0,
       throwCD:0, meleeCD:0, dashCD:0, meleeAt:0, meleeDone:false, throwAt:0, threw:false,
       dashUntil:0, dashHit:false, dashA:0, phase2:false, hitFlash:0,
@@ -6388,7 +6678,8 @@ function enterHub(fromRight){
   if(H.abyssBoss){
     if(H.imgCalm) H.img=H.imgCalm;                 // always enter on the calm temple
     const now=Date.now();
-    HUB.abyss={ phase:0, state:'intro', introT0:now, introUntil:now+12000, tentacles:[], headHp:600, headMax:600,
+    const ahp=Math.round(600*HUB.lvBoss.hp);
+    HUB.abyss={ phase:0, state:'intro', introT0:now, introUntil:now+12000, tentacles:[], headHp:ahp, headMax:ahp,
                 beamCD:now+2400, hitFlash:0, exposedUntil:0, shakeT:now };
   } else HUB.abyss=null;
   if(H.sewerChase) sewerInit(); else SEWER.on=false;
@@ -6396,9 +6687,11 @@ function enterHub(fromRight){
   // music per zone: octopus arena / sewer horror / underwater ambient / calm elsewhere
   const mechOn = H.mechboar && HUB.boss && !HUB.boss.defeated;
   // every theme but the one this zone wants goes quiet first
-  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC].forEach(m=>m.stop());
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
   if(H.abyssBoss) BOSS_MUSIC.start();
   else if(mechOn) MECH_MUSIC.start();
+  else if(H.sebyMusic && HUB.boss && !HUB.boss.defeated) SEBY_MUSIC.start();
+  else if(H.catMusic && HUB.boss && !HUB.boss.defeated) CAT_MUSIC.start();
   else if(H.slumMusic) SLUM_MUSIC.start();          // the slums, rat territory and the sewers under it
   else if(H.sewerChase) SEWER_MUSIC.start();
   else if(H.underwater) OCEAN_MUSIC.start();
@@ -6412,7 +6705,7 @@ function abyssNextWave(now, phase){
   for(let i=0;i<n;i++){ const xf=0.22+0.56*(n>1?i/(n-1):0.5);
     let x=xf*HUB.worldW, y=((H.tentY||0.74)+(Math.random()-0.5)*0.06)*VH;
     if(maskReady()){ const p=nearestWalk(x,y); if(p){x=p.x;y=p.y;} }
-    const hp=110+phase*45;
+    const hp=Math.round((110+phase*45)*((HUB.lvBoss&&HUB.lvBoss.hp)||1));
     ab.tentacles.push({x,y,hp,maxHp:hp,hitFlash:0,dead:false,slamAt:0,nextSlam:now+1000+Math.random()*2000,born:now});
   }
   toast(phase===0?'The Dreamer wakes — sever its tentacles!':'More tentacles rise!');
@@ -6539,22 +6832,19 @@ function sewerBFS(tx,ty){   // flood the maze from the player so the stalker can
 function updateSewer(now){
   const H=A.hub, c=HUB.cat, co=SEWER.coon, boss=SEWER.mode==='boss'; if(!maskReady()) return;
   if(SEWER._needPlace){ sewerPlaceLoot(); SEWER._needPlace=false; }   // mask wasn't ready at entry — place now
-  // Coon beaten: the horror's over — no chase, no heartbeat; just walk to the normal exit to leave
+  // There is no way out while it lives — not while it hunts you, not while you fight it. Once
+  // it is beaten the light in the corner is the way up, and you climb it on purpose (E).
   if(SEWER.mode==='cleared'){
     const ex=H.exit;
-    if(ex && !PLACE_ON && Math.hypot(c.x-ex.xf*HUB.worldW, c.y-ex.yf*VH)<(ex.r||60)){
-      SEWER.on=false; if(ex.toSpawn) HUB._spawnOverride=ex.toSpawn; SFX.win&&SFX.win(); toast('You climb out of the sewers.'); enterArea(ex.to,false);
-    }
+    HUB.nearSewerExit = !!(ex && !PLACE_ON && Math.hypot(c.x-ex.xf*HUB.worldW, c.y-ex.yf*VH)<(ex.r||60)+20);
     return;
   }
-  // bail out via the light (only while still hunting — no running once the fight is on)
-  const ex=H.exit; if(!boss && ex && !PLACE_ON && Math.hypot(c.x-ex.xf*HUB.worldW, c.y-ex.yf*VH)<(ex.r||60)){
-    SEWER.on=false; if(ex.toSpawn) HUB._spawnOverride=ex.toSpawn; SFX.win&&SFX.win(); toast('You scramble up to the surface — safe!'); enterArea(ex.to,false); return; }
+  HUB.nearSewerExit=false;
   // collect the stolen treasures; grabbing all 3 corners the Coon into a real fight
   if(!boss) for(const l of SEWER.loot){ if(l.got)continue; if(Math.hypot(c.x-l.x,c.y-l.y)<40){ l.got=true; SEWER.got++; SFX.coin&&SFX.coin();
     for(let i=0;i<10;i++)particles.push({x:l.x,y:l.y-10,vx:(Math.random()-.5)*4,vy:-(Math.random()*4),life:1,c:'#ffd86b'});
     toast('Recovered'+(l.name||'stolen treasure')+'!  ('+SEWER.got+'/'+SEWER.loot.length+')');
-    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=150+S.level*10; SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); toast('“MY treasure!” — the Evil Coon turns to FIGHT!'); } } }
+    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=Math.round(260*((HUB.lvBoss&&HUB.lvBoss.hp)||1));   /* 150+10·L at its level 11; scales like every boss */ SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); toast('“MY treasure!” — the Evil Coon turns to FIGHT!'); } } }
   const chasing = boss || now>SEWER.chaseStart;
   if(chasing && !SEWER.warned){ SEWER.warned=true; SFX.lose&&SFX.lose(); toast('It’s coming — RUN!'); }
   // periodic FRENZY bursts (faster + growl + red flash)
@@ -6607,9 +6897,19 @@ function hurtSewerCoon(dmg,now,col,fromX){
 function drawSewer(){
   const H=A.hub, c=HUB.cat, co=SEWER.coon, now=Date.now(), L=HUB.cine&&HUB.cine.light;
   const psx=(L?L.x:c.x)-HUB.camx, pcy=(L?L.y:c.y)-22;      // during its scene the one light is on the Coon
-  const boss=SEWER.mode==='boss', frenzy=now<SEWER.frenzyUntil, lr=boss?230:160;
-  // exit light (only while hunting — a guiding glow / bail-out)
-  if(!boss && H.exit){ const exx=H.exit.xf*HUB.worldW-HUB.camx, exy=H.exit.yf*VH, pr=0.6+0.4*Math.sin(now*0.004);
+  const boss=SEWER.mode==='boss', frenzy=now<SEWER.frenzyUntil;
+  let lr=boss?230:160;
+  const CN=HUB.cine;
+  if(CN && CN.lightK!=null){ lr*=CN.lightK;
+    if(CN.flickerAt){ const f=now-CN.flickerAt;                                 // the lamp failing
+      if(f<1300) lr*= (Math.random()<0.35 ? 0.15 : 0.6+Math.random()*0.5) * (f>1050 ? 0 : 1);
+      else if(!CN.eyesAt || now-CN.eyesAt<260) lr*=0.02; } }
+  // the way out: lit only once the Coon is beaten
+  if(SEWER.mode==='cleared' && H.exit){ const exx=H.exit.xf*HUB.worldW-HUB.camx, exy=H.exit.yf*VH, pr=0.6+0.4*Math.sin(now*0.004);
+    if(HUB.nearSewerExit){ g.save(); g.textAlign='center'; g.font='bold 14px Trebuchet MS';
+      const lbl='Press E — Climb out', tw=g.measureText(lbl).width+18;
+      g.fillStyle='rgba(10,16,30,.85)'; roundRectPath(exx-tw/2,exy-96,tw,24,8); g.fill();
+      g.fillStyle='#cfe6ff'; g.fillText(lbl,exx,exy-79); g.restore(); }
     const gr=g.createRadialGradient(exx,exy,4,exx,exy,100); gr.addColorStop(0,'rgba(150,205,255,'+(0.55*pr)+')'); gr.addColorStop(1,'rgba(150,205,255,0)');
     g.save(); g.fillStyle=gr; g.beginPath(); g.arc(exx,exy,100,0,7); g.fill(); g.restore(); }
   // stolen treasures — glowing loot to grab (hunt phase)
@@ -6623,12 +6923,12 @@ function drawSewer(){
   // darkness everywhere except a light circle around Puiutu — lifts (map lights up) once the Coon is cleared
   const darkA = SEWER.mode==='cleared' ? Math.max(0, 1-(now-(SEWER.clearedAt||now))/1500) : 1;
   if(darkA>0.001){
-    const grd=g.createRadialGradient(psx,pcy,28,psx,pcy,lr);
+    const grd=g.createRadialGradient(psx,pcy,Math.min(28,lr*0.5),psx,pcy,Math.max(1,lr));   // (lr can drop to ~0 when the lamp fails)
     grd.addColorStop(0,'rgba(0,0,0,0)'); grd.addColorStop(0.62,'rgba(2,3,6,'+(0.5*darkA)+')'); grd.addColorStop(1,'rgba(1,2,4,'+(0.97*darkA)+')');
     g.save(); g.fillStyle=grd; g.fillRect(0,0,VW,VH); g.restore();
   }
   // the stalker: body sprite only when within the light; red eyes always pierce the dark — gone once cleared
-  if(SEWER.mode!=='cleared'){
+  if(SEWER.mode!=='cleared' && !HUB.cine){              // during its opening it is heard, not seen
   const csx=co.x-HUB.camx, D=Math.hypot(c.x-co.x,c.y-co.y), eg=0.7+0.3*Math.sin(now*0.02);
   const bodyVisible = COON_STALK.complete&&COON_STALK.naturalWidth && (D<lr*1.3 || !!L);
   if(HUB.cine && HUB.cine.flare && now-HUB.cine.flare<1400){   // the eyes snap open
@@ -6761,6 +7061,7 @@ function landHub(){
 // hurt the cat in top-down mode: damage + knockback away from (fx,fy); faint -> back to the area spawn
 function hubHurtPlayer(now,dmg,col,fx,fy,kb){
   if(now<=(P.iframe||0)) return;
+  dmg=Math.max(1,Math.round(dmg*(HUB.dmgScale||1)));       // level scaling (see lvlScale)
   const c=HUB.cat;
   P.hp=Math.max(0,P.hp-absorbDamage(dmg)); P.iframe=now+IFRAMES; P.lastHit=now;
   floatText(c.x,c.y-52,'-'+dmg,col); SFX.hit();
@@ -6799,7 +7100,8 @@ function spawnSebyCrystals(){
   const b=HUB.boss; if(!b) return;
   const pts=(A.hub&&A.hub.crystals)||[];
   pts.forEach((p,i)=>{
-    HUB.crystals.push({x:p.xf*HUB.worldW, y:p.yf*VH, hp:80, maxHp:80, dead:false, hitFlash:0, h:p.h||128});
+    const ch=Math.round(80*((HUB.lvBoss&&HUB.lvBoss.hp)||1));
+    HUB.crystals.push({x:p.xf*HUB.worldW, y:p.yf*VH, hp:ch, maxHp:ch, dead:false, hitFlash:0, h:p.h||128});
   });
 }
 function crystalsRemain(){ return (HUB.crystals||[]).some(k=>!k.dead); }
@@ -6843,7 +7145,7 @@ function updateCatKing(b,now){
   }
   if(b.stage==='crack'){                             // the projection comes apart
     if(now>b.stageUntil){
-      b.stage='cat'; b.hp=b.maxHp=170; b.phase2=true;
+      b.stage='cat'; b.hp=b.maxHp=Math.round(170*((HUB.lvBoss&&HUB.lvBoss.hp)||1)); b.phase2=true;
       b.x=b.throneX-70; b.y=b.throneY;               // he steps down off the dais himself
       b.meleeCD=now+700; b.dashCD=now+1800; b.state='walk';
       toast('“…Fine. FINE. I will do it myself.”');
@@ -6901,6 +7203,8 @@ function catKingDown(b,now){
   b.stage='down'; b.defeated=true; b.respawnAt=0; b.hp=0; b.moving=false;
   b.x=b.throneX; b.y=b.throneY;
   S.catKingDown=true; storySet('catking'); S.totalDefeats=(S.totalDefeats||0)+1;
+  CAT_MUSIC.finale();                                        // the fanfare sags; a bell; then the hall is quiet
+  setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.catMusic) MUSIC.start(); }, 4200);
   S.coins+=b.kind.coins; addXP(b.kind.xp);
   SFX.win&&SFX.win(); syncHUD(); save();
   toast('He sits down, adjusts his crown, and falls asleep. You did not kill anything today.');
@@ -7095,6 +7399,7 @@ function ratKingSummonGuards(b,now){
       heading:(Math.random()<.5?0:Math.PI), dir:Math.random()<.5?-1:1, phase:Math.random()*6,
       speed:0.75+Math.random()*0.35, level:1, kind:k, sprite:null,
       hp:k.hp, maxHp:k.hp, kx:0, hitFlash:0, dead:false, respawnAt:0});
+    scaleMob(HUB.ducks[HUB.ducks.length-1]);
     for(let p2=0;p2<8;p2++) particles.push({x, y:y-16, vx:(Math.random()-.5)*3, vy:-(Math.random()*2.4), life:1, c:'#6a5a4a'});
   }
   SFX.tone&&SFX.tone(150,0.16,'square',0.06);
@@ -7178,6 +7483,46 @@ function mechBoarPoint(b,key,fx,fy,sx,h,bob){
   const im=MBOARI[key], w=(im&&im.naturalWidth) ? im.naturalWidth/im.naturalHeight*h : h;
   return {x:sx+b.facing*(fx-0.5)*w, y:b.y-bob-h+fy*h};
 }
+// ── Sewer horror sounds for the Coon's opening (all synthesized, all with the pipe's echo) ──
+// Nothing here is the Coon on screen. It is water, metal being dragged on one side and then
+// the other, a whisper, and one stab when its eyes catch the light.
+const COON_SFX={
+  _echo:null,
+  out(c){                                            // a long tunnel echo every sound runs through
+    if(!this._echo || this._echo.context!==c){
+      const dry=c.createGain(); dry.gain.value=1; dry.connect(c.destination);
+      const d=c.createDelay(1.5); d.delayTime.value=0.31; const fb=c.createGain(); fb.gain.value=0.42;
+      const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1800;
+      const wet=c.createGain(); wet.gain.value=0.5;
+      dry.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(wet); wet.connect(c.destination);
+      this._echo=dry;
+    }
+    return this._echo;
+  },
+  pan(c,p){ const s=c.createStereoPanner?c.createStereoPanner():c.createGain(); if(s.pan) s.pan.value=p; s.connect(this.out(c)); return s; },
+  noise(c,dur){ const len=Math.ceil(c.sampleRate*dur), b=c.createBuffer(1,len,c.sampleRate), d=b.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1; const s=c.createBufferSource(); s.buffer=b; return s; },
+  drip(p){ if(!S.soundOn) return; const c=SFX.ac(); if(!c) return; const t=c.currentTime+0.02, o=c.createOscillator(), g=c.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(1900,t); o.frequency.exponentialRampToValueAtTime(700,t+0.08);
+    g.gain.setValueAtTime(0.06,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12); o.connect(g); g.connect(this.pan(c,p||0)); o.start(t); o.stop(t+0.15); },
+  // claws dragged along a pipe on one side of you
+  scrape(p,dur){ if(!S.soundOn) return; const c=SFX.ac(); if(!c) return; const t=c.currentTime+0.02, D=dur||1.4;
+    const n=this.noise(c,D), bp=c.createBiquadFilter(), g=c.createGain(), tr=c.createOscillator(), tg=c.createGain();
+    bp.type='bandpass'; bp.Q.value=9; bp.frequency.setValueAtTime(1500,t); bp.frequency.linearRampToValueAtTime(2600,t+D);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.12,t+0.1); g.gain.setValueAtTime(0.12,t+D-0.2); g.gain.exponentialRampToValueAtTime(0.0001,t+D);
+    tr.frequency.value=17; tg.gain.value=0.06; tr.connect(tg); tg.connect(g.gain);           // the judder of claw on metal
+    n.connect(bp); bp.connect(g); g.connect(this.pan(c,p)); n.start(t); tr.start(t); tr.stop(t+D); },
+  whisper(p){ if(!S.soundOn) return; const c=SFX.ac(); if(!c) return; const t=c.currentTime+0.02;
+    [0,0.35,0.7].forEach(dt=>{ const n=this.noise(c,0.32), bp=c.createBiquadFilter(), g=c.createGain();
+      bp.type='bandpass'; bp.frequency.value=2800+Math.random()*600; bp.Q.value=3;
+      g.gain.setValueAtTime(0.0001,t+dt); g.gain.exponentialRampToValueAtTime(0.05,t+dt+0.08); g.gain.exponentialRampToValueAtTime(0.0001,t+dt+0.3);
+      n.connect(bp); bp.connect(g); g.connect(this.pan(c,p||0)); n.start(t+dt); }); },
+  // the stab: a dissonant cluster and a burst, the moment the eyes are there
+  stinger(){ if(!S.soundOn) return; const c=SFX.ac(); if(!c) return; const t=c.currentTime+0.01, dst=this.out(c);
+    [233,247,262,370,392].forEach(f=>{ const o=c.createOscillator(), g=c.createGain(); o.type='sawtooth'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.05,t); g.gain.exponentialRampToValueAtTime(0.0001,t+1.1); o.connect(g); g.connect(dst); o.start(t); o.stop(t+1.2); });
+    const n=this.noise(c,0.5), g=c.createGain(); g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.45); n.connect(g); g.connect(dst); n.start(t); },
+};
 //──────── BOSS OPENINGS — short scripted scenes before a fight ─────────────────────────────
 // Each boss gets a moment before it starts: the camera finds it, it speaks, and — for the three
 // that someone is paying for — the scene cuts to the pigs, who are always one room away making
@@ -7229,6 +7574,19 @@ function updateCine(now){
 function drawCine(){
   const C=HUB.cine, now=Date.now();
   if(C && C.cut) drawCut(C.cut);
+  if(C && C.eyes && now-C.eyesAt<260){                     // two eyes, far off, and gone
+    g.save(); g.globalCompositeOperation='lighter';
+    for(const ox of [-9,9]){ const ex=C.eyes.x+ox, ey=C.eyes.y, gr=g.createRadialGradient(ex,ey,1,ex,ey,22);
+      gr.addColorStop(0,'rgba(255,40,25,.95)'); gr.addColorStop(1,'rgba(255,20,10,0)'); g.fillStyle=gr; g.beginPath(); g.arc(ex,ey,22,0,7); g.fill();
+      g.fillStyle='rgba(255,210,190,.9)'; g.beginPath(); g.ellipse(ex,ey,3,2,0,0,7); g.fill(); }
+    g.restore(); }
+  if(C && C.sub){ const t=now-C.sub.t0, a=Math.min(1,t/500);
+    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='italic 22px Georgia'; g.fillStyle=C.sub.col||'#ccc';
+    g.shadowColor='#000'; g.shadowBlur=10; const j=C.sub.shake?(Math.random()-0.5)*3:0;
+    g.fillText(C.sub.text, VW/2+j, VH*0.80+j); g.restore(); }
+  if(C && C.title){ const t=now-C.title.t0, a=Math.min(1,t/350)*(Math.random()<0.08?0.35:1);   // it flickers like a bad bulb
+    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='bold 34px Georgia'; g.fillStyle='#e9e2d6';
+    g.shadowColor='#5a0000'; g.shadowBlur=18; g.fillText(C.title.text, VW/2+(Math.random()-0.5)*2, VH*0.46); g.restore(); }
   if(C){ g.save(); g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.08); g.fillRect(0,VH*0.92,VW,VH*0.08); g.restore(); }
   const fl=C ? C.flashAt : HUB.cineFlashAt;
   if(fl && now-fl<500){ g.save(); g.fillStyle='rgba(0,0,0,'+(1-(now-fl)/500)+')'; g.fillRect(0,0,VW,VH); g.restore(); }   // cut back: from black
@@ -7295,21 +7653,23 @@ function startBossOpening(){
       {toast:'Queen Seby rises from the circle. The crystals tremble.', ms:10},
     ]);
   } else if(curArea==='sewer' && SEWER.on && SEWER.mode==='hunt'){
-    const co=SEWER.coon;
+    // The Coon is not shown. Silence, then water. Something dragging its claws along a pipe on
+    // your left, a whisper, your light failing — and for a quarter of a second, two eyes, far
+    // off. Then metal on your right, and you are on your own.
+    const C=()=>HUB.cine, sub=(text,o)=>{ C().sub=Object.assign({text, t0:Date.now()}, o||{}); };
     cineStart('coon', [
-      {ms:700},
-      {cam:()=>co.x, ms:1800, do:()=>{ HUB.cine.light={x:co.x,y:co.y}; SFX.tone&&SFX.tone(46,0.3,'sine',0.1); }},
-      {say:{name:'Evil Coon', img:CINE_FACE.coon, bg:'#1a0c0c', tone:140, lines:[
-        "Mine. Mine. Mine…",
-        "The pig's little golden piggy. Mine. Hid it where nobody looks.",
-        "The town's shiny crown. Mine.",
-        "…sniff. Sniff sniff.",
-        "Something warm came down the pipe."]}},
-      {ms:1100, do:()=>{ HUB.cine.flare=Date.now(); co.facing = HUB.cat.x<co.x ? -1 : 1;
-        SFX.tone&&SFX.tone(58,0.5,'sawtooth',0.09); SFX.tone&&SFX.tone(70,0.4,'square',0.06); }},
-      {cam:null, ms:900, do:()=>{ HUB.cine.light=null; }},
-      {toast:'It has your scent. Grab the three treasures — or run for the light.', ms:10,
-       do:()=>{ SEWER.chaseStart=Date.now()+2600; SEWER.warned=false; }},
+      {ms:1800, do:()=>{ C().lightK=0.7; SFX.tone&&SFX.tone(38,0.6,'sine',0.05); }},          // silence, and a low hum
+      {ms:1300, do:()=>{ COON_SFX.drip(-0.2); setTimeout(()=>COON_SFX.drip(0.3),420); setTimeout(()=>COON_SFX.drip(0.1),900); }},
+      {ms:1900, do:()=>{ COON_SFX.scrape(-0.85,1.6); }},
+      {ms:1900, do:()=>{ COON_SFX.whisper(0); sub('…mine…',{col:'#c23a2a', shake:true}); }},
+      {ms:1500, do:()=>{ C().sub=null; C().flickerAt=Date.now(); }},                     // the light starts to go
+      {ms:1300, do:()=>{ const c=HUB.cat, side=Math.random()<0.5?-1:1;                    // black — and eyes
+        C().eyesAt=Date.now(); C().eyes={x:VW/2+side*VW*(0.25+Math.random()*0.12), y:VH*(0.28+Math.random()*0.12)};
+        COON_SFX.stinger(); }},
+      {ms:1200, do:()=>{ C().lightK=0.7; COON_SFX.scrape(0.85,1.2); SFX.tone&&SFX.tone(52,0.9,'sawtooth',0.07); }},
+      {ms:2800, do:()=>{ C().title={text:'SOMETHING IS DOWN HERE WITH YOU.', t0:Date.now()}; }},
+      {ms:10, toast:'Find the three treasures. There is no way out while it lives.',
+       do:()=>{ SEWER.chaseStart=Date.now()+3500; SEWER.warned=false; }},
     ]);
   } else if(curArea==='ratking' && b && b.rk && b.stage==='idle'){
     cineStart('ratking', [
@@ -8077,6 +8437,7 @@ function updateHubBoss(now){
       spawnSebyCrystals();   // her barrier reforms when she rises again
       refreshGarrison();     // and the piglet stops celebrating
       toast('Queen Seby gathers her shattered crystals… she rises again!');
+      if(S.musicOn){ MUSIC.stop(); SEBY_MUSIC.start(); }
     }
     return;
   }
@@ -8350,7 +8711,7 @@ function updateHub(){
   for(const d of HUB.ducks){
     if(d.dead){ if(d.respawnAt&&now>d.respawnAt){
       if(d.sea){ d.hp=d.maxHp; if(d.schoolRef){ d.x=d.schoolRef.x+d.ox; d.y=d.schoolRef.y+d.oy; } else { d.x=d.homeX; d.y=d.homeY; } d.respawnAt=0; }
-      else { const lvl=rollPigeonLevel(),k=enemyKind(d.type,lvl); d.level=lvl;d.kind=k;d.maxHp=k.hp;d.hp=k.hp;d.sprite=(d.type==='pigeon'&&PIGEON_VARIANTS[lvl-1])?PIGEON_VARIANTS[lvl-1].sprite:null;d.speed=0.55+Math.random()*0.35+lvl*0.03;d.x=d.homeX;d.y=d.homeY;d.respawnAt=0; }
+      else { const lvl=rollPigeonLevel(),k=enemyKind(d.type,lvl); d.level=lvl;d.kind=k;scaleMob(d);d.sprite=(d.type==='pigeon'&&PIGEON_VARIANTS[lvl-1])?PIGEON_VARIANTS[lvl-1].sprite:null;d.speed=0.55+Math.random()*0.35+lvl*0.03;d.x=d.homeX;d.y=d.homeY;d.respawnAt=0; }
     } continue; }
     if(d.kx){ // knockback, but never shoved off the path
       const nx=d.x+d.kx;
@@ -8488,8 +8849,12 @@ function drawHub(){
   if(ARMY.inited) for(const u of ARMY.units){ if(!u.dead) items.push({z:u.y, t:'army', u}); }
   for(const gu of HUB.garrison) items.push({z:gu.y, t:'garrison', gu});
   items.push({z:HUB.cat.y, t:'cat'});
+  // painted-in objects you can walk behind (see hubOccluders): only the strips on screen
+  { const occ=hubOccluders(); if(occ) for(const o of occ){ const x=o.fx*HUB.worldW-HUB.camx;
+      if(x+o.fw*HUB.worldW<0 || x>VW) continue; items.push({z:o.fBase*VH, t:'occ', o}); } }
   items.sort((a,b)=>a.z-b.z);
   for(const it of items){
+    if(it.t==='occ'){ drawOccStrip(it.o); continue; }
     if(it.t==='barrel'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx;
       if(BARRELIMG.complete&&BARRELIMG.naturalWidth){ const h=120*sc, bw=BARRELIMG.naturalWidth/BARRELIMG.naturalHeight*h;
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,bw*0.4,9*sc,0,0,7);g.fill();g.restore();
@@ -8724,10 +9089,10 @@ function drawHub(){
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, dsx+1, topY+1);
       g.fillStyle='#ff9a9a'; g.fillText(nm, dsx, topY); g.restore();
       } else {
-      const lv=d.level||1, lvCol=levelTierColor(lv), nm=(d.type==='pigeon'?'Pigeon':d.type==='clobster'?'Crystal Lobster':'Duck');
+      const lv=d.level||1, shown=lv+((HUB.lvMob&&HUB.lvMob.bonus)||0), lvCol=levelTierColor(lv), nm=(d.type==='pigeon'?'Pigeon':d.type==='clobster'?'Crystal Lobster':'Duck');
       g.save(); g.textAlign='center'; g.font=`bold ${lv===10?11:10}px Arial`;
-      g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm+'  Lv.'+lv, dsx+1, topY+1);
-      g.fillStyle=lvCol; g.fillText(nm+'  Lv.'+lv, dsx, topY);
+      g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm+'  Lv.'+shown, dsx+1, topY+1);
+      g.fillStyle=lvCol; g.fillText(nm+'  Lv.'+shown, dsx, topY);
       if(lv===10){ g.font='bold 8px Arial'; g.fillStyle='#dd88ff'; g.fillText('LEGENDARY', dsx, topY-11); }
       g.restore();
       }
@@ -8974,6 +9339,7 @@ function drawAbyssBoss(){
       g.beginPath(); g.arc(bx, VH*(1.05-k*1.1), 2+(i%3), 0, 7); g.stroke(); }
     g.globalAlpha=1;
     // one eye: a slit that opens; `open` 0..1, `heat` how hot it burns
+    // the small eyes all over the dark: a glowing slit with a black snake's pupil
     const eye=(ex,ey,R,open,heat,tilt)=>{ if(open<=0.01) return;
       const gr=g.createRadialGradient(ex,ey,1,ex,ey,R*3.2*(0.6+heat*0.6));
       gr.addColorStop(0,'rgba(255,70,30,'+(0.75*open*heat)+')'); gr.addColorStop(1,'rgba(255,40,20,0)');
@@ -8983,6 +9349,35 @@ function drawAbyssBoss(){
       g.beginPath(); g.ellipse(ex,ey,R*1.25,Math.max(0.6,R*0.62*open),tilt||0,0,7); g.fill();
       g.fillStyle='rgba(20,0,0,'+(0.9*open)+')';                       // the slit pupil
       g.beginPath(); g.ellipse(ex,ey,Math.max(0.6,R*0.16),Math.max(0.6,R*0.55*open),tilt||0,0,7); g.fill(); };
+    // The two great eyes are not drawn at all — they are cut straight out of the arena art
+    // (maps/abyssboss.png), so the eyes that open in the dark are the ones you then fight.
+    const bossIm=decorImg(H.imgBoss||'maps/abyssboss.png');
+    if(!ab.eyeCuts && bossIm.complete && bossIm.naturalWidth){ ab.eyeCuts=[];
+      const IW=bossIm.naturalWidth, IH=bossIm.naturalHeight, S=Math.round(IH*0.11);   // ~130px of the art per eye
+      for(const e of ((H.eyes&&H.eyes.length)?H.eyes:[{xf:H.eyeXf,yf:H.eyeYf}])){
+        const cv=document.createElement('canvas'); cv.width=cv.height=S; const x=cv.getContext('2d');
+        x.drawImage(bossIm, e.xf*IW-S/2, e.yf*IH-S/2, S, S, 0,0,S,S);
+        // keep only the burning eye: anything not warm (the teal skin of its face) goes to nothing,
+        // so no green outline rides along into the dark
+        try{ const id=x.getImageData(0,0,S,S), d=id.data;
+          for(let i=0;i<d.length;i+=4){ const r=d[i], gg=d[i+1], bb=d[i+2], warm=r-Math.max(gg,bb)*0.85;
+            d[i+3]=Math.round(d[i+3]*Math.max(0,Math.min(1,(warm-18)/70))); }
+          x.putImageData(id,0,0); }catch(err){}                                 // (file://: no pixel access — soft fade only)
+        const m=x.createRadialGradient(S/2,S/2,S*0.22,S/2,S/2,S*0.5);            // and fade the edge into the dark
+        m.addColorStop(0,'rgba(0,0,0,1)'); m.addColorStop(1,'rgba(0,0,0,0)');
+        x.globalCompositeOperation='destination-in'; x.fillStyle=m; x.fillRect(0,0,S,S);
+        ab.eyeCuts.push({cv, S, IH}); } }
+    const bigEye=(i,ex,ey,open,grow,heat)=>{ const ec=ab.eyeCuts&&ab.eyeCuts[i]; if(!ec||open<=0.01) return;
+      const k=VH/ec.IH*grow, d=ec.S*k;                                            // same scale as the arena
+      g.save(); g.globalCompositeOperation='lighter';
+      const gl=g.createRadialGradient(ex,ey,1,ex,ey,d*0.9);
+      gl.addColorStop(0,'rgba(255,110,20,'+(0.5*open*heat)+')'); gl.addColorStop(1,'rgba(200,40,0,0)');
+      g.fillStyle=gl; g.beginPath(); g.arc(ex,ey,d*0.9,0,7); g.fill();
+      g.globalCompositeOperation='source-over'; g.globalAlpha=Math.min(1,open*1.4);
+      g.translate(ex,ey); g.scale(1, Math.max(0.04,open));                     // the lid lifting: a slit that opens
+      g.drawImage(ec.cv, -d/2, -d/2, d, d);
+      if(heat>0.85){ g.globalCompositeOperation='lighter'; g.globalAlpha=(heat-0.85)/0.15*0.6; g.drawImage(ec.cv,-d/2,-d/2,d,d); }   // the flare
+      g.restore(); };
     // a blink across every eye at each of its words
     const blink=(t)=>{ const d=Math.abs(el-t); return d<160 ? d/160 : 1; };
     const blinkAll=Math.min(blink(6550), blink(8050));
@@ -8993,13 +9388,8 @@ function drawAbyssBoss(){
     // the two great eyes
     const eyes=(H.eyes&&H.eyes.length)?H.eyes:[{xf:H.eyeXf,yf:H.eyeYf}];
     const flare=sm(8900,9500)*(1-sm(11200,11800)*0.3);
-    eyes.forEach((e,i)=>{ const t0=i?3000:1700, o=sm(t0,t0+1100)*blinkAll, pls=0.9+0.1*Math.sin(now*0.02);
-      eye(e.xf*HUB.worldW-cam, e.yf*VH, (16+10*sm(t0,t0+2400)+18*flare)*pls, o, 0.7+0.3*flare, 0); });
-    // shockwaves out of the eyes when they flare
-    if(el>8900 && el<11500){ const cx=(eyes[0].xf+(eyes[1]||eyes[0]).xf)/2*HUB.worldW-cam, cy=eyes[0].yf*VH;
-      for(let w=0;w<3;w++){ const k=((el-8900)/1300+w/3)%1;
-        g.globalAlpha=(1-k)*0.55; g.strokeStyle='#ff6a3a'; g.lineWidth=4*(1-k)+1;
-        g.beginPath(); g.ellipse(cx,cy,k*VW*0.7,k*VW*0.32,0,0,7); g.stroke(); } g.globalAlpha=1; }
+    eyes.forEach((e,i)=>{ const t0=i?3000:1700, o=sm(t0,t0+1100)*blinkAll, pls=0.97+0.03*Math.sin(now*0.02);
+      bigEye(i, e.xf*HUB.worldW-cam, e.yf*VH, o, (1+0.35*flare)*pls, 0.7+0.3*flare); });
     // its words, and then its name
     const line=(txt,a,b,y,size,col)=>{ const t=sm(a,a+500)*(1-sm(b-500,b)); if(t<=0) return;
       g.globalAlpha=t; g.textAlign='center'; g.font=size; g.fillStyle=col; g.shadowColor='#000'; g.shadowBlur=14;
@@ -11839,8 +12229,8 @@ function renderProfile(){
   });
   document.getElementById('sndBtn').onclick=()=>{ S.soundOn=!S.soundOn; save(); if(S.soundOn)SFX.click(); renderProfile(); };
   document.getElementById('musBtn').onclick=()=>{ S.musicOn=!S.musicOn; save();
-    if(S.musicOn){ SFX.ac(); const H=A&&A.hub; if(H&&H.abyssBoss)BOSS_MUSIC.start(); else if(H&&H.mechboar&&HUB.boss&&!HUB.boss.defeated)MECH_MUSIC.start(); else if(H&&H.slumMusic)SLUM_MUSIC.start(); else if(H&&H.sewerChase)SEWER_MUSIC.start(); else if(H&&H.underwater)OCEAN_MUSIC.start(); else MUSIC.start(); }
-    else { MUSIC.stop(); OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEWER_MUSIC.stop(); }
+    if(S.musicOn){ SFX.ac(); const H=A&&A.hub; if(H&&H.abyssBoss)BOSS_MUSIC.start(); else if(H&&H.mechboar&&HUB.boss&&!HUB.boss.defeated)MECH_MUSIC.start(); else if(H&&H.sebyMusic&&HUB.boss&&!HUB.boss.defeated)SEBY_MUSIC.start(); else if(H&&H.catMusic&&HUB.boss&&!HUB.boss.defeated)CAT_MUSIC.start(); else if(H&&H.slumMusic)SLUM_MUSIC.start(); else if(H&&H.sewerChase)SEWER_MUSIC.start(); else if(H&&H.underwater)OCEAN_MUSIC.start(); else MUSIC.start(); }
+    else { MUSIC.stop(); OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEWER_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); }
     renderProfile(); };
   document.getElementById('resetBtn').onclick=()=>{
     if(confirm('Reset all progress?')){localStorage.removeItem('puiutu_save');S=load();A=null;AREAS=buildAreas();enterArea('garden',false);syncHUD();renderStatbars();renderProfile();updateQuestHUD();toast('Game reset!');}
@@ -12157,17 +12547,13 @@ function mcDraw(mg){
           mcTexQuad(mg,tbimg, 0,vFar, bw2, vNear-vFar, fL, fR, d2);
         }
         // The gap is dark rubble against dark sleepers, which reads as more track until it is
-        // too late. Three cheap layers make it announce itself, all keyed to the break's own
+        // too late. Two cheap layers make it announce itself, both keyed to the break's own
         // projected point so they travel with it instead of floating like the old decal did.
+        // (A black hole painted over the break was tried and dropped: it read as a blot, not a gap.)
         const pb=mcProj(lx, zz);
         const sc2=MC_CAMD/(MC_CAMD+Math.max(zz,-0.6));
         const rw2=MC_RAILHALF*MC_XSPR*sc2*2.1, rh2=rw2*0.42;
-        // 1) the gap goes properly black, so it reads as a hole and not as more sleepers
-        mg.save();
-        mg.globalAlpha=0.72;
-        mg.fillStyle='#000'; mg.beginPath(); mg.ellipse(pb.x,pb.y,rw2*0.50,rh2*0.60,0,0,7); mg.fill();
-        mg.restore();
-        // 2) hazard bands painted across the sleepers on the approach — static, not a pulsing
+        // 1) hazard bands painted across the sleepers on the approach — static, not a pulsing
         //    glow: miners would mark a hole, and stripes read as danger at any distance without
         //    looking like a game effect. Laid in the same projection, so they lie on the track.
         for(const back of [0.55, 1.05]){
@@ -12189,7 +12575,7 @@ function mcDraw(mg){
           }
           mg.restore();
         }
-        // 3) and the same shout the rats get, once it is close enough to act on
+        // 2) and the same shout the rats get, once it is close enough to act on
         if(zz<3.2 && zz>0.5){
           mg.save(); mg.globalAlpha=Math.min(1,(3.2-zz)/1.2);
           mg.fillStyle='#ffc46b'; mg.textAlign='center';
@@ -12786,6 +13172,8 @@ function renderMap(){
 }
 function travelTo(id){
   if(!S.visited[id] || id===curArea){ closeMap(); return; }
+  // the sewers keep you until the Coon is beaten — the map is not a way around that
+  if(curArea==='sewer' && SEWER.on && SEWER.mode!=='cleared'){ closeMap(); toast('There is no way out while it lives.'); return; }
   closeMap();
   enterArea(id,false);
   P.maxHp=playerMaxHp(); if(P.hp>P.maxHp)P.hp=P.maxHp;
