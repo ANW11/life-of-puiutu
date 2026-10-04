@@ -1,0 +1,6 @@
+{
+  "appId": "ro.anw.puiutu",
+  "appName": "Life of Puiutu",
+  "webDir": "www",
+  "android": { "backgroundColor": "#14140e" }
+}

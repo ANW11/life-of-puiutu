@@ -146,6 +146,14 @@
     justify-content:center;cursor:pointer;user-select:none;backdrop-filter:blur(3px);touch-action:none;}
   #dpUp{left:53px;top:0;} #dpDown{left:53px;bottom:0;} #dpLeft{left:0;top:53px;} #dpRight{right:0;top:53px;}
   #dpad>div:active{background:rgba(120,90,40,.7);transform:scale(.94);}
+  /* analog stick (touch screens): touch anywhere in the zone and the stick centres under your thumb */
+  #joyZone{position:absolute;left:0;bottom:0;width:42%;height:62%;z-index:6;display:none;touch-action:none;}
+  #joyBase{position:absolute;width:128px;height:128px;margin:-64px 0 0 -64px;border-radius:50%;
+    border:3px solid rgba(255,255,255,.32);background:radial-gradient(circle, rgba(40,28,14,.22), rgba(40,28,14,.5));
+    opacity:0;transition:opacity .15s;pointer-events:none;}          /* invisible until a thumb is on it */
+  #joyKnob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;
+    background:rgba(255,236,190,.82);border:3px solid rgba(107,74,31,.9);box-shadow:0 2px 8px rgba(0,0,0,.4);}
+  #joyZone.on #joyBase{opacity:.7;}
   /* ── compact HUD: the pixel-art health sphere (top-left) + an XP bar with the level on it ── */
   #uiBar{position:absolute;left:10px;top:8px;z-index:7;pointer-events:none;
     display:flex;align-items:center;gap:9px;font-family:'Trebuchet MS',sans-serif;}
@@ -185,6 +193,14 @@
   #uiManaOrb.nomana{animation:manaDeny .32s ease;}
   @keyframes manaDeny{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 
+  /* ── short screens (a phone held sideways): a smaller HUD that keeps clear of the top buttons ── */
+  @media (max-height:500px){
+    #uiBar{transform:scale(.72);transform-origin:top left;left:6px;top:4px;}
+    #uiXpWrap{width:110px;}
+    .topbar{height:40px;padding:0 8px;}
+    .topbar .back-btn{padding:4px 9px;font-size:12px;border-radius:11px;}
+    .topbar>div{gap:6px !important;}
+  }
   /* ── spell hotbar (bottom-centre, above the touch controls) ── */
   #spellBar{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;z-index:8;
     display:none;gap:9px;pointer-events:none;}
@@ -268,7 +284,8 @@
   #mapModal{position:absolute;inset:0;z-index:55;display:none;align-items:center;justify-content:center;
     background:rgba(10,8,5,.72);backdrop-filter:blur(3px);}
   #mapModal.show{display:flex;}
-  .map-img-wrap{position:relative;width:94%;max-width:880px;}
+  /* the map is 3:2 — size it by whichever runs out first, width or height, so it always fits */
+  .map-img-wrap{position:relative;width:min(94vw, calc((100vh - 40px) * 1.5), 880px);}
   #mapImg{width:100%;display:block;filter:drop-shadow(0 14px 28px rgba(0,0,0,.55));}   /* the parchment's own torn edge is the frame */
   .hot{position:absolute;border:none;background:transparent;cursor:pointer;padding:0;
     display:flex;align-items:center;justify-content:center;transition:background .2s, filter .2s;}
@@ -404,7 +421,7 @@
   .dlg-choice.lean-cat{border-color:#35659c;box-shadow:0 3px 0 #35659c;}
   .dlg-choice.lean-third{border-color:#a97c1e;box-shadow:0 3px 0 #a97c1e;}
   /* during a scripted scene the touch controls step out of the shot */
-  body.cinema #dpad, body.cinema #jumpCtrl, body.cinema #actCtrl, body.cinema #interactBtn, body.cinema #spellBar,
+  body.cinema #dpad, body.cinema #joyZone, body.cinema #jumpCtrl, body.cinema #actCtrl, body.cinema #interactBtn, body.cinema #spellBar,
   body.cinema #padLeft, body.cinema #padRight, body.cinema #questHUD, body.cinema #fightBtn, body.cinema #interactPrompt{display:none !important;}
   /* ---------- outro: white on black, no music ---------- */
   #outroScreen{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;
@@ -470,6 +487,7 @@
   #mergeObjective{color:#ffd86b;font-weight:bold;font-size:15px;background:rgba(20,14,8,.5);padding:4px 14px;border-radius:12px;}
   #mergeCanvas{background:linear-gradient(#fde7c8,#f6d9a8);border:4px solid #6b4a1f;border-radius:14px;
     box-shadow:0 8px 24px rgba(0,0,0,.4);max-height:72vh;max-width:94vw;height:auto;touch-action:none;cursor:pointer;}
+  @media (orientation:portrait){ #mergeCanvas{max-height:calc(100vh - 200px);max-width:96vw;} }
   #mergeRestart{background:linear-gradient(#7ed957,#4d9a2a);border:2px solid #3a6f1c;color:#fff;font-weight:bold;
     font-size:15px;padding:9px 20px;border-radius:12px;cursor:pointer;}
   #mergeRestart:active{transform:scale(.96);}
@@ -491,7 +509,7 @@
   #sortWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px;min-height:0;}
   #sortHud{color:#ffe7b0;font-weight:bold;font-size:19px;}
   #sortCanvas{background:linear-gradient(#3a2c5a,#241a3e);border:4px solid #6b4a1f;border-radius:14px;
-    box-shadow:0 8px 24px rgba(0,0,0,.45);max-height:80vh;max-width:96vw;height:auto;touch-action:none;cursor:pointer;}
+    box-shadow:0 8px 24px rgba(0,0,0,.45);max-height:min(80vh, calc(100vh - 190px));max-width:96vw;height:auto;touch-action:none;cursor:pointer;}
   /* Fisher's Barrel hub (Fish / Fish Log) */
   #fishhubWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:18px;min-height:0;}
   #fishhubArt{height:58vh;max-width:94vw;width:auto;object-fit:contain;
@@ -726,6 +744,12 @@
   #fishHint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:3;color:#eaf6ff;
     font-size:14px;text-shadow:0 2px 5px #000;background:rgba(10,18,28,.42);padding:5px 16px;
     border-radius:14px;backdrop-filter:blur(3px);pointer-events:none;}
+  #fishPad{position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:4;display:none;flex-direction:column;gap:14px;}
+  #fishPad.show{display:flex;}
+  #fishPad>div{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:28px;color:#fff;background:rgba(20,30,50,.45);border:3px solid rgba(255,255,255,.45);
+    backdrop-filter:blur(3px);user-select:none;touch-action:none;}
+  #fishPad>div.held{background:rgba(110,200,120,.6);transform:scale(.94);}
   #fishCanvas{position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:0;
     box-shadow:none;max-width:none;max-height:none;touch-action:none;cursor:pointer;display:block;
     background:linear-gradient(#bfe9ff,#3f86c4 55%,#1f4f86);}
@@ -799,7 +823,21 @@
   .phone-clock .pTime{font-size:min(11vh,62px);font-weight:900;line-height:1;letter-spacing:1px;
     font-variant-numeric:tabular-nums;}
   .phone-clock .pDate{font-size:min(3.1vh,18px);font-weight:bold;margin-top:6px;opacity:.85;}
-  .phone-apps{position:absolute;left:18%;right:18%;top:62%;display:flex;justify-content:space-between;}
+  .phone-apps{position:absolute;left:17%;right:17%;top:58.5%;display:grid;grid-template-columns:repeat(3,1fr);row-gap:min(1.2vh,7px);}
+  .phone-apps .pa-ico{width:52%;}
+  .pa-art{background-size:contain;background-color:#f6e7c8;}
+  .pa-flags{display:flex;align-items:center;justify-content:center;background:#f6e7c8;}
+  .pa-flags svg{width:70%;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.4);}
+  /* top-right pixel-art buttons */
+  .icon-btn{pointer-events:auto;cursor:pointer;width:46px;height:42px;display:flex;align-items:center;justify-content:center;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));transition:transform .12s;}
+  .icon-btn img{max-width:100%;max-height:100%;image-rendering:pixelated;}
+  .icon-btn:hover{transform:scale(1.08);} .icon-btn:active{transform:scale(.92);}
+  @media (max-height:500px){ .icon-btn{width:36px;height:32px;} }
+  /* settings: the moved language flags and mode buttons sit in normal flow there */
+  #settingsBody{padding:18px;color:#ffe7b0;}
+  .set-h{font-size:16px;margin:6px 0 10px;color:#ffd36b;}
+  #settingsBody #langPick, #settingsBody #modePick{position:static;margin-bottom:18px;}
   .phone-app{flex:1;min-width:0;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;
     align-items:center;gap:5px;padding:0 1px;}
   .pa-ico{width:60%;aspect-ratio:1;background-position:center;background-repeat:no-repeat;background-size:auto 100%;
@@ -848,7 +886,13 @@
   .qbtn:disabled{filter:grayscale(.6);opacity:.55;cursor:default;}
 
   /* ---------- NEW MENU (custom art) ---------- */
-  .menu-bg{position:absolute;inset:0;background:#bcd9ec url('ui/UI.png') center/cover no-repeat;}
+  .menu-bg{position:absolute;inset:0;background:#bcd9ec url('ui/menu_bg.jpg') center/cover no-repeat;}
+  /* the title screen fills the whole window, landscape: the logo over the sky, Play over the grass */
+  #menu .top{width:100%;max-width:none;height:100%;border-radius:0;box-shadow:none;}
+  #menu .statbar{display:none;}
+  #menu .title-img{width:min(46%,760px);top:4%;}
+  #menu #btnPlay{width:clamp(180px,24%,380px);bottom:7%;}
+  @media (orientation:portrait){ #menu .title-img{width:88%;top:6%;} #menu #btnPlay{width:60%;bottom:10%;} .menu-bg{background-position:30% center;} }
   #menu .top::after{content:'';position:absolute;inset:0;pointer-events:none;
     background:linear-gradient(rgba(0,0,0,.12),rgba(0,0,0,0) 25%,rgba(0,0,0,0) 60%,rgba(0,0,0,.22));}
   .title-img{position:absolute;left:50%;top:8%;transform:translateX(-50%);z-index:3;
@@ -900,7 +944,7 @@
 
   /* ── cinematic capture mode (trailer recording): F2 toggles, F3 letterbox ── */
   body.cine .topbar, body.cine #uiBar, body.cine #questHUD, body.cine #chatLog,
-  body.cine #chatBar, body.cine #chatToggle, body.cine .touch-ctrl, body.cine #dpad,
+  body.cine #chatBar, body.cine #chatToggle, body.cine .touch-ctrl, body.cine #dpad, body.cine #joyZone,
   body.cine #interactBtn, body.cine #interactPrompt, body.cine #fightBtn,
   body.cine #toast, body.cine .statbar{display:none !important;}
   body.cine{cursor:none;}
@@ -921,11 +965,12 @@
   <div id="menu" class="screen active">
     <div class="top">
       <div class="menu-bg"></div>
-      <img class="title-img" src="ui/title_use.png" alt="Life of Puiutu">
+      <img class="title-img" src="ui/title_pixel.png" alt="Life of Puiutu">
 
-      <button class="img-btn" id="btnShop"><img src="ui/btn_shop.png" alt="Shop"></button>
-      <button class="img-btn" id="btnProfile"><img src="ui/btn_profile2.png" alt="Profile"></button>
-      <button class="img-btn" id="btnInv"><img src="ui/btn_inventory.png" alt="Inventory"></button>
+      <!-- Shop, Profile and Inventory now live in the phone; kept here hidden so their scripts still find them -->
+      <button class="img-btn" id="btnShop" style="display:none;"><img src="ui/btn_shop.png" alt="Shop"></button>
+      <button class="img-btn" id="btnProfile" style="display:none;"><img src="ui/btn_profile2.png" alt="Profile"></button>
+      <button class="img-btn" id="btnInv" style="display:none;"><img src="ui/btn_inventory.png" alt="Inventory"></button>
       <button class="img-btn play" id="btnPlay"><img src="ui/btn_play.png" alt="Play"></button>
 
       <!-- language: drawn as inline SVG so it needs no art and stays crisp at any size -->
@@ -957,11 +1002,12 @@
     <div class="topbar">
       <div style="display:flex;gap:8px;">
         <div class="back-btn" id="btnBackMenu">‹ Menu</div>
-        <div class="back-btn" id="btnMap">Map</div>
-        <div class="back-btn" id="btnMineCart" title="Mine-Cart Escape">Cart</div>
-        <div class="back-btn" id="btnPhone">Phone</div>
-        <div class="back-btn" id="btnBag">Bag</div>
-        <div class="back-btn" id="btnGacha" title="Lucky Capsule">Luck</div>
+        <div class="back-btn" id="btnMineCart" title="Mine-Cart Escape" style="display:none;">Cart</div>
+        <div class="back-btn" id="btnBag" style="display:none;">Bag</div>
+        <div class="icon-btn" id="btnMap" title="Map"><img src="ui/icon_map.png" alt="Map"></div>
+        <div class="icon-btn" id="btnPhone" title="Phone"><img src="ui/icon_phone.png" alt="Phone"></div>
+        <div class="icon-btn" id="btnGacha" title="Lucky Capsule"><img src="ui/icon_can.png" alt="Lucky Capsule"></div>
+        <div class="back-btn" id="btnWar" title="Border War — a real-time strategy game">War</div>
         <div class="back-btn" id="btnRocky" style="display:none;">Stay</div>
         <div class="chip" id="onlineChip" style="display:none;">Online <span id="hudOnline">1</span></div>
       </div>
@@ -993,6 +1039,8 @@
     <div id="dpad">
       <div id="dpUp">▲</div><div id="dpDown">▼</div><div id="dpLeft">◀</div><div id="dpRight">▶</div>
     </div>
+    <!-- analog stick, replaces the arrows on touch screens -->
+    <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
     <div class="touch-ctrl" id="jumpCtrl" style="right:88px;bottom:90px;"><div id="jumpBtn">⤒</div></div>
     <div class="touch-ctrl" id="actCtrl" style="right:14px;bottom:90px;"><div id="actBtn">F</div></div>
     <!-- contextual interact button (enter cave / talk) — appears when something is nearby -->
@@ -1087,7 +1135,19 @@
         <button class="phone-app" data-app="bank"><span class="pa-ico" style="background-image:url('Phone/bank.png')"></span><span class="pa-lbl">Bank</span></button>
         <button class="phone-app" data-app="wallet"><span class="pa-ico" style="background-image:url('Phone/wallet.png')"></span><span class="pa-lbl">Wallet</span></button>
         <button class="phone-app" data-app="backpack"><span class="pa-ico" style="background-image:url('Phone/backpack.png')"></span><span class="pa-lbl">Inventory</span></button>
+        <button class="phone-app" data-app="shop"><span class="pa-ico pa-art" style="background-image:url('ui/btn_shop.png')"></span><span class="pa-lbl">Shop</span></button>
+        <button class="phone-app" data-app="profile"><span class="pa-ico pa-art" style="background-image:url('ui/btn_profile2.png')"></span><span class="pa-lbl">Profile</span></button>
+        <button class="phone-app" data-app="settings"><span class="pa-ico pa-art pa-flags"><svg viewBox="0 0 60 30"><rect width="20" height="30" fill="#002B7F"/><rect x="20" width="20" height="30" fill="#FCD116"/><rect x="40" width="20" height="30" fill="#CE1126"/></svg></span><span class="pa-lbl">Settings</span></button>
       </div>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS (from the phone): language, story / free play ============ -->
+  <div id="settings" class="modal">
+    <div class="modal-head"><h2>Settings</h2><button class="modal-close" data-close="settings"></button></div>
+    <div class="modal-body" id="settingsBody">
+      <h3 class="set-h">Language</h3><div id="setLang"></div>
+      <h3 class="set-h">Game mode</h3><div id="setMode"></div>
     </div>
   </div>
 
@@ -1261,6 +1321,8 @@
       <div id="fishHud"> caught: <span id="fishCount">0</span><span style="opacity:.6;margin:0 8px;">·</span>biggest: <span id="fishBest">—</span></div>
       <canvas id="fishCanvas" width="360" height="540"></canvas>
       <div id="fishHint"><b>↑ / ↓</b> move the bar — keep it on the fish · tap when it bites</div>
+      <!-- touch screens: hold to move the green bar -->
+      <div id="fishPad"><div id="fishUpBtn">▲</div><div id="fishDownBtn">▼</div></div>
     </div>
   </div>
 
@@ -4064,7 +4126,9 @@ let nearPortal=null;
 let nearEnemy=null;
 let mapOpen=false;
 
-const input={left:false,right:false,up:false,down:false,jumpQueued:false,jumpHeld:false};
+const input={left:false,right:false,up:false,down:false,jumpQueued:false,jumpHeld:false, joy:false,jx:0,jy:0};
+// a phone or tablet: the analog stick replaces the arrow pads
+const IS_TOUCH=(window.matchMedia&&matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in window && navigator.maxTouchPoints>0);
 function topdownMode(){ return inGame && A && A.mode==='topdown'; }
 // what (if anything) the player can interact with right now
 function interactTarget(){
@@ -4145,12 +4209,62 @@ function updateInteractBtn(){
   b.textContent='E';   // the key you press, not a pictogram — every prompt reads the same now
 }
 
+// ── Screen scaling ──
+// Every sprite, label and prompt offset in the game is in fixed pixels, tuned for a desktop
+// window. So the game always draws into a logical frame at least REF_H tall (VW×VH), and the
+// canvas scales that frame onto the real screen at the device's pixel density. On a short screen
+// (a phone held sideways) the camera also zooms in on the cat, so nothing ends up tiny; it eases
+// back out to the whole frame for boss fights and cutscenes, which are staged for the full view.
+const REF_H=760;
+const VIEW={base:1, z:1, zTarget:1, x:0, y:0, cssW:440, cssH:710, dpr:1};
 function resize(){
+  if(VIEW.frozen) return;          // a portrait minigame has the phone turned: the world keeps its frame
   const r=cv.getBoundingClientRect();
-  cv.width=r.width;cv.height=r.height;
-  VW=r.width;VH=r.height;
+  const dpr=Math.min(3, window.devicePixelRatio||1);
+  VIEW.cssW=r.width; VIEW.cssH=r.height; VIEW.dpr=dpr;
+  cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr);
+  const k=Math.max(1, REF_H/Math.max(1,r.height));       // logical px per CSS px (1 on a desktop)
+  VW=r.width*k; VH=r.height*k;
+  VIEW.base=dpr/k;                                        // logical px -> canvas px
+  VIEW.zTarget=Math.min(1.5, Math.max(1, 0.8*k));         // phone sideways (~400px tall) -> ~1.45
 }
 window.addEventListener('resize',resize);
+// The APK can turn the phone for a minigame that is taller than it is wide (Fruit Merge).
+// While it is turned the world is frozen at its landscape frame, so nothing in it is re-measured
+// against a portrait screen; it thaws on the first landscape resize after turning back.
+function nativeOrientation(){ try{ const C=window.Capacitor; return C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.ScreenOrientation; }catch(e){ return null; } }
+function turnPortrait(){ const O=nativeOrientation(); if(!O) return; VIEW.frozen=true; O.lock({orientation:'portrait'}).catch(()=>{}); }
+function turnLandscape(){ const O=nativeOrientation(); if(!O||!VIEW.frozen) return;
+  const thaw=()=>{ if(!VIEW.frozen) return; VIEW.frozen=false; window.removeEventListener('resize',onR); resize(); };
+  const onR=()=>{ if(innerWidth>innerHeight) thaw(); };
+  window.addEventListener('resize',onR); setTimeout(thaw,1500);
+  O.lock({orientation:'landscape'}).catch(()=>{}); }
+// boss fights and cutscenes want the whole frame
+function viewWantsFull(){
+  return !!(HUB.cine || HUB.cut || HUB.hangar || HUB.abyss || (typeof SEWER!=='undefined'&&SEWER.on)
+         || (HUB.boss && !HUB.boss.defeated) || battleActive || (typeof CINE!=='undefined'&&CINE.on));
+}
+// called once per frame before drawing: ease the zoom, frame the cat, set the canvas transform
+function applyView(){
+  const want=viewWantsFull()?1:VIEW.zTarget;
+  VIEW.z+=(want-VIEW.z)*0.06; if(Math.abs(want-VIEW.z)<0.002) VIEW.z=want;
+  const z=VIEW.z, w=VW/z, h=VH/z;
+  let px=VW/2, py=VH/2;
+  if(A && A.mode==='topdown' && HUB.cat){ px=HUB.cat.x-HUB.camx; py=HUB.cat.y-(HUB.cat.z||0)-40; }
+  else if(typeof P!=='undefined' && P){ px=P.x-cam.x; py=P.y-40; }
+  const tx=Math.max(0,Math.min(VW-w, px-w/2)), ty=Math.max(0,Math.min(VH-h, py-h*0.55));
+  if(z===1){ VIEW.x=0; VIEW.y=0; }
+  else { VIEW.x+=(tx-VIEW.x)*0.15; VIEW.y+=(ty-VIEW.y)*0.15;
+         VIEW.x=Math.max(0,Math.min(VW-w,VIEW.x)); VIEW.y=Math.max(0,Math.min(VH-h,VIEW.y)); }
+  const s=VIEW.base*z;
+  g.setTransform(s,0,0,s,-VIEW.x*s,-VIEW.y*s);
+}
+// a pointer event on the game canvas -> logical frame coordinates (what the draw code uses)
+function viewPoint(e){
+  const r=cv.getBoundingClientRect();
+  return { x: VIEW.x + (e.clientX-r.left)/r.width*VW/VIEW.z,
+           y: VIEW.y + (e.clientY-r.top)/r.height*VH/VIEW.z };
+}
 
 //──────── physics constants
 const GRAV=0.62, JUMP=-14, DJUMP=-12, FRIC=0.8;
@@ -4309,8 +4423,12 @@ function enterArea(id,fromRight,toX){
 function setControlMode(topdown){
   const set=(id,on)=>{ const el=document.getElementById(id); if(el) el.style.display = on?'':'none'; };
   // platformer uses ◀ ▶ pads; the park uses the 4-way dpad. jump + attack show in both.
-  set('padLeft', !topdown); set('padRight', !topdown);
-  const dp=document.getElementById('dpad'); if(dp) dp.style.display = topdown?'block':'none';
+  // on a touch screen the analog stick does both jobs instead
+  const touch=IS_TOUCH;
+  // a computer has a keyboard (WASD / arrows): no on-screen arrows there at all
+  set('padLeft', false); set('padRight', false);
+  const dp=document.getElementById('dpad'); if(dp) dp.style.display = 'none';
+  const jz=document.getElementById('joyZone'); if(jz) jz.style.display = touch?'block':'none';
   set('jumpCtrl', true); set('actCtrl', true);
   set('fightBtn', false);
   const ip=document.getElementById('interactPrompt'); if(ip&&topdown) ip.style.display='none';
@@ -5873,12 +5991,15 @@ function levelUp(){
 const STEP=1000/60;
 let _lastT=0, _acc=0;
 function loop(now){
+  // Border War is open on top: the world holds its breath (no updates, no drawing) until it closes
+  if(WAR_OPEN){ _lastT=now; _acc=0; requestAnimationFrame(loop); return; }
   if(!_lastT) _lastT=now;
   _acc += now-_lastT; _lastT=now;
   if(_acc>250) _acc=250;                 // avoid spiral after a tab stall
   let steps=0;
   while(_acc>=STEP && steps<5){ update(); steps++; _acc-=STEP; }
   NET.tick();
+  applyView();
   draw();
   updateInteractBtn();
   requestAnimationFrame(loop);
@@ -6733,7 +6854,8 @@ function enterHub(fromRight){
     const ahp=Math.round(600*HUB.lvBoss.hp);
     HUB.abyss={ phase:0, state:'intro', introT0:now, introUntil:now+12000, tentacles:[], headHp:ahp, headMax:ahp,
                 beamCD:now+2400, hitFlash:0, exposedUntil:0, shakeT:now };
-  } else HUB.abyss=null;
+    document.body.classList.add('cinema');          // its waking is a scene: touch controls out of the shot
+  } else { if(HUB.abyss) document.body.classList.remove('cinema'); HUB.abyss=null; }
   if(H.sewerChase) sewerInit(); else SEWER.on=false;
   startBossOpening();                                // Seby / the Coon / both kings: a scene first
   // music per zone: octopus arena / sewer horror / underwater ambient / calm elsewhere
@@ -6754,7 +6876,7 @@ function enterHub(fromRight){
 // boss wave: raise a ring of tentacles (more each phase); head invulnerable until all are cut down
 function abyssNextWave(now, phase){
   const ab=HUB.abyss, H=A.hub, n=Math.min(3+phase,6);
-  ab.state='tentacles'; ab.tentacles=[];
+  ab.state='tentacles'; ab.tentacles=[]; document.body.classList.remove('cinema');
   for(let i=0;i<n;i++){ const xf=0.22+0.56*(n>1?i/(n-1):0.5);
     let x=xf*HUB.worldW, y=((H.tentY||0.74)+(Math.random()-0.5)*0.06)*VH;
     if(maskReady()){ const p=nearestWalk(x,y); if(p){x=p.x;y=p.y;} }
@@ -8818,8 +8940,9 @@ function updateHub(){
   // desired movement
   let mvx=0,mvy=0;
   if(input.left)mvx-=1; if(input.right)mvx+=1; if(input.up)mvy-=1; if(input.down)mvy+=1;
+  if(input.joy){ mvx=input.jx; mvy=input.jy; }     // the analog stick: direction AND how far it is pushed
   let dx=0,dy=0;
-  if(mvx||mvy){ HUB.target=null; const l=Math.hypot(mvx,mvy)||1; dx=mvx/l*sp; dy=mvy/l*sp; c.moving=true; if(mvx)c.facing=mvx<0?-1:1; c.phase+=0.16; }
+  if(mvx||mvy){ HUB.target=null; const l=Math.hypot(mvx,mvy)||1, k=Math.min(1,l); dx=mvx/l*sp*k; dy=mvy/l*sp*k; c.moving=true; if(mvx)c.facing=mvx<0?-1:1; c.phase+=0.16; }
   else if(HUB.target){ const tx=HUB.target.x-c.x,ty=HUB.target.y-c.y,d=Math.hypot(tx,ty);
     if(d>sp){ dx=tx/d*sp; dy=ty/d*sp; c.moving=true; if(Math.abs(tx)>1)c.facing=tx<0?-1:1; c.phase+=0.16; } else { c.moving=false; HUB.target=null; } }
   else c.moving=false;
@@ -9627,15 +9750,6 @@ function drawAbyssBoss(){
       for(let i=0;i<16;i++) ab.smallEyes.push({x:cam+(0.04+Math.random()*0.92)*VW, y:VH*(0.10+Math.random()*0.62),
         r:4+Math.random()*7, at:4300+Math.random()*1700, tilt:(Math.random()-0.5)*0.5}); }
     g.save();
-    // tentacle silhouettes rising at the edges (drawn first, then sunk under the dark)
-    if(el>9600 && ABYSS_TENT.complete && ABYSS_TENT.naturalWidth){
-      const fh=ABYSS_TENT.naturalHeight, frames=Math.max(1,Math.round(ABYSS_TENT.naturalWidth/fh)), fw=ABYSS_TENT.naturalWidth/frames;
-      const rise=sm(9600,11200), dh=VH*0.95, dw=dh*fw/fh;
-      [[0.06,1],[0.20,-1],[0.80,1],[0.94,-1]].forEach(([fx,fl],i)=>{
-        const fi=Math.floor(now*0.003+i)%frames;
-        g.save(); g.translate(fx*VW, VH+dh*(1-rise)*0.9); g.rotate(fl*0.12); if(fl<0) g.scale(-1,1);
-        g.drawImage(ABYSS_TENT, fi*fw,0,fw,fh, -dw/2,-dh, dw,dh); g.restore(); });
-    }
     // the dark comes in fast and stays
     g.globalAlpha=Math.min(0.93, 0.25+0.68*sm(0,1600)); g.fillStyle='#03050b'; g.fillRect(0,0,VW,VH); g.globalAlpha=1;
     // bubbles rising through it
@@ -9643,6 +9757,19 @@ function drawAbyssBoss(){
       g.globalAlpha=0.25*(1-k); g.strokeStyle='#9fc7ff'; g.lineWidth=1;
       g.beginPath(); g.arc(bx, VH*(1.05-k*1.1), 2+(i%3), 0, 7); g.stroke(); }
     g.globalAlpha=1;
+    // tentacles rising at the edges — drawn OVER the dark (under it they were all but invisible),
+    // dimmed so they still belong to the deep, with a red rim from the eyes
+    if(el>8700 && ABYSS_TENT.complete && ABYSS_TENT.naturalWidth){
+      const fh=ABYSS_TENT.naturalHeight, frames=Math.max(1,Math.round(ABYSS_TENT.naturalWidth/fh)), fw=ABYSS_TENT.naturalWidth/frames;
+      const rise=sm(8700,10000), dh=VH*1.15, dw=dh*fw/fh;
+      [[0.05,1],[0.19,-1],[0.81,1],[0.95,-1]].forEach(([fx,fl],i)=>{
+        const fi=Math.floor(now*0.003+i)%frames, sway=Math.sin(now*0.0016+i*1.7)*0.05;
+        g.save(); g.translate(fx*VW, VH+dh*(1-rise)*0.9); g.rotate(fl*0.12+sway); if(fl<0) g.scale(-1,1);
+        g.shadowColor='rgba(255,60,30,.75)'; g.shadowBlur=22;
+        g.filter='brightness(0.72) saturate(1.1)';
+        g.drawImage(ABYSS_TENT, fi*fw,0,fw,fh, -dw/2,-dh, dw,dh);
+        g.filter='none'; g.restore(); });
+    }
     // one eye: a slit that opens; `open` 0..1, `heat` how hot it burns
     // the small eyes all over the dark: a glowing slit with a black snake's pupil
     const eye=(ex,ey,R,open,heat,tilt)=>{ if(open<=0.01) return;
@@ -11417,8 +11544,15 @@ function gachaShowStars(rar){
 const GACHA={ cost:10000, busy:false, open:false, caps:[], raf:null, ctx:null, W:360, H:536,
   dome:{cx:178,cy:152,rx:124,ry:107},
   img:(()=>{const i=new Image();i.src='gacha/gacha.png';return i;})(),
+  // the pixel-art machine, when it's there: its glass globe, base, hole and tray sit in other places
+  geo:{ dome:[0.496,0.283,0.345,0.200], base:0.47, hole:[0.485,0.80], tray:0.86 },
   capImg:{ normal:(()=>{const i=new Image();i.src='gacha/cap_normal.png';return i;})(),
            legendary:(()=>{const i=new Image();i.src='gacha/cap_legendary.png';return i;})() } };
+// swap in the pixel-art gacha machine (gacha/gacha_machine.png) as soon as it loads
+{ const m=new Image(); m.onload=()=>{ GACHA.img=m; GACHA.geo={ dome:[0.473,0.244,0.353,0.205], base:0.45, hole:[0.47,0.78], tray:0.83 }; };
+  m.src='gacha/gacha_machine.png';
+  // where the cans may show: the red area of gacha_machine_NEW MASK.png, cut out once as an alpha mask
+  const k=new Image(); k.onload=()=>{ GACHA.globeMask=k; }; k.src='gacha/gacha_globe_mask.png'; }
 function gachaAddCap(type){ const d=GACHA.dome; GACHA.caps.push({x:d.cx+(Math.random()-0.5)*d.rx, y:d.cy-d.ry*0.5+Math.random()*d.ry*0.4, vx:(Math.random()-0.5)*2, vy:0, r:28*(0.92+Math.random()*0.16), type}); }
 function gachaInitCaps(){ GACHA.caps=[]; GACHA.drop=null;
   const nLeg=Math.max(1,Math.min(3,S.legendaryCapsules||0));   // always at least one legendary on display
@@ -11437,7 +11571,7 @@ function gachaStep(){ const d=GACHA.dome, caps=GACHA.caps;
     if(dd<mn){ const ov=(mn-dd)/2, nx=dx/dd, ny=dy/dd; a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
       const vn=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny; if(vn<0){ a.vx+=nx*vn*0.5;a.vy+=ny*vn*0.5;b.vx-=nx*vn*0.5;b.vy-=ny*vn*0.5; } } }
   // dispensed capsule: dome base -> hidden inside -> pops out of the hole into the tray
-  if(GACHA.drop){ const dp=GACHA.drop, now=Date.now(), W=GACHA.W, H=GACHA.H, holeX=0.485*W, base=0.47*H, holeY=0.80*H, trayY=0.86*H;
+  if(GACHA.drop){ const dp=GACHA.drop, now=Date.now(), W=GACHA.W, H=GACHA.H, gg=GACHA.geo, holeX=gg.hole[0]*W, base=gg.base*H, holeY=gg.hole[1]*H, trayY=gg.tray*H;
     if(dp.phase==='enter'){ dp.vy+=0.6; dp.y+=dp.vy; dp.x+=(holeX-dp.x)*0.10;
       if(dp.y>=base){ dp.phase='hidden'; dp.hideAt=now; } }
     else if(dp.phase==='hidden'){ if(now-dp.hideAt>360){ dp.phase='exit'; dp.x=holeX; dp.y=holeY; dp.vy=1.0; } }
@@ -11445,9 +11579,12 @@ function gachaStep(){ const d=GACHA.dome, caps=GACHA.caps;
     if(now-dp.t>2800) GACHA.drop=null;
   }
 }
-function gachaDraw(){ const g2=GACHA.ctx; if(!g2) return; g2.clearRect(0,0,GACHA.W,GACHA.H);
+function gachaDraw(){ let g2=GACHA.ctx; if(!g2) return; g2.clearRect(0,0,GACHA.W,GACHA.H);
   if(GACHA.img.complete&&GACHA.img.naturalWidth) g2.drawImage(GACHA.img,0,0,GACHA.W,GACHA.H);
-  const d=GACHA.dome; g2.save(); g2.beginPath(); g2.ellipse(d.cx,d.cy,d.rx,d.ry,0,0,7); g2.clip();
+  const d=GACHA.dome, M=GACHA.globeMask&&GACHA.globeMask.complete&&GACHA.globeMask.naturalWidth?GACHA.globeMask:null;
+  // with the painted mask: draw the cans on a scratch layer, keep only what falls inside the globe
+  let out=g2; if(M){ GACHA.layer=GACHA.layer||document.createElement('canvas'); const L=GACHA.layer; L.width=GACHA.W; L.height=GACHA.H; g2=L.getContext('2d'); }
+  g2.save(); if(!M){ g2.beginPath(); g2.ellipse(d.cx,d.cy,d.rx,d.ry,0,0,7); g2.clip(); }
   for(const c of GACHA.caps){ const im=GACHA.capImg[c.type];
     if(c.type==='legendary'){ g2.save(); g2.globalAlpha=0.5; g2.shadowColor='#ffd24a'; g2.shadowBlur=12; }
     if(im&&im.complete&&im.naturalWidth){ const s=c.r*2.3; g2.drawImage(im,c.x-s/2,c.y-s/2,s,s); }
@@ -11455,10 +11592,11 @@ function gachaDraw(){ const g2=GACHA.ctx; if(!g2) return; g2.clearRect(0,0,GACHA
     if(c.type==='legendary') g2.restore();
   }
   g2.restore();
+  if(M){ g2.globalCompositeOperation='destination-in'; g2.drawImage(M,0,0,GACHA.W,GACHA.H); g2.globalCompositeOperation='source-over'; out.drawImage(GACHA.layer,0,0); g2=out; }
   // dispensed capsule — visible only entering the dome base and popping out of the hole (hidden inside)
   if(GACHA.drop && GACHA.drop.phase!=='hidden'){ const dp=GACHA.drop, im=GACHA.capImg[dp.type], s=64;
     g2.save();
-    if(dp.phase==='enter'){ g2.globalAlpha=Math.max(0,Math.min(1,(0.47*GACHA.H-dp.y)/40+0.3)); }   // fade as it sinks into the machine
+    if(dp.phase==='enter'){ g2.globalAlpha=Math.max(0,Math.min(1,(GACHA.geo.base*GACHA.H-dp.y)/40+0.3)); }   // fade as it sinks into the machine
     if(dp.type==='legendary'){ g2.shadowColor='#ffd24a'; g2.shadowBlur=14; }
     if(im&&im.complete&&im.naturalWidth) g2.drawImage(im,dp.x-s/2,dp.y-s/2,s,s);
     else { g2.fillStyle=dp.type==='legendary'?'#ffd24a':'#7fd0d0'; g2.beginPath(); g2.arc(dp.x,dp.y,30,0,7); g2.fill(); }
@@ -11467,7 +11605,7 @@ function gachaDraw(){ const g2=GACHA.ctx; if(!g2) return; g2.clearRect(0,0,GACHA
 function gachaLoop(){ if(!GACHA.open) return; gachaStep(); gachaDraw(); GACHA.raf=requestAnimationFrame(gachaLoop); }
 function gachaOpen(){ openModal('gacha'); GACHA.open=true; GACHA.busy=false;
   GACHA.ctx=document.getElementById('gachaCanvas').getContext('2d');
-  GACHA.dome={cx:0.496*GACHA.W, cy:0.283*GACHA.H, rx:0.345*GACHA.W, ry:0.200*GACHA.H};
+  const gd=GACHA.geo.dome; GACHA.dome={cx:gd[0]*GACHA.W, cy:gd[1]*GACHA.H, rx:gd[2]*GACHA.W, ry:gd[3]*GACHA.H};
   gachaInitCaps(); document.getElementById('gachaCard').className='';
   document.getElementById('gachaMsg').textContent='Turn the crank for a surprise!';
   gachaSyncUI(); if(GACHA.raf)cancelAnimationFrame(GACHA.raf); gachaLoop(); }
@@ -11617,15 +11755,15 @@ function mgReset(){
 }
 function mgUpdateObjective(){
   const el=document.getElementById('mergeObjective'); if(!el) return;
-  el.textContent = (MG.objective<MG_FRUITS.length) ? ('Make:'+MG_NAMES[MG.objective]) : 'Watermelon made!';
+  el.textContent = (MG.objective<MG_FRUITS.length) ? ('Make: '+MG_NAMES[MG.objective]) : 'Watermelon made!';
 }
 function mgOpen(){
   const cv=document.getElementById('mergeCanvas'); MG.ctx=cv.getContext('2d');
-  openModal('merge'); mgReset(); MG.active=true;
+  turnPortrait(); openModal('merge'); mgReset(); MG.active=true;
   document.getElementById('mergeBest').textContent=(S.mergeBest||0);
   if(MG.raf)cancelAnimationFrame(MG.raf); mgLoop();
 }
-function mgClose(){ MG.active=false; if(MG.raf)cancelAnimationFrame(MG.raf); MG.raf=null; }
+function mgClose(){ turnLandscape(); MG.active=false; if(MG.raf)cancelAnimationFrame(MG.raf); MG.raf=null; }
 function mgDrop(){
   if(!mgCanDrop()) return;
   const t=MG.cur, r=MG_FRUITS[t].r, x=Math.max(r+2,Math.min(MG.W-r-2,MG.dropX));
@@ -11937,11 +12075,11 @@ function sortLoop(){
 function sortOpen(){
   SORT.ctx=document.getElementById('sortCanvas').getContext('2d');
   SORT.level=Math.min(Math.max(1,S.sortLevel||1),SORT.maxLevel);
-  openModal('sort'); sortGen(SORT.level);
+  turnPortrait(); openModal('sort'); sortGen(SORT.level);
   document.getElementById('sortLevel').textContent=SORT.level;
   SORT.active=true; if(SORT.raf)cancelAnimationFrame(SORT.raf); sortLoop();
 }
-function sortClose(){ SORT.active=false; if(SORT.raf)cancelAnimationFrame(SORT.raf); SORT.raf=null; }
+function sortClose(){ turnLandscape(); SORT.active=false; if(SORT.raf)cancelAnimationFrame(SORT.raf); SORT.raf=null; }
 function sortPointer(e){ const cv=document.getElementById('sortCanvas'), rc=cv.getBoundingClientRect();
   return { x:(e.clientX-rc.left)*(SORT.W/rc.width), y:(e.clientY-rc.top)*(SORT.H/rc.height) }; }
 
@@ -13170,6 +13308,31 @@ bindHold(document.getElementById('dpUp'),()=>input.up=true,()=>input.up=false);
 bindHold(document.getElementById('dpDown'),()=>input.down=true,()=>input.down=false);
 bindHold(document.getElementById('dpLeft'),()=>input.left=true,()=>input.left=false);
 bindHold(document.getElementById('dpRight'),()=>input.right=true,()=>input.right=false);
+// ── analog stick ──
+// Floating: wherever the thumb lands in the zone becomes the centre. Feeds input.jx/jy (-1..1,
+// with a dead zone, full speed well before the rim) for the top-down areas, and the plain
+// left/right/up/down flags for everything that only asks for a direction.
+(function(){
+  const zone=document.getElementById('joyZone'), base=document.getElementById('joyBase'), knob=document.getElementById('joyKnob');
+  if(!zone) return;
+  const R=52, DEAD=0.18, FULL=0.7;
+  let id=null, ox=0, oy=0;
+  const rest=()=>{ const r=zone.getBoundingClientRect(); base.style.left='110px'; base.style.top=(r.height-100)+'px'; };
+  const set=(nx,ny)=>{ const d=Math.hypot(nx,ny), m=d<DEAD?0:Math.min(1,(d-DEAD)/(FULL-DEAD));
+    input.joy=m>0; input.jx=d?nx/d*m:0; input.jy=d?ny/d*m:0;
+    input.left=input.jx<-0.4; input.right=input.jx>0.4; input.up=input.jy<-0.55; input.down=input.jy>0.55; };
+  const end=()=>{ id=null; zone.classList.remove('on'); knob.style.transform=''; input.joy=false; input.jx=input.jy=0;
+    input.left=input.right=input.up=input.down=false; rest(); };
+  zone.addEventListener('pointerdown',e=>{ if(id!==null) return; id=e.pointerId; zone.setPointerCapture(id);
+    const r=zone.getBoundingClientRect(); ox=e.clientX-r.left; oy=e.clientY-r.top;
+    base.style.left=ox+'px'; base.style.top=oy+'px'; zone.classList.add('on'); set(0,0); e.preventDefault(); });
+  zone.addEventListener('pointermove',e=>{ if(e.pointerId!==id) return;
+    const r=zone.getBoundingClientRect(); let dx=e.clientX-r.left-ox, dy=e.clientY-r.top-oy;
+    const d=Math.hypot(dx,dy); if(d>R){ dx=dx/d*R; dy=dy/d*R; }
+    knob.style.transform='translate('+dx+'px,'+dy+'px)'; set(dx/R,dy/R); e.preventDefault(); });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>zone.addEventListener(t,e=>{ if(e.pointerId===id) end(); }));
+  window.addEventListener('resize',rest); rest();
+})();
 document.getElementById('jumpBtn').addEventListener('touchstart',e=>{e.preventDefault();input.jumpQueued=true;},{passive:false});
 document.getElementById('jumpBtn').addEventListener('mousedown',e=>{e.preventDefault();input.jumpQueued=true;});
 document.getElementById('actBtn').addEventListener('click',()=>{ if(inGame){ topdownMode()?hubAttack():playerAttack(); } });
@@ -13554,16 +13717,38 @@ function drawPlaceOverlay(){ if(!A||!A.hub) return; g.save(); g.font='11px monos
 cv.addEventListener('pointerdown',e=>{
   if(!inGame||paused||dialogueActive||battleActive||mapOpen) return;
   if(!A||A.mode!=='topdown') return;
-  const r=cv.getBoundingClientRect(), sx=(e.clientX-r.left)*(VW/r.width), sy=(e.clientY-r.top)*(VH/r.height);
+  const vp=viewPoint(e), sx=vp.x, sy=vp.y;
   if(PLACE_ON){ PLACE_SEL=placePick(sx,sy); PLACE_DRAG=!!PLACE_SEL; placeLog(); return; }
   hubClick(sx,sy);
 });
 cv.addEventListener('pointermove',e=>{ if(!PLACE_ON||!PLACE_DRAG||!PLACE_SEL) return;
-  const r=cv.getBoundingClientRect(), sx=(e.clientX-r.left)*(VW/r.width), sy=(e.clientY-r.top)*(VH/r.height);
+  const vp=viewPoint(e), sx=vp.x, sy=vp.y;
   PLACE_SEL.r[PLACE_SEL.fx]=Math.max(0,Math.min(1,(sx+HUB.camx)/HUB.worldW)); PLACE_SEL.r[PLACE_SEL.fy]=Math.max(0,Math.min(1,sy/VH)); });
 cv.addEventListener('pointerup',()=>{ if(PLACE_DRAG){ placeLog(); placeSave(); } PLACE_DRAG=false; });
 document.getElementById('btnMap').addEventListener('click',openMap);
 document.getElementById('btnGacha').addEventListener('click',gachaOpen);
+// ── Border War: the RTS, in its own page, opened over the game ──
+let WAR_OPEN=false;
+function warOpen(){
+  if(document.getElementById('warFrame')) return; WAR_OPEN=true; stopAllMusic();     // Border War brings its own
+  const f=document.createElement('iframe'); f.id='warFrame'; f.src='rts.html?v=17';
+  f.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:none;z-index:200;background:#0c0f0a;';
+  document.body.appendChild(f); paused=true; try{ f.focus(); }catch(e){}
+  if(typeof SFX!=='undefined'&&SFX.click) SFX.click();
+}
+function stopAllMusic(){ MUSIC.stop(); OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEWER_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); }
+function resumeAreaMusic(){ if(!S.musicOn) return; SFX.ac(); const H=A&&A.hub;
+  if(H&&H.abyssBoss)BOSS_MUSIC.start(); else if(H&&H.mechboar&&HUB.boss&&!HUB.boss.defeated)MECH_MUSIC.start(); else if(H&&H.sebyMusic&&HUB.boss&&!HUB.boss.defeated)SEBY_MUSIC.start();
+  else if(H&&H.catMusic&&HUB.boss&&!HUB.boss.defeated)CAT_MUSIC.start(); else if(H&&H.slumMusic)SLUM_MUSIC.start(); else if(H&&H.sewerChase)SEWER_MUSIC.start();
+  else if(H&&H.underwater)OCEAN_MUSIC.start(); else MUSIC.start(); }
+function warClose(){ const f=document.getElementById('warFrame'); if(f) f.remove(); paused=false; WAR_OPEN=false; resumeAreaMusic(); }
+window.addEventListener('message',e=>{
+  const d=e.data; if(!d||typeof d!=='object') return;
+  if(d.type==='borderwar-close') warClose();
+  if(d.type==='borderwar-result'){ S.coins+=d.coins|0; addXP(d.xp|0); syncHUD(); save();
+    toast(d.win?('Border War won! +'+moneyText(d.coins|0)+'  +'+(d.xp|0)+' XP'):('Border War lost. +'+moneyText(d.coins|0))); }
+});
+document.getElementById('btnWar').addEventListener('click',warOpen);
 document.getElementById('gachaRoll').addEventListener('click',gachaRoll);
 { const _ms=document.getElementById('modeStory'), _mf=document.getElementById('modeFree');
   if(_ms) _ms.addEventListener('click',()=>{ setMode('campaign'); SFX&&SFX.click&&SFX.click();
@@ -13597,6 +13782,11 @@ if(_btn('btnSort')) _btn('btnSort').addEventListener('click',sortOpen);
 document.getElementById('sortUndo').addEventListener('click',sortUndo);
 document.getElementById('sortRestart').addEventListener('click',sortRestart);
 document.getElementById('sortNextBtn').addEventListener('click',sortNext);
+// Enter (or Space) after a solved level goes straight to the next one
+document.addEventListener('keydown',e=>{
+  if(!SORT.active || !SORT.won || typingInField(e)) return;
+  if(e.code==='Enter'||e.code==='NumpadEnter'||e.code==='Space'){ e.preventDefault(); e.stopPropagation(); sortNext(); }
+},true);
 document.getElementById('sortCanvas').addEventListener('pointerdown',e=>{ if(!SORT.active)return; const p=sortPointer(e); sortClickTube(sortHit(p.x,p.y)); e.preventDefault(); });
 // Fossil Dig minigame
 document.getElementById('digCanvas').addEventListener('pointerdown',e=>{ const cv=e.currentTarget, rc=cv.getBoundingClientRect();
@@ -13621,7 +13811,13 @@ document.querySelectorAll('.phone-app').forEach(b=>b.addEventListener('click',()
   if(app==='bank'){ openModal('market'); switchMarketTab('bank'); }
   else if(app==='wallet'){ openModal('market'); switchMarketTab('exchange'); }
   else if(app==='backpack'){ openModal('inventory'); }
+  else if(app==='shop'){ openModal('shop'); }
+  else if(app==='profile'){ openModal('profile'); }
+  else if(app==='settings'){ openModal('settings'); }
 }));
+// the language flags and the story / free-play switch moved off the main menu into Settings
+{ const L=document.getElementById('langPick'), M=document.getElementById('modePick');
+  if(L) document.getElementById('setLang').appendChild(L); if(M) document.getElementById('setMode').appendChild(M); }
 document.querySelectorAll('.mkt-tab').forEach(b=>b.addEventListener('click',()=>switchMarketTab(b.dataset.mtab)));
 // keep the market live: tick prices/interest on a timer, refresh the panel if it's open
 ensureMarket(); tickMarket(); save();   // process any offline price drift / interest on load
@@ -13638,7 +13834,21 @@ setInterval(()=>{ const el=document.getElementById('mktTimer'), m=document.getEl
     if(FISH.phase==='reel'){ const rc=cv.getBoundingClientRect();
       if((e.clientY-rc.top) < rc.height/2) FISH.upHeld=true; else FISH.downHeld=true; }
   });
-  const releaseAll=()=>{ FISH.upHeld=false; FISH.downHeld=false; };
+  // touch screens: two big hold buttons for the reel (a tap on them also casts / hooks)
+  if(IS_TOUCH){
+    document.getElementById('fishPad').classList.add('show');
+    document.getElementById('fishHint').innerHTML='Tap to cast · tap when it bites · hold <b>▲ / ▼</b> to keep the bar on the fish';
+    [['fishUpBtn','upHeld'],['fishDownBtn','downHeld']].forEach(([id,k])=>{
+      const b=document.getElementById(id);
+      b.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); if(!FISH.active) return;
+        if(FISH.phase==='ready'||FISH.phase==='bite'){ fishTap(); return; }
+        if(FISH.phase==='reel'){ FISH[k]=true; b.classList.add('held'); } });
+      const up=()=>{ FISH[k]=false; b.classList.remove('held'); };
+      ['pointerup','pointercancel','pointerleave'].forEach(t=>b.addEventListener(t,up));
+    });
+  }
+  const releaseAll=()=>{ FISH.upHeld=false; FISH.downHeld=false;
+    document.querySelectorAll('#fishPad>div').forEach(b=>b.classList.remove('held')); };
   window.addEventListener('pointerup',releaseAll);
   cv.addEventListener('pointercancel',releaseAll);
   // keyboard: ↑/↓ move the green bar; Space/Enter cast & hook

@@ -16,6 +16,53 @@ PORT  = int(os.environ.get('PORT', '8080'))
 clients = {}          # ws -> {id, name, last}
 _next   = [1]
 
+# ── Border War rooms: two browsers paired by a 4-letter code; the server only passes messages on ──
+import random
+rooms   = {}          # code -> {'host': ws, 'guest': ws or None}
+room_of = {}          # ws -> code
+LETTERS = 'ABCDEFGHJKMNPQRSTUVWXYZ'   # no I, L, O: they read like 1 and 0
+
+def _partner(ws):
+    r = rooms.get(room_of.get(ws, ''))
+    if not r: return None
+    return r['guest'] if r['host'] is ws else r['host']
+
+async def _rts_leave(ws):
+    code = room_of.pop(ws, None)
+    r = rooms.get(code)
+    if not r: return
+    other = r['guest'] if r['host'] is ws else r['host']
+    rooms.pop(code, None)
+    if other is not None:
+        room_of.pop(other, None)
+        try: await other.send(json.dumps({'type': 'rts_left'}))
+        except Exception: pass
+
+async def _rts(ws, m, raw):
+    t = m.get('type')
+    if t == 'rts_host':
+        await _rts_leave(ws)
+        code = ''.join(random.choice(LETTERS) for _ in range(4))
+        while code in rooms: code = ''.join(random.choice(LETTERS) for _ in range(4))
+        rooms[code] = {'host': ws, 'guest': None}; room_of[ws] = code
+        await ws.send(json.dumps({'type': 'rts_room', 'code': code}))
+    elif t == 'rts_join':
+        code = str(m.get('code', '')).upper()[:4]
+        r = rooms.get(code)
+        if not r: await ws.send(json.dumps({'type': 'rts_error', 'msg': 'No game with code ' + code + '.'})); return
+        if r['guest'] is not None: await ws.send(json.dumps({'type': 'rts_error', 'msg': 'That game is already full.'})); return
+        await _rts_leave(ws)
+        r['guest'] = ws; room_of[ws] = code
+        await ws.send(json.dumps({'type': 'rts_joined', 'code': code}))
+        await r['host'].send(json.dumps({'type': 'rts_peer'}))
+    elif t == 'rts_leave':
+        await _rts_leave(ws)
+    elif t == 'rts':
+        other = _partner(ws)
+        if other is not None:
+            try: await other.send(raw)
+            except Exception: pass
+
 async def broadcast(msg, exc=None):
     for ws in list(clients.keys()):
         if ws is exc:
@@ -43,6 +90,8 @@ async def handler(ws):
             if not info:
                 continue
             t = m.get('type')
+            if isinstance(t, str) and t.startswith('rts'):
+                await _rts(ws, m, raw); continue
             if t == 'hello':
                 info['name'] = str(m.get('name', 'Pisic'))[:16]
             elif t == 'state':
@@ -58,6 +107,7 @@ async def handler(ws):
                 if txt.strip():
                     await broadcast(json.dumps({'type': 'chat', 'id': info['id'], 'name': info['name'], 'text': txt}), None)
     finally:
+        await _rts_leave(ws)
         info = clients.pop(ws, None)
         if info:
             await broadcast(json.dumps({'type': 'leave', 'id': info['id']}), ws)

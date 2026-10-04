@@ -2,10 +2,25 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "puiutu-test",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["/Users/andreicraciun/Desktop/claude/preview_server.js", "4567"],
-      "port": 4567
+      "name": "site-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8791",
+        "--directory",
+        "site"
+      ],
+      "port": 8791
+    },
+    {
+      "name": "game-root",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/00d64c4b-5acd-4d5c-9220-b07e51cae57e/scratchpad/www && exec python3 -m http.server 8792"
+      ],
+      "port": 8792
     }
   ]
 }

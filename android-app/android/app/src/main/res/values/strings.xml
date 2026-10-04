@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Life of Puiutu</string>
+    <string name="title_activity_main">Life of Puiutu</string>
+    <string name="package_name">ro.anw.puiutu</string>
+    <string name="custom_url_scheme">ro.anw.puiutu</string>
+</resources>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Border War — Life of Puiutu</title>
+<style>
+  :root{--wood:#6b4a1f;--wood2:#3a2a16;--ink:#ffe7b0;--panel:#1d150c;--panelH:170px;--btn:52px;}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  html,body{width:100%;height:100%;overflow:hidden;background:#0c0f0a;color:var(--ink);font-family:'Trebuchet MS','Segoe UI',sans-serif;}
+  button{font-family:inherit;}
+  #view{position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:none;cursor:default;}
+  #view.target{cursor:crosshair;}
+  /* top bar */
+  #top{position:absolute;left:0;right:0;top:0;height:36px;display:flex;align-items:center;gap:14px;padding:0 10px;
+    background:linear-gradient(rgba(29,21,12,.95),rgba(29,21,12,.75));border-bottom:2px solid var(--wood);z-index:5;font-weight:bold;font-size:14px;}
+  .res{display:flex;align-items:center;gap:6px;}
+  .res i{display:inline-block;width:16px;height:16px;border-radius:50%;}
+  /* resource icons: the game's own pixel art (a fish, a cut log, a cottage) */
+  .res i{border-radius:0 !important;background:center/contain no-repeat;image-rendering:auto;}
+  #rFish i{width:30px;height:18px;background-image:url(rts/art/res_fish.png);}
+  #rWood i{width:22px;height:20px;background-image:url(rts/art/res_wood.png);}
+  #rSup i{width:20px;height:20px;background-image:url(rts/art/cottage.png);}
+  #rSup.full{color:#ff8a7a;}
+  #clock{margin-left:auto;opacity:.85;font-variant-numeric:tabular-nums;}
+  .tbtn{background:rgba(20,14,8,.7);border:2px solid var(--wood);border-radius:9px;color:var(--ink);font-weight:bold;font-size:12px;padding:4px 9px;cursor:pointer;}
+  .tbtn:active{transform:scale(.95);}
+  #quick{display:flex;gap:6px;}
+  /* bottom panel */
+  #panel{position:absolute;left:0;right:0;bottom:0;height:var(--panelH);display:flex;gap:8px;padding:8px;z-index:5;
+    background:linear-gradient(#2a1d10,#160f08);border-top:3px solid var(--wood);}
+  #miniWrap{flex:none;height:100%;aspect-ratio:1;border:2px solid var(--wood);border-radius:6px;overflow:hidden;background:#000;}
+  #mini{width:100%;height:100%;display:block;touch-action:none;cursor:pointer;}
+  #info{flex:1;min-width:0;border:2px solid var(--wood2);border-radius:8px;background:rgba(0,0,0,.25);padding:8px;display:flex;gap:10px;overflow:hidden;}
+  #card{flex:none;display:grid;grid-template-columns:repeat(4,var(--btn));grid-template-rows:repeat(3,var(--btn));gap:4px;align-content:center;}
+  .cb{position:relative;width:var(--btn);height:var(--btn);border:2px solid var(--wood);border-radius:8px;background:#2a1f12;overflow:hidden;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;}
+  .cb.empty{border-color:rgba(107,74,31,.3);background:rgba(0,0,0,.2);cursor:default;}
+  .cb img,.cb svg{max-width:84%;max-height:84%;object-fit:contain;pointer-events:none;}
+  .cb .k{position:absolute;left:3px;top:1px;font-size:10px;font-weight:bold;color:#ffe7b0;text-shadow:0 1px 2px #000;}
+  .cb .n{position:absolute;right:3px;bottom:1px;font-size:10px;font-weight:bold;color:#fff;text-shadow:0 1px 2px #000;}
+  .cb.off{filter:grayscale(.85) brightness(.6);}
+  .cb.active{border-color:#7dff7d;box-shadow:0 0 8px #7dff7d inset;}
+  .cb .cd{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);}
+  .cb:not(.empty):hover{border-color:#c8862a;}
+  .cb:not(.empty):active{transform:scale(.94);}
+  /* info panel parts */
+  .port{flex:none;width:96px;height:96px;border:2px solid var(--wood);border-radius:8px;background:radial-gradient(#3a4a2a,#1a2210);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .port img{max-width:92%;max-height:92%;}
+  .stats{min-width:0;font-size:13px;line-height:1.45;}
+  .stats h3{font-size:16px;margin-bottom:2px;}
+  .stats .sub{opacity:.7;font-size:12px;}
+  .bar{height:8px;border-radius:4px;background:#000;overflow:hidden;margin:3px 0;width:170px;max-width:100%;}
+  .bar b{display:block;height:100%;}
+  .grid{display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;}
+  .mini{width:40px;height:40px;border:2px solid var(--wood);border-radius:6px;background:#22301a;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .mini img{max-width:88%;max-height:88%;}
+  .mini .hp{position:absolute;left:2px;right:2px;bottom:2px;height:3px;background:#000;}
+  .mini .hp b{display:block;height:100%;}
+  /* the hero's bag: three big slots in the free space on the right of the info panel */
+  .bag{margin-left:auto;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding-left:10px;}
+  .bag .lbl{font-size:11px;opacity:.7;letter-spacing:.5px;}
+  .bag .slots{display:flex;gap:8px;}
+  .bag .slot{width:64px;height:64px;margin:0;}
+  .bag .slot img{max-width:54px !important;max-height:54px !important;}
+  .bag .slot{position:relative;} .bag .slot.usable{border-color:#7dff7d;cursor:pointer;}
+  .bag .slot .use{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:9px;color:#9cff9c;text-shadow:0 1px 2px #000;}
+  .slot{width:34px;height:34px;border:2px solid var(--wood);border-radius:6px;background:#2a1f12;display:inline-flex;align-items:center;justify-content:center;margin-right:3px;cursor:pointer;vertical-align:middle;}
+  .slot i{width:18px;height:14px;border-radius:3px;display:block;}
+  .queue{display:flex;gap:4px;margin-top:6px;}
+  /* messages + tooltip */
+  #msgs{position:absolute;left:12px;bottom:calc(var(--panelH) + 10px);z-index:6;pointer-events:none;font-size:14px;font-weight:bold;text-shadow:0 2px 3px #000,0 0 4px #000;}
+  #msgs div{margin-top:3px;transition:opacity .5s;}
+  #tip{position:absolute;right:10px;bottom:calc(var(--panelH) + 8px);z-index:7;max-width:300px;display:none;background:rgba(20,14,8,.96);border:2px solid var(--wood);border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.4;}
+  #tip b{color:#ffd36b;}
+  #tip .c{margin-top:3px;font-weight:bold;}
+  .ci{height:14px;vertical-align:-2px;margin:0 2px 0 1px;}
+  #hint{position:absolute;left:50%;top:44px;transform:translateX(-50%);z-index:6;display:none;background:rgba(20,14,8,.85);border:2px solid var(--wood);border-radius:10px;padding:5px 14px;font-size:13px;font-weight:bold;}
+  /* overlays */
+  .ov{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(8,6,3,.82);backdrop-filter:blur(3px);}
+  .ov.show{display:flex;}
+  .box{background:linear-gradient(#2a1d10,#1a1108);border:3px solid var(--wood);border-radius:16px;padding:20px 24px;max-width:min(760px,94vw);max-height:94vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.6);}
+  .box h1{font-size:32px;letter-spacing:1px;margin-bottom:2px;}
+  .box h2{font-size:18px;margin:14px 0 8px;color:#ffd36b;}
+  .box p{opacity:.85;font-size:14px;line-height:1.5;}
+  .choices{display:flex;gap:10px;flex-wrap:wrap;}
+  .ch{flex:1;min-width:110px;border:2px solid var(--wood);border-radius:12px;background:rgba(0,0,0,.25);padding:10px;cursor:pointer;text-align:center;font-weight:bold;}
+  .ch.on{border-color:#ffd36b;background:rgba(255,211,107,.12);box-shadow:0 0 12px rgba(255,211,107,.25);}
+  .ch img{height:64px;display:block;margin:0 auto 6px;}
+  .ch small{display:block;font-weight:normal;opacity:.75;font-size:12px;margin-top:3px;}
+  .big{margin-top:18px;width:100%;font-size:20px;font-weight:bold;padding:12px;border-radius:12px;border:2px solid #3a6f1c;color:#fff;background:linear-gradient(#7ed957,#4d9a2a);cursor:pointer;}
+  .big.alt{background:linear-gradient(#8a6a3a,#5a3a1a);border-color:var(--wood);}
+  .row{display:flex;gap:10px;}
+  .row .big{flex:1;}
+  .keys{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:13px;margin-top:6px;}
+  .keys b{color:#ffd36b;}
+  /* phones held sideways */
+  @media (max-height:520px){
+    :root{--panelH:118px;--btn:34px;}
+    #top{height:30px;font-size:12px;gap:9px;}
+    .tbtn{font-size:11px;padding:3px 7px;}
+    #panel{padding:5px;gap:5px;}
+    #card{gap:3px;grid-template-columns:repeat(4,var(--btn));}
+    .port{width:64px;height:64px;}
+    .stats{font-size:11px;line-height:1.35;} .stats h3{font-size:13px;}
+    .bar{width:120px;}
+    .mini{width:30px;height:30px;}
+    .bag .slot{width:40px;height:40px;} .bag .slot img{max-width:34px !important;max-height:34px !important;}
+    #info{padding:5px;gap:6px;}
+    .box{padding:14px 16px;} .box h1{font-size:24px;} .ch img{height:44px;} .big{font-size:16px;padding:8px;margin-top:12px;}
+    #msgs{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="top">
+  <div class="res" id="rFish"><i></i><span>0</span></div>
+  <div class="res" id="rWood"><i></i><span>0</span></div>
+  <div class="res" id="rSup"><i></i><span>0/0</span></div>
+  <div id="quick">
+    <button class="tbtn" id="qHero" title="Select hero (F1)">Hero</button>
+    <button class="tbtn" id="qArmy" title="Select army (F2)">Army</button>
+    <button class="tbtn" id="qIdle" title="Idle worker (F3)">Idle</button>
+  </div>
+  <div id="clock">0:00</div>
+  <button class="tbtn" id="qMusic" title="Music on/off">Music</button>
+  <button class="tbtn" id="qMenu" title="Menu (F10)">Menu</button>
+</div>
+
+<div id="hint"></div>
+<div id="msgs"></div>
+<div id="tip"></div>
+
+<div id="panel">
+  <div id="miniWrap"><canvas id="mini" width="200" height="200"></canvas></div>
+  <div id="info"></div>
+  <div id="card"></div>
+</div>
+
+<!-- start -->
+<div class="ov show" id="startOv"><div class="box">
+  <h1>Border War</h1>
+  <p>The border woods, a few fishing ponds, and two armies who both think they own them. Build a base, raise an army and a hero, and drive the other side off the map.</p>
+  <h2>Your side</h2>
+  <div class="choices" id="facPick">
+    <div class="ch on" data-v="cats"><img src="army/frames/cat_commander_walk0.png?v=2" alt="">The Feline Union<small>Cats: sturdy soldiers, hairball slingers, royal lions</small></div>
+    <div class="ch" data-v="rats"><img src="army/frames/rat_commander_walk0.png?v=2" alt="">The Rat Federation<small>Rats: cheap and fast, banana bandits, Seby's crayfish</small></div>
+  </div>
+  <h2>Play with a friend</h2>
+  <div id="mpBox">
+    <div class="row" style="align-items:center;flex-wrap:wrap;">
+      <button class="tbtn" id="hostBtn" style="font-size:14px;padding:8px 14px;">Host a game</button>
+      <input id="codeIn" maxlength="4" placeholder="CODE" style="width:90px;font:bold 16px Trebuchet MS;text-transform:uppercase;padding:7px 10px;border-radius:9px;border:2px solid #6b4a1f;background:#1a1108;color:#ffe7b0;text-align:center;letter-spacing:3px;">
+      <button class="tbtn" id="joinBtn" style="font-size:14px;padding:8px 14px;">Join</button>
+      <button class="tbtn" id="soloBtn" style="font-size:14px;padding:8px 14px;display:none;">Back to playing the AI</button>
+    </div>
+    <p id="mpStatus" style="margin-top:6px;font-size:13px;"></p>
+  </div>
+  <h2 class="soloOnly">Opponent</h2>
+  <div class="choices soloOnly" id="lvlPick">
+    <div class="ch" data-v="easy">Easy<small>Takes it slow</small></div>
+    <div class="ch on" data-v="normal">Normal<small>A fair fight</small></div>
+    <div class="ch" data-v="hard">Hard<small>Gathers faster, attacks sooner</small></div>
+  </div>
+  <div class="choices soloOnly" id="stylePick" style="margin-top:8px;">
+    <div class="ch on" data-v="random">Surprise me<small>A random personality</small></div>
+    <div class="ch" data-v="rusher">Rusher<small>Early pressure</small></div>
+    <div class="ch" data-v="boomer">Boomer<small>Expands, big late army</small></div>
+    <div class="ch" data-v="turtle">Turtle<small>Towers and heavy units</small></div>
+  </div>
+  <h2>Map</h2>
+  <div class="choices" id="sizePick">
+    <div class="ch" data-v="64">Small<small>Quick games</small></div>
+    <div class="ch on" data-v="80">Medium<small>Room to expand</small></div>
+    <div class="ch" data-v="96">Large<small>Long evenings</small></div>
+  </div>
+  <p id="record" style="margin-top:10px;font-size:13px;"></p>
+  <button class="big" id="startBtn">Start</button>
+  <div class="row"><button class="big alt" id="helpBtn" style="margin-top:8px;">How to play</button><button class="big alt" id="backBtn" style="margin-top:8px;display:none;">Back to Puiutu Land</button></div>
+</div></div>
+
+<!-- help -->
+<div class="ov" id="helpOv"><div class="box">
+  <h1>How to play</h1>
+  <p>Workers gather <b>fish</b> (from the ponds) and <b>wood</b> (from the trees) and bring it to your town hall. Spend it on buildings, units, upgrades and your hero. Houses give supply. Neutral camps guard the expansions: kill them for fish, hero experience and items. The Pig Exchange in the middle hires mercenaries to anyone who brings a unit close. Destroy every enemy building to win.</p>
+  <h2>Mouse &amp; keyboard</h2>
+  <div class="keys">
+    <b>Left click / drag</b><span>select / box-select (Shift adds, double-click selects all of a type)</span>
+    <b>Right click</b><span>move, attack, gather, or set a rally point</span>
+    <b>A then click</b><span>attack-move: fight everything on the way</span>
+    <b>S / H</b><span>stop / hold position</span>
+    <b>B</b><span>build menu (worker selected)</span>
+    <b>Q W R</b><span>hero abilities; in buildings, train units</span>
+    <b>Ctrl+1…9, 1…9</b><span>make / select control groups (twice to jump there)</span>
+    <b>F1 F2 F3</b><span>hero, whole army, next idle worker</span>
+    <b>Space</b><span>jump to the last alert</span>
+    <b>Arrows, screen edge, middle drag</b><span>move the camera; wheel zooms</span>
+    <b>F10 / Esc</b><span>menu (Esc also cancels)</span>
+  </div>
+  <h2>Touch</h2>
+  <div class="keys">
+    <b>Tap</b><span>select your unit, or order the selected ones (move / attack / gather)</span>
+    <b>Drag</b><span>move the camera; two fingers zoom</span>
+    <b>Hold, then drag</b><span>box-select</span>
+    <b>Hero / Army / Idle</b><span>quick selection buttons at the top</span>
+  </div>
+  <button class="big" id="helpClose">Got it</button>
+</div></div>
+
+<!-- pause -->
+<div class="ov" id="pauseOv"><div class="box" style="min-width:280px;">
+  <h1>Paused</h1>
+  <h2>Game speed</h2>
+  <div class="choices" id="speedPick">
+    <div class="ch" data-v="0.75">Slow</div><div class="ch on" data-v="1">Normal</div><div class="ch" data-v="1.4">Fast</div>
+  </div>
+  <button class="big" id="resumeBtn">Resume</button>
+  <button class="big alt" id="helpBtn2" style="margin-top:8px;">How to play</button>
+  <div class="row"><button class="big alt" id="surrenderBtn">Surrender</button><button class="big alt" id="quitBtn">Quit</button></div>
+</div></div>
+
+<!-- end -->
+<div class="ov" id="endOv"><div class="box" style="min-width:300px;">
+  <h1 id="endTitle">Victory</h1>
+  <p id="endText"></p>
+  <div class="keys" id="endStats"></div>
+  <div class="row"><button class="big" id="againBtn">Play again</button><button class="big alt" id="quitBtn2">Back</button></div>
+</div></div>
+
+<script src="rts/data.js?v=17"></script>
+<script src="rts/map.js?v=17"></script>
+<script src="rts/core.js?v=17"></script>
+<script src="rts/ai.js?v=17"></script>
+<script src="rts/render.js?v=17"></script>
+<script src="rts/ui.js?v=17"></script>
+<script src="rts/net.js?v=17"></script>
+<script src="rts/music.js?v=17"></script>
+<script src="rts/main.js?v=17"></script>
+</body>
+</html>

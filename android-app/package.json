@@ -1,0 +1,16 @@
+{
+  "name": "puiutu-android",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Life of Puiutu packaged as an Android app (Capacitor)",
+  "scripts": {
+    "www": "sh sync_www.sh",
+    "apk": "sh build_apk.sh"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/screen-orientation": "^8.0.2"
+  }
+}
