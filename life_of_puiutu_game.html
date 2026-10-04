@@ -14,6 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="Puiutu">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  button,input,select,textarea{font-family:inherit;}
   html,body{height:100%;}
   body{
     background:#1a1410;
@@ -228,7 +229,7 @@
   #faintScreen.show .dsBar{animation:dsBar 3s ease forwards;}
   @keyframes dsBar{0%{transform:translateY(-50%) scaleX(0);opacity:0;}
     20%{transform:translateY(-50%) scaleX(1);opacity:1;}80%{opacity:1;}100%{opacity:0;}}
-  #faintScreen .dsText{position:relative;color:#c0241c;font-family:Georgia,'Times New Roman',serif;
+  #faintScreen .dsText{position:relative;color:#c0241c;font-family:'Trebuchet MS','Segoe UI',sans-serif;
     font-weight:bold;font-style:italic;font-size:min(58px,9vw);letter-spacing:.18em;
     text-shadow:0 0 18px rgba(180,0,0,.55),0 2px 4px #000;
     transform:scale(.82);opacity:0;white-space:nowrap;}
@@ -267,9 +268,8 @@
   #mapModal{position:absolute;inset:0;z-index:55;display:none;align-items:center;justify-content:center;
     background:rgba(10,8,5,.72);backdrop-filter:blur(3px);}
   #mapModal.show{display:flex;}
-  .map-img-wrap{position:relative;width:94%;max-width:560px;}
-  #mapImg{width:100%;display:block;border:5px solid #6b4a1f;border-radius:12px;
-    box-shadow:0 18px 44px rgba(0,0,0,.55);}
+  .map-img-wrap{position:relative;width:94%;max-width:880px;}
+  #mapImg{width:100%;display:block;filter:drop-shadow(0 14px 28px rgba(0,0,0,.55));}   /* the parchment's own torn edge is the frame */
   .hot{position:absolute;border:none;background:transparent;cursor:pointer;padding:0;
     display:flex;align-items:center;justify-content:center;transition:background .2s, filter .2s;}
   .hot::after{content:attr(data-label);color:#fff;font-weight:900;font-size:13px;letter-spacing:.3px;
@@ -282,10 +282,19 @@
     animation:hotPulse 1.6s ease-in-out infinite;}
   .hot.here::after{opacity:1;color:#cfe9ff;}
   @keyframes hotPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.45)}}
-  .hot.locked{cursor:not-allowed;}
-  .hot.locked::after{opacity:1;color:#e0cda3;}
-  .hot.locked:hover{background:radial-gradient(ellipse at center, rgba(0,0,0,.3), rgba(0,0,0,0) 62%);}
-  .map-close{position:absolute;top:-15px;right:-15px;width:38px;height:38px;border-radius:50%;
+  /* places you have not found yet sit under fog: greyed, blurred, nameless */
+  .hot.locked{cursor:not-allowed;
+    background:radial-gradient(ellipse at center, rgba(214,212,220,.94) 0%, rgba(200,198,208,.84) 55%, rgba(190,188,198,0) 88%);
+    -webkit-backdrop-filter:blur(7px) grayscale(1); backdrop-filter:blur(7px) grayscale(1);
+    -webkit-mask-image:radial-gradient(ellipse at center, #000 62%, transparent 92%);
+    mask-image:radial-gradient(ellipse at center, #000 62%, transparent 92%);
+    transform:scale(1.18);
+    animation:fogDrift 7s ease-in-out infinite;}
+  @keyframes fogDrift{0%,100%{opacity:.92}50%{opacity:1}}
+  .hot.locked::after{opacity:.85;color:#5e5a66;font-size:15px;text-shadow:0 0 6px rgba(255,255,255,.7);}
+  .hot.locked:hover{background:radial-gradient(ellipse at center, rgba(214,212,220,.9) 0%, rgba(196,194,204,.7) 42%, rgba(190,188,198,0) 72%);}
+  .map-close:empty::before{content:'\00D7';font-size:24px;line-height:1;}
+  .map-close{position:absolute;top:-15px;right:-15px;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;
     background:#b5453a;border:3px solid #fff;color:#fff;font-weight:bold;cursor:pointer;font-size:16px;
     box-shadow:0 4px 10px rgba(0,0,0,.4);}
 
@@ -394,11 +403,31 @@
   .dlg-choice.lean-rat{border-color:#a83a2b;box-shadow:0 3px 0 #a83a2b;}
   .dlg-choice.lean-cat{border-color:#35659c;box-shadow:0 3px 0 #35659c;}
   .dlg-choice.lean-third{border-color:#a97c1e;box-shadow:0 3px 0 #a97c1e;}
+  /* during a scripted scene the touch controls step out of the shot */
+  body.cinema #dpad, body.cinema #jumpCtrl, body.cinema #actCtrl, body.cinema #interactBtn, body.cinema #spellBar,
+  body.cinema #padLeft, body.cinema #padRight, body.cinema #questHUD, body.cinema #fightBtn, body.cinema #interactPrompt{display:none !important;}
+  /* ---------- outro: white on black, no music ---------- */
+  #outroScreen{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;
+    justify-content:center;background:#000;padding:0 28px;overflow-y:auto;}
+  #outroScreen.show{display:flex;}
+  #outroLines{font-family:'Trebuchet MS','Segoe UI',sans-serif;color:#f2f0ea;font-size:clamp(15px,3vw,21px);
+    line-height:1.85;text-align:center;max-width:28em;}
+  #outroLines div{opacity:0;transition:opacity 1.4s ease;min-height:1.85em;}
+  #outroLines div.in{opacity:1;}
+  #outroLines div.last{color:#d9ae52;font-style:italic;margin-top:.7em;font-size:1.1em;}
+  #outroCredits{margin-top:2.6em;opacity:0;transition:opacity 1.6s;text-align:center;font-family:'Trebuchet MS','Segoe UI',sans-serif;
+    color:#8c887e;letter-spacing:.14em;font-size:13px;text-transform:uppercase;}
+  #outroCredits b{display:block;color:#e8e6e1;font-size:24px;letter-spacing:.04em;text-transform:none;margin-bottom:.35em;}
+  #outroCredits.in{opacity:1;}
+  #outroBtn{margin-top:1.8em;opacity:0;pointer-events:none;transition:opacity 1.2s;background:none;cursor:pointer;
+    border:1px solid #6a6862;color:#e8e6e1;font-family:'Trebuchet MS',sans-serif;font-size:13px;letter-spacing:.16em;
+    text-transform:uppercase;padding:10px 22px;border-radius:8px;}
+  #outroBtn.in{opacity:1;pointer-events:auto;}
   /* ---------- intro ---------- */
   #introScreen{position:absolute;inset:0;z-index:60;display:none;flex-direction:column;
     align-items:center;justify-content:center;background:#0b0c0e;padding:0 28px;cursor:pointer;}
   #introScreen.show{display:flex;}
-  #introText{font-family:Georgia,'Iowan Old Style',serif;color:#e8e6e1;font-size:clamp(17px,3.6vw,24px);
+  #introText{font-family:'Trebuchet MS','Segoe UI',sans-serif;color:#e8e6e1;font-size:clamp(17px,3.6vw,24px);
     line-height:1.6;text-align:center;max-width:24em;opacity:0;transition:opacity .7s ease;}
   #introText.in{opacity:1;}
   #introText .accent{color:#d9ae52;}
@@ -984,14 +1013,28 @@
 
   <!-- ============ INTRO (first run only) ============ -->
   <div id="introScreen"><div id="introText"></div><div id="introSkip">tap to continue</div></div>
+  <div id="outroScreen"><div id="outroLines"></div>
+    <div id="outroCredits"><b>Life of Puiutu</b>Made by ANW</div>
+    <button id="outroBtn">Continue</button></div>
 
   <!-- ============ FAST-TRAVEL MAP ============ -->
   <div id="mapModal">
     <div class="map-img-wrap">
-      <img id="mapImg" src="maps/map.png" alt="Puiutu Land">
-      <button class="hot" data-go="street" style="left:3%;top:7%;width:46%;height:48%;"></button>
-      <button class="hot" data-go="house"  style="left:73%;top:18%;width:25%;height:42%;"></button>
-      <button class="hot" data-go="garden" style="left:27%;top:50%;width:50%;height:46%;"></button>
+      <img id="mapImg" src="maps/worldmap.png" alt="Puiutu Land">
+      <button class="hot" data-go="ocean1" style="left:1.3%;top:3.9%;width:11.7%;height:18.6%;"></button>
+      <button class="hot" data-go="library" style="left:28.6%;top:2.0%;width:10.4%;height:12.7%;"></button>
+      <button class="hot" data-go="beach" style="left:3.9%;top:33.2%;width:15.0%;height:10.7%;"></button>
+      <button class="hot" data-go="ocean2" style="left:2.6%;top:45.9%;width:19.5%;height:17.6%;"></button>
+      <button class="hot" data-go="abyssboss" style="left:2.6%;top:63.5%;width:22.8%;height:25.4%;"></button>
+      <button class="hot" data-go="cave" style="left:21.5%;top:37.1%;width:11.7%;height:13.7%;"></button>
+      <button class="hot" data-go="garden" style="left:34.5%;top:41.0%;width:26.7%;height:27.3%;"></button>
+      <button class="hot" data-go="street" style="left:52.1%;top:30.4%;width:27.3%;height:24.9%;"></button>
+      <button class="hot" data-go="bank" style="left:58.6%;top:24.4%;width:12.4%;height:13.7%;"></button>
+      <button class="hot" data-go="castleentrance" style="left:77.5%;top:9.8%;width:16.3%;height:17.6%;"></button>
+      <button class="hot" data-go="slum" style="left:63.8%;top:60.5%;width:20.8%;height:21.5%;"></button>
+      <button class="hot" data-go="slum2" style="left:84.0%;top:38.1%;width:13.7%;height:19.5%;"></button>
+      <button class="hot" data-go="ratking" style="left:87.2%;top:57.6%;width:10.4%;height:16.6%;"></button>
+      <button class="hot" data-go="sewerentrance" style="left:85.3%;top:76.2%;width:7.8%;height:11.7%;"></button>
       <button class="map-close" id="mapClose"></button>
     </div>
   </div>
@@ -1877,7 +1920,7 @@ function drawHat(ctx,type,x,y,bob){
     ctx.fillStyle='#e53';ctx.beginPath();ctx.arc(0,-15,2.5,0,7);ctx.fill();
   }else if(type==='wizard'){
     ctx.fillStyle='#5a3d96';ctx.beginPath();ctx.moveTo(-15,-9);ctx.lineTo(15,-9);ctx.lineTo(3,-42);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#ffd86b';ctx.font='12px serif';ctx.fillText('',-6,-20);
+    ctx.fillStyle='#ffd86b';ctx.font='12px Trebuchet MS';ctx.fillText('',-6,-20);
     ctx.fillStyle='#cdbcf0';ctx.fillRect(-16,-11,32,5);
   }else if(type==='bow'){
     ctx.fillStyle='#ff5d8f';
@@ -2313,7 +2356,7 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     const lvColor=lv>=10?'#dd88ff':lv>=8?'#ff6666':lv>=6?'#ffcc44':lv>=4?'#88ccff':'#ffffff';
     const labelY=sy-h-(opt.moving?Math.abs(Math.sin((opt.phase||0)*Math.PI*2))*3:0)-6;
     ctx.save();
-    ctx.font=`bold ${lv10?12:11}px Arial`;
+    ctx.font=`bold ${lv10?12:11}px Trebuchet MS`;
     ctx.textAlign='center';
     // shadow text
     ctx.fillStyle='rgba(0,0,0,0.7)';
@@ -2321,7 +2364,7 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     ctx.fillStyle=lvColor;
     ctx.fillText(`Pigeon  Lv.${lv}`,sx,labelY);
     if(lv10){
-      ctx.font='bold 9px Arial';
+      ctx.font='bold 9px Trebuchet MS';
       ctx.fillStyle='#dd88ff';
       ctx.fillText('LEGENDARY',sx,labelY-13);
     }
@@ -2332,14 +2375,14 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     const lv=opt.clobsterLevel, lv10=lv===10, lvColor=levelTierColor(lv);
     const labelY=sy-h-(opt.moving?Math.abs(Math.sin((opt.phase||0)*Math.PI*2))*3:0)-6;
     ctx.save();
-    ctx.font=`bold ${lv10?12:11}px Arial`;
+    ctx.font=`bold ${lv10?12:11}px Trebuchet MS`;
     ctx.textAlign='center';
     ctx.fillStyle='rgba(0,0,0,0.7)';
     ctx.fillText(`Crystal Lobster  Lv.${lv}`,sx+1,labelY+1);
     ctx.fillStyle=lvColor;
     ctx.fillText(`Crystal Lobster  Lv.${lv}`,sx,labelY);
     if(lv10){
-      ctx.font='bold 9px Arial'; ctx.fillStyle='#dd88ff';
+      ctx.font='bold 9px Trebuchet MS'; ctx.fillStyle='#dd88ff';
       ctx.fillText('LEGENDARY',sx,labelY-13);
     }
     ctx.restore();
@@ -2804,6 +2847,14 @@ function buildAreas(){
         scaleFar:0.74, scaleNear:1.04,
         spawn:{xf:0.50, yf:0.93},                 // descend onto the temple floor
         eyes:[{xf:0.484, yf:0.352},{xf:0.535, yf:0.365}],   // the 2 big main eyes — lasers fire from these
+        // every other eye painted into abyssboss.png, in the order they open during the intro
+        // (around the big two first, then outward, then the pillar on the left); s = cut size / image height
+        wakeEyes:[{xf:0.464, yf:0.352, s:0.05}, {xf:0.553, yf:0.355, s:0.05},
+                  {xf:0.489, yf:0.282, s:0.05}, {xf:0.530, yf:0.284, s:0.05},
+                  {xf:0.438, yf:0.434, s:0.065}, {xf:0.572, yf:0.449, s:0.06},
+                  {xf:0.430, yf:0.484, s:0.07}, {xf:0.582, yf:0.479, s:0.05},
+                  {xf:0.157, yf:0.211, s:0.11}, {xf:0.099, yf:0.203, s:0.09}, {xf:0.132, yf:0.270, s:0.08},
+                  {xf:0.172, yf:0.279, s:0.08}, {xf:0.150, yf:0.355, s:0.12}, {xf:0.154, yf:0.106, s:0.08}],
         eyeXf:0.50, eyeYf:0.35,                   // fallback origin
         coreXf:0.50, coreYf:0.78,                 // the core descends to floor level when exposed (reachable)
         tentY:0.82,                               // the band the tentacles rise from (on the floor)
@@ -2925,7 +2976,7 @@ function buildAreas(){
                // glows. The castle is simply not a place you can get to, and the game never brings
                // it up. The line about "the castle sends for you" belongs to a guard you can walk
                // up to and ask — not to an empty patch of cobbles you happened to cross.
-               {xf:0.300, yf:0.870, r:74, glowXf:0.300, glowYf:0.800, glowR:54, glowRGB:'190,170,255',
+               {xf:0.2875, yf:0.738, r:74, glowXf:0.2915, glowYf:0.7074, glowR:54, glowRGB:'190,170,255',
                 to:'castleentrance', label:'Board the airship', icon:'', toSpawn:{xf:0.170, yf:0.720},
                 requires:'castleSummons'}],
       },
@@ -2981,7 +3032,7 @@ function buildAreas(){
         // back down the alley -> the Slums
         doors:[{xf:0.1311, yf:0.8375, r:72, glowXf:0.1291, glowYf:0.7364, glowR:52, glowRGB:'255,210,120', to:'slum', label:'Back to the Slums', icon:'', toSpawn:{xf:0.78, yf:0.62}},
                // the bone-arch gateway -> the Rat Warren mines (mine-cart escape minigame)
-               {xf:0.665, yf:0.78, r:80, glowXf:0.695, glowYf:0.62, glowR:60, glowRGB:'255,170,80', minigame:'minecart', label:'Into the mines…', icon:''}],
+               {xf:0.665, yf:0.78, r:80, glowXf:0.7033, glowYf:0.7011, glowR:60, glowRGB:'255,170,80', minigame:'minecart', label:'Into the mines…', icon:''}],
       },
       platforms:[], npcs:[],
     },
@@ -2999,7 +3050,7 @@ function buildAreas(){
         boss:{xf:0.700, yf:0.820},
         throne:{xf:0.700, yf:0.820},             // the bone throne on the right — he waits on it
         // the bone arch -> back to the Rat Warren (slum2)
-        doors:[{xf:0.055, yf:0.80, r:78, glowXf:0.075, glowYf:0.52, glowR:56, glowRGB:'255,170,80', to:'slum2', label:'Back through the mines', icon:'', toSpawn:{xf:0.60, yf:0.82}}],
+        doors:[{xf:0.055, yf:0.80, r:78, glowXf:0.058, glowYf:0.7354, glowR:56, glowRGB:'255,170,80', to:'slum2', label:'Back through the mines', icon:'', toSpawn:{xf:0.60, yf:0.82}}],
       },
       platforms:[], npcs:[],
     },
@@ -3011,12 +3062,12 @@ function buildAreas(){
       hub:{
         img:'maps/finalarena.jpeg', mask:'maps/finalarena_map.png', maskWalk:'red',
         walkTop:0.57, walkBot:0.99, scaleFar:0.72, scaleNear:1.06,
-        spawn:{xf:0.880, yf:0.930},              // step off the freight lift (right)
+        spawn:{xf:0.8038, yf:0.7593},            // step off the freight lift (right)
         warn:'Concrete, rust, and the crystals from the cave — caged and wired into the walls.',
         mechboar:true,
         boss:{xf:0.497, yf:0.745},               // standing in the purple circle in the middle of the floor
         spirit:{xf:0.680, yf:0.800},             // where the Glow comes up through the floor
-        doors:[{xf:0.880, yf:0.940, r:70, glowXf:0.835, glowYf:0.700, glowR:62, glowRGB:'255,170,80',
+        doors:[{xf:0.8042, yf:0.7387, r:70, glowXf:0.835, glowYf:0.700, glowR:62, glowRGB:'255,170,80',
                 to:'bank', label:'Back up the lift', icon:'', toSpawn:{xf:0.62, yf:0.95}}],
       },
       platforms:[], npcs:[],
@@ -3085,7 +3136,7 @@ function buildAreas(){
         // it is exactly what it appears to be — the room where the fish are kept. The lift beside
         // it is the one that matters, and it is the most boring object in the building.
         doors:[{xf:0.50, yf:0.965, r:80, glowXf:0.505, glowYf:0.905, glowR:54, glowRGB:'255,210,120', to:'street', label:'Leave the Bank', icon:'', toSpawn:{xf:0.498, yf:0.70}},
-               {xf:0.654, yf:0.900, r:78, glowXf:0.654, glowYf:0.520, glowR:52, glowRGB:'200,190,255',
+               {xf:0.6606, yf:0.8267, r:78, glowXf:0.6604, glowYf:0.6649, glowR:52, glowRGB:'200,190,255',
                 to:'organization', label:'Secret Lift', icon:'', sigil:'ring',
                 requires:'orgAccess'}],   // silent while closed: in the shut bank there is no lift there to refuse you
         // when `orgAccess` flips, the pigs are gone and so is the counter service
@@ -3117,7 +3168,7 @@ function buildAreas(){
         decor:[{img:'props/aeronava.png', xf:0.140, yf:0.760, zf:0.500, h:460, bob:9}],
         // left, back down the mast -> the City; right, the great door -> the throne hall
         doors:[{xf:0.160, yf:0.720, r:72, glowXf:0.120, glowYf:0.690, glowR:56, glowRGB:'255,210,120', to:'street', label:'Board the airship down', icon:'', toSpawn:{xf:0.250, yf:0.860}},
-               {xf:0.752, yf:0.845, r:82, glowXf:0.807, glowYf:0.579, glowR:60, glowRGB:'255,200,90', to:'throneroom', label:'The Great Door', icon:'', sigil:'paw', toSpawn:{xf:0.060, yf:0.880}}],
+               {xf:0.752, yf:0.845, r:82, glowXf:0.8117, glowYf:0.5998, glowR:60, glowRGB:'255,200,90', to:'throneroom', label:'The Great Door', icon:'', sigil:'paw', toSpawn:{xf:0.060, yf:0.880}}],
       },
       platforms:[], npcs:[],
     },
@@ -4047,7 +4098,7 @@ function doInteract(){
           'Something violet went in there. A crystal, cut, about the size of your head.',
           'Those do not grow in water. They grow in caves.',
           'You have walked past a cave.'
-        ], {icon:'', bg:'#1d2416', tone:300, then:()=>storySet('runes')});
+        ], {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300, then:()=>storySet('runes')});
         return;
       }
       sealOpen();
@@ -6622,6 +6673,7 @@ function enterHub(fromRight){
   // Queen Seby — the top-down boss (only the sebyboss arena defines hub.boss)
   HUB.shards=[]; HUB.crystals=[];   // clear every hub so her crystal barrier never bleeds onto other maps
   HUB.spirit=null; HUB.spores=[]; HUB.carry=false; HUB.ride=null; HUB.hangar=null; HUB.cut=null; HUB.flashAt=0; HUB.nearSewerExit=false;
+  HUB.crowd=null; HUB.square=false;
   if(H.boss){
     let bx=H.boss.xf*HUB.worldW, by=H.boss.yf*VH;
     if(maskReady()){ const p=nearestWalk(bx,by); if(p){bx=p.x;by=p.y;} }
@@ -6697,6 +6749,7 @@ function enterHub(fromRight){
   else if(H.underwater) OCEAN_MUSIC.start();
   else if(S.musicOn) MUSIC.start();
   HUB.inited=true;
+  if(SQUARE_PENDING && curArea==='street'){ SQUARE_PENDING=false; runSquareScene(); }   // the true ending
 }
 // boss wave: raise a ring of tentacles (more each phase); head invulnerable until all are cut down
 function abyssNextWave(now, phase){
@@ -6918,7 +6971,7 @@ function drawSewer(){
     const gr=g.createRadialGradient(lx,ly-18,3,lx,ly-18,48); gr.addColorStop(0,'rgba(255,210,90,'+(0.55*pr)+')'); gr.addColorStop(1,'rgba(255,210,90,0)');
     g.fillStyle=gr; g.beginPath(); g.arc(lx,ly-18,48,0,7); g.fill();
     const im=LOOT_IMG[l.img]; if(im&&im.complete&&im.naturalWidth){ const h=46, w=im.naturalWidth/im.naturalHeight*h; g.imageSmoothingEnabled=true; g.drawImage(im, lx-w/2, ly-h, w, h); }
-    else { g.textAlign='center'; g.font='22px serif'; g.fillText('',lx,ly+2); }
+    else { g.textAlign='center'; g.font='22px Trebuchet MS'; g.fillText('',lx,ly+2); }
     g.restore(); }
   // darkness everywhere except a light circle around Puiutu — lifts (map lights up) once the Coon is cleared
   const darkA = SEWER.mode==='cleared' ? Math.max(0, 1-(now-(SEWER.clearedAt||now))/1500) : 1;
@@ -7523,6 +7576,240 @@ const COON_SFX={
       g.gain.setValueAtTime(0.05,t); g.gain.exponentialRampToValueAtTime(0.0001,t+1.1); o.connect(g); g.connect(dst); o.start(t); o.stop(t+1.2); });
     const n=this.noise(c,0.5), g=c.createGain(); g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.45); n.connect(g); g.connect(dst); n.start(t); },
 };
+//──────── THE OUTRO — what happens after the Hangar ────────────────────────────────────────
+// Not a victory. The machine is down and the Glow is gone, and then the world goes on: a few
+// short scenes of what each path actually changed, and the screen from the lore doc — white on
+// black, no music. The true path ends on the one line in the game spoken to the player. The
+// two pledged paths and the half-way one each end by pointing, quietly, at what was missed.
+const OUTRO_SOLDIER=(k)=>()=>ARMY_SPR[k]&&ARMY_SPR[k].walk[0];
+const OUTRO_GARDEN={img:'maps/new park 2.jpg', fx:0.32, fy:0.43, zoom:1.4, tint:'rgba(10,14,30,.35)',
+                    lines:['In the garden, the mushroom did not answer.']};
+const OUTRO_RATKING={img:'maps/ratkingroom.png', fx:0.70, fy:0.78, zoom:1.25, tint:'rgba(10,6,4,.25)',
+                     actors:[{img:()=>RKINGI.sit, xf:0.70, yf:0.82, h:0.20}]};
+const OUTRO_CATKING={img:'maps/throneroom_catking.png', fx:0.70, fy:0.80, zoom:1.2, tint:'rgba(20,12,4,.2)',
+                     actors:[{img:()=>CKINGI.sit, xf:0.70, yf:0.845, h:0.14}]};
+const OUTROS={
+  third:{
+    vign:[
+      {black:true, lines:['Puiutu took the three papers up the lift.']},
+      {img:'maps/city_final.png', fx:0.50, fy:0.42, zoom:1.25, tint:'rgba(20,12,4,.15)',
+       actors:[{img:OUTRO_SOLDIER('cat_soldier'), xf:0.468, yf:0.62, h:0.13},
+               {img:OUTRO_SOLDIER('rat_soldier'), xf:0.535, yf:0.62, h:0.11}],
+       lines:['He nailed them to the town hall door.','By noon, soldiers from both armies were reading them, side by side.']},
+      Object.assign({lines:['Rattus Magnus read them. Then he had them burned.']}, OUTRO_RATKING),
+      Object.assign({lines:['The Cat King read them twice, and asked who else had seen them.']}, OUTRO_CATKING),
+      {img:'maps/bankinterioropen.png', fx:0.50, fy:0.75, zoom:1.15, lines:['The bank opened on Monday, as it always does.']},
+      OUTRO_GARDEN,
+    ],
+    final:['Rattus Magnus still rules Rattania.','The Cat King still issues resolutions.','The Organization still finances both sides.','',
+           'But seven rats refused their orders.','Three cats resigned from the Council.','Twelve animals from the Grey Zone began to speak.','',
+           'Puiutu did not save the world.','He showed that it can be saved.','*What will you do with that?'],
+  },
+  union:{
+    vign:[
+      {black:true, lines:['The Union found the hangar a day later.']},
+      {img:'maps/city_final.png', fx:0.50, fy:0.42, zoom:1.25, tint:'rgba(20,12,4,.15)',
+       actors:[0.44,0.48,0.52,0.56].map(x=>({img:OUTRO_SOLDIER('cat_soldier'), xf:x, yf:0.63, h:0.13})),
+       lines:['The Feline Union called it a victory.','They gave Puiutu a medal, and his name to a street.']},
+      Object.assign({lines:['In the Warren, they counted their dead, and blamed the cats.']}, OUTRO_RATKING),
+      {bank:true, lines:['The Organization signed the reconstruction contracts.','Both of them.']},
+      OUTRO_GARDEN,
+    ],
+    final:['The Feline Union won the war under the bank.','Rattus Magnus still rules Rattania.','The Organization still finances both sides.','',
+           'Somewhere, a young rat is being told what a cat did today.','The war needed a hero. It found one.','',
+           "Puiutu fought someone else's war.",'*There was another way. You walked past it.'],
+  },
+  federation:{
+    vign:[
+      {black:true, lines:['The Federation found the hangar a day later.']},
+      {img:'maps/slum2.png', fx:0.45, fy:0.75, zoom:1.25, tint:'rgba(20,10,4,.2)',
+       actors:[0.40,0.45,0.50].map(x=>({img:OUTRO_SOLDIER('rat_soldier'), xf:x, yf:0.86, h:0.11, flip:true})),
+       lines:['The Rat Federation called it liberation.',"They printed Puiutu's face on a poster."]},
+      Object.assign({lines:['In the castle, the Cat King declared a day of mourning — and a new tax.']}, OUTRO_CATKING),
+      {bank:true, lines:['The Organization signed the reconstruction contracts.','Both of them.']},
+      OUTRO_GARDEN,
+    ],
+    final:['The Rat Federation won the war under the bank.','The Cat King still issues resolutions.','The Organization still finances both sides.','',
+           'Somewhere, a kitten is being told what a cat did for the rats today.','The war needed a hero. It found one.','',
+           "Puiutu fought someone else's war.",'*There was another way. You walked past it.'],
+  },
+  unproven:{
+    vign:[
+      {black:true, lines:['Puiutu came up the lift with nothing in his paws.']},
+      {img:'maps/city_final.png', fx:0.50, fy:0.42, zoom:1.25, tint:'rgba(20,12,4,.15)',
+       lines:['He told the square what was under the bank.','Nobody had proof. Nobody listened for long.']},
+      {bank:true, lines:['The Organization sent flowers to both sides.','Same florist.']},
+      OUTRO_GARDEN,
+    ],
+    final:['Rattus Magnus still rules Rattania.','The Cat King still issues resolutions.','The Organization still finances both sides.','',
+           'Refusing to choose was the right start.','It was not enough on its own.','',
+           '*The proof was out there. You were close.'],
+  },
+};
+// Beating the Mech Boar IS the true ending: you only reach the Hangar once you have the proof,
+// so the square always plays. The other three remain in OUTROS (watch them with !ending).
+function startOutro(force){
+  const path=force||'third', O=OUTROS[path];
+  if(path==='third'){ startSquareEnding(); return; }       // the true ending is played out, not shown
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
+  HUB.outro=path;
+  const steps=[{ms:1200}];
+  for(const v of O.vign){
+    const cut = v.black ? {img:'', fx:0.5, fy:0.5} : v.bank ? bankCut(null) : {img:v.img, fx:v.fx, fy:v.fy, zoom:v.zoom, tint:v.tint, actors:v.actors};
+    steps.push({cut, ms:700, do:()=>{ HUB.cine.sub=null;                                 // a low, sad chord under each one
+      SFX.pad&&[146.83,174.61,220].forEach((f,i)=>SFX.pad(f, 4.5, i?0.012:0.02, 0, 'sine')); }});
+    for(const line of v.lines) steps.push({ms:Math.max(2600, line.length*70), do:()=>{ HUB.cine.sub={text:line, t0:Date.now(), col:'#e8e2d4'}; }});
+    steps.push({ms:600, do:()=>{ HUB.cine.sub=null; }});
+  }
+  steps.push({ms:10, do:()=>showOutroScreen(O.final)});
+  if(S.cineSeen) delete S.cineSeen.outro;                                                 // the outro always plays
+  cineStart('outro', steps);
+}
+// the last screen: white on black, no music, one line at a time
+function showOutroScreen(lines){
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
+  const el=document.getElementById('outroScreen'), box=document.getElementById('outroLines'),
+        cr=document.getElementById('outroCredits'), btn=document.getElementById('outroBtn');
+  box.innerHTML=''; cr.classList.remove('in'); btn.classList.remove('in');
+  el.classList.add('show');
+  let t=1400;
+  for(const raw of lines){
+    const d=document.createElement('div'), last=raw.startsWith('*');
+    d.textContent=last?raw.slice(1):raw; if(last) d.className='last'; box.appendChild(d);
+    if(raw){ setTimeout(()=>d.classList.add('in'), t); t+=last?3400:2500; } else t+=1300;
+  }
+  setTimeout(()=>cr.classList.add('in'), t+1400);
+  setTimeout(()=>btn.classList.add('in'), t+3200);
+  btn.onclick=()=>{ el.classList.remove('show'); HUB.outro=null; HUB.cine=null; HUB.square=false; HUB.crowd=null;
+    document.body.classList.remove('cinema'); enterArea('garden',false); };
+}
+// ── The true ending: the square ──────────────────────────────────────────────────────────────
+// The whole city comes out. The Union on the left — the Cat King, Tomy, Lucian, NomNom, ranks of
+// soldiers, commanders, an emissary — and the Federation on the right, Rattus Magnus at its head.
+// Agent Snout watches from the bank steps. Puiutu walks out between them to the fountain and says
+// nothing at all: he lays the three papers on its rim, and the people who know what they are
+// looking at say so. Both kings answer in the same words. Then one soldier on each side steps out.
+const NPC_IMG=k=>decorImg('npcs/sprite_'+k+'.png');
+const SQ_FACE={ tomy:()=>NPC_IMG('tomy'), lucian:()=>NPC_IMG('lucian'), nomnom:()=>NPC_IMG('nomnom') };
+function squareSetup(){
+  const W=HUB.worldW, crowd=[];
+  const now=Date.now();
+  const add=(o)=>{ const a=Object.assign({x:o.xf*W, y:o.yf*VH, alpha:1, phase:Math.random()*6, ph0:Math.random()*6,
+      delay:Math.random()*320, idleAt:now+800+Math.random()*3000}, o);
+    a.home={x:a.x, y:a.y}; a.baseFacing=a.facing; crowd.push(a); return a; };
+  // true sizes, as they stand elsewhere in the game: cats as the city's garrison draws them,
+  // rats as the war draws them (smaller, scrappier). h overrides it where a row needs it.
+  const TRUE_H={cat_soldier:92, cat_commander:109, cat_emissary:92, rat_soldier:62, rat_commander:75, rat_emissary:98};
+  const unit=(k,xf,yf,facing,h)=>{ const n=ARMY_NATIVE[k]||1, rat=k.startsWith('rat');
+    return add({img:()=>ARMY_SPR[k]&&ARMY_SPR[k].walk[0], frames:()=>ARMY_SPR[k]&&ARMY_SPR[k].walk, xf, yf, facing, native:n,
+                rat, h:h||TRUE_H[k]}); };
+  // Laid out in three rows so nobody is drawn over anybody, and off the houses and lamps:
+  // back row the tall ones (kings by the fountain), middle row only the short ones (their heads
+  // stay below the back row's feet), front row the two who will step out. Mirrored about the fountain.
+  const X=px=>px/2324;                                      // positions were measured on the 2324-wide plaza
+  // the Union, left
+  unit('cat_soldier',X(688),0.735,1); unit('cat_commander',X(830),0.735,1,125);      // commanders a little larger than their men
+  add({img:()=>CKINGI.stand, xf:X(992), yf:0.735, facing:1, native:1, h:131, still:true});
+  unit('cat_emissary',X(718),0.835,1,70);
+  add({img:SQ_FACE.lucian, xf:X(830), yf:0.835, facing:1, native:1, h:66, still:true});
+  add({img:SQ_FACE.tomy,   xf:X(885), yf:0.835, facing:1, native:1, h:66, still:true});
+  add({img:SQ_FACE.nomnom, xf:X(940), yf:0.835, facing:1, native:1, h:68, still:true});
+  HUB.sqCat=unit('cat_soldier',X(1012),0.935,1);                              // the one who steps out
+  // the Federation, right
+  add({img:()=>RKINGI.risen, xf:X(1367), yf:0.735, facing:-1, native:1, h:140, still:true});
+  unit('rat_commander',X(1568),0.735,-1,88); unit('rat_soldier',X(1728),0.735,-1);
+  unit('rat_emissary',X(1372),0.835,-1,70); unit('rat_soldier',X(1500),0.835,-1); unit('rat_soldier',X(1615),0.835,-1);
+  unit('rat_soldier',X(1482),0.935,-1);
+  HUB.sqRat=unit('rat_soldier',X(1352),0.935,-1);
+  // and on the bank steps, the only one not on either side
+  HUB.sqSnout=add({img:()=>ARMY_SPR.pig_agent.walk[0], frames:()=>ARMY_SPR.pig_agent.walk, xf:0.545, yf:0.655, facing:-1, native:1, h:95, still:true});
+  HUB.crowd=crowd;
+}
+function updateCrowd(){
+  const now=Date.now();
+  for(const a of (HUB.crowd||[])){
+    // nobody stands like a cut-out: soldiers shuffle a step and back, rats fidget and glance about
+    if(!a.scripted && !a.to && !a.still && a.frames && now>a.idleAt){
+      if(Math.random() < (a.rat?0.55:0.7)){ const r=a.rat?34:22;
+        a.to={x:a.home.x+(Math.random()-0.5)*r, y:a.home.y+(Math.random()-0.5)*8}; a.speed=a.rat?1.7:0.8; }
+      else a.lookUntil=now+(a.rat?350:700)+Math.random()*500;
+      a.idleAt=now+(a.rat?700:1800)+Math.random()*(a.rat?1500:3200);
+    }
+    if(a.to){ const dx=a.to.x-a.x, dy=a.to.y-a.y, d=Math.hypot(dx,dy);
+      if(d>2){ a.x+=dx/d*(a.speed||1.4); a.y+=dy/d*(a.speed||1.4); a.moving=true; a.phase+=0.2; if(Math.abs(dx)>1) a.facing=dx<0?-1:1; }
+      else { a.moving=false; a.to=null; if(!a.scripted) a.facing=a.baseFacing; if(a.fadeOut) a.gone=true; } }
+    if(a.fadeOut && a.to==null) a.alpha=Math.max(0,a.alpha-0.04);
+  }
+}
+function drawCrowdActor(g,a){
+  if(a.gone && a.alpha<=0) return;
+  const fr=a.frames&&a.frames(), im=(a.moving&&fr&&fr.length) ? fr[Math.floor(a.phase)%fr.length] : a.img();
+  if(!(im&&im.complete&&im.naturalWidth)) return;
+  const now=Date.now(), sc=hubScale(a.y), h=a.h*sc, w=im.naturalWidth/im.naturalHeight*h, sx=a.x-HUB.camx;
+  const C=HUB.cine, md=C&&C.murmurAt ? now-C.murmurAt-a.delay : -1;
+  const hop = (md>0&&md<380) ? Math.sin(md/380*Math.PI)*(a.rat?9:6)*sc : 0;                  // the crowd starts at the paper
+  const twitch = a.rat && !a.moving && Math.sin(now*0.013+a.ph0*7)>0.96 ? 1.5*sc : 0;      // rats never quite stand still
+  const breathe = 1+0.022*Math.sin(now*0.0032+a.ph0);
+  const face = (a.lookUntil && now<a.lookUntil) ? -a.baseFacing : a.facing;
+  g.save(); g.globalAlpha=a.alpha;
+  g.globalAlpha*=0.22; g.fillStyle='#000'; g.beginPath(); g.ellipse(sx,a.y,w*0.32,h*0.07,0,0,7); g.fill(); g.globalAlpha=a.alpha;
+  g.translate(sx, a.y-hop-twitch-(a.moving?Math.abs(Math.sin(a.phase*0.5))*2:0)); if(face!==a.native) g.scale(-1,1);
+  g.scale(1, breathe);
+  g.drawImage(im,-w/2,-h,w,h); g.restore();
+}
+// an evidence paper, held up large: parchment, a wax seal, its name and what it shows
+function drawEvidenceCard(id,t0){
+  const e=EVIDENCE[id]; if(!e) return; const now=Date.now(), a=Math.min(1,(now-t0)/450);
+  const w=Math.min(VW*0.62,540), h=176, x=VW/2-w/2, y=VH*0.30-h/2+(1-a)*14;
+  g.save(); g.globalAlpha=a;
+  g.shadowColor='rgba(0,0,0,.6)'; g.shadowBlur=24; g.fillStyle='#e9dcb8'; roundRectPath(x,y,w,h,6); g.fill(); g.shadowBlur=0;
+  g.strokeStyle='#8a7350'; g.lineWidth=2; roundRectPath(x+8,y+8,w-16,h-16,4); g.stroke();
+  g.fillStyle='#8b1a1a'; g.beginPath(); g.arc(x+w-46,y+h-44,22,0,7); g.fill();                         // wax seal
+  g.fillStyle='rgba(255,210,190,.35)'; g.beginPath(); g.arc(x+w-50,y+h-48,7,0,7); g.fill();
+  g.textAlign='center'; g.fillStyle='#6a5638'; g.font='bold 12px Trebuchet MS'; g.fillText('EVIDENCE', VW/2, y+34);
+  g.fillStyle='#2a2116'; g.font='bold 25px Trebuchet MS'; g.fillText(e.name, VW/2, y+76);
+  g.fillStyle='#3e3222'; g.font='italic 17px Trebuchet MS'; g.fillText('“'+e.note+'”', VW/2, y+118);
+  g.restore();
+}
+// entering the city rebuilds it (and clears any scene), so the scene starts once it is built
+let SQUARE_PENDING=false;
+function startSquareEnding(){ SQUARE_PENDING=true; enterArea('street',false); }
+function runSquareScene(){
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
+  HUB.square=true; HUB.outro='third';
+  const C=()=>HUB.cine, sub=(t)=>{ C().sub = t ? {text:t, t0:Date.now(), col:'#ece6d8'} : null; },
+        card=(id)=>{ C().card = id ? {id, t0:Date.now()} : null; if(id) C().murmurAt=Date.now()+250;   // a ripple through both crowds
+                     SFX.tone&&SFX.tone(id?880:0.01,0.06,'triangle',0.03); },
+        chord=(fs)=>fs.forEach((f,i)=>SFX.pad&&SFX.pad(f,5,i?0.012:0.02,0,'sine'));
+  const W=()=>HUB.worldW;
+  const steps=[
+    {ms:1400, do:()=>{ squareSetup(); C().noBars=true; C().subY=0.15;   // Puiutu at the foot of the shot; words go above the crowd
+      const c=HUB.cat; c.x=0.505*W(); c.y=1.08*VH; C().pin={x:c.x,y:c.y}; chord([146.83,174.61,220]); }},   // below the shot
+    {cam:()=>0.505*W(), ms:2600, do:()=>sub('The whole city came to the square.')},
+    {ms:3000, do:()=>sub('The Union on one side. The Federation on the other.')},
+    {walk:[[0.505,0.958]], do:()=>sub(null)},
+    {ms:3400, do:()=>sub('Puiutu said nothing. He laid three papers on the rim of the fountain.')},
+    {ms:4200, do:()=>{ sub(null); card('archive'); }},
+    {say:{name:'Tomy', img:SQ_FACE.tomy, bg:'#2a3340', tone:520, lines:['That is our crest.','…and theirs. It is the same crest.']}},
+    {ms:4200, do:()=>card('contracts')},
+    {say:{name:'Lucian', img:SQ_FACE.lucian, bg:'#1e2128', tone:300, lines:['Those are bank seals.','I have signed papers like these. I never read them either.']}},
+    {ms:4200, do:()=>card('ledger')},
+    {say:{name:'NomNom', img:SQ_FACE.nomnom, bg:'#3a2a10', tone:440, lines:['I know that mark.','I have melted it off a hundred blades. From both sides.']}},
+    {ms:900, do:()=>card(null)},
+    {say:{name:'The Cat King', img:CINE_FACE.catking, bg:'#3a2a10', tone:360, lines:['Lies. Who paid you to say this?']}},
+    {say:{name:'Rattus Magnus', img:CINE_FACE.ratking, bg:'#2a1210', tone:150, lines:['Lies. Who paid you to say this?']}},
+    {ms:3300, do:()=>{ sub('They said it at the same moment, in the same words.'); C().murmurAt=Date.now(); }},
+    {ms:3600, do:()=>{ sub('On the bank steps, someone was already leaving.');
+      const s=HUB.sqSnout; s.scripted=true; s.to={x:0.505*W(), y:0.625*VH}; s.speed=0.9; s.fadeOut=true; }},
+    {ms:900, do:()=>sub(null)},
+    {ms:3800, do:()=>{ const r=HUB.sqRat; r.scripted=true; r.to={x:0.565*W(), y:0.965*VH}; r.speed=0.8; sub('A rat soldier stepped out of the line, and put down his spear.'); }},
+    {ms:3800, do:()=>{ const k=HUB.sqCat; k.scripted=true; k.to={x:0.448*W(), y:0.965*VH}; k.speed=0.8; sub('Then a cat did the same.'); chord([146.83,185,220,293.66]); }},
+    {ms:2800, do:()=>{ sub(null); C().fadeAt=Date.now(); }},
+    {ms:10, do:()=>showOutroScreen(OUTROS.third.final)},
+  ];
+  if(S.cineSeen) delete S.cineSeen.square;
+  cineStart('square', steps);
+}
 //──────── BOSS OPENINGS — short scripted scenes before a fight ─────────────────────────────
 // Each boss gets a moment before it starts: the camera finds it, it speaks, and — for the three
 // that someone is paying for — the scene cuts to the pigs, who are always one room away making
@@ -7533,6 +7820,7 @@ const COON_SFX={
 const CUT_IMG={};
 function cineStart(id, steps){
   if(!freeMode() && (S.cineSeen||{})[id]) return false;
+  document.body.classList.add('cinema');                   // touch controls out of the shot
   HUB.cine={id, steps, i:-1, t0:0, camX:null, cut:null, pin:null, flashAt:0, said:false};
   cineNext(Date.now()); return true;
 }
@@ -7541,7 +7829,7 @@ function cineNext(now){
   C.i++; C.t0=now; C.said=false;
   const st=C.steps[C.i];
   if(!st){                                           // the scene is over: hand the room back
-    HUB.cine=null; HUB._camEase=true;
+    HUB.cine=null; HUB._camEase=true; document.body.classList.remove('cinema');
     S.cineSeen=S.cineSeen||{}; S.cineSeen[C.id]=true; save();
     return;
   }
@@ -7555,6 +7843,16 @@ function updateCine(now){
   const C=HUB.cine; if(!C) return;
   const c=HUB.cat;
   if(!C.pin) C.pin={x:c.x, y:c.y};
+  if(HUB.crowd) updateCrowd();
+  { const st=C.steps[C.i];
+    if(st && st.walk){                                      // the cat walks a path, then the scene goes on
+      if(!C.path) C.path=st.walk.map(([xf,yf])=>({x:xf*HUB.worldW, y:yf*VH}));
+      const p=C.path[0];
+      if(p){ const dx=p.x-C.pin.x, dy=p.y-C.pin.y, d=Math.hypot(dx,dy);
+        if(d<3) C.path.shift(); else { C.pin.x+=dx/d*2.6; C.pin.y+=dy/d*2.6; if(Math.abs(dx)>0.5) c.facing=dx<0?-1:1; } }
+      c.x=C.pin.x; c.y=C.pin.y; c.moving=true; c.phase+=0.16; HUB.target=null;
+      if(!C.path.length){ C.path=null; c.moving=false; cineNext(now); }
+      return; } }
   // the kings only take their thrones on the fight's first update — seat them for the scene
   const b=HUB.boss;
   if(b && (b.ck||b.rk) && !b.placed && HUB.worldW>0){
@@ -7580,14 +7878,18 @@ function drawCine(){
       gr.addColorStop(0,'rgba(255,40,25,.95)'); gr.addColorStop(1,'rgba(255,20,10,0)'); g.fillStyle=gr; g.beginPath(); g.arc(ex,ey,22,0,7); g.fill();
       g.fillStyle='rgba(255,210,190,.9)'; g.beginPath(); g.ellipse(ex,ey,3,2,0,0,7); g.fill(); }
     g.restore(); }
+  if(C && C.card) drawEvidenceCard(C.card.id, C.card.t0);
   if(C && C.sub){ const t=now-C.sub.t0, a=Math.min(1,t/500);
-    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='italic 22px Georgia'; g.fillStyle=C.sub.col||'#ccc';
-    g.shadowColor='#000'; g.shadowBlur=10; const j=C.sub.shake?(Math.random()-0.5)*3:0;
-    g.fillText(C.sub.text, VW/2+j, VH*0.80+j); g.restore(); }
+    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='italic 22px Trebuchet MS';
+    const j=C.sub.shake?(Math.random()-0.5)*3:0, y=VH*(C.subY||0.80), tw=g.measureText(C.sub.text).width;
+    g.fillStyle='rgba(0,0,0,.62)'; roundRectPath(VW/2-tw/2-20, y-27, tw+40, 40, 10); g.fill();               // legible over anything
+    g.fillStyle=C.sub.col||'#ccc'; g.shadowColor='#000'; g.shadowBlur=10;
+    g.fillText(C.sub.text, VW/2+j, y+j); g.restore(); }
   if(C && C.title){ const t=now-C.title.t0, a=Math.min(1,t/350)*(Math.random()<0.08?0.35:1);   // it flickers like a bad bulb
-    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='bold 34px Georgia'; g.fillStyle='#e9e2d6';
+    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='bold 34px Trebuchet MS'; g.fillStyle='#e9e2d6';
     g.shadowColor='#5a0000'; g.shadowBlur=18; g.fillText(C.title.text, VW/2+(Math.random()-0.5)*2, VH*0.46); g.restore(); }
-  if(C){ g.save(); g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.08); g.fillRect(0,VH*0.92,VW,VH*0.08); g.restore(); }
+  if(C && !C.noBars){ g.save(); g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.08); g.fillRect(0,VH*0.92,VW,VH*0.08); g.restore(); }
+  if(C && C.fadeAt){ g.save(); g.fillStyle='rgba(0,0,0,'+Math.min(1,(now-C.fadeAt)/1600)+')'; g.fillRect(0,0,VW,VH); g.restore(); }
   const fl=C ? C.flashAt : HUB.cineFlashAt;
   if(fl && now-fl<500){ g.save(); g.fillStyle='rgba(0,0,0,'+(1-(now-fl)/500)+')'; g.fillRect(0,0,VW,VH); g.restore(); }   // cut back: from black
 }
@@ -7615,7 +7917,7 @@ function drawCut(cut){
   }
   g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.09); g.fillRect(0,VH*0.91,VW,VH*0.09);
   if(cut.caption && t<5200){ g.globalAlpha=Math.min(1,t/600)*Math.min(1,(5200-t)/800);
-    g.font='italic 17px Georgia'; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=6;
+    g.font='italic 17px Trebuchet MS'; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=6;
     g.fillStyle='#efe6cc'; g.fillText(cut.caption, VW/2, VH*0.09+30); g.shadowBlur=0; g.globalAlpha=1; }
   if(t<600){ g.fillStyle='rgba(0,0,0,'+(1-t/600)+')'; g.fillRect(0,0,VW,VH); }
   g.restore();
@@ -7750,21 +8052,21 @@ function updateHangarIntro(b,now){
   }
   if(H.pin){ c.x=H.pin.x; c.y=H.pin.y; c.moving=false; HUB.target=null; }   // the cat watches; no walking off
   if(H.phase==='order'){
-    if(now-H.t0>1100){ H.phase='run'; H.t0=now; ag.dest={x:0.30*HUB.worldW, y:0.615*VH};
+    if(now-H.t0>1100){ H.phase='run'; H.t0=now; ag.dest={x:-300, y:ag.y}; H.camFx=ag.x;   // straight off the left edge; the camera stays put
       toast('Agent Snout scurries off behind the cradle, ledger under his arm.'); }
     return;
   }
-  if(H.phase==='run'){                               // the long way round, behind the machine
+  if(H.phase==='run'){                               // he bolts off to the far left
     const dx=ag.dest.x-ag.x, dy=ag.dest.y-ag.y, d=Math.hypot(dx,dy);
-    if(d>8){ ag.x+=dx/d*5.5; ag.y+=dy/d*5.5; ag.moving=true; ag.phase+=0.3; if(Math.abs(dx)>2) ag.facing=dx<0?-1:1; }
-    else { ag.moving=false; ag.alpha=Math.max(0,(ag.alpha==null?1:ag.alpha)-0.06); if(!ag.alpha) ag.gone=true; }
-    if(now-H.t0>2800){ H.phase='cut'; H.t0=now; HUB.cut={t0:now, said:false, transformAt:0}; ag.gone=true; }
+    if(d>8){ ag.x+=dx/d*7; ag.y+=dy/d*7; ag.moving=true; ag.phase+=0.3; if(Math.abs(dx)>2) ag.facing=dx<0?-1:1; }
+    if(ag.x < HUB.camx-150){ ag.moving=false; ag.gone=true; }   // out of frame — gone, never seen to vanish
+    if((ag.gone && now-H.t0>1200) || now-H.t0>12000){ H.phase='cut'; H.t0=now; HUB.cut={t0:now, said:false, transformAt:0}; ag.gone=true; }
     return;
   }
   if(H.phase==='cut'){
     const cut=HUB.cut, t=now-cut.t0;
     if(!cut.said && t>1800 && !sayActive && !choiceActive){ cut.said=true;   // never start over another open dialogue
-      sayLines('The Glow', GLOW_SENSE, {img:GLOW_IMG.naturalWidth?GLOW_IMG:null, icon:'', bg:'#1d2416', tone:300,
+      sayLines('The Glow', GLOW_SENSE, {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300,
         then:()=>{ cut.transformAt=Date.now(); SFX.seq&&SFX.seq([196,262,330,392,523],'triangle',0.06); }}); }
     if(cut.transformAt && now-cut.transformAt>3000){  // the white-out ends in the hangar
       HUB.cut=null; HUB.flashAt=now; H.phase='arrive'; H.t0=now;
@@ -7841,7 +8143,7 @@ function drawGlowCutscene(){
   g.globalCompositeOperation='source-over';
   g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.09); g.fillRect(0,VH*0.91,VW,VH*0.09);   // letterbox
   if(t<5000){ g.globalAlpha=Math.min(1,t/600)*Math.min(1,(5000-t)/800);
-    g.font='italic 17px Georgia'; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=6;
+    g.font='italic 17px Trebuchet MS'; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=6;
     g.fillStyle='#efe6cc'; g.fillText('Meanwhile, in the garden…', VW/2, VH*0.09+30); g.shadowBlur=0; g.globalAlpha=1; }
   if(t<700){ g.fillStyle='rgba(0,0,0,'+(1-t/700)+')'; g.fillRect(0,0,VW,VH); }        // fade in
   if(tr>2200){ g.fillStyle='rgba(225,255,240,'+Math.min(1,(tr-2200)/700)+')'; g.fillRect(0,0,VW,VH); }   // and gone
@@ -8171,7 +8473,7 @@ function updateForestSpirit(sp,b,now){
         "They dug me out of the ground to run their machine. I am putting it back.",
         "Both flags will say they won today. Let them.",
         "Go up, little one. Tell them what you saw down here.",
-      ], {img:GLOW_IMG.naturalWidth?GLOW_IMG:null, icon:'', bg:'#1d2416', tone:300});
+      ], {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300, then:()=>setTimeout(startOutro, 1200)});
     }
     return;
   }
@@ -8305,7 +8607,7 @@ function mechBoarDown(b,now){
   S.mechBoarDown=true; storySet('organization'); S.totalDefeats=(S.totalDefeats||0)+1;
   S.coins+=b.kind.coins; addXP(b.kind.xp);
   MECH_MUSIC.finale();                               // crash, timpani, one chord left ringing — then quiet
-  setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.mechboar) MUSIC.start(); }, 4200);
+  setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.mechboar && !HUB.outro) MUSIC.start(); }, 4200);
   SFX.win&&SFX.win(); syncHUD(); save();
   toast('The crystals go grey and the machine sits down. The ones who paid for it were never in the room.');
 }
@@ -8565,7 +8867,7 @@ function updateHub(){
   else if(HUB.hangar && HUB.hangar.phase!=='await' && HUB.boss){
     // the Hangar's opening: frame the machine and whoever is talking to it, and ease there
     // (the spirit is not placed until it arrives, so it cannot be the anchor before then)
-    const H=HUB.hangar, ag=H.agent, sp=HUB.spirit, fx=(ag.gone && sp && sp.placed) ? sp.x : (ag.placed ? ag.x : c.x);
+    const H=HUB.hangar, ag=H.agent, sp=HUB.spirit, fx=(ag.gone && sp && sp.placed) ? sp.x : H.camFx!=null ? H.camFx : (ag.placed ? ag.x : c.x);
     const want=Math.max(0,Math.min(HUB.worldW-VW, (HUB.boss.x+fx)/2-VW/2));
     HUB.camx+= (want-HUB.camx)*0.06; CINE.x=HUB.camx; }
   else{ const want=Math.max(0,Math.min(HUB.worldW-VW, c.x-VW/2));
@@ -8632,7 +8934,7 @@ function updateHub(){
   // a door can be anchored to a painted RED region (maskColor) instead of a fixed point.
   HUB.nearDoor=null;
   // in the abyss arena there's no way out until the boss is beaten
-  const doorsLive = !A.hub.abyssBoss || (HUB.abyss && HUB.abyss.state==='dead');
+  const doorsLive = (!A.hub.abyssBoss || (HUB.abyss && HUB.abyss.state==='dead')) && !HUB.cine;   // (nothing to open mid-scene)
   if(doorsLive && A.hub.doors) for(const dr of A.hub.doors){
     if(dr.swirl && A.hub.boss && HUB.boss && !HUB.boss.defeated) continue;
     let near=false;
@@ -8819,7 +9121,7 @@ function drawHub(){
   drawGroundCoins(true);
   if(A.hub.underwater) drawBubbles();
   const items=[];
-  for(const d of HUB.ducks){ if(!d.dead) items.push({z:d.y, t:'mob', d}); }
+  if(!HUB.square) for(const d of HUB.ducks){ if(!d.dead) items.push({z:d.y, t:'mob', d}); }
   if(A.hub.rocky) items.push({z:HUB.rocky.y, t:'rocky'});
   const mgPos=hubMerge(); if(mgPos) items.push({z:mgPos.y, t:'barrel', p:mgPos});
   const mlPos=hubMerlin(); if(mlPos) items.push({z:mlPos.y, t:'merlin', p:mlPos});
@@ -8830,25 +9132,27 @@ function drawHub(){
   { const _st=hubStaff(); if(_st) for(const s of _st) items.push({z:s.yf*VH, t:'pig', s}); }
   // plain scenery sprites a hub wants to park somewhere (the moored airship, for one)
   // scenery may be conditional: the royal airship only stands in the square once you are summoned
-  if(A.hub.decor) for(const d of A.hub.decor){
+  if(A.hub.decor && !HUB.square) for(const d of A.hub.decor){     // (the square ending clears the stage: no airship)
     if(d.showIf && !S[d.showIf]) continue;
     if(d.hideIf && S[d.hideIf]) continue;
     items.push({z:(d.zf!=null?d.zf:d.yf)*VH, t:'decor', d});
   }
   const bkPos=hubBankdesk(); if(bkPos) items.push({z:bkPos.y, t:'bankdesk', p:bkPos});
   const tyPos=hubTomy(); if(tyPos) items.push({z:tyPos.y, t:'tomy', p:tyPos});
-  const npPos=hubNpc(); if(npPos) items.push({z:npPos.y, t:'hubnpc', p:npPos});
+  const npPos=hubNpc(); if(npPos && !HUB.square) items.push({z:npPos.y, t:'hubnpc', p:npPos});
   // the Cat King keeps being drawn after he is beaten — a cat asleep in an enormous chair is
   // the whole point of the scene, so it must survive the fight that produced it
   if(HUB.boss && (!HUB.boss.defeated || HUB.boss.ck || HUB.boss.rk || HUB.boss.mb)) items.push({z:HUB.boss.y, t:'boss'});
   if(HUB.crystals) for(const k of HUB.crystals){ if(!k.dead) items.push({z:k.y, t:'crystal', k}); }
   if(HUB.spirit && HUB.spirit.placed) items.push({z:HUB.spirit.y, t:'spirit'});
+  if(HUB.crowd) for(const a of HUB.crowd) items.push({z:a.y, t:'crowd', a});
   if(HUB.hangar && HUB.hangar.agent.placed && !HUB.hangar.agent.gone) items.push({z:HUB.hangar.agent.y, t:'snout'});
   if(HUB.spores) for(const s of HUB.spores) items.push({z:s.y, t:'spore', s});
   if(HUB.carry) items.push({z:HUB.cat.y+0.5, t:'carry'});
   if(ARMY.inited) for(const u of ARMY.units){ if(!u.dead) items.push({z:u.y, t:'army', u}); }
-  for(const gu of HUB.garrison) items.push({z:gu.y, t:'garrison', gu});
-  items.push({z:HUB.cat.y, t:'cat'});
+  if(!HUB.square) for(const gu of HUB.garrison) items.push({z:gu.y, t:'garrison', gu});   // the square brings its own crowd
+  // (in the square ending Puiutu stands at the fountain's foot — always in front of it, never behind)
+  items.push({z:HUB.cat.y+(HUB.square?400:0), t:'cat'});
   // painted-in objects you can walk behind (see hubOccluders): only the strips on screen
   { const occ=hubOccluders(); if(occ) for(const o of occ){ const x=o.fx*HUB.worldW-HUB.camx;
       if(x+o.fw*HUB.worldW<0 || x>VW) continue; items.push({z:o.fBase*VH, t:'occ', o}); } }
@@ -8875,7 +9179,7 @@ function drawHub(){
       g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText('Merlin',sx+1,it.p.y-152*sc+1);
       g.fillStyle='rgba(255,231,176,.96)';g.fillText('Merlin',sx,it.p.y-152*sc);g.restore();
-      if(HUB.nearMerlin){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px serif';g.fillText('',sx,it.p.y-166*sc);g.restore(); }
+      if(HUB.nearMerlin){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Trebuchet MS';g.fillText('',sx,it.p.y-166*sc);g.restore(); }
       continue;
     }
     if(it.t==='tomy'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
@@ -8886,7 +9190,7 @@ function drawHub(){
       // gentle drifting hearts
       g.save(); g.textAlign='center';
       for(let k=0;k<3;k++){ const tt=((now*0.0006)+k*0.34)%1, hy=it.p.y-22*sc-tt*56*sc, hx=sx+Math.sin(now*0.002+k*2)*10*sc;
-        g.globalAlpha=(1-tt)*0.7; g.font=Math.round((9+6*(1-tt))*sc)+'px serif'; g.fillText('',hx,hy); }
+        g.globalAlpha=(1-tt)*0.7; g.font=Math.round((9+6*(1-tt))*sc)+'px Trebuchet MS'; g.fillText('',hx,hy); }
       g.restore();
       // shadow + Tomy, dozing
       g.save();g.globalAlpha=0.18;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,15*sc,5*sc,0,0,7);g.fill();g.restore();
@@ -8894,7 +9198,7 @@ function drawHub(){
       if(!CINE.hideLabels){ g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText('Tomy',sx+1,it.p.y-72*sc+1);
       g.fillStyle='rgba(255,231,176,.97)';g.fillText('Tomy',sx,it.p.y-72*sc);g.restore(); }
-      if(HUB.nearTomy){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px serif';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
+      if(HUB.nearTomy){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Trebuchet MS';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
       continue;
     }
     if(it.t==='hubnpc'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
@@ -8904,7 +9208,7 @@ function drawHub(){
       if(!CINE.hideLabels){ g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText(cat.name,sx+1,it.p.y-72*sc+1);
       g.fillStyle='rgba(255,231,176,.97)';g.fillText(cat.name,sx,it.p.y-72*sc);g.restore(); }
-      if(HUB.nearHubNpc){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px serif';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
+      if(HUB.nearHubNpc){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Trebuchet MS';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
       continue;
     }
     if(it.t==='fishbarrel'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
@@ -8926,7 +9230,7 @@ function drawHub(){
         g.drawImage(img, sx-w/2, it.p.y-h, w, h);
       } else {   // fallback until the sprite is added
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,26*sc,8*sc,0,0,7);g.fill();g.restore();
-        g.font=Math.round(46*sc)+'px serif';g.textAlign='center';g.fillText(fb,sx,it.p.y-10*sc); }
+        g.font=Math.round(46*sc)+'px Trebuchet MS';g.textAlign='center';g.fillText(fb,sx,it.p.y-10*sc); }
       if(HUB.nearDivesuit){ const pr=0.6+0.4*Math.sin(now*0.006);
         g.save();g.globalAlpha=0.55+0.45*pr;g.font='bold 14px Trebuchet MS';g.textAlign='center';
         const lbl=owned?'Press E — Dive into the Ocean':'Press E — Examine', tw=g.measureText(lbl).width+18;
@@ -8939,7 +9243,7 @@ function drawHub(){
       const gr=g.createRadialGradient(sx,it.p.y-10,3,sx,it.p.y-10,60);
       gr.addColorStop(0,'rgba(235,205,150,'+(HUB.nearDigsite?0.5:0.22)*pr+')'); gr.addColorStop(1,'rgba(235,205,150,0)');
       g.fillStyle=gr; g.beginPath(); g.arc(sx,it.p.y-10,60,0,7); g.fill();
-      g.textAlign='center'; g.font=(20*sc)+'px serif'; g.globalAlpha=0.85; g.fillText('', sx, it.p.y-6);
+      g.textAlign='center'; g.font=(20*sc)+'px Trebuchet MS'; g.globalAlpha=0.85; g.fillText('', sx, it.p.y-6);
       if(HUB.nearDigsite){ g.globalAlpha=0.55+0.45*pr; g.font='bold 14px Trebuchet MS';
         const lbl='Press E — Fossil Dig', tw=g.measureText(lbl).width+18;
         g.fillStyle='rgba(20,14,8,.85)'; roundRectPath(sx-tw/2,it.p.y-70,tw,24,8); g.fill();
@@ -9019,7 +9323,7 @@ function drawHub(){
       }
       if(HUB.nearGarrison===u){                       // "talk to me" nudge
         const pr=0.6+0.4*Math.sin(now*0.006);
-        g.save(); g.globalAlpha=0.55+0.45*pr; g.textAlign='center'; g.font='16px serif';
+        g.save(); g.globalAlpha=0.55+0.45*pr; g.textAlign='center'; g.font='16px Trebuchet MS';
         g.fillText('', sx, u.y-h-26); g.restore();
       }
       continue;
@@ -9058,7 +9362,7 @@ function drawHub(){
       const nm=FACTIONS[u.team].adj+' '+(isCmd?'Commander':'Soldier');
       const col=u.team==='cat'?'#8fc4ff':'#ff9a9a';
       if(!CINE.hideLabels){
-      g.save(); g.textAlign='center'; g.font='bold '+(isCmd?11:9)+'px Arial';
+      g.save(); g.textAlign='center'; g.font='bold '+(isCmd?11:9)+'px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, sx+1, topY+1);
       g.fillStyle=col; g.fillText(nm, sx, topY); g.restore(); }
       const bw=(isCmd?52:38)*Math.max(0.8,sc), bh=isCmd?6:4, by=topY+4, pct=Math.max(0,u.hp/u.maxHp);
@@ -9077,23 +9381,23 @@ function drawHub(){
       else if(d.sea){
         if(!d.schoolRef){   // schooling fish stay nameless to avoid a wall of labels
           const nm=d.kind.name, col=d.kind.big?'#dd88ff':'#9fe6ff';
-          g.save(); g.textAlign='center'; g.font='bold 10px Arial';
+          g.save(); g.textAlign='center'; g.font='bold 10px Trebuchet MS';
           g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, dsx+1, topY+1);
           g.fillStyle=col; g.fillText(nm, dsx, topY);
-          if(d.kind.big){ g.font='bold 8px Arial'; g.fillStyle='#dd88ff'; g.fillText(''+(d.kind.tag||'APEX PREDATOR')+'', dsx, topY-11); }
+          if(d.kind.big){ g.font='bold 8px Trebuchet MS'; g.fillStyle='#dd88ff'; g.fillText(''+(d.kind.tag||'APEX PREDATOR')+'', dsx, topY-11); }
           g.restore();
         }
       } else if(d.type==='rat'){
       const nm=FACTIONS.rat.adj+' Soldier';
-      g.save(); g.textAlign='center'; g.font='bold 10px Arial';
+      g.save(); g.textAlign='center'; g.font='bold 10px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, dsx+1, topY+1);
       g.fillStyle='#ff9a9a'; g.fillText(nm, dsx, topY); g.restore();
       } else {
       const lv=d.level||1, shown=lv+((HUB.lvMob&&HUB.lvMob.bonus)||0), lvCol=levelTierColor(lv), nm=(d.type==='pigeon'?'Pigeon':d.type==='clobster'?'Crystal Lobster':'Duck');
-      g.save(); g.textAlign='center'; g.font=`bold ${lv===10?11:10}px Arial`;
+      g.save(); g.textAlign='center'; g.font=`bold ${lv===10?11:10}px Trebuchet MS`;
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm+'  Lv.'+shown, dsx+1, topY+1);
       g.fillStyle=lvCol; g.fillText(nm+'  Lv.'+shown, dsx, topY);
-      if(lv===10){ g.font='bold 8px Arial'; g.fillStyle='#dd88ff'; g.fillText('LEGENDARY', dsx, topY-11); }
+      if(lv===10){ g.font='bold 8px Trebuchet MS'; g.fillStyle='#dd88ff'; g.fillText('LEGENDARY', dsx, topY-11); }
       g.restore();
       }
       // hp bar (schooling fish only show it once they've been hit; cinematic hides untouched mobs' bars)
@@ -9135,6 +9439,7 @@ function drawHub(){
       g.beginPath(); g.roundRect(sx-bw/2,by,bw*pct,bh,3); g.fill();
       g.restore();
     } else if(it.t==='spirit'){ drawForestSpirit(g, HUB.spirit);
+    } else if(it.t==='crowd'){ drawCrowdActor(g, it.a);
     } else if(it.t==='snout'){ drawSnout(g, HUB.hangar.agent);
     } else if(it.t==='spore'||it.t==='carry'){ drawSporeling(g, it.t==='carry' ? null : it.s);
     } else if(it.t==='crystal'){ const k=it.k, sc=hubScale(k.y), sx=k.x-HUB.camx, now=Date.now();
@@ -9145,7 +9450,7 @@ function drawHub(){
       drawDogSprite(g,sx,r.y,r.facing,86*sc,key);
       g.save(); g.textAlign='center'; g.font='bold 11px Trebuchet MS'; g.fillStyle='rgba(255,231,176,.92)';
       g.fillText(COMP.staying&&S.companion?'Rocky':'Rocky', sx, r.y-88*sc); g.restore();
-      if(HUB.nearRocky){ g.save(); g.globalAlpha=0.5+0.5*Math.abs(Math.sin(now*0.006)); g.textAlign='center'; g.font='18px serif'; g.fillText('',sx,r.y-80*sc); g.restore(); }
+      if(HUB.nearRocky){ g.save(); g.globalAlpha=0.5+0.5*Math.abs(Math.sin(now*0.006)); g.textAlign='center'; g.font='18px Trebuchet MS'; g.fillText('',sx,r.y-80*sc); g.restore(); }
     } else {
       // platLift raises the cat so she reads as standing ON a raised ledge. It's tuned per
       // area: the library's stairs are chunky, the garden's floating platforms are thin.
@@ -9313,13 +9618,13 @@ function drawAbyssBoss(){
   const ab=HUB.abyss; if(!ab) return; const now=Date.now();
   if(ab.state==='intro'){
     // ── The Dreamer wakes (12s). The temple goes black; one eye opens, then the other; then
-    // dozens of small ones all over the dark — the whole temple is its body. It speaks, every
+    // every other eye painted on it, one by one (`wakeEyes`); then small ones all over the dark — the whole temple is its body. It speaks, every
     // eye blinking with the words. Then they all shut, the two big ones flare, the name, the
     // roar, tentacles rising at the edges, and white.
     const el=now-ab.introT0, H=A.hub, cam=HUB.camx;
     const sm=(a,b)=>Math.max(0,Math.min(1,(el-a)/(b-a)));               // 0→1 between two times
     if(!ab.smallEyes){ ab.camx0=cam; ab.smallEyes=[];
-      for(let i=0;i<26;i++) ab.smallEyes.push({x:cam+(0.04+Math.random()*0.92)*VW, y:VH*(0.10+Math.random()*0.62),
+      for(let i=0;i<16;i++) ab.smallEyes.push({x:cam+(0.04+Math.random()*0.92)*VW, y:VH*(0.10+Math.random()*0.62),
         r:4+Math.random()*7, at:4300+Math.random()*1700, tilt:(Math.random()-0.5)*0.5}); }
     g.save();
     // tentacle silhouettes rising at the edges (drawn first, then sunk under the dark)
@@ -9353,9 +9658,10 @@ function drawAbyssBoss(){
     // (maps/abyssboss.png), so the eyes that open in the dark are the ones you then fight.
     const bossIm=decorImg(H.imgBoss||'maps/abyssboss.png');
     if(!ab.eyeCuts && bossIm.complete && bossIm.naturalWidth){ ab.eyeCuts=[];
-      const IW=bossIm.naturalWidth, IH=bossIm.naturalHeight, S=Math.round(IH*0.11);   // ~130px of the art per eye
-      for(const e of ((H.eyes&&H.eyes.length)?H.eyes:[{xf:H.eyeXf,yf:H.eyeYf}])){
-        const cv=document.createElement('canvas'); cv.width=cv.height=S; const x=cv.getContext('2d');
+      const IW=bossIm.naturalWidth, IH=bossIm.naturalHeight;
+      const big=((H.eyes&&H.eyes.length)?H.eyes:[{xf:H.eyeXf,yf:H.eyeYf}]).map(e=>({xf:e.xf, yf:e.yf, s:0.11}));   // ~130px of the art per eye
+      for(const e of big.concat(H.wakeEyes||[])){
+        const S=Math.round(IH*e.s), cv=document.createElement('canvas'); cv.width=cv.height=S; const x=cv.getContext('2d');
         x.drawImage(bossIm, e.xf*IW-S/2, e.yf*IH-S/2, S, S, 0,0,S,S);
         // keep only the burning eye: anything not warm (the teal skin of its face) goes to nothing,
         // so no green outline rides along into the dark
@@ -9385,6 +9691,10 @@ function drawAbyssBoss(){
     const shut=1-sm(8800,9100);
     for(const e of ab.smallEyes){ const o=sm(e.at,e.at+450)*shut*blinkAll;
       eye(e.x-cam, e.y, e.r, o, 0.55+0.45*Math.sin(now*0.004+e.x), e.tilt); }
+    // the rest of its painted eyes, one after another once the great two are open
+    const nBig=(H.eyes&&H.eyes.length)||1;
+    (H.wakeEyes||[]).forEach((e,j)=>{ const t0=3900+j*170, o=sm(t0,t0+320)*shut*blinkAll;
+      bigEye(nBig+j, e.xf*HUB.worldW-cam, e.yf*VH, o, 1, 0.6+0.2*Math.sin(now*0.004+j)); });
     // the two great eyes
     const eyes=(H.eyes&&H.eyes.length)?H.eyes:[{xf:H.eyeXf,yf:H.eyeYf}];
     const flare=sm(8900,9500)*(1-sm(11200,11800)*0.3);
@@ -9394,13 +9704,12 @@ function drawAbyssBoss(){
     const line=(txt,a,b,y,size,col)=>{ const t=sm(a,a+500)*(1-sm(b-500,b)); if(t<=0) return;
       g.globalAlpha=t; g.textAlign='center'; g.font=size; g.fillStyle=col; g.shadowColor='#000'; g.shadowBlur=14;
       g.fillText(txt, VW/2, y); g.shadowBlur=0; g.globalAlpha=1; };
-    line('Something stirs in the deep…', 300, 2900, VH*0.82, 'italic 22px Georgia', '#b9c8dc');
-    line('You came down so far…', 6300, 7800, VH*0.80, 'bold 30px Georgia', '#ffb39a');
-    line('…to wake me.', 7800, 9000, VH*0.80, 'bold 38px Georgia', '#ff6a4a');
+    line('Something stirs in the deep…', 300, 2900, VH*0.82, 'italic 22px Trebuchet MS', '#b9c8dc');
+    line('You came down so far…', 6300, 7800, VH*0.80, 'bold 30px Trebuchet MS', '#ffb39a');
+    line('…to wake me.', 7800, 9000, VH*0.80, 'bold 38px Trebuchet MS', '#ff6a4a');
     if(el>9400){ const t=sm(9400,9900)*(1-sm(11400,11900));
       g.globalAlpha=t; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=18;
-      g.font='italic 16px Georgia'; g.fillStyle='#c9d6e8'; g.fillText('ancient · sleeping · hungry', VW/2, VH*0.70);
-      g.font='bold 46px Georgia'; g.fillStyle='#ffd9c8'; g.fillText('THE DREAMER IN THE DEEP', VW/2, VH*0.78);
+      g.font='bold 46px Trebuchet MS'; g.fillStyle='#ffd9c8'; g.fillText('THE DREAMER IN THE DEEP', VW/2, VH*0.78);
       g.fillStyle='#ff6a4a'; g.fillRect(VW/2-170*t, VH*0.80, 340*t, 2); g.shadowBlur=0; g.globalAlpha=1; }
     // and white
     if(el>11300){ g.globalAlpha=Math.min(1,(el-11300)/700); g.fillStyle='#fff'; g.fillRect(0,0,VW,VH); g.globalAlpha=1; }
@@ -9479,7 +9788,7 @@ function drawAbyssBoss(){
     g.save(); g.fillStyle='rgba(10,8,14,.7)'; roundRectPath(x-3,y-3,bw+6,18,6); g.fill();
     g.fillStyle='#7a1f2a'; roundRectPath(x,y,bw,10,5); g.fill();
     g.fillStyle='#ff5a4a'; roundRectPath(x,y,bw*pct,10,5); g.fill();
-    g.fillStyle='#ffd9d0'; g.textAlign='center'; g.font='bold 11px Trebuchet MS'; g.fillText('The Dreamer in the Deep', VW/2, y+9); g.restore();
+    g.restore();
   }
   // victory: it sinks deeper — a wash of darkness + a surge of bubbles, then the calm returns
   if(ab.state==='sinking'){ const k=Math.min(1,(now-ab.sinkT0)/2600);
@@ -9514,7 +9823,7 @@ function drawHubSpots(){
     g.fillStyle=gr; g.beginPath(); g.arc(sx,sy,R+22,0,7); g.fill();
     // icon
     g.textAlign='center'; g.textBaseline='middle';
-    g.font=(sp.type==='chest'?'30px':'26px')+' serif';
+    g.font=(sp.type==='chest'?'30px':'26px')+' Trebuchet MS';
     const icon = sp.type==='lever' ? (sp.glyph||'') : sp.type==='chest' ? (opened?'':'') : sp.type==='lights' ? (opened?'':'') : (sp.icon||'');
     g.globalAlpha=opened&&sp.type!=='lever'?0.7:1; g.fillText(icon, sx, sy-2);
     g.globalAlpha=1; g.textBaseline='alphabetic';
@@ -10106,10 +10415,10 @@ function advanceDialogue(){
 // Used by The Glow, the intro, and every story beat that isn't an NPC quest.
 let sayActive=false, sayArr=[], sayIdx=0, sayThen=null;
 function drawEmojiPortrait(emoji,bg){
-  const pc=document.getElementById('dlgPortrait'); if(!pc) return;
+  const pc=document.getElementById('dlgPortrait'); if(!pc) return; pc._want=null;
   const pg=pc.getContext('2d');
   pg.clearRect(0,0,78,78); pg.fillStyle=bg||'#241c10'; pg.fillRect(0,0,78,78);
-  pg.font='44px serif'; pg.textAlign='center'; pg.textBaseline='middle';
+  pg.font='44px Trebuchet MS'; pg.textAlign='center'; pg.textBaseline='middle';
   pg.fillText(emoji,39,43);
 }
 function sayLines(name,lines,opt){
@@ -10217,7 +10526,7 @@ function glowLines(){
 function shroomTalk(){
   storySet('seek_wizard');            // the mushroom is the only thing that opens the west road
   const first=!S.metGlow;
-  sayLines('The Glow', glowLines(), {img:GLOW_IMG.naturalWidth?GLOW_IMG:null, icon:'', bg:'#1d2416', tone:300, then:()=>{
+  sayLines('The Glow', glowLines(), {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300, then:()=>{
     if(first){ S.metGlow=true; save();
       toast('The Glow remembers. Come back when you have seen something.'); }
   }});
@@ -10271,7 +10580,7 @@ const TUT_BEATS=[
 ];
 function tutSpeaker(who){
   if(who==='rocky') return {name:'Rocky', opt:{img:ROCKY.idle, bg:'#2b2a20', tone:380}};
-  return {name:'The Glow', opt:{img:(typeof GLOW_IMG!=='undefined'&&GLOW_IMG.naturalWidth)?GLOW_IMG:null,
+  return {name:'The Glow', opt:{img:(typeof GLOW_IMG!=='undefined')?GLOW_IMG:null,
                                 icon:'', bg:'#1d2416', tone:300}};
 }
 function tutorialFire(id){
@@ -10428,15 +10737,23 @@ const PORTRAITS={
   // its visual centre is (0.500, 0.582) and it needs a 0.98 view to sit inside the circle whole
   'npcs/Voice_of_the_forest_icon.jpeg':{ex:0.500,ey:0.582,vw:0.98},
   'army/frames/cat_soldier_walk0.png':{ex:0.8145,ey:0.4468,vw:0.649},
-  'army/frames/cat_commander_walk0.png':{ex:0.7858,ey:0.4408,vw:0.6219},
+  'army/frames/cat_commander_walk0.png':{ex:0.79,ey:0.47,vw:0.75},
   'army/frames/cat_emissary_walk0.png':{ex:0.7853,ey:0.227,vw:0.5303},
-  'army/frames/rat_soldier_walk0.png':{ex:0.1297,ey:0.2966,vw:0.4672},
-  'army/frames/rat_commander_walk0.png':{ex:0.8524,ey:0.3012,vw:0.3233},
-  'army/frames/pig_agent_walk0.png':{ex:0.8000,ey:0.2900,vw:0.5200},
-  'army/frames/rat_emissary_walk0.png':{ex:0.1900,ey:0.2600,vw:0.5000},
+  'army/frames/rat_soldier_walk0.png':{ex:0.258,ey:0.359,vw:0.55},
+  'army/frames/rat_commander_walk0.png':{ex:0.836,ey:0.3012,vw:0.55},
+  'army/frames/pig_agent_walk0.png':{ex:0.826,ey:0.329,vw:0.65},
+  'army/frames/rat_emissary_walk0.png':{ex:0.215,ey:0.25,vw:0.55},
+  // the bosses and the pigs: head-and-shoulders, the crown kept inside the circle
+  'mobs/catking/sit.png':{ex:0.79,ey:0.28,vw:0.85},
+  'mobs/ratking/sit.png':{ex:0.80,ey:0.195,vw:0.5},
+  'mobs/seby/s1.png':{ex:0.70,ey:0.40,vw:0.62},
+  'mobs/coon_walk0.png':{ex:0.84,ey:0.46,vw:0.5},
+  'npcs/siroink.png':{ex:0.62,ey:0.21,vw:0.7},
+  'npcs/misterpig.png':{ex:0.45,ey:0.226,vw:0.75},
+  'npcs/piggyjunior.png':{ex:0.33,ey:0.178,vw:0.75},
 };
 function portraitRect(img){
-  const src=img&&img.src||'';
+  const src=(img&&img.src||'').split('?')[0];     // army and Coon sheets carry a ?v= cache-buster
   for(const k in PORTRAITS) if(src.endsWith(k)) return PORTRAITS[k];
   return null;
 }
@@ -10461,6 +10778,10 @@ function paintPortrait(pg,D,img,bg){
 function showPortrait(img,bg){
   const pc=document.getElementById('dlgPortrait'); if(!pc) return;
   paintPortrait(pc.getContext('2d'), 78, img, bg);
+  // not loaded yet: paint it the moment it arrives, as long as this face is still the one up
+  if(img && !(img.complete&&img.naturalWidth)){ pc._want=img;
+    img.addEventListener('load', ()=>{ if(pc._want===img) paintPortrait(pc.getContext('2d'), 78, img, bg); }, {once:true}); }
+  else pc._want=img;
 }
 function drawPortrait(catKey){
   if(catKey==='__dog'){ showPortrait(ROCKY.idle); return; }
@@ -11011,8 +11332,8 @@ function digDraw(){
       g2.fillStyle='#2a1c0c'; g2.fillRect(x+pad,y+pad,cs-2*pad,cs-2*pad);   // dug pit
       g2.fillStyle='#21160a'; g2.fillRect(x+pad,y+pad,cs-2*pad,4);
       g2.textAlign='center'; g2.textBaseline='middle';
-      if(cell.bone){ g2.font=Math.floor(cs*0.6)+'px serif'; g2.fillText('', x+cs/2, y+cs/2+1); }
-      else if(cell.adj>0){ g2.font='bold '+Math.floor(cs*0.5)+'px Arial'; g2.fillStyle=NUMCOL[cell.adj]||'#fff'; g2.fillText(cell.adj, x+cs/2, y+cs/2+1); }
+      if(cell.bone){ g2.font=Math.floor(cs*0.6)+'px Trebuchet MS'; g2.fillText('', x+cs/2, y+cs/2+1); }
+      else if(cell.adj>0){ g2.font='bold '+Math.floor(cs*0.5)+'px Trebuchet MS'; g2.fillStyle=NUMCOL[cell.adj]||'#fff'; g2.fillText(cell.adj, x+cs/2, y+cs/2+1); }
     }
   }
   g2.textBaseline='alphabetic';
@@ -11956,7 +12277,7 @@ function fishDraw(){
     g.rotate((p-0.5)*1.2);              // nose-up rising, nose-down falling (arc)
     const sp=SPECIES_BY_KEY[j.key]; const lp=(sp&&sp.leap)||1;   // per-species leap size (big game leaps much bigger)
     const sw=72*lp, sh=48*lp;
-    if(!fishSprite(g,j.key,0,0,sw,sh)){ g.font=Math.round(28*lp)+'px serif'; g.textAlign='center'; g.fillText('',0,10); }
+    if(!fishSprite(g,j.key,0,0,sw,sh)){ g.font=Math.round(28*lp)+'px Trebuchet MS'; g.textAlign='center'; g.fillText('',0,10); }
     g.restore();
   }
   // ── splashes ──
@@ -11993,7 +12314,7 @@ function fishDraw(){
     const cs=FISH.catSize;
     g.save(); g.strokeStyle='rgba(255,255,255,.6)'; g.lineWidth=2;
     g.beginPath(); g.moveTo(cx+cs*0.5, cy-cs*0.6); g.lineTo(FISH.bobX, FISH.bobY); g.stroke(); g.restore();
-    g.font=Math.round(cs*0.6)+'px serif'; g.textAlign='center'; g.fillText('',cx+cs*0.3,cy-cs*0.1);
+    g.font=Math.round(cs*0.6)+'px Trebuchet MS'; g.textAlign='center'; g.fillText('',cx+cs*0.3,cy-cs*0.1);
   }
   // ── bobber on the water (dips during waiting/bite) ──
   const dipping=(FISH.phase==='bite')||(FISH.phase==='waiting'&&Math.sin(now*0.006)>0.6);
@@ -12009,7 +12330,7 @@ function fishDraw(){
     }
     g.restore();
     const BOBSZ=56;   // bigger bobber
-    if(!drawFit(g,bob,FISH.bobX,bobY,BOBSZ,BOBSZ)){ g.font='30px serif'; g.textAlign='center';
+    if(!drawFit(g,bob,FISH.bobX,bobY,BOBSZ,BOBSZ)){ g.font='30px Trebuchet MS'; g.textAlign='center';
       g.fillStyle=dipping?'#c83a3a':'#e8483a'; g.fillText('',FISH.bobX,bobY+9); }
   }
 
@@ -12029,7 +12350,7 @@ function fishDraw(){
     const pcy=cy0-cardH*0.05;
     // fish fills the parchment width-wide; every species fits the SAME height so
     // wide ones (puffer/barracuda) and narrow ones (parrotfish) look consistent
-    if(!fishSprite(g,f.key,W/2,pcy-cardH*0.05,cardW*0.50,cardH*0.30)){ g.font='52px serif'; g.fillStyle='#5a3a18'; g.fillText('',W/2,pcy); }
+    if(!fishSprite(g,f.key,W/2,pcy-cardH*0.05,cardW*0.50,cardH*0.30)){ g.font='52px Trebuchet MS'; g.fillStyle='#5a3a18'; g.fillText('',W/2,pcy); }
     g.fillStyle=f.legendary?'#b8860b':'#5a3a18';
     g.font='bold '+Math.round(cardH*0.13)+'px Trebuchet MS'; g.fillText(f.name,W/2,pcy+cardH*0.18);
     g.font=Math.round(cardH*0.09)+'px Trebuchet MS'; g.fillText(FISH.len+' cm   +'+moneyText(f.coins)+'  +'+f.xp+' XP',W/2,pcy+cardH*0.30);
@@ -12225,7 +12546,7 @@ function renderProfile(){
       if(spr&&spr.complete&&spr.naturalWidth) paintPortrait(c2,58,spr,'#cfe6a8');
       else { c2.fillStyle='#cfe6a8';c2.fillRect(0,0,58,58);drawCat(c2,29,57,1,0,CATS[k],{scale:.74}); }
     }
-    else{c2.fillStyle='#555';c2.fillRect(0,0,58,58);c2.fillStyle='#999';c2.font='bold 30px serif';c2.textAlign='center';c2.fillText('?',29,40);}
+    else{c2.fillStyle='#555';c2.fillRect(0,0,58,58);c2.fillStyle='#999';c2.font='bold 30px Trebuchet MS';c2.textAlign='center';c2.fillText('?',29,40);}
   });
   document.getElementById('sndBtn').onclick=()=>{ S.soundOn=!S.soundOn; save(); if(S.soundOn)SFX.click(); renderProfile(); };
   document.getElementById('musBtn').onclick=()=>{ S.musicOn=!S.musicOn; save();
@@ -12696,7 +13017,7 @@ function mcDrawCart(mg){
 }
 function mcDrawHUD(mg){
   const s=MC.st;
-  mg.textAlign='left'; mg.font='22px Arial';
+  mg.textAlign='left'; mg.font='22px Trebuchet MS';
   for(let i=0;i<3;i++){ mg.globalAlpha=i<s.hp?1:0.25; mg.fillStyle='#ff8a8a'; mg.fillText('',16+i*28,36);} mg.globalAlpha=1;
   mg.font='bold 18px Trebuchet MS'; mg.fillStyle='#ffe7b0'; mg.textAlign='right'; mg.fillText(''+s.coins,MC_W-16,34);
   const bw=MC_W*0.5,bx=(MC_W-bw)/2,by=20,pct=Math.min(1,s.scroll/MC_TOTAL);
@@ -12968,6 +13289,11 @@ function sendChat(){
 function chatCommand(t){
   const c=t.toLowerCase();
   if(c==='!money'){ S.coins+=100*10000; save(); syncHUD(); SFX.coin&&SFX.coin(); toast('+100 gold!'); return true; }
+  // dev: !ending third | union | federation | unproven — watch an ending without replaying the game
+  if(c.indexOf('!ending')===0){ const id=c.slice(7).trim()||'third';
+    if(!testMode()){ toast('!ending is TEST mode only — type!mode test'); return true; }
+    if(!OUTROS[id]){ toast('endings: third, union, federation, unproven'); return true; }
+    startOutro(id); return true; }
   if(c.indexOf('!warp ')===0){ const id=c.slice(6).trim();   // dev: !warp slum2 / !warp ratking …
     if(!testMode()){ toast('!warp is TEST mode only — type!mode test'); return true; }
     if(AREAS[id]){ enterArea(id,false); toast('warp'+id); } else toast('no such area:'+id);
@@ -13148,10 +13474,15 @@ function askName(after){
 }
 
 //═══════════════════════════════════════════════════════════════ FAST-TRAVEL MAP
+// every place on the world map you can travel to once you have been there
 const MAP_LOCS=[
-  {id:'garden', name:'Garden', emoji:'', desc:'Lake, flowers & ducks'},
-  {id:'street', name:'City',  emoji:'', desc:'The city at sunset'},
-  {id:'house',  name:'House',    emoji:'', desc:'Cozy ·  BOSS'},
+  {id:'garden', name:'Garden'}, {id:'cave', name:'Crystal Cave'},
+  {id:'library', name:'Library', dest:'towergarden'},          // you arrive at its door, in the tower garden
+  {id:'beach', name:'Beach'}, {id:'ocean1', name:'Ocean Depths'},
+  {id:'ocean2', name:'Sunken Sanctum'}, {id:'abyssboss', name:'The Dreamer in the Deep'},
+  {id:'street', name:'City'}, {id:'bank', name:'Whisker Savings Bank'}, {id:'castleentrance', name:'Castle Gate'},
+  {id:'slum', name:'The Slums'}, {id:'slum2', name:'The Rat Warren'}, {id:'ratking', name:'Rat King’s Lair'},
+  {id:'sewerentrance', name:'Sewer Tunnel'},
 ];
 function openMap(){
   if(!inGame) return;
@@ -13163,15 +13494,17 @@ function closeMap(){ mapOpen=false; document.getElementById('mapModal').classLis
 function renderMap(){
   document.querySelectorAll('#mapModal .hot').forEach(h=>{
     const id=h.dataset.go; const L=MAP_LOCS.find(l=>l.id===id); if(!L) return;
-    const here=curArea===id, visited=!!S.visited[id];
+    // the bank is the town hall: find the city and you have found it
+    const dest=L.dest||id, here=curArea===id||curArea===dest, visited=!!S.visited[dest] || (id==='bank' && !!S.visited.street);
     h.classList.toggle('here', here);
     h.classList.toggle('locked', !visited && !here);
-    h.setAttribute('data-label', L.name + (here?' · Here' : visited?'' : ' · locked'));
+    h.setAttribute('data-label', here ? L.name+' · Here' : visited ? L.name : '???');   // no spoilers before you find it
     h.onclick=()=>travelTo(id);
   });
 }
 function travelTo(id){
-  if(!S.visited[id] || id===curArea){ closeMap(); return; }
+  const L0=MAP_LOCS.find(l=>l.id===id); id=(L0&&L0.dest)||id;           // some places are reached at their door
+  if((!S.visited[id] && !(id==='bank' && S.visited.street)) || id===curArea){ closeMap(); return; }
   // the sewers keep you until the Coon is beaten — the map is not a way around that
   if(curArea==='sewer' && SEWER.on && SEWER.mode!=='cleared'){ closeMap(); toast('There is no way out while it lives.'); return; }
   closeMap();
@@ -13179,7 +13512,6 @@ function travelTo(id){
   P.maxHp=playerMaxHp(); if(P.hp>P.maxHp)P.hp=P.maxHp;
   P.maxMana=playerMaxMana(); if(P.mana>P.maxMana)P.mana=P.maxMana;
   SFX.seq([523,659,784],'triangle',0.05);
-  toast('Arrived in'+(MAP_LOCS.find(l=>l.id===id).name)+'!');
 }
 // top-down park: click-to-move (WASD also works)
 // ── dev sprite-placement tool ──
