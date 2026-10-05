@@ -154,49 +154,50 @@
   #joyKnob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;
     background:rgba(255,236,190,.82);border:3px solid rgba(107,74,31,.9);box-shadow:0 2px 8px rgba(0,0,0,.4);}
   #joyZone.on #joyBase{opacity:.7;}
-  /* ── compact HUD: the pixel-art health sphere (top-left) + an XP bar with the level on it ── */
-  #uiBar{position:absolute;left:10px;top:8px;z-index:7;pointer-events:none;
-    display:flex;align-items:center;gap:9px;font-family:'Trebuchet MS',sans-serif;}
-  /* the ornate glass sphere is cropped straight out of the original bar art */
-  #uiHpOrb{position:relative;width:66px;height:66px;flex:none;image-rendering:pixelated;
-    background:url('ui/UIBar_clean.png?v=1') no-repeat;
-    background-size:370px 79px;background-position:-7px -7px;
+  /* the orbs: liquid at the bottom, the ornate frame laid OVER it (so the liquid's edge tucks
+     under the rim), a glass shine over both, and the number on top. The frame art is square and
+     centred on its hole, which is 63% (HP) / 62% (mana) of the frame — the glass is cut a touch
+     wider than that so no gap shows between liquid and rim. */
+  #lowHpVignette{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity .4s;
+    background:radial-gradient(ellipse at center,rgba(170,0,0,0) 52%,rgba(170,0,0,.35) 78%,rgba(140,0,0,.75) 100%);}
+  #lowHpVignette.on{animation:lowHpPulse 1.2s ease-in-out infinite;}
+  @keyframes lowHpPulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.5);}}
+  #uiOrbs{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:7;pointer-events:none;
+    display:flex;align-items:flex-end;gap:8px;font-family:'Trebuchet MS',sans-serif;}
+  /* narrow screens: the spell bar (bottom-right) reaches the middle, so the orbs ride above it */
+  @media (max-width:700px){ #uiOrbs{bottom:86px;} }
+  #uiHpOrb{position:relative;width:92px;height:92px;flex:none;
     filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
-  /* HP fill sits inside the (transparent) glass interior; the gold ring frames it */
-  #uiHpGlass{position:absolute;left:11px;top:11px;width:44px;height:44px;border-radius:50%;overflow:hidden;}
+  #uiHpOrb::after,#uiManaOrb::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:url('ui/orb_hp.png') center/100% 100% no-repeat;}
+  #uiManaOrb::after{background-image:url('ui/orb_mana.png');}
+  #uiHpGlass,#uiManaGlass{background:rgba(12,8,6,.78);}
+  #uiHpGlass::after,#uiManaGlass::after{content:'';position:absolute;inset:0;z-index:1;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.55) 0,rgba(255,255,255,.12) 18%,rgba(255,255,255,0) 34%),
+               radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 58%,rgba(0,0,0,.35) 100%);}
+  #uiHpGlass{position:absolute;left:16px;top:16px;width:60px;height:60px;border-radius:50%;overflow:hidden;}
   #uiHpFill{position:absolute;left:0;right:0;bottom:0;height:100%;
     background:linear-gradient(#ff7363,#d3362a);transition:height .25s ease;}
   #uiHpText{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;
-    color:#ffe7b0;font-weight:bold;font-size:12px;line-height:1.05;text-shadow:0 2px 3px #000,0 0 4px #000;}
-  /* HP regeneration: green glow pulse on the orb + a healing shimmer on the fill */
-  #uiHpText.regen{animation:hpRegenGlow 1.1s ease-in-out infinite;}
-  @keyframes hpRegenGlow{0%,100%{box-shadow:0 0 0 0 rgba(126,217,87,0);}
-    50%{box-shadow:0 0 13px 3px rgba(126,217,87,.85),inset 0 0 10px rgba(180,255,140,.5);border-radius:50%;}}
+    color:#ffe7b0;font-weight:bold;font-size:14px;line-height:1.05;text-shadow:0 2px 3px #000,0 0 4px #000;z-index:2;}
+  /* HP regeneration: a gentle healing shimmer on the fill (no glow around the orb) */
   #uiHpFill.regen{animation:hpRegenFill 1.1s ease-in-out infinite;}
   @keyframes hpRegenFill{0%,100%{filter:none;}50%{filter:brightness(1.25) saturate(.9) hue-rotate(-12deg);}}
-  /* ── mana orb: same ornate frame as the HP sphere, recoloured blue, with a blue fill.
-     The hue-rotate lives on a ::before frame layer only — putting it on the orb itself
-     would drag the blue fill and the label around the colour wheel too.  */
-  #uiManaOrb{position:relative;width:54px;height:54px;flex:none;image-rendering:pixelated;
+  /* ── mana orb: the silver-and-blue twin of the HP frame, a little smaller ── */
+  #uiManaOrb{position:relative;width:76px;height:76px;flex:none;
     filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
-  #uiManaOrb::before{content:'';position:absolute;inset:0;
-    background:url('ui/UIBar_clean.png?v=1') no-repeat;
-    background-size:303px 65px;background-position:-6px -6px;
-    filter:hue-rotate(172deg) saturate(1.15);}
-  #uiManaGlass{position:absolute;left:9px;top:9px;width:36px;height:36px;border-radius:50%;
-    overflow:hidden;z-index:1;}
+  #uiManaGlass{position:absolute;left:13px;top:13px;width:50px;height:50px;border-radius:50%;overflow:hidden;}
   #uiManaFill{position:absolute;left:0;right:0;bottom:0;height:100%;
     background:linear-gradient(#7fd4ff,#2a6ed3);transition:height .25s ease;}
   #uiManaText{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    color:#eaf6ff;font-weight:bold;font-size:12px;text-shadow:0 2px 3px #000,0 0 4px #000;z-index:2;}
+    color:#eaf6ff;font-weight:bold;font-size:14px;text-shadow:0 2px 3px #000,0 0 4px #000;z-index:2;}
   /* not enough mana for the spell you pressed — quick red shake */
   #uiManaOrb.nomana{animation:manaDeny .32s ease;}
   @keyframes manaDeny{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 
   /* ── short screens (a phone held sideways): a smaller HUD that keeps clear of the top buttons ── */
   @media (max-height:500px){
-    #uiBar{transform:scale(.72);transform-origin:top left;left:6px;top:4px;}
-    #uiXpWrap{width:110px;}
+    #uiOrbs{transform:translateX(-50%) scale(.78);transform-origin:bottom center;bottom:6px;}
     .topbar{height:40px;padding:0 8px;}
     .topbar .back-btn{padding:4px 9px;font-size:12px;border-radius:11px;}
     .topbar>div{gap:6px !important;}
@@ -227,13 +228,6 @@
   .spellSlot.cooling .sCd{display:flex;}
   @media(max-width:520px){ .spellSlot{width:46px;height:46px;} .spellSlot .sIco{font-size:22px;}
     .spellSlot .spIcoWrap{width:34px !important;height:34px !important;} }
-  #uiXpWrap{position:relative;width:172px;height:22px;border-radius:999px;overflow:hidden;
-    border:2px solid #6b4a1f;background:rgba(20,14,8,.72);box-shadow:inset 0 2px 3px rgba(0,0,0,.55);}
-  #uiXpFill{position:absolute;left:0;top:0;bottom:0;width:0;
-    background:linear-gradient(#fff0a0,#ffe24a 45%,#f0b021);
-    box-shadow:inset 0 1px 1px rgba(255,255,255,.7);transition:width .3s ease;}
-  #uiXpLabel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    color:#fff;font-weight:bold;font-size:12px;letter-spacing:.5px;text-shadow:0 1px 2px #000,0 0 3px #000;}
   /* ── Dark Souls "YOU FAINTED" screen ── */
   #faintScreen{position:absolute;inset:0;z-index:90;display:none;pointer-events:none;
     align-items:center;justify-content:center;overflow:hidden;}
@@ -422,7 +416,7 @@
   .dlg-choice.lean-third{border-color:#a97c1e;box-shadow:0 3px 0 #a97c1e;}
   /* during a scripted scene the touch controls step out of the shot */
   body.cinema #dpad, body.cinema #joyZone, body.cinema #jumpCtrl, body.cinema #actCtrl, body.cinema #interactBtn, body.cinema #spellBar,
-  body.cinema #padLeft, body.cinema #padRight, body.cinema #questHUD, body.cinema #fightBtn, body.cinema #interactPrompt{display:none !important;}
+  body.cinema #padLeft, body.cinema #padRight, body.cinema #uiOrbs, body.cinema #questHUD, body.cinema #fightBtn, body.cinema #interactPrompt{display:none !important;}
   /* ---------- outro: white on black, no music ---------- */
   #outroScreen{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;
     justify-content:center;background:#000;padding:0 28px;overflow-y:auto;}
@@ -593,7 +587,9 @@
   #circuitGrid{width:68%;display:grid;gap:0;}
   .cCell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;position:relative;}
   .cCell img{width:100%;height:100%;image-rendering:pixelated;transform-origin:center;transition:transform .13s ease,filter .2s ease;filter:brightness(.38) saturate(.45);}
-  .cCell.powered img,.cCell.fixed img{filter:brightness(1.15) saturate(1.25) drop-shadow(0 0 5px #4dffb0);}
+  .cCell.powered img,.cCell.fixed:not(.tgt) img{filter:brightness(1.15) saturate(1.25) drop-shadow(0 0 5px #4dffb0);}
+  .cCell.powered.tgt img{filter:brightness(1.2) saturate(1.3) drop-shadow(0 0 8px #4dffb0);animation:cSock 1.4s ease-in-out infinite;}
+  @keyframes cSock{50%{filter:brightness(1.45) saturate(1.4) drop-shadow(0 0 14px #7dffc8);}}
   .cCell.rot{cursor:pointer;}
   .cCell.rot:hover{background:rgba(80,255,180,.10);}
   /* 🔒 Sigil Lock — the brass heraldic plate on the great doors. Same puzzle three times,
@@ -912,10 +908,18 @@
   #btnInv{width:23%;right:3%;top:58%;}
 
   /* quest HUD */
-  #questHUD{position:absolute;left:10px;top:84px;z-index:6;display:none;align-items:center;gap:5px;
-    background:rgba(20,14,8,.7);border:2px solid #ffd86b;border-radius:12px;padding:5px 10px;
-    color:#ffe7b0;font-size:12px;font-weight:bold;backdrop-filter:blur(3px);max-width:220px;}
-  #questHUD b{color:#fff;}
+  /* the quest tracker is a carved plaque: the quest-giver's face in the round socket on the left
+     (measured off the art: centre 14%/51%, 15.5% of the width across), the count centred on the brown panel */
+  #questHUD{position:absolute;left:10px;top:10px;z-index:6;display:none;align-items:center;
+    width:210px;height:61px;background:url('ui/quest_plaque.png') center/100% 100% no-repeat;
+    justify-content:center;text-align:center;white-space:nowrap;
+    padding:0 9px 1px 58px;box-sizing:border-box;pointer-events:none;
+    color:#ffe7b0;font-size:13px;font-weight:bold;text-shadow:0 1px 2px #000,0 0 3px #000;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+  #questHUD b{color:#fff;margin-left:4px;}
+  #questHUD .qDone{color:#9fe58a;margin-left:5px;font-size:11px;}
+  #questFace{position:absolute;left:12px;top:14px;width:34px;height:34px;border-radius:50%;}
+  @media (max-height:500px){ #questHUD{top:4px;transform:scale(.85);transform-origin:top left;} }
 
   /* achievement popup */
   #achPop{position:absolute;left:50%;top:-90px;transform:translateX(-50%);z-index:48;
@@ -929,9 +933,15 @@
   #achPop .achTxt span{color:#9c7233;font-size:12px;}
 
   /* toast */
-  #toast{position:absolute;left:50%;top:80px;transform:translateX(-50%);z-index:40;
-    background:rgba(20,14,8,.92);border:2px solid #ffd86b;color:#ffe7b0;font-weight:bold;
-    padding:10px 18px;border-radius:14px;font-size:14px;display:none;box-shadow:0 8px 20px rgba(0,0,0,.5);}
+  #toast{position:absolute;left:50%;top:132px;transform:translateX(-50%);z-index:40;pointer-events:none;
+    width:max-content;max-width:min(86vw,760px);text-align:center;color:#ffe7b0;font-weight:bold;
+    font-size:22px;line-height:1.3;letter-spacing:.01em;display:none;opacity:0;transition:opacity .25s;
+    text-shadow:0 2px 0 rgba(0,0,0,.85),0 0 3px rgba(0,0,0,.9),0 0 14px rgba(0,0,0,.6);}
+  #toast.on{opacity:1;}
+  @media (max-width:600px){ #toast{font-size:18px;top:112px;} }
+  /* an NPC line said in passing: the dialogue box, but it never blocks input and closes itself */
+  #dialogue.bark{pointer-events:none;}
+  #dialogue.bark .dlg-next{display:none;}
 
   /* level up */
   #levelup{position:absolute;inset:0;z-index:45;display:none;align-items:center;justify-content:center;
@@ -943,7 +953,7 @@
   #levelup p{color:#5a3d18;font-size:16px;margin-top:6px;}
 
   /* ── cinematic capture mode (trailer recording): F2 toggles, F3 letterbox ── */
-  body.cine .topbar, body.cine #uiBar, body.cine #questHUD, body.cine #chatLog,
+  body.cine .topbar, body.cine #uiOrbs, body.cine #lowHpVignette, body.cine #questHUD, body.cine #chatLog,
   body.cine #chatBar, body.cine #chatToggle, body.cine .touch-ctrl, body.cine #dpad, body.cine #joyZone,
   body.cine #interactBtn, body.cine #interactPrompt, body.cine #fightBtn,
   body.cine #toast, body.cine .statbar{display:none !important;}
@@ -1007,7 +1017,7 @@
         <div class="icon-btn" id="btnMap" title="Map"><img src="ui/icon_map.png" alt="Map"></div>
         <div class="icon-btn" id="btnPhone" title="Phone"><img src="ui/icon_phone.png" alt="Phone"></div>
         <div class="icon-btn" id="btnGacha" title="Lucky Capsule"><img src="ui/icon_can.png" alt="Lucky Capsule"></div>
-        <div class="back-btn" id="btnWar" title="Border War — a real-time strategy game">War</div>
+        <div class="icon-btn" id="btnWar" title="Border War — a real-time strategy game"><img src="ui/icon_warcat.png" alt="Border War"></div>
         <div class="back-btn" id="btnRocky" style="display:none;">Stay</div>
         <div class="chip" id="onlineChip" style="display:none;">Online <span id="hudOnline">1</span></div>
       </div>
@@ -1016,11 +1026,14 @@
     <div id="questHUD"></div>
     <canvas id="gameCanvas"></canvas>
 
-    <!-- persistent HUD: health orb · xp bar · coin slots · level orb -->
-    <div id="uiBar" aria-hidden="true">
+
+    <!-- low health: the edges of the screen bleed red -->
+    <div id="lowHpVignette" aria-hidden="true"></div>
+
+    <!-- health + mana orbs, bottom centre -->
+    <div id="uiOrbs" aria-hidden="true">
       <div id="uiHpOrb"><div id="uiHpGlass"><div id="uiHpFill"></div></div><div id="uiHpText">0 / 0</div></div>
       <div id="uiManaOrb"><div id="uiManaGlass"><div id="uiManaFill"></div></div><div id="uiManaText">0</div></div>
-      <div id="uiXpWrap"><div id="uiXpFill"></div><div id="uiXpLabel">Lv 1</div></div>
     </div>
 
     <!-- Dark Souls–style faint screen -->
@@ -1132,7 +1145,6 @@
       <div class="phone-status" id="phStatus">--:--</div>
       <div class="phone-clock"><div class="pDate" id="phDate">—</div></div>
       <div class="phone-apps">
-        <button class="phone-app" data-app="bank"><span class="pa-ico" style="background-image:url('Phone/bank.png')"></span><span class="pa-lbl">Bank</span></button>
         <button class="phone-app" data-app="wallet"><span class="pa-ico" style="background-image:url('Phone/wallet.png')"></span><span class="pa-lbl">Wallet</span></button>
         <button class="phone-app" data-app="backpack"><span class="pa-ico" style="background-image:url('Phone/backpack.png')"></span><span class="pa-lbl">Inventory</span></button>
         <button class="phone-app" data-app="shop"><span class="pa-ico pa-art" style="background-image:url('ui/btn_shop.png')"></span><span class="pa-lbl">Shop</span></button>
@@ -1421,7 +1433,11 @@ function load(){
   // deep-clone DEFAULT so its arrays/objects (items, spellbook, spellSlots, …) never get
   // shared with — and mutated through — the live save. Matters after "Reset all progress".
   const fresh=()=>JSON.parse(JSON.stringify(DEFAULT));
-  try{const r=JSON.parse(localStorage.getItem('puiutu_save'));return Object.assign(fresh(),r||{});}
+  try{const r=JSON.parse(localStorage.getItem('puiutu_save')), o=Object.assign(fresh(),r||{});
+    // hats were removed from the game: drop them from old saves
+    const GONE=['tophat','strawhat','ninja','halo','devilhorns','rainbowcrown','bow','cap','party','crown','wizard','crystalcrown'];
+    o.items=(o.items||[]).filter(i=>!GONE.includes(i)); if(GONE.includes(o.equipped)) o.equipped=null;
+    return o;}
   catch(e){return fresh();}
 }
 function save(){localStorage.setItem('puiutu_save',JSON.stringify(S));}
@@ -2003,29 +2019,6 @@ function drawHat(ctx,type,x,y,bob){
     [[-14,-20],[0,-28],[14,-20]].forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.6,0,7);ctx.fill();});
     ctx.fillStyle='#d8b6ff';ctx.beginPath();ctx.arc(0,-14,2.4,0,7);ctx.fill();
     ctx.restore();
-  }else if(type==='tophat'){
-    ctx.fillStyle='#1c1c22';ctx.fillRect(-15,-12,30,4); ctx.fillRect(-10,-30,20,18);
-    ctx.fillStyle='#c0392b';ctx.fillRect(-10,-18,20,4);
-  }else if(type==='strawhat'){
-    ctx.fillStyle='#d9a441';ctx.beginPath();ctx.ellipse(0,-11,17,5,0,0,7);ctx.fill();
-    ctx.fillStyle='#e7b85a';ctx.beginPath();ctx.arc(0,-12,9,Math.PI,0);ctx.fill();
-    ctx.fillStyle='#9c5a2a';ctx.fillRect(-9,-13,18,3);
-  }else if(type==='ninja'){
-    ctx.fillStyle='#2b2f3a';ctx.fillRect(-15,-15,30,6);
-    ctx.fillStyle='#2b2f3a';ctx.beginPath();ctx.moveTo(15,-14);ctx.lineTo(26,-10);ctx.lineTo(26,-6);ctx.lineTo(15,-9);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#d8453a';ctx.fillRect(-4,-14,8,5);
-  }else if(type==='halo'){
-    const pl=0.6+0.4*Math.sin(Date.now()*0.005); ctx.save(); ctx.shadowColor='#ffe680'; ctx.shadowBlur=12*pl;
-    ctx.strokeStyle='#ffe066';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,-26,12,4.5,0,0,7);ctx.stroke(); ctx.restore();
-  }else if(type==='devilhorns'){
-    ctx.fillStyle='#b3231b';
-    ctx.beginPath();ctx.moveTo(-12,-10);ctx.quadraticCurveTo(-16,-24,-7,-26);ctx.quadraticCurveTo(-10,-18,-6,-11);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(12,-10);ctx.quadraticCurveTo(16,-24,7,-26);ctx.quadraticCurveTo(10,-18,6,-11);ctx.closePath();ctx.fill();
-  }else if(type==='rainbowcrown'){
-    const pl=0.6+0.4*Math.sin(Date.now()*0.004); ctx.save(); ctx.shadowColor='#ff7ad9'; ctx.shadowBlur=10*pl;
-    ctx.fillStyle='#ffd029';ctx.beginPath();ctx.moveTo(-14,-10);ctx.lineTo(-14,-22);ctx.lineTo(-7,-15);ctx.lineTo(0,-26);ctx.lineTo(7,-15);ctx.lineTo(14,-22);ctx.lineTo(14,-10);ctx.closePath();ctx.fill();
-    const gem=['#ff4d4d','#ffd24d','#4dff88','#4dd2ff','#c87cff'];
-    [[-14,-22],[-7,-15],[0,-26],[7,-15],[14,-22]].forEach((p,i)=>{ctx.fillStyle=gem[i];ctx.beginPath();ctx.arc(p[0],p[1],2.4,0,7);ctx.fill();}); ctx.restore();
   }
   ctx.restore();
 }
@@ -2302,7 +2295,7 @@ const ESPRITES={};
 ['duck','duck_def','pigeon','pigeon_def','raccoon','raccoon_def','clobster','clobster_def'].forEach(k=>{ const im=new Image(); im.src='mobs/enemy_'+k+'.png'; ESPRITES[k]=im; });
 // deep-sea creature sprites (sliced from deepseamobs.png) — Ocean Depths / Sunken Sanctum mobs
 const SEA_IMG={};
-['angler','jelly','isopod','smallfish'].forEach(k=>{ const im=new Image(); im.src='mobs/deepsea_'+k+'.png'; SEA_IMG[k]=im; });
+['angler','jelly','isopod','smallfish'].forEach(k=>{ const im=new Image(); im.src='mobs/deepsea_'+k+(k==='isopod'?'_flat':'')+'.png'; SEA_IMG[k]=im; });   // the isopod's art is turned level (−23°) so it lies flat on the stone
 // abyss boss art (optional — procedural fallback used until these load).
 // abyss_tentacle.png = a horizontal sprite-sheet of square frames; abyss_core.png = a single frame.
 const ABYSS_TENT=new Image(); ABYSS_TENT.src='mobs/tentacle.png?v=2';
@@ -2333,18 +2326,34 @@ const ARMY_FRAMES={ cat_commander:5, cat_emissary:6, pig_agent:6, rat_emissary:6
 function drawEnemy(ctx,sx,sy,facing,type,opt={}){
   const h=opt.h||80;
   const defeated=opt.defeated;
-  // ── sea creatures: drawn from the fishing / deep-sea sprites, hovering above the floor ──
+  // ── sea creatures: drawn from the fishing / deep-sea sprites, hovering above the floor (or, for k.ground, standing on it) ──
   if(SEA_KINDS[type]){
     const k=SEA_KINDS[type];
     const img = k.src==='sea' ? SEA_IMG[type] : FISH_IMG[type];
-    const sway = Math.sin((opt.phase||0)*1.4)*4 + 2;     // buoyant hover
-    ctx.save(); ctx.globalAlpha=0.16; ctx.fillStyle='#000';
-    ctx.beginPath(); ctx.ellipse(sx,sy+2,h*0.34,h*0.08,0,0,7); ctx.fill(); ctx.restore();
+    // swimmers hover and bob; a bottom-dweller (k.ground) sits on the stone and crawls
+    const t=opt.phase||0, walking=k.ground&&opt.moving;
+    const sway = k.ground ? 0 : Math.sin(t*1.4)*4 + 2;
+    if(k.ground){
+      // a soft wide pool of shade + a tight dark contact line where the legs meet the stone
+      const sw=(img&&img.naturalWidth)?img.naturalWidth/img.naturalHeight*h:h*1.8;
+      ctx.save(); ctx.fillStyle='#000';
+      ctx.globalAlpha=0.24; ctx.beginPath(); ctx.ellipse(sx,sy-2,sw*0.46,h*0.13,0,0,7); ctx.fill();
+      ctx.globalAlpha=0.40; ctx.beginPath(); ctx.ellipse(sx,sy-3,sw*0.36,h*0.055,0,0,7); ctx.fill();
+      ctx.restore();
+    } else {
+      ctx.save(); ctx.globalAlpha=0.16; ctx.fillStyle='#000';
+      ctx.beginPath(); ctx.ellipse(sx,sy+2,h*0.34,h*0.08,0,0,7); ctx.fill(); ctx.restore();
+    }
     if(img&&img.complete&&img.naturalWidth){
       const iw=img.naturalWidth/img.naturalHeight*h;
       ctx.save();
-      ctx.translate(sx, sy - h*0.55 - sway);
+      ctx.translate(sx, sy - (k.ground ? h*0.46 : h*0.55) - sway);   // ground: the feet sink a hair into the shadow
       ctx.scale(facing*(k.face||1), 1);                  // point toward swim direction
+      if(walking){                                        // legs rippling: a slight rock and a low lift
+        ctx.rotate(Math.sin(t*7)*0.022);
+        ctx.translate(0, -Math.abs(Math.sin(t*14))*1.1);
+        ctx.scale(1+Math.sin(t*14)*0.012, 1-Math.sin(t*14)*0.012);
+      }
       if(defeated) ctx.globalAlpha=opt.fade!=null?opt.fade:0.6;
       if(k.big && !defeated){ ctx.shadowColor='rgba(120,200,255,0.55)'; ctx.shadowBlur=18; }
       ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
@@ -2649,23 +2658,10 @@ function thirdWayMissing(){
 
 //──────────────────────────────────────────────────────────────── SHOP DATA
 const SHOP=[
-  {id:'bow',  emoji:'', name:'Pink Bow',  desc:'For the cutest puiutu', price:30, type:'hat'},
-  {id:'cap',  emoji:'', name:'Cap',      desc:'Street style', price:50, type:'hat'},
-  {id:'party',emoji:'', name:'Party Hat', desc:'It’s a birthday!', price:80, type:'hat'},
-  {id:'crown',emoji:'', name:'Crown', desc:'King of the garden', price:150, type:'hat'},
-  {id:'wizard',emoji:'',name:'Wizard Hat',desc:'Cat magic',price:200,type:'hat'},
   {id:'dbljump',emoji:'',name:'Double Jump',desc:'Jump again in mid-air (ability)',price:120,type:'ability'},
   {id:'speed', emoji:'', name:'Fast Paws',desc:'Run faster (ability)',price:120,type:'ability'},
   // trophy — not sold; only dropped by Seby the Ancient One (hidden from the shop list)
-  {id:'crystalcrown',emoji:'',name:'Crystal Crown',desc:'Trophy: vanquished Queen Seby the Ancient One',price:99999,type:'hat',trophy:true},
-  {id:'purplecrystal',emoji:'',name:'Purple Crystal',desc:'Cut from the cave Queen Seby was guarding. The runes want one of these.',price:99999,type:'key',trophy:true},
-  // gacha-exclusive cosmetics (not sold; won from the Lucky Capsule)
-  {id:'tophat',     emoji:'',name:'Top Hat',      desc:'Dapper.',                 price:0,type:'hat',trophy:true,gacha:true},
-  {id:'strawhat',   emoji:'',name:'Straw Hat',    desc:'Sunny days.',             price:0,type:'hat',trophy:true,gacha:true},
-  {id:'ninja',      emoji:'',name:'Ninja Band',   desc:'Silent paws.',            price:0,type:'hat',trophy:true,gacha:true},
-  {id:'halo',       emoji:'',name:'Angel Halo',   desc:'Such a good kitty.',      price:0,type:'hat',trophy:true,gacha:true},
-  {id:'devilhorns', emoji:'',name:'Devil Horns',  desc:'Mischief incarnate.',     price:0,type:'hat',trophy:true,gacha:true},
-  {id:'rainbowcrown',emoji:'',name:'Rainbow Crown',desc:'Legendary capsule prize!',price:0,type:'hat',trophy:true,gacha:true},
+  {id:'purplecrystal',emoji:'',img:'fx/crystal_shard_icon.png',name:'Purple Crystal',desc:'Cut from the cave Queen Seby was guarding. The runes want one of these.',price:99999,type:'key',trophy:true},
 ];
 
 //──────────────────────────────────────────────────────────────── AREAS
@@ -2888,6 +2884,8 @@ function buildAreas(){
         mobTypes:['jelly','jelly','clownfish'],                            // sealed: a few calm jellies
         mobSolved:['angler','jelly','isopod','greatwhite','jelly','isopod','angler','hammerhead'],  // opened: deep-sea + sharks (Great White + Hammerhead) as the legendaries
         mobXf:[0.16,0.27,0.38,0.49,0.60,0.71,0.82,0.90],
+        // bottom-dwellers (the isopods) keep to the round stone platform, never the portal in its middle
+        groundZone:{xf:0.555, yf:0.70, rx:0.205, ry:0.235, hole:{xf:0.568, yf:0.608, rx:0.085, ry:0.12}},
         walkTop:0.40, walkBot:0.96,
         scaleFar:0.64, scaleNear:1.06,
         spawn:{xf:0.0822, yf:0.6298},                 // arrive from the cave passage on the left
@@ -3189,11 +3187,11 @@ function buildAreas(){
         // the pig staff behind the counter — drawn cropped (only the top part shows above the counter)
         // where they have always stood, behind the closed vault's counter
         staff:[ {img:'misterpig', xf:0.368, yf:0.820, h:156, face:1, cut:1, r:100, name:'Mister Pig',
-                  lines:['Mister Pig: Mmm… let me just balance these ledgers.','A fish saved is a fish earned, young Puiutu.','Oink. Numbers never lie.']},
+                  lines:['Mmm… let me just balance these ledgers.','A fish saved is a fish earned, young Puiutu.','Oink. Numbers never lie.']},
                 {img:'piggyjunior', xf:0.596, yf:0.827, h:104, face:-1, cut:1, r:100, name:'Piggy Junior',
-                  lines:['Piggy Junior: Oink oink! I keep the big vault all shiny!','One day I’ll count EVERY fish in here. Maybe two days.']} ],
+                  lines:['Oink oink! I keep the big vault all shiny!','One day I’ll count EVERY fish in here. Maybe two days.']} ],
         bankdesk:{xf:0.505, yf:0.678, r:170, img:'siroink', h:116, cut:0.76, name:'Sir Oink',   // -> banking UI
-                  lines:['Oink~ Welcome to Whisker Savings Bank, Puiutu!','Every little fish counts in here — deposit them and they’ll grow with interest.','Here, take the bank on your phone. Manage your fish anytime!']},
+                  lines:['Oink~ Welcome to Whisker Savings Bank, Puiutu!','Every little fish counts in here — deposit them and they’ll grow with interest.','Come back to my desk whenever you want to deposit or withdraw. Oink!']},
         // Two doors on the far wall. The enormous steel vault is the one everybody looks at, and
         // it is exactly what it appears to be — the room where the fish are kept. The lift beside
         // it is the one that matters, and it is the most boring object in the building.
@@ -3302,7 +3300,7 @@ const QUESTS={
     progress:['You still have enemies to deal with. Get close and right-click (or press F) to attack.'],
     complete:['Magnifique! You beat them in style.','Here’s your reward, brave one.'],
     done:['Stay elegant, Puiutu. Mrrow~'] },
-  nomnom:{ name:'NomNom', cat:'nomnom', goal:{type:'fish', n:15}, reward:{coins:80, xp:100, item:'crown'},
+  nomnom:{ name:'NomNom', cat:'nomnom', goal:{type:'fish', n:15}, reward:{coins:80, xp:100},
     offer:['Psst! Puiutu! You shouldn’t be here in the slums…',
            'A masked thief rules this place — the Evil Coon. He robbed everyone and slunk into that dark alley to the east.',
            'They say his lair is piled with stolen treasure… and bananas. So many bananas.',
@@ -3467,6 +3465,10 @@ const RO = {
   "They told you I was a monster. Good. That was the point.":"Ți-au spus că sunt un monstru. Bine. Asta era ideea.",
   "Do not make me get up.":"Nu mă face să mă ridic.",
   "Enough crawling.":"Gata cu târâtul.",
+  "You were invited. That is not the same as being welcome.":"Ai fost invitat. Nu e același lucru cu a fi binevenit.",
+  "…Fine. FINE. I will do it myself.":"…Bine. BINE. O fac eu însumi.",
+  "MY treasure!":"Comoara MEA!",
+  "The Evil Coon turns to FIGHT!":"Evil Coon se întoarce să LUPTE!",
   "What’s your name?":"Cum te cheamă?",
   "Your name appears above your cat, for your friends.":"Numele tău apare deasupra pisicii tale, pentru prietenii tăi.",
   "Enter game":"Intră în joc",
@@ -3529,7 +3531,9 @@ const RO = {
   "Rocky will wait here.":"Rocky va aștepta aici.",
   "Oink~ Welcome to Whisker Savings Bank, Puiutu!":"Oinc~ Bine ai venit la Banca Whisker Savings, Puiutu!",
   "Every little fish counts in here — deposit them and they’ll grow with interest.":"Fiecare peștișor contează aici — depune-i și vor crește cu dobândă.",
-  "Here, take the bank on your phone. Manage your fish anytime!":"Uite, ia banca pe telefon. Îți gestionezi peștii oricând!",
+  "Come back to my desk whenever you want to deposit or withdraw. Oink!":"Vino la ghișeul meu oricând vrei să depui sau să retragi. Oinc!",
+  "Meow Stock Exchange":"Bursa Meow",
+  "Back on your feet. The fight starts over.":"Te-ai ridicat. Lupta începe de la capăt.",
   "Mmm… let me just balance these ledgers.":"Mmm… să echilibrez puțin registrele astea.",
   "A fish saved is a fish earned, young Puiutu.":"Un pește economisit e un pește câștigat, tinere Puiutu.",
   "Oink. Numbers never lie.":"Oinc. Cifrele nu mint niciodată.",
@@ -4288,9 +4292,8 @@ RO_PAT.push(
   [/^Level ?(\d+) solved!\s+\+(\S+)\s+\+(\d+) XP$/, m=>'Nivelul '+m[1]+' rezolvat!  +'+m[2]+'  +'+m[3]+' XP'],
   [/^Level (\d+) done!$/, m=>'Nivelul '+m[1]+' terminat!'],
   // fights
-  [/^BOSS defeated! \+(\S+)\s+\+(\d+) XP\s+\+ wizard hat!$/, m=>'BOSS învins! +'+m[1]+'  +'+m[2]+' XP  + pălărie de vrăjitor!'],
-  [/^BOSS defeated! \+(\S+)\s+\+(\d+) XP\s+\+ hat!$/, m=>'BOSS învins! +'+m[1]+'  +'+m[2]+' XP  + pălărie!'],
-  [/^Queen Seby, the Ancient One falls! \+(\S+)\s+\+(\d+) ?XP \+ Crystal Crown!$/, m=>'Regina Seby, Cea Străveche, cade! +'+m[1]+'  +'+m[2]+' XP + Coroana de cristal!'],
+  [/^BOSS defeated! \+(\S+)\s+\+(\d+) XP$/, m=>'BOSS învins! +'+m[1]+'  +'+m[2]+' XP'],
+  [/^Queen Seby, the Ancient One falls! \+(\S+)\s+\+(\d+) ?XP$/, m=>'Regina Seby, Cea Străveche, cade! +'+m[1]+'  +'+m[2]+' XP'],
   [/^The Dreamer recoils into the abyss! \+(\S+)\s+\+(\d+) ?XP$/, m=>'Visătorul se retrage în abis! +'+m[1]+'  +'+m[2]+' XP'],
   [/^The Evil Coon is defeated! \+(\S+)\s+\+(\d+) ?XP — the sewers fall quiet\. Head for the light to leave\.$/, m=>'Evil Coon e învins! +'+m[1]+'  +'+m[2]+' XP — canalizarea se liniștește. Mergi spre lumină ca să ieși.'],
   [/^(.*?)\s*defeated!\s+\+(\S+)\s+\+(\d+) ?XP$/, m=>(m[1]?_rw(m[1])+' învins!':'Învins!')+'  +'+m[2]+'  +'+m[3]+' XP'],
@@ -4498,7 +4501,7 @@ const P={x:80,y:500,vx:0,vy:0,w:30,h:54,onGround:false,canDjump:false,facing:1,p
 // Rocky the companion dog
 const COMP={x:80,y:480,facing:1,phase:0,moving:false,atkCD:0,barkUntil:0,staying:false};
 function spawnCompanion(){ COMP.x=P.x-P.facing*46; COMP.y=P.groundY; COMP.staying=!!S.rockyStay; updateRockyBtn(); }
-function playerMaxHp(){ return 24+S.level*6; }
+function playerMaxHp(){ return 40+S.level*10; }
 // ── Level scaling ─────────────────────────────────────────────────────────────────────────
 // Every fight was tuned for the level you would usually have when you reach it, and then never
 // moved: past that level the bosses folded in a few hits and barely scratched you. Each area now
@@ -4679,8 +4682,8 @@ function doInteract(){
         npcSay('Rat Emissary: Away from the stand. That suit is not for cats who cannot pay for it.','rat_emissary');
       else { toast('Something is missing here… you need a diving suit. Ask Sir Oink at the bank.'); SFX&&SFX.tone&&SFX.tone(200,0.12,'sine',0.05); } }
   else if(t==='digsite') digOpen();
-  else if(t==='bankdesk'){ const bd=A.hub.bankdesk; loreOpen(bd.name||'Sir Oink', bd.lines||[], ()=>{ openModal('market'); switchMarketTab('bank'); }); }
-  else if(t==='staff'){ const s=HUB.nearStaff; if(s) loreOpen(s.name||'Pig', s.lines||[]); }
+  else if(t==='bankdesk'){ const bd=A.hub.bankdesk; sayLines(T(bd.name||'Sir Oink'), bd.lines||[], {img:PIG_IMG[bd.img], bg:'#1b2433', tone:300, then:()=>openMarket('bank')}); }
+  else if(t==='staff'){ const s=HUB.nearStaff; if(s) sayLines(T(s.name||'Pig'), s.lines||[], {img:PIG_IMG[s.img], bg:'#1b2433', tone:340}); }
   else if(t==='merge') mgOpen();
   else if(t==='door'){ const dr=HUB.nearDoor; if(dr){
       if(dr.minigame==='minecart'){ mcOpen(); return; }   // the Rat Warren mine ride
@@ -4851,9 +4854,9 @@ const SEA_KINDS={
   porcupinefish:{name:'Porcupinefish', hp:56, cdmg:[7,12], xp:32, coins:16, src:'fish', face:1, bh:62},
   barracuda:    {name:'Barracuda',     hp:62, cdmg:[8,13], xp:38, coins:20, src:'fish', face:1, bh:78},
   // Sunken Sanctum (ocean 2) — deep-sea creatures + sharks: tougher, richer loot
-  angler:       {name:'Anglerfish',    hp:78, cdmg:[8,14], xp:46, coins:24, src:'sea',  face:1,  bh:96},
+  angler:       {name:'Anglerfish',    hp:78, cdmg:[8,14], xp:46, coins:24, src:'sea',  face:1,  bh:64},
   jelly:        {name:'Jellyfish',     hp:58, cdmg:[7,12], xp:40, coins:20, src:'sea',  face:1,  bh:112},
-  isopod:       {name:'Giant Isopod',  hp:96, cdmg:[6,11], xp:42, coins:22, src:'sea',  face:-1, bh:92},
+  isopod:       {name:'Giant Isopod',  hp:96, cdmg:[6,11], xp:42, coins:22, src:'sea',  face:-1, bh:78, ground:true},   // crawls the seabed (bh trimmed: the levelled art is shorter, same body size)
   // sharks: rare but huge — they dwarf everything else down here
   hammerhead:   {name:'Hammerhead',    hp:190,cdmg:[14,22],xp:120,coins:75, src:'fish', face:1,  bh:128, big:true},
   greatwhite:   {name:'Great White',   hp:240,cdmg:[18,28],xp:170,coins:100,src:'fish', face:1,  bh:150, big:true},
@@ -4952,8 +4955,8 @@ function startGame(){
   showScreen('game');
   resize();
   if(!A) enterArea('garden',false);
-  P.maxHp=playerMaxHp(); if(P.hp<=0||P.hp>P.maxHp) P.hp=P.maxHp;
-  P.maxMana=playerMaxMana(); if(P.mana==null||P.mana>P.maxMana) P.mana=P.maxMana;
+  P.maxHp=playerMaxHp(); P.hp=P.maxHp;                  // you always come into the game rested:
+  P.maxMana=playerMaxMana(); P.mana=P.maxMana;          // full health, full mana
   SPELLS.filter(s=>s.source==='start').forEach(s=>grantSpell(s.id));   // starter spellbook
   if(!S.introSeen) playIntro(()=>toast('Something is glowing in the garden.'));
   if(S.companion) spawnCompanion();
@@ -5098,6 +5101,15 @@ function bankWithdraw(amt){
   tickMarket(); amt=Math.min(Math.floor(amt),Math.floor(S.bank)); if(amt<=0) return;
   S.bank-=amt; S.coins+=amt; SFX.coin&&SFX.coin(); save(); syncHUD(); renderMarket();
 }
+// The bank is a place: you deposit and withdraw at Sir Oink's desk and nowhere else. The stock
+// exchange is an app on your phone. Each opens the same window with only its own page — no tabs.
+function openMarket(tab){
+  openModal('market');
+  const m=document.getElementById('market');
+  m.querySelector('.modal-head h2').textContent=T(tab==='bank'?'Whisker Savings Bank':'Meow Stock Exchange');
+  m.querySelector('.mkt-tabs').style.display='none';
+  switchMarketTab(tab);
+}
 function switchMarketTab(tab){ marketTab=tab;
   document.querySelectorAll('.mkt-tab').forEach(b=>b.classList.toggle('active',b.dataset.mtab===tab));
   renderMarket();
@@ -5188,19 +5200,17 @@ function setCoinIco(id){
 }
 function initUIBar(){ for(const id in COIN_ICO) setCoinIco(id); }
 function updateUIBar(){
-  const bar=document.getElementById('uiBar'); if(!bar) return;
+  const bar=document.getElementById('uiOrbs'); if(!bar) return;
   const mx=Math.max(1,P.maxHp||1), pct=Math.max(0,Math.min(1,(P.hp||0)/mx));
   const hpFill=document.getElementById('uiHpFill'), hpText=document.getElementById('uiHpText');
   hpFill.style.height=(pct*100)+'%';
   hpText.textContent=Math.max(0,Math.ceil(P.hp||0))+' / '+(P.maxHp||0);
-  // out-of-combat HP regen → green glow pulse on the orb
+  // below 30% the screen edges go red, stronger the lower you are
+  const vg=document.getElementById('lowHpVignette');
+  if(vg){ const low=pct<0.3 && P.hp>0; vg.style.opacity=low?(0.55+0.45*(1-pct/0.3)).toFixed(2):'0'; vg.classList.toggle('on',low); }
+  // out-of-combat HP regen → a soft shimmer on the fill
   const regen=(P.hp>0 && P.hp<P.maxHp && Date.now()-(P.lastHit||0)>2600);
   hpFill.classList.toggle('regen',regen);
-  hpText.classList.toggle('regen',regen);
-  const need=xpForLevel(S.level);
-  const xpPct=Math.max(0,Math.min(1,S.xp/need));
-  document.getElementById('uiXpFill').style.width=(xpPct*100)+'%';
-  document.getElementById('uiXpLabel').textContent='Lv '+S.level;
   const mmx=Math.max(1,P.maxMana||1), mpct=Math.max(0,Math.min(1,(P.mana||0)/mmx));
   const mFill=document.getElementById('uiManaFill'), mText=document.getElementById('uiManaText');
   if(mFill){ mFill.style.height=(mpct*100)+'%'; mText.textContent=Math.floor(P.mana||0); }
@@ -5430,7 +5440,7 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
     }
     if(ab.state==='exposed'){
       const cx=A.hub.coreXf*HUB.worldW, cy=A.hub.coreYf*VH;
-      if(near(cx,cy,24)){ ab.headHp-=dmg; ab.hitFlash=now; hits++; floatText(cx,cy-30,'-'+dmg,'#ff8a8a');
+      if(near(cx,cy,44)){ ab.headHp-=dmg; ab.hitFlash=now; hits++; floatText(cx,cy-60,'-'+dmg,'#ff8a8a');
         if(ab.headHp<=0) abyssVictory(now); }
     }
   }
@@ -5525,12 +5535,11 @@ function sebyDefeated(b,now){
   SEBY_MUSIC.finale();                                     // the bells come down; then the cave is quiet
   setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.sebyMusic) MUSIC.start(); }, 4200);
   setTimeout(refreshGarrison, 900);   // he does not wait for you to leave — he turns up over her body
-  if(!S.items.includes('crystalcrown')) S.items.push('crystalcrown');
   // the crystal is NOT loot. The piglet by the portal hands you one, and that is the point.
   grantSpell('crystalspikes','Queen Seby\'s power is yours — Crystal Spikes learned!');
   SFX.win();
   for(let i=0;i<12;i++) floatText(b.x+(Math.random()-.5)*150, b.y-10-Math.random()*110, '', i%2?'#9fe6ff':'#b07cf0');
-  toast('Queen Seby, the Ancient One falls! +'+moneyText(k.coins)+'  +'+k.xp+'XP + Crystal Crown!');
+  toast('Queen Seby, the Ancient One falls! +'+moneyText(k.coins)+'  +'+k.xp+' XP');
   questProgress('defeat'); checkAchievements(); renderStatbars();
 }
 
@@ -5566,16 +5575,14 @@ function killEnemy(e){
     e.respawnAt=Date.now()+30000;   // boss returns after 30s
     if(e.bossKind==='seby'){
       S.sebyDefeated=true;
-      if(!S.items.includes('crystalcrown')) S.items.push('crystalcrown');
       grantSpell('crystalspikes','Queen Seby\'s power is yours — Crystal Spikes learned!');
       // a shower of crystal shards on defeat
       for(let i=0;i<22;i++)particles.push({x:e.x,y:e.y-50,vx:(Math.random()-.5)*9,vy:-(Math.random()*6+1),life:1,c:i%2?'#9fe6ff':'#b07cf0'});
-      toast('Queen Seby, the Ancient One falls! +'+moneyText(k.coins)+'  +'+k.xp+'XP + Crystal Crown!');
+      toast('Queen Seby, the Ancient One falls! +'+moneyText(k.coins)+'  +'+k.xp+' XP');
     }else{
       S.bossDefeated=true;
-      if(!S.items.includes('wizard')) S.items.push('wizard');
       grantSpell('thunderpaw','The King\'s storm is yours — Thunder Paw learned!');
-      toast('BOSS defeated! +'+moneyText(k.coins)+'  +'+k.xp+' XP  + hat!');
+      toast('BOSS defeated! +'+moneyText(k.coins)+'  +'+k.xp+' XP');
     }
   }else{
     e.respawnAt=Date.now()+ENEMY_RESPAWN; SFX.coin();
@@ -6438,7 +6445,6 @@ function winBattle(){
   if(boss){
     S.bossDefeated=true;
     S.coins+=100; addXP(150);
-    if(!S.items.includes('wizard')){ S.items.push('wizard'); }  // trophy hat
     grantSpell('thunderpaw','The King\'s storm is yours — Thunder Paw learned!');
     battleMsg('YOU BEAT THE KING! You’re a legend!'); SFX.win();
   }else{
@@ -6454,7 +6460,7 @@ function winBattle(){
     B.enemy.defeated=true; B.enemy.defeatedAt=Date.now();
     const n = boss?40:16;
     for(let i=0;i<n;i++)particles.push({x:B.enemy.x,y:B.enemy.y-30,vx:(Math.random()-.5)*8,vy:-(Math.random()*6+2),life:1,c:i%2?'#ffd86b':'#fff'});
-    toast(boss ? 'BOSS defeated! +'+moneyText(100)+'  +150 XP  + wizard hat!' : (B.enemy.type==='duck'?'':'')+' defeated!  +'+moneyText(15)+'  +20 XP');
+    toast(boss ? 'BOSS defeated! +'+moneyText(100)+'  +150 XP' : (B.enemy.type==='duck'?'':'')+' defeated!  +'+moneyText(15)+'  +20 XP');
     P.battleCD=Date.now()+900; P.vy=-3;
   }, boss?2200:1500);
 }
@@ -6858,6 +6864,24 @@ function resolveSolvedHub(H){
     H.img=H._imgSealed; H.mask=H._maskSealed; H.mobTypes=H._mobsSealed;
   }
 }
+// is (x,y) on this hub's crawlable ground (A.hub.groundZone: an ellipse, minus an optional hole)?
+function inGroundZone(x,y){
+  const z=A.hub.groundZone; if(!z) return true;
+  const ex=(x-z.xf*HUB.worldW)/(z.rx*HUB.worldW), ey=(y-z.yf*VH)/(z.ry*VH);
+  if(ex*ex+ey*ey>1) return false;
+  const h=z.hole; if(!h) return true;
+  const hx=(x-h.xf*HUB.worldW)/(h.rx*HUB.worldW), hy=(y-h.yf*VH)/(h.ry*VH);
+  return hx*hx+hy*hy>=1;
+}
+function groundSpot(){
+  const z=A.hub.groundZone;
+  for(let t=0;t<60;t++){
+    const a=Math.random()*6.283, r=Math.sqrt(Math.random());
+    const x=(z.xf+Math.cos(a)*r*z.rx)*HUB.worldW, y=(z.yf+Math.sin(a)*r*z.ry)*VH;
+    if(inGroundZone(x,y) && (!maskReady()||maskClassify(x,y)==='walk')) return {x,y};
+  }
+  return {x:z.xf*HUB.worldW, y:(z.yf+z.ry*0.6)*VH};
+}
 // (re)spawn this hub's critters from H.mobTypes / H.mob — used on entry and after a morph
 function spawnHubMobs(){
   const H=A.hub, b=hubBand(), mob=H.mob||'duck';
@@ -6870,6 +6894,7 @@ function spawnHubMobs(){
     const rg=70+Math.random()*70;
     if(isSea(type)){
       const k=enemyKind(type);
+      if(k.ground && H.groundZone){ const p=groundSpot(); x=p.x; y=p.y; }   // bottom-dwellers start on their stone
       if(k.school){
         // a tight shoal of 5–10 that drifts together around a wandering school centre
         const n=k.school[0]+Math.floor(Math.random()*(k.school[1]-k.school[0]+1));
@@ -6884,7 +6909,8 @@ function spawnHubMobs(){
         }
         return;
       }
-      HUB.ducks.push({type, sea:true, x, x0:x-rg, x1:x+rg, y, homeX:x, homeY:y, range:160, heading:(Math.random()<.5?0:Math.PI),
+      HUB.ducks.push({type, sea:true, hostile:SHARK_TYPES.includes(type),   // sharks hunt you; everything else just swims
+        x, x0:x-rg, x1:x+rg, y, homeX:x, homeY:y, range:160, heading:(Math.random()<.5?0:Math.PI),
         dir:Math.random()<.5?-1:1, phase:Math.random()*6, speed:(k.big?0.85:0.6)+Math.random()*0.4,
         level:0, kind:k, sprite:null, hp:k.hp, maxHp:k.hp, kx:0, hitFlash:0, dead:false, respawnAt:0});
       scaleMob(HUB.ducks[HUB.ducks.length-1]);
@@ -7356,7 +7382,7 @@ function enterHub(fromRight){
     if(H.imgCalm) H.img=H.imgCalm;                 // always enter on the calm temple
     const now=Date.now();
     const ahp=Math.round(600*HUB.lvBoss.hp);
-    HUB.abyss={ phase:0, state:'intro', introT0:now, introUntil:now+12000, tentacles:[], headHp:ahp, headMax:ahp,
+    HUB.abyss={ phase:0, state:'intro', introT0:now, introUntil:now+(RETRY_AREA===curArea?1500:12000), tentacles:[], headHp:ahp, headMax:ahp,
                 beamCD:now+2400, hitFlash:0, exposedUntil:0, shakeT:now };
     document.body.classList.add('cinema');          // its waking is a scene: touch controls out of the shot
   } else { if(HUB.abyss) document.body.classList.remove('cinema'); HUB.abyss=null; }
@@ -7454,7 +7480,7 @@ function updateAbyssBoss(now){
       t.slamAt=0; t.nextSlam=now+1500+Math.random()*1400;
     }
   }
-  if(ab.state==='tentacles' && alive===0){ ab.state='exposed'; ab.exposedUntil=now+7000; SFX.tone&&SFX.tone(520,0.2,'sine',0.05); toast('Its core is exposed — strike it!'); }
+  if(ab.state==='tentacles' && alive===0){ ab.state='exposed'; ab.exposedUntil=now+7000; SFX.tone&&SFX.tone(520,0.2,'sine',0.05); }
   else if(ab.state==='exposed' && now>ab.exposedUntil){ ab.phase=Math.min(ab.phase+1,2); abyssNextWave(now,ab.phase); }
 }
 function abyssVictory(now){
@@ -7523,7 +7549,7 @@ function updateSewer(now){
   if(!boss) for(const l of SEWER.loot){ if(l.got)continue; if(Math.hypot(c.x-l.x,c.y-l.y)<40){ l.got=true; SEWER.got++; SFX.coin&&SFX.coin();
     for(let i=0;i<10;i++)particles.push({x:l.x,y:l.y-10,vx:(Math.random()-.5)*4,vy:-(Math.random()*4),life:1,c:'#ffd86b'});
     toast('Recovered '+(l.name||'stolen treasure')+'!  ('+SEWER.got+'/'+SEWER.loot.length+')');
-    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=Math.round(260*((HUB.lvBoss&&HUB.lvBoss.hp)||1));   /* 150+10·L at its level 11; scales like every boss */ SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); toast('“MY treasure!” — the Evil Coon turns to FIGHT!'); } } }
+    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=Math.round(260*((HUB.lvBoss&&HUB.lvBoss.hp)||1));   /* 150+10·L at its level 11; scales like every boss */ SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); npcBark('The Evil Coon','MY treasure!',{bg:'#1a1410', tone:120}); toast('The Evil Coon turns to FIGHT!'); } } }
   const chasing = boss || now>SEWER.chaseStart;
   if(chasing && !SEWER.warned){ SEWER.warned=true; SFX.lose&&SFX.lose(); toast('It’s coming — RUN!'); }
   // periodic FRENZY bursts (faster + growl + red flash)
@@ -7737,6 +7763,20 @@ function landHub(){
   else if(cl==='walk'){ c.onPlat=false; c.safeX=c.x; c.safeY=c.y; }
   else { c.x=c.safeX; c.y=c.safeY; }   // landed somewhere illegal -> snap back
 }
+// Is a boss fight on right now? (a boss that is up and not beaten, or the Dreamer awake)
+function bossFightLive(){
+  const ab=HUB.abyss; if(ab && ab.state!=='dead' && ab.state!=='sinking') return true;
+  const b=HUB.boss; return !!(b && !b.defeated);
+}
+// Fainting in a boss fight doesn't drop you at the door with the boss half-dead: the arena is
+// rebuilt and the whole fight starts over, boss at full health, you at full health.
+let RETRY_AREA=null;
+function restartBossFight(now){
+  if(HUB.restarting) return; HUB.restarting=true;
+  P.hp=P.maxHp; P.iframe=now+4000; HUB.target=null;
+  setTimeout(()=>{ RETRY_AREA=curArea; P.hp=P.maxHp; enterArea(curArea,false); RETRY_AREA=null; HUB.restarting=false;
+                   toast('Back on your feet. The fight starts over.'); }, 1400);
+}
 // hurt the cat in top-down mode: damage + knockback away from (fx,fy); faint -> back to the area spawn
 function hubHurtPlayer(now,dmg,col,fx,fy,kb){
   if(now<=(P.iframe||0)) return;
@@ -7748,6 +7788,7 @@ function hubHurtPlayer(now,dmg,col,fx,fy,kb){
   if(!maskReady() || maskClassify(nx,ny)==='walk'){ c.x=nx; c.y=ny; c.safeX=nx; c.safeY=ny; }
   if(P.hp<=0){
     SFX.lose(); showFaintScreen();
+    if(bossFightLive()){ restartBossFight(now); return; }
     P.hp=P.maxHp; P.iframe=now+1800;
     const sp=A.hub.spawn; c.x=sp.xf*HUB.worldW; c.y=Math.max(0,Math.min(VH,sp.yf*VH));
     if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
@@ -7807,7 +7848,7 @@ function updateCatKing(b,now){
     b.facing=-1;
     if(dist<520){
       b.stage='summon'; b.spawnT0=now; b.stageUntil=now+1500;
-      toast('“You were invited. That is not the same as being welcome.”');
+      npcBark('The Cat King','You were invited. That is not the same as being welcome.',{img:CINE_FACE.catking, bg:'#3a2a10', tone:360});
       SFX.seq&&SFX.seq([196,262,330,392],'triangle',0.09);
     }
     return;
@@ -7827,7 +7868,7 @@ function updateCatKing(b,now){
       b.stage='cat'; b.hp=b.maxHp=Math.round(170*((HUB.lvBoss&&HUB.lvBoss.hp)||1)); b.phase2=true;
       b.x=b.throneX-70; b.y=b.throneY;               // he steps down off the dais himself
       b.meleeCD=now+700; b.dashCD=now+1800; b.state='walk';
-      toast('“…Fine. FINE. I will do it myself.”');
+      npcBark('The Cat King','…Fine. FINE. I will do it myself.',{img:CINE_FACE.catking, bg:'#3a2a10', tone:360});
       SFX.seq&&SFX.seq([330,294,262],'square',0.08);
     }
     return;
@@ -7997,7 +8038,7 @@ function updateRatKing(b,now){
     if(dist<520){
       b.stage='low'; b.state='walk';
       b.throwCD=now+2200; b.meleeCD=now+1100; b.dashCD=now+3000;
-      toast('“They told you I was a monster. Good. That was the point.”');
+      npcBark('Rattus Magnus','They told you I was a monster. Good. That was the point.',{img:()=>RKINGI.sit, bg:'#2a1210', tone:150});
       SFX.seq&&SFX.seq([110,98,87,73],'sawtooth',0.08);
     }
     return;
@@ -8007,7 +8048,7 @@ function updateRatKing(b,now){
       b.stage='tall'; b.state='walk';
       b.meleeCD=now+600; b.dashCD=now+2200; b.throwCD=now+1600;
       const sent=ratKingDismissGuards();
-      toast('“Enough crawling.”' + (sent?'  The guards back away into the dark.':''));
+      npcBark('Rattus Magnus','Enough crawling.',{img:()=>RKINGI.sit, bg:'#2a1210', tone:150}); if(sent) toast('The guards back away into the dark.');
       SFX.seq&&SFX.seq([73,98,147],'square',0.10);
     }
     return;
@@ -8017,7 +8058,7 @@ function updateRatKing(b,now){
   // on all fours he keeps calling guards; upright he never does again
   if(!tall && now>(b.guardCD||0) && ratKingGuardsAlive()<3){
     ratKingSummonGuards(b,now); b.guardCD=now+7000;
-    if(!b.guardsSeen){ b.guardsSeen=true; toast('“Do not make me get up.”'); }
+    if(!b.guardsSeen){ b.guardsSeen=true; npcBark('Rattus Magnus','Do not make me get up.',{img:()=>RKINGI.sit, bg:'#2a1210', tone:150}); }
   }
   if(!tall && b.hp<=b.maxHp*0.5){                    // the halfway point IS the transformation
     b.stage='rising'; b.stageUntil=now+1200; b.moving=false; b.state='walk';
@@ -8340,13 +8381,14 @@ function squareSetup(){
   add({img:SQ_FACE.lucian, xf:X(830), yf:0.835, facing:1, native:1, h:66, still:true});
   add({img:SQ_FACE.tomy,   xf:X(885), yf:0.835, facing:1, native:1, h:66, still:true});
   add({img:SQ_FACE.nomnom, xf:X(940), yf:0.835, facing:1, native:1, h:68, still:true});
-  HUB.sqCat=unit('cat_soldier',X(1012),0.935,1);                              // the one who steps out
+  HUB.sqCat=unit('cat_soldier',X(1012),0.935,1); HUB.sqCat.front=true;        // the one who steps out
   // the Federation, right
   add({img:()=>RKINGI.risen, xf:X(1367), yf:0.735, facing:-1, native:1, h:140, still:true});
   unit('rat_commander',X(1568),0.735,-1,88); unit('rat_soldier',X(1728),0.735,-1);
   unit('rat_emissary',X(1425),0.835,-1,70);   // a step back: Puiutu passes between it and the fountain unit('rat_soldier',X(1500),0.835,-1); unit('rat_soldier',X(1615),0.835,-1);
   unit('rat_soldier',X(1482),0.935,-1);
-  HUB.sqRat=unit('rat_soldier',X(1352),0.935,-1);
+  HUB.sqRat=unit('rat_soldier',X(1352),0.935,-1); HUB.sqRat.front=true;
+  // (front: the two who step out walk at the fountain's foot — the painted fountain must never cover their faces)
   // and on the bank steps, the only one not on either side
   HUB.sqSnout=add({img:()=>ARMY_SPR.pig_agent.walk[0], frames:()=>ARMY_SPR.pig_agent.walk, xf:0.545, yf:0.655, facing:-1, native:1, h:95, still:true});
   HUB.crowd=crowd;
@@ -8672,7 +8714,7 @@ function updateHangarIntro(b,now){
       H.phase='speech'; H.pin={x:c.x,y:c.y};
       sayLines('Agent Snout', SNOUT_SPEECH, {img:ARMY_SPR.pig_agent.walk[0], bg:'#1b2433', tone:260, then:()=>{
         const t=Date.now(); H.phase='order'; H.t0=t; ag.facing = b.x<ag.x ? -1 : 1;
-        toast('Agent Snout: Wake it.');
+        npcBark('Agent Snout','Wake it.',{img:ARMY_SPR.pig_agent.walk[0], bg:'#1b2433', tone:260});
         b.stage='wake'; b.stageUntil=Infinity;       // it stays waking until the Glow arrives
         b.facing = c.x<b.x ? -1 : 1;                 // and the first thing it looks at is you
         SFX.seq&&SFX.seq([55,65,82,110],'sawtooth',0.10);
@@ -8702,7 +8744,7 @@ function updateHangarIntro(b,now){
       HUB.cut=null; HUB.flashAt=now; H.phase='arrive'; H.t0=now;
       const sp=HUB.spirit; if(sp){ sp.stage='rise'; sp.t0=now; }
       b.stageUntil=now+2600;
-      toast('The Glow: Not with what you tore out of my ground.');
+      npcBark('The Glow','Not with what you tore out of my ground.',{img:GLOW_IMG, bg:'#1d3328', tone:600});
       SFX.tone&&SFX.tone(110,0.6,'sawtooth',0.07);
     }
     return;
@@ -9063,7 +9105,7 @@ function spiritSacrifice(b,now){
   HUB.spores.length=0; HUB.carry=false;
   sp.stage='sacrifice'; sp.t0=now; sp.state='walk'; sp.downDone=false; sp.said=false;
   sp.facing = b.x<sp.x ? -1 : 1;
-  toast('The Glow: Hold still, little one. This part is mine.');
+  npcBark('The Glow','Hold still, little one. This part is mine.',{img:GLOW_IMG, bg:'#1d3328', tone:600});
   SFX.seq&&SFX.seq([392,330,262,196],'triangle',0.06);
 }
 function updateForestSpirit(sp,b,now){
@@ -9077,7 +9119,7 @@ function updateForestSpirit(sp,b,now){
     vx:(Math.random()-.5)*1.2, vy:-(0.6+Math.random()*1.6), life:1, c:cols[i%cols.length]}); };
   if(sp.stage==='hidden'){
     if(b.stage==='wake' && !HUB.hangar){ sp.stage='rise'; sp.t0=now;
-      setTimeout(()=>toast('The Glow: Not with what you tore out of my ground.'), 1300);
+      setTimeout(()=>npcBark('The Glow','Not with what you tore out of my ground.',{img:GLOW_IMG, bg:'#1d3328', tone:600}), 1300);
       SFX.seq&&SFX.seq([196,262,330,392],'triangle',0.05); }
     return;
   }
@@ -9131,7 +9173,7 @@ function updateForestSpirit(sp,b,now){
   }
   if(sp.charge>=3){                                  // fed enough: the big one — hold it down
     sp.state='cast'; sp.binding=true; sp.hitDone=false; sp.hitAt=now+700; sp.stateUntil=now+1200; sp.moving=false;
-    toast('The Glow: Now — I have it. Climb!');
+    npcBark('The Glow','Now — I have it. Climb!',{img:GLOW_IMG, bg:'#1d3328', tone:600});
     return;
   }
   // Its own ground: a spot beside the machine, picked again every few seconds — and now and then
@@ -9673,9 +9715,10 @@ function updateHub(){
     else if((d.type==='rat' || d.hostile) && maskReady()){
       // hostile: snap back onto the path if shoved off, then HUNT Puiutu when he's within range
       if(maskClassify(d.x,d.y)!=='walk'){ const p=nearestWalk(d.x,d.y); if(p){d.x=p.x;d.y=p.y;} }
-      const dxp=c.x-d.x, dyp=c.y-d.y, distp=Math.hypot(dxp,dyp), AGGRO=300;
+      // a shark smells you from further off and closes faster than a rat (still slower than you run)
+      const shark=d.sea&&d.kind.big, dxp=c.x-d.x, dyp=c.y-d.y, distp=Math.hypot(dxp,dyp), AGGRO=shark?460:300;
       if(distp<AGGRO && distp>2){
-        const spd=d.speed*1.45; let nx=d.x+dxp/distp*spd, ny=d.y+dyp/distp*spd;
+        const spd=d.speed*(shark?2.6:1.45); let nx=d.x+dxp/distp*spd, ny=d.y+dyp/distp*spd;
         if(maskClassify(nx,ny)!=='walk'){ const base=Math.atan2(dyp,dxp); let ok=false;   // slide around edges
           for(const deg of [20,-20,44,-44,70,-70]){ const a=base+deg*Math.PI/180, ax=d.x+Math.cos(a)*spd, ay=d.y+Math.sin(a)*spd;
             if(maskClassify(ax,ay)==='walk'){ nx=ax; ny=ay; ok=true; break; } }
@@ -9685,6 +9728,23 @@ function updateHub(){
         const moved=duckWander(d);   // idle patrol when the cat is out of range
         if(!moved){ d.heading += Math.PI + (Math.random()-0.5)*1.2; }
       }
+    }
+    else if(d.kind && d.kind.ground && A.hub.groundZone){
+      // a bottom-dweller crawls: slow, meandering, stopping now and then to sit — and never
+      // leaves its stone. Shoved off it (knockback), it walks straight back on.
+      if(!inGroundZone(d.x,d.y)){ const a=Math.atan2(d.homeY-d.y,d.homeX-d.x); d.x+=Math.cos(a)*0.8; d.y+=Math.sin(a)*0.8; d.moving=true; }
+      else if(now<(d.restUntil||0)) d.moving=false;
+      else {
+        d.heading=(d.heading||0)+(Math.random()-0.5)*0.09;
+        const sp=0.42; let moved=false;
+        for(const deg of [0,20,-20,45,-45,80,-80,120,-120,180]){
+          const a=d.heading+deg*Math.PI/180, nx=d.x+Math.cos(a)*sp, ny=d.y+Math.sin(a)*sp*0.7;
+          if(inGroundZone(nx,ny) && (!maskReady()||maskClassify(nx,ny)==='walk')){ d.x=nx; d.y=ny; d.heading=a; moved=true; break; }
+        }
+        d.moving=moved;
+        if(now>(d.nextRest||0)){ d.restUntil=now+900+Math.random()*1800; d.nextRest=d.restUntil+2600+Math.random()*4200; }
+      }
+      if(d.moving){ d.crawlT=(d.crawlT||0)+0.035; const cx=Math.cos(d.heading||0); if(Math.abs(cx)>0.25) d.dir=cx<0?-1:1; }
     }
     else if(maskReady()){
       // if knocked off the path, hop back onto it
@@ -9699,7 +9759,7 @@ function updateHub(){
       if(nx<d.x0||nx>d.x1){ d.dir*=-1; } else d.x=nx;
     }
     d.phase+=0.05;
-    if(c.z<6 && now>(P.iframe||0) && Math.hypot(c.x-d.x,c.y-d.y)<34){
+    if(c.z<6 && now>(P.iframe||0) && Math.hypot(c.x-d.x,c.y-d.y)<(d.sea&&d.kind.big?58:34)){
       const dm=rnd(d.kind.cdmg[0],d.kind.cdmg[1]); P.hp=Math.max(0,P.hp-absorbDamage(dm)); P.iframe=now+IFRAMES; P.lastHit=now;
       floatText(c.x,c.y-42,'-'+dm,'#ff8a8a'); SFX.hit();
       const a=Math.atan2(c.y-d.y,c.x-d.x); c.x+=Math.cos(a)*10; c.y+=Math.sin(a)*8;
@@ -9776,7 +9836,7 @@ function drawHub(){
   if(HUB.boss && (!HUB.boss.defeated || HUB.boss.ck || HUB.boss.rk || HUB.boss.mb)) items.push({z:HUB.boss.y, t:'boss'});
   if(HUB.crystals) for(const k of HUB.crystals){ if(!k.dead) items.push({z:k.y, t:'crystal', k}); }
   if(HUB.spirit && HUB.spirit.placed) items.push({z:HUB.spirit.y, t:'spirit'});
-  if(HUB.crowd) for(const a of HUB.crowd) items.push({z:a.y, t:'crowd', a});
+  if(HUB.crowd) for(const a of HUB.crowd) items.push({z:a.y+(a.front?400:0), t:'crowd', a});
   if(HUB.hangar && HUB.hangar.agent.placed && !HUB.hangar.agent.gone) items.push({z:HUB.hangar.agent.y, t:'snout'});
   if(HUB.spores) for(const s of HUB.spores) items.push({z:s.y, t:'spore', s});
   if(HUB.carry) items.push({z:HUB.cat.y+0.5, t:'carry'});
@@ -10004,7 +10064,8 @@ function drawHub(){
     }
     if(it.t==='mob'){ const d=it.d, sc=hubScale(d.y), dsx=d.x-HUB.camx;
       const h=(d.sea?(d.kind.bh||64):(d.type==='pigeon'?60:d.type==='clobster'?66:d.type==='rat'?58:64))*sc;
-      drawEnemy(g, dsx, d.y, d.dir, d.type, {h, moving:true, phase:d.phase, pigeonSprite:(d.type==='pigeon'?d.sprite:undefined), clobsterLevel:(d.type==='clobster'?d.level:undefined), noLabel:true});
+      const crawl=d.sea&&d.kind.ground;
+      drawEnemy(g, dsx, d.y, d.dir, d.type, {h, moving:crawl?!!d.moving:true, phase:crawl?(d.crawlT||0):d.phase, pigeonSprite:(d.type==='pigeon'?d.sprite:undefined), clobsterLevel:(d.type==='clobster'?d.level:undefined), noLabel:true});
       if(Date.now()-(d.hitFlash||0)<110){ g.save();g.globalAlpha=.5;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(dsx,d.y-30*sc,22*sc,28*sc,0,0,7);g.fill();g.restore(); }
       // name (+ level for land mobs) and health bar above the critter
       const topY=d.y-((d.sea?(d.kind.bh||64):70)+6)*sc;
@@ -10385,9 +10446,10 @@ function drawAbyssBoss(){
       g.fillStyle='#3a2a36'; for(let i=1;i<=4;i++){ const yy=-H0*(i/5), xx=sway*(i/5)*1.2; g.beginPath(); g.arc(xx,yy,3*sc,0,7); g.fill(); }
     }
     g.restore();
-    const pct=Math.max(0,t.hp/t.maxHp), bw=34*sc;
-    g.fillStyle='rgba(0,0,0,.5)'; g.fillRect(sx-bw/2-1, sy-H0-12, bw+2, 5);
-    g.fillStyle=pct>0.5?'#7fd06a':pct>0.25?'#e8b53a':'#e0533a'; g.fillRect(sx-bw/2, sy-H0-11, bw*pct, 3);
+    // HP bar above the tip of the tentacle (the sprite is drawn H0*3 tall), not across its body
+    const pct=Math.max(0,t.hp/t.maxHp), bw=60*sc, by=sy-H0*3-14;
+    g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(sx-bw/2-1, by-1, bw+2, 7);
+    g.fillStyle=pct>0.5?'#7fd06a':pct>0.25?'#e8b53a':'#e0533a'; g.fillRect(sx-bw/2, by, bw*pct, 5);
     g.restore();
   }
   // eye lasers: telegraph line while charging, thick glowing beam while firing — one per big eye
@@ -10408,21 +10470,25 @@ function drawAbyssBoss(){
   }
   if(ab.state==='exposed'){ const cx=A.hub.coreXf*HUB.worldW-HUB.camx, cy=A.hub.coreYf*VH, pr=0.5+0.5*Math.sin(now*0.012);
     g.save();
-    const gr=g.createRadialGradient(cx,cy,4,cx,cy,54); gr.addColorStop(0,'rgba(255,120,60,'+(0.6*pr+0.3)+')'); gr.addColorStop(1,'rgba(255,120,60,0)');
-    g.fillStyle=gr; g.beginPath(); g.arc(cx,cy,54,0,7); g.fill();
+    const gr=g.createRadialGradient(cx,cy,6,cx,cy,96); gr.addColorStop(0,'rgba(255,120,60,'+(0.6*pr+0.3)+')'); gr.addColorStop(1,'rgba(255,120,60,0)');
+    g.fillStyle=gr; g.beginPath(); g.arc(cx,cy,96,0,7); g.fill();
     if(ABYSS_CORE.complete && ABYSS_CORE.naturalWidth){
-      const dh=72*(0.96+0.08*pr), dw=dh*(ABYSS_CORE.naturalWidth/ABYSS_CORE.naturalHeight);
+      const dh=130*(0.96+0.08*pr), dw=dh*(ABYSS_CORE.naturalWidth/ABYSS_CORE.naturalHeight);
       if(now-ab.hitFlash<110) g.globalAlpha=0.85;
       g.drawImage(ABYSS_CORE, cx-dw/2, cy-dh/2, dw, dh); g.globalAlpha=1;
     } else {
-      g.globalAlpha=0.9; g.fillStyle=(now-ab.hitFlash<110)?'#fff':'#ff9a5a'; g.beginPath(); g.arc(cx,cy,16+3*pr,0,7); g.fill(); g.globalAlpha=1;
+      g.globalAlpha=0.9; g.fillStyle=(now-ab.hitFlash<110)?'#fff':'#ff9a5a'; g.beginPath(); g.arc(cx,cy,29+5*pr,0,7); g.fill(); g.globalAlpha=1;
     }
-    g.textAlign='center'; g.font='bold 12px Trebuchet MS'; g.fillStyle='#ffd0b0'; g.fillText('STRIKE THE CORE!', cx, cy-44); g.restore();
+    g.restore();
   }
   if(ab.state==='tentacles' || ab.state==='exposed'){ const bw=Math.min(VW*0.6,360), x=(VW-bw)/2, y=72, pct=Math.max(0,ab.headHp/ab.headMax);
     g.save(); g.fillStyle='rgba(10,8,14,.7)'; roundRectPath(x-3,y-3,bw+6,18,6); g.fill();
     g.fillStyle='#7a1f2a'; roundRectPath(x,y,bw,10,5); g.fill();
     g.fillStyle='#ff5a4a'; roundRectPath(x,y,bw*pct,10,5); g.fill();
+    // the call to strike sits right under the Dreamer's own bar, not over the core
+    if(ab.state==='exposed'){ const pr=0.5+0.5*Math.sin(now*0.012);
+      g.textAlign='center'; g.font='bold 26px Trebuchet MS'; g.fillStyle='rgba(0,0,0,.7)'; g.fillText('STRIKE THE CORE!', VW/2+2, y+46);
+      g.globalAlpha=0.75+0.25*pr; g.fillStyle='#ffd0b0'; g.fillText('STRIKE THE CORE!', VW/2, y+44); }
     g.restore();
   }
   // victory: it sinks deeper — a wash of darkness + a surge of bubbles, then the calm returns
@@ -10997,7 +11063,11 @@ function updateQuestHUD(){
   if(!key){ el.style.display='none'; return; }
   const q=QUESTS[key], c=questCount(key);
   el.style.display='flex';
-  el.innerHTML=''+q.name+': <b>'+c+'/'+q.goal.n+'</b> '+(q.goal.type==='fish'?'':'')+(c>=q.goal.n?'talk!':'');
+  if(!el._built){ el._built=true; el.innerHTML='<canvas id="questFace" width="84" height="84"></canvas><span id="questTxt"></span>'; }
+  // the quest-giver's face in the plaque's socket (repainted only when the quest changes)
+  if(el._face!==key){ const img=q.dog?ROCKY.idle:SPRITES[q.cat], cv=document.getElementById('questFace');
+    if(img && img.complete && img.naturalWidth){ paintPortrait(cv.getContext('2d'),84,img,'#cfe6a8'); el._face=key; } }
+  document.getElementById('questTxt').innerHTML=T(q.name)+':<b>'+c+'/'+q.goal.n+'</b>'+(c>=q.goal.n?'<span class="qDone">'+T('talk!')+'</span>':'');
 }
 
 //═══════════════════════════════════════════════════════════════ DIALOGUE (quest-aware)
@@ -11036,12 +11106,35 @@ function openDialogue(npc){
   SFX.tone(620,0.08,'sine',0.04);
   if(npc.cat && !S.catsMet[npc.cat]){S.catsMet[npc.cat]=true;checkAchievements();save();}
 }
+// Every line in the dialogue box types itself out left to right, and a tap does nothing until the
+// whole line is written AND it has been up for a second — so nobody taps through what an NPC says.
+// The untyped tail is laid out invisibly, so the box never reflows as the words come in.
+const DLG_TYPE={timer:null, typing:false, readyAt:0, tok:0};
+const DLG_MIN_MS=1000, DLG_CHAR_MS=22;
+function dlgEsc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function typeDlg(text,nextLabel){
+  const el=document.getElementById('dlgText'), nx=document.getElementById('dlgNext');
+  const full=T(text||''), tok=++DLG_TYPE.tok; clearInterval(DLG_TYPE.timer);
+  DLG_TYPE.typing=true; DLG_TYPE.readyAt=Date.now()+DLG_MIN_MS;
+  if(nextLabel!=null) nx.textContent=T(nextLabel);
+  nx.style.visibility='hidden';
+  let i=0;
+  const paint=()=>{ el.innerHTML=dlgEsc(full.slice(0,i))+'<span style="opacity:0">'+dlgEsc(full.slice(i))+'</span>'; };
+  paint();
+  DLG_TYPE.timer=setInterval(()=>{
+    if(tok!==DLG_TYPE.tok){ clearInterval(DLG_TYPE.timer); return; }
+    i=Math.min(full.length,i+1); paint();
+    if(i>=full.length){ clearInterval(DLG_TYPE.timer); DLG_TYPE.typing=false;
+      setTimeout(()=>{ if(tok===DLG_TYPE.tok) nx.style.visibility=''; }, Math.max(0,DLG_TYPE.readyAt-Date.now())); }
+  }, DLG_CHAR_MS);
+}
+function dlgReady(){ return !DLG_TYPE.typing && Date.now()>=DLG_TYPE.readyAt; }
 function showLine(){
-  document.getElementById('dlgText').textContent=T(dlgLines[dlgIdx]);
-  document.getElementById('dlgNext').textContent= dlgIdx<dlgLines.length-1?'tap to continue':'tap to close';
+  typeDlg(dlgLines[dlgIdx], dlgIdx<dlgLines.length-1?'tap to continue':'tap to close');
 }
 function advanceDialogue(){
   if(choiceActive) return;      // a choice has to be made, not tapped past
+  if(!dlgReady()) return;       // still being written, or up for less than a second
   if(sayActive){ advanceSay(); return; }
   if(dlgIdx<dlgLines.length-1){dlgIdx++;showLine();}
   else{closeDialogue();}
@@ -11060,6 +11153,7 @@ function drawEmojiPortrait(emoji,bg){
 function sayLines(name,lines,opt){
   opt=opt||{};
   if(choiceActive||sayActive) return;
+  clearBark();
   sayActive=true; dialogueActive=true;
   sayArr=lines.slice(); sayIdx=0; sayThen=opt.then||null;
   document.getElementById('dlgName').textContent=name;
@@ -11071,8 +11165,7 @@ function sayLines(name,lines,opt){
   SFX.tone&&SFX.tone(opt.tone||520,0.08,'sine',0.04);
 }
 function showSayLine(){
-  document.getElementById('dlgText').textContent=T(sayArr[sayIdx]);
-  document.getElementById('dlgNext').textContent=T(sayIdx<sayArr.length-1?'tap to continue':'tap to close');
+  typeDlg(sayArr[sayIdx], sayIdx<sayArr.length-1?'tap to continue':'tap to close');
 }
 function advanceSay(){
   if(sayIdx<sayArr.length-1){ sayIdx++; showSayLine(); return; }
@@ -11254,6 +11347,7 @@ function combatTutorial(){
 let choiceActive=false, choicePending=null;
 function askChoice(o){
   if(choiceActive || dialogueActive) return;
+  clearBark();
   choiceActive=true; dialogueActive=true;   // reuse the existing "input is blocked" checks
   choicePending=o;
   document.getElementById('dlgName').textContent=o.name||'';
@@ -11261,7 +11355,7 @@ function askChoice(o){
   if(o.img) showPortrait(o.img, o.bg);
   else if(o.portrait) drawPortrait(o.portrait);
   else drawEmojiPortrait('', o.bg);
-  document.getElementById('dlgText').textContent=T(o.text||'');
+  typeDlg(o.text||'');
   document.getElementById('dlgNext').style.display='none';
   const box=document.getElementById('dlgChoices');
   box.innerHTML=o.choices.map((c,i)=>
@@ -11380,8 +11474,8 @@ const PORTRAITS={
   'army/frames/pig_agent_walk0.png':{ex:0.826,ey:0.329,vw:0.65},
   'army/frames/rat_emissary_walk0.png':{ex:0.215,ey:0.25,vw:0.55},
   // the bosses and the pigs: head-and-shoulders, the crown kept inside the circle
-  'mobs/catking/sit.png':{ex:0.79,ey:0.28,vw:0.85},
-  'mobs/ratking/sit.png':{ex:0.80,ey:0.195,vw:0.5},
+  'mobs/catking/sit.png':{ex:0.73,ey:0.30,vw:0.95},
+  'mobs/ratking/sit.png':{ex:0.775,ey:0.24,vw:0.55},
   'mobs/seby/s1.png':{ex:0.70,ey:0.40,vw:0.62},
   'mobs/coon_walk0.png':{ex:0.84,ey:0.46,vw:0.5},
   'npcs/siroink.png':{ex:0.62,ey:0.21,vw:0.7},
@@ -11429,7 +11523,29 @@ let toastT;
 function toast(msg){
   msg=T(msg);
   const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';
-  clearTimeout(toastT);toastT=setTimeout(()=>el.style.display='none',1600);
+  void el.offsetWidth; el.classList.add('on');            // reflow first, so the fade-in runs without waiting on a frame
+  const ms=Math.min(5200,1800+msg.length*40);           // long lines stay up long enough to read
+  clearTimeout(toastT);toastT=setTimeout(()=>{ el.classList.remove('on'); toastT=setTimeout(()=>el.style.display='none',260); },ms);
+}
+// An NPC speaking in passing (mid-fight, mid-scene): their line goes in the dialogue box with
+// their face, but the box does not take input and closes on its own, so the fight carries on.
+let barkT=null;
+function npcBark(name,line,opt){
+  opt=opt||{};
+  if(sayActive||choiceActive||dialogueActive){ toast(line); return; }   // a real conversation is up: don't cover it
+  const img=typeof opt.img==='function'?opt.img():opt.img;
+  document.getElementById('dlgName').textContent=T(name);
+  typeDlg(line);
+  document.getElementById('dlgChoices').innerHTML='';
+  if(img) showPortrait(img,opt.bg); else drawEmojiPortrait('',opt.bg);
+  const d=document.getElementById('dialogue'); d.classList.add('bark'); d.style.display='flex';
+  SFX.tone&&SFX.tone(opt.tone||420,0.07,'sine',0.035);
+  clearTimeout(barkT); barkT=setTimeout(clearBark, Math.min(5500,2200+line.length*45));
+}
+function clearBark(){
+  clearTimeout(barkT); barkT=null;
+  const d=document.getElementById('dialogue'); if(!d.classList.contains('bark')) return;
+  d.classList.remove('bark'); if(!dialogueActive) d.style.display='none';
 }
 
 //═══════════════════════════════════════════════════════════════ SCREENS
@@ -11615,7 +11731,7 @@ function lightsWin(){
 // Directions: 0=N 1=E 2=S 3=W. A piece's connections rotate clockwise: (dir + rot) % 4.
 const CIRC={ n:6, cells:[], won:false, active:false, cb:null,
   BASE:{straight:[1,3], corner:[0,1], t:[3,1,2], cross:[0,1,2,3], source:[1], target:[3]},
-  FILES:{straight:'norm/straight', corner:'norm/corner', t:'norm/t', cross:'norm/cross', source:'norm/source', target:'norm/target'} };
+  FILES:{straight:'norm/straight', corner:'norm/corner', t:'norm/t', cross:'norm/cross', source:'norm/source', target:'norm/target', target_on:'norm/target_on'} };
 const CIMG={};
 (function circLoadImgs(){ for(const k in CIRC.FILES){ const im=new Image(); im.src='circuit/'+CIRC.FILES[k]+'.png'; CIMG[k]=im; } })();
 // per-piece scale so each connector reaches the cell edge (the art has different transparent
@@ -11770,8 +11886,9 @@ function circRender(){
   const powered=circPowered(); wrap.innerHTML='';
   CIRC.cells.forEach((cell,i)=>{
     const d=document.createElement('div');
-    d.className='cCell'+(cell.fixed?' fixed':' rot')+(powered.has(i)?' powered':'');
-    const img=document.createElement('img'); img.src=CIMG[cell.type].src;
+    d.className='cCell'+(cell.fixed?' fixed':' rot')+(cell.type==='target'?' tgt':'')+(powered.has(i)?' powered':'');
+    const img=document.createElement('img');
+    img.src=CIMG[(cell.type==='target'&&powered.has(i))?'target_on':cell.type].src;   // a socket lights up (lit stub + glowing mesh) once current reaches it
     const base=CIRC_SCALE[cell.type]||1.2; img.dataset.rot=cell.rot; img.dataset.base=base;
     img.style.transform='rotate('+(cell.rot*90)+'deg) scale('+(base*CIRC_DEV.scale)+')';   // per-type scale so connectors reach the cell edges and touch neighbours
     d.appendChild(img);
@@ -11996,13 +12113,14 @@ const CAT_SKINS=[
 ];
 if(typeof S!=='undefined' && S.equippedSkin) loadSkinFrames(S.equippedSkin);   // resume the equipped skin
 const GACHA_RPOOL={
-  common:[{hat:'bow'},{hat:'cap'},{hat:'party'},{coins:120},
+  // no hats: the capsule gives coins, cat skins and spells only
+  common:[{coins:120},
     ...CAT_SKINS.filter(c=>c.rarity==='common').map(c=>({skin:c.id}))],
-  rare:[{hat:'crown'},{hat:'strawhat'},{hat:'ninja'},{coins:400},
+  rare:[{coins:400},
     ...CAT_SKINS.filter(c=>c.rarity==='rare').map(c=>({skin:c.id}))],
-  epic:[{hat:'wizard'},{hat:'tophat'},{coins:1200},{spell:'fishstorm'},
+  epic:[{coins:1200},{spell:'fishstorm'},
     ...CAT_SKINS.filter(c=>c.rarity==='epic').map(c=>({skin:c.id}))],
-  legendary:[{hat:'halo'},{hat:'devilhorns'},{hat:'rainbowcrown'},{coins:5000},{spell:'ninelives'},
+  legendary:[{coins:5000},{spell:'ninelives'},
     ...CAT_SKINS.filter(c=>c.rarity==='legendary').map(c=>({skin:c.id}))],
 };
 function gachaDrawArt(artSrc){
@@ -13153,8 +13271,7 @@ function renderProfile(){
   }).join('');
   body.innerHTML=`
     <div class="profile-card">
-      <div style="width:90px;height:90px;margin:0 auto 8px;border-radius:50%;border:4px solid #6b4a1f;overflow:hidden;background:#cfe6a8;">
-        <canvas width="90" height="90" id="profilePuiutu"></canvas></div>
+      <img src="ui/profile_pic.png" alt="Puiutu" style="display:block;width:170px;max-width:60%;height:auto;margin:0 auto 6px;filter:drop-shadow(0 4px 8px rgba(60,35,10,.35));">
       <h3>Puiutu </h3>
       <div class="prow"><span>Level</span><span> ${S.level}</span></div>
       <div class="prow"><span>XP</span><span>${S.xp} / ${need}</span></div>
@@ -13182,10 +13299,6 @@ function renderProfile(){
       <button id="resetBtn" style="margin-top:14px;background:#b5453a;border:2px solid #7a2c24;color:#fff;padding:8px 14px;border-radius:12px;font-weight:bold;cursor:pointer;">↺ Reset game</button>
     </div>`;
   // draw avatars
-  const pp=document.getElementById('profilePuiutu').getContext('2d');
-  const _pu=SPRITES.puiutu;
-  if(_pu&&_pu.complete&&_pu.naturalWidth) paintPortrait(pp,90,_pu,'#cfe6a8');
-  else { pp.fillStyle='#cfe6a8';pp.fillRect(0,0,90,90);drawCat(pp,45,84,1,0,CATS.puiutu,{scale:1.05,hat:S.equipped&&isHat(S.equipped)?S.equipped:null}); }
   body.querySelectorAll('[data-cat]').forEach(cv2=>{
     const k=cv2.dataset.cat;const c2=cv2.getContext('2d');
     if(S.catsMet[k]){
@@ -13285,7 +13398,8 @@ function renderInventory(){
       let btn=it.type==='hat'
         ?`<button class="buy-btn ${equipped?'equipped':'owned'}" data-equip="${id}">${equipped?'Equipped ':'Equip'}</button>`
         :`<span style="color:#3a8f3a;font-weight:bold;">Activ </span>`;
-      return `<div class="inv-item"><div class="shop-emoji">${it.emoji}</div>
+      const ico=it.img?`<img src="${it.img}" style="width:44px;height:44px;object-fit:contain;image-rendering:pixelated;">`:it.emoji;
+      return `<div class="inv-item"><div class="shop-emoji">${ico}</div>
         <div class="shop-info"><div class="nm">${it.name}</div><div class="ds">${it.desc}</div></div>${btn}</div>`;
     }).join('');
   }
@@ -14243,7 +14357,7 @@ document.getElementById('btnGacha').addEventListener('click',gachaOpen);
 let WAR_OPEN=false;
 function warOpen(){
   if(document.getElementById('warFrame')) return; WAR_OPEN=true; stopAllMusic();     // Border War brings its own
-  const f=document.createElement('iframe'); f.id='warFrame'; f.src='rts.html?v=21&lang='+(S.lang||'en');
+  const f=document.createElement('iframe'); f.id='warFrame'; f.src='rts.html?v=33&lang='+(S.lang||'en');
   f.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:none;z-index:200;background:#0c0f0a;';
   document.body.appendChild(f); paused=true; try{ f.focus(); }catch(e){}
   if(typeof SFX!=='undefined'&&SFX.click) SFX.click();
@@ -14320,8 +14434,7 @@ document.getElementById('btnPhone').addEventListener('click',()=>{ updatePhoneCl
 setInterval(()=>{ const m=document.getElementById('phone'); if(m&&m.classList.contains('active')) updatePhoneClock(); }, 1000);
 document.querySelectorAll('.phone-app').forEach(b=>b.addEventListener('click',()=>{
   const app=b.dataset.app; closeModal('phone');
-  if(app==='bank'){ openModal('market'); switchMarketTab('bank'); }
-  else if(app==='wallet'){ openModal('market'); switchMarketTab('exchange'); }
+  if(app==='wallet'){ openMarket('exchange'); }       // the stock exchange lives on the phone
   else if(app==='backpack'){ openModal('inventory'); }
   else if(app==='shop'){ openModal('shop'); }
   else if(app==='profile'){ openModal('profile'); }
