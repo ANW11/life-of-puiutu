@@ -14,7 +14,7 @@ const ART_NAMES = ['den', 'cottage', 'yard', 'scratch', 'pride', 'cattower', 'bu
   'courier_walk0', 'courier_walk1', 'courier_walk2', 'courier_walk3', 'courier_work', 'courier_carry',
   'scavenger_walk0', 'scavenger_walk1', 'scavenger_walk2', 'scavenger_walk3', 'scavenger_work', 'scavenger_carry',
   'burrow_hall', 'item_mouse', 'item_carrot', 'res_fish', 'res_wood', 'res_coin',
-  'item_potion', 'item_mana', 'item_claws', 'item_collar', 'item_bell', 'item_heart', 'item_scroll'];
+  'item_goldbanana', 'item_potion', 'item_mana', 'item_claws', 'item_collar', 'item_bell', 'item_heart', 'item_scroll'];
 const ART = {};
 function loadArt() {
   return Promise.all(ART_NAMES.map(n => new Promise(res => { const i = new Image(); i.onload = () => { ART[n] = i; res(); }; i.onerror = () => res(); i.src = 'rts/art/' + n + '.png'; })));
@@ -149,17 +149,24 @@ const R = {
     const inView = e => e.x > vx0 && e.x < vx1 && e.y > vy0 && e.y < vy1;
     // things on the ground: plague clouds, selection rings, items
     for (const c of G.clouds) this.cloud(g, c);
+    for (const f of G.floods || []) if (this.seenEnt({ tx: f.tx, ty: f.ty, size: f.s })) this.flood(g, f);
     for (const it of G.items) if (G.seen[Math.floor(it.y) * G.n + Math.floor(it.x)]) this.item(g, it);
     const sel = new Set(ui.sel.map(e => e.id));
-    const list = G.ents.filter(e => !e.dead && inView(e) && (e.owner === ME || (e.isUnit ? visibleTo0(e) : this.seenEnt(e))));
+    const list = G.ents.filter(e => !e.dead && !e.tun && inView(e) && (e.owner === ME || (e.isUnit ? visibleTo0(e) : this.seenEnt(e))));
     for (const e of list) if (sel.has(e.id)) this.selRing(g, e);
     if (ui.hover && !ui.hover.dead && !sel.has(ui.hover.id)) this.selRing(g, ui.hover, true);
+    // the Coon walks in a pulsing red ring, so nobody loses him in the trees
+    for (const e of list) if (e.kind === 'coon') { const t = performance.now() / 1000, x = e.x * TILE, y = e.y * TILE;
+      g.save(); g.strokeStyle = 'rgba(255,40,40,.85)'; g.lineWidth = 2.5; g.beginPath(); g.ellipse(x, y + 2, 34, 13, 0, 0, 7); g.stroke();
+      for (let i = 0; i < 2; i++) { const k = (t * 0.8 + i / 2) % 1; g.globalAlpha = 1 - k; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y + 2, 34 + k * 40, 13 + k * 16, 0, 0, 7); g.stroke(); }
+      g.restore(); }
     // everything else back to front
     list.sort((a, b) => (a.y + (a.isBuilding ? a.size * 0.35 : 0)) - (b.y + (b.isBuilding ? b.size * 0.35 : 0)));
     for (const e of list) { if (e.isRes) this.fishspot(g, e); else if (e.isBuilding) this.building(g, e); else this.unit(g, e); }
     for (const e of list) if (e.isUnit || e.isBuilding) this.bars(g, e, sel.has(e.id) || ui.hover === e);
     for (const p of G.proj) this.projectile(g, p);
     for (const f of G.fx) this.effect(g, f);
+    for (const e of list) if (e.deal) this.dealSign(g, e);
     // rally line for a selected building
     for (const e of ui.sel) if (e.isBuilding && e.rally && e.owner === ME) { const [x1, y1] = [e.rally.x * TILE, e.rally.y * TILE];
       g.strokeStyle = 'rgba(140,255,140,.6)'; g.setLineDash([6, 5]); g.lineWidth = 1.5; g.beginPath(); g.moveTo(e.x * TILE, e.y * TILE); g.lineTo(x1, y1); g.stroke(); g.setLineDash([]); this.flag(g, x1, y1); }
@@ -172,6 +179,7 @@ const R = {
     if (ui.place) this.ghost(g, ui.place);
     // drag box (screen space)
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (G.rain) this.rain(g);
     if (ui.box) { const b = ui.box; g.strokeStyle = '#7dff7d'; g.lineWidth = 1; g.fillStyle = 'rgba(125,255,125,.08)';
       g.fillRect(Math.min(b.x0, b.x1), Math.min(b.y0, b.y1), Math.abs(b.x1 - b.x0), Math.abs(b.y1 - b.y0));
       g.strokeRect(Math.min(b.x0, b.x1) + 0.5, Math.min(b.y0, b.y1) + 0.5, Math.abs(b.x1 - b.x0), Math.abs(b.y1 - b.y0)); }
@@ -237,6 +245,9 @@ const R = {
       if (ic) { const iw = u.carry.type === 'f' ? 16 : 15, ih = iw * ic.naturalHeight / ic.naturalWidth, cx = x - u.facing * 4, cy = y - h * 0.62;
         g.save(); g.translate(cx, cy); if (u.facing < 0) g.scale(-1, 1); g.drawImage(ic, -iw / 2, -ih / 2, iw, ih); g.restore(); } }
     // buff marks
+    if (u.morale) { g.save(); g.fillStyle = '#ffcf5a'; g.strokeStyle = '#5a3a10'; g.lineWidth = 1;   // morale: a little gold chevron for each win
+      for (let i = 0; i < u.morale; i++) { const cx = x - (u.morale - 1) * 4 + i * 8, cy = y - h - 6; g.beginPath(); g.moveTo(cx - 3.5, cy); g.lineTo(cx, cy - 4); g.lineTo(cx + 3.5, cy); g.lineTo(cx, cy - 2); g.closePath(); g.fill(); g.stroke(); }
+      g.restore(); }
     if (u.buffs.ward) this.halo(g, x, y, '120,255,160'); if (u.buffs.frenzy) this.halo(g, x, y, '255,190,70'); if (u.buffs.ninelives) this.halo(g, x, y, '255,240,140');
     if (u.buffs.stun) { g.fillStyle = '#ffe36b'; for (let k = 0; k < 3; k++) { const a = u.anim * 5 + k * 2.1; g.beginPath(); g.arc(x + Math.cos(a) * 10, y - h - 4 + Math.sin(a) * 3, 2.2, 0, 7); g.fill(); } }
   },
@@ -248,12 +259,14 @@ const R = {
     g.beginPath(); g.ellipse(e.x * TILE, e.y * TILE + 1, e.r * TILE * 1.3 + 4, (e.r * TILE * 1.3 + 4) * 0.45, 0, 0, 7); g.stroke();
   },
   bars(g, e, show) {
-    const dmg = e.hp < e.maxHp - 0.5; if (!show && !dmg && !(e.isBuilding && !e.built)) return;
+    const dmg = e.hp < e.maxHp - 0.5 || (e.maxShield && e.shield < e.maxShield - 0.5); if (!show && !dmg && !(e.isBuilding && !e.built)) return;
     if (e.def && e.def.invuln) return;
     const top = e.isBuilding ? e.ty * TILE - 10 : e.y * TILE - SPR[e.def.spr].h - 8, w = e.isBuilding ? e.size * TILE * 0.8 : Math.max(26, e.r * TILE * 2.4), x = e.x * TILE - w / 2;
     const k = clamp(e.hp / e.maxHp, 0, 1);
     g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(x - 1, top - 1, w + 2, 6);
     g.fillStyle = k > 0.6 ? '#5fd35a' : k > 0.3 ? '#e8c84a' : '#e05545'; g.fillRect(x, top, w * k, 4);
+    // a cat's fur shield: a pale blue strip over the health bar
+    if (e.isUnit && e.maxShield) { g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(x - 1, top - 5, w + 2, 4); g.fillStyle = '#9fd8ff'; g.fillRect(x, top - 4, w * clamp(e.shield / e.maxShield, 0, 1), 2); }
     if (e.isUnit && e.maxMana) { g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(x - 1, top + 5, w + 2, 4); g.fillStyle = '#5aa0ff'; g.fillRect(x, top + 5, w * e.mana / e.maxMana, 3); }
     if (e.isBuilding && !e.built) { g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(x - 1, top + 5, w + 2, 4); g.fillStyle = '#ffd36b'; g.fillRect(x, top + 5, w * e.progress, 3); }
     if (e.isBuilding && e.built && e.prodQ && e.prodQ.length && e.owner === ME) { const q = e.prodQ[0]; g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(x - 1, top + 5, w + 2, 4); g.fillStyle = '#9be38f'; g.fillRect(x, top + 5, w * q.t / q.total, 3); }
@@ -270,7 +283,8 @@ const R = {
     g.filter = 'none'; g.restore(); },
   fishspot(g, f) {
     const x = f.tx * TILE, y = f.ty * TILE, s = f.size * TILE, t = performance.now() / 1000 + f.id;
-    if (art('pond')) { const p = art('pond'), w = s * 1.5, h = w * p.naturalHeight / p.naturalWidth; g.drawImage(p, x + s / 2 - w / 2, y + s / 2 - h / 2, w, h); }
+    // the pond shrinks as it is fished out (down to two thirds of its size), so you can see when to move on
+    if (art('pond')) { const p = art('pond'), w = s * 1.5 * (0.65 + 0.35 * Math.min(1, f.amount / (f.max || 1))), h = w * p.naturalHeight / p.naturalWidth; g.drawImage(p, x + s / 2 - w / 2, y + s / 2 - h / 2, w, h); }
     else {
     g.fillStyle = '#d9c88f'; g.beginPath(); g.ellipse(x + s / 2, y + s / 2 + 2, s / 2 + 3, s / 2 - 2, 0, 0, 7); g.fill();
     g.fillStyle = f.rich ? '#2f8fbf' : '#2f6faf'; g.beginPath(); g.ellipse(x + s / 2, y + s / 2, s / 2 - 1, s / 2 - 5, 0, 0, 7); g.fill();
@@ -288,6 +302,32 @@ const R = {
     if (f.rich) for (let i = 0; i < 3; i++) { const ph = (t * 0.8 + i / 3) % 1, a = (f.id * 7 + i * 2.1) % 6.28;
       this.sheet(g, this.tinted(FX_IMG.impact, '#ffd36b'), 4, ph * 3.9, x + s / 2 + Math.cos(a) * s * 0.3, y + s / 2 + Math.sin(a) * s * 0.22, s * 0.22, 1 - ph); }
   },
+  // a flooded stretch of road: brown water over the mud, rings where the rain hits it
+  flood(g, f) {
+    const x = (f.tx + f.s / 2) * TILE, y = (f.ty + f.s / 2) * TILE, r = f.s * TILE / 2, t = performance.now() / 1000;
+    const blob = (k, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(x, y, r * 1.18 * k, r * 0.92 * k, 0.3, 0, 7); g.fill();
+      g.beginPath(); g.ellipse(x - r * 0.45 * k, y + r * 0.2 * k, r * 0.75 * k, r * 0.6 * k, -0.4, 0, 7); g.fill();
+      g.beginPath(); g.ellipse(x + r * 0.5 * k, y - r * 0.15 * k, r * 0.7 * k, r * 0.55 * k, 0.5, 0, 7); g.fill(); };
+    g.save(); blob(1.08, '#6e5434'); blob(1, '#4f6f8f'); blob(0.8, 'rgba(70,110,150,.9)');
+    g.strokeStyle = 'rgba(220,235,255,.45)'; g.lineWidth = 1;
+    for (let i = 0; i < 5; i++) { const ph = (t * 0.9 + i * 0.37 + f.tx * 0.13) % 1, a = i * 2.4 + f.ty, rx = x + Math.cos(a) * r * 0.55, ry = y + Math.sin(a) * r * 0.4;
+      g.globalAlpha = 1 - ph; g.beginPath(); g.ellipse(rx, ry, 2 + ph * 9, 1 + ph * 4, 0, 0, 7); g.stroke(); }
+    g.restore(); },
+  // the rain over the whole view (screen space): a dim blue wash and slanting streaks
+  rain(g) {
+    const r = G.rain, fade = Math.min(1, (G.time - r.t0) / 3, (r.until - G.time) / 3); if (fade <= 0) return;
+    const t = performance.now() / 1000, W = this.W, H = this.H;
+    g.save(); g.globalAlpha = fade; g.fillStyle = 'rgba(30,45,90,.4)'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(215,230,255,.65)'; g.lineWidth = 1.5; g.beginPath();
+    for (let i = 0; i < 220; i++) { const sp = 520 + (i * 37) % 260, x = ((i * 113.7 + t * sp * 0.35) % (W + 60)) - 30, y = ((i * 71.3 + t * sp) % (H + 40)) - 20;
+      g.moveTo(x, y); g.lineTo(x - 6, y + 18); }
+    g.stroke(); g.restore(); },
+  // Snout's special offer: a spinning coin over the Exchange and the seconds left
+  dealSign(g, e) {
+    const x = e.x * TILE, y = e.ty * TILE - 26 + Math.sin(performance.now() / 300) * 3, left = Math.max(0, Math.ceil(e.deal.until - G.time));
+    const sh = img('rts/art/coin_spin.png'); if (ready(sh)) this.sheet(g, sh, 5, Math.floor(performance.now() / 70) % 5, x, y, 26);
+    g.save(); g.font = 'bold 12px Trebuchet MS'; g.textAlign = 'center'; g.fillStyle = '#ffe6a0'; g.shadowColor = '#000'; g.shadowBlur = 4;
+    g.fillText('½ PRICE · ' + left + 's', x, y - 18); g.restore(); },
   flag(g, x, y) { g.strokeStyle = '#3a2a16'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - 18); g.stroke();
     g.fillStyle = '#7dff7d'; g.beginPath(); g.moveTo(x, y - 18); g.lineTo(x + 11, y - 14); g.lineTo(x, y - 10); g.fill(); },
 
@@ -364,10 +404,13 @@ const R = {
     g.restore();
   },
   ghost(g, p) {
-    const d = BUILDINGS[p.kind], s = d.size * TILE, ok = G.map.canPlace(p.tx, p.ty, d.size, G.ents.filter(e => !e.dead && e.isUnit && e.owner !== ME));
+    const d = BUILDINGS[p.kind], s = d.size * TILE, ok = G.map.canPlace(p.tx, p.ty, d.size, G.ents.filter(e => !e.dead && e.isUnit && e.owner !== ME)), near = tooCloseToFish(p.kind, p.tx, p.ty);
+    if (d.hall) { g.save(); g.strokeStyle = 'rgba(255,90,70,.55)'; g.setLineDash([6, 5]); g.lineWidth = 2;   // where a hall may not reach
+      for (const f of G.ents) if (!f.dead && f.isRes && Math.hypot(f.x - p.tx, f.y - p.ty) < 22) { const m = HALL_POND_GAP; g.strokeRect((f.tx - m) * TILE, (f.ty - m) * TILE, (f.size + 2 * m) * TILE, (f.size + 2 * m) * TILE); }
+      g.restore(); }
     g.globalAlpha = 0.55; this.building(g, { kind: p.kind, tx: p.tx, ty: p.ty, size: d.size, def: d, owner: 0, built: true, x: p.tx + d.size / 2, y: p.ty + d.size / 2 }); g.globalAlpha = 1;
     for (let y = 0; y < d.size; y++) for (let x = 0; x < d.size; x++) { const okT = G.map.passable(p.tx + x, p.ty + y) || false;
-      g.fillStyle = okT && ok ? 'rgba(80,255,80,.22)' : okT ? 'rgba(255,220,80,.22)' : 'rgba(255,60,60,.35)'; g.fillRect((p.tx + x) * TILE + 1, (p.ty + y) * TILE + 1, TILE - 2, TILE - 2); }
+      g.fillStyle = okT && ok && !near ? 'rgba(80,255,80,.22)' : okT && !near ? 'rgba(255,220,80,.22)' : 'rgba(255,60,60,.35)'; g.fillRect((p.tx + x) * TILE + 1, (p.ty + y) * TILE + 1, TILE - 2, TILE - 2); }
   },
   // a white pixel-art sheet (fx/) recoloured once per colour and kept
   tinted(src, col) { const key = src + col; this._tint = this._tint || {}; if (this._tint[key]) return this._tint[key];
@@ -419,16 +462,25 @@ const R = {
   // ── minimap ──
   drawMini(mc, viewH) {
     const g = mc.getContext('2d'), W = mc.width, n = G.n, k = W / n;
-    g.imageSmoothingEnabled = false; g.drawImage(this.mini, 0, 0, W, W);
-    for (const e of G.ents) { if (e.dead) continue;
+    g.imageSmoothingEnabled = false; g.drawImage(this.mini, 0, 0, W, W); let coon = null;
+    for (const e of G.ents) { if (e.dead || e.tun) continue;
       if (e.isRes) { if (!this.seenEnt(e)) continue; g.fillStyle = e.rich ? '#ffd36b' : '#8fd8ff'; g.fillRect(e.tx * k, e.ty * k, 2 * k, 2 * k); continue; }
+      // the Coon is big news: everyone can see where he is
+      if (e.kind === 'coon') { coon = e; continue; }   // drawn last, over the fog
+      if (e.deal) { g.strokeStyle = '#ffd36b'; g.lineWidth = 1.5; g.beginPath(); g.arc(e.x * k, e.y * k, 5 + (performance.now() / 120) % 6, 0, 7); g.stroke(); }
       if (e.owner !== ME && (e.isUnit ? !visibleTo0(e) : !this.seenEnt(e))) continue;
       g.fillStyle = e.owner === P_CREEP ? '#e8c84a' : e.owner === P_NEUTRAL ? '#f2b8c6' : TEAM[teamOf(e.owner)];
       if (e.isBuilding) g.fillRect(e.tx * k, e.ty * k, Math.max(3, e.size * k), Math.max(3, e.size * k)); else g.fillRect(e.x * k - 1.5, e.y * k - 1.5, 3, 3); }
+    for (const f of G.floods || []) { g.fillStyle = '#5a86b8'; g.fillRect(f.tx * k, f.ty * k, f.s * k, f.s * k); }
     // fog over it
     g.globalAlpha = 1; const fd = this.fogCv; g.imageSmoothingEnabled = true; g.drawImage(fd, 0, 0, W, W);
     // alerts
     for (const a of G.alerts) { const t = G.time - a.t; if (t > 4 || (a.p !== undefined && a.p !== ME)) continue; g.strokeStyle = 'rgba(255,80,60,' + (1 - t / 4) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(a.x * k, a.y * k, 4 + (t * 12) % 14, 0, 7); g.stroke(); }
+    // the Coon: red rings rippling out from wherever he is, fog or no fog
+    if (coon) { const t = performance.now() / 1000, cx = coon.x * k, cy = coon.y * k;
+      g.fillStyle = '#ff3030'; g.beginPath(); g.arc(cx, cy, 3, 0, 7); g.fill();
+      g.strokeStyle = '#ff3030'; for (let i = 0; i < 3; i++) { const q = (t * 0.7 + i / 3) % 1; g.globalAlpha = 1 - q; g.lineWidth = 1.5; g.beginPath(); g.arc(cx, cy, 4 + q * 16, 0, 7); g.stroke(); }
+      g.globalAlpha = 1; }
     // camera
     const cz = this.cam.z; g.strokeStyle = '#fff'; g.lineWidth = 1;
     g.strokeRect(this.cam.x / TILE * k, this.cam.y / TILE * k, this.W / cz / TILE * k, (viewH || this.H) / cz / TILE * k);

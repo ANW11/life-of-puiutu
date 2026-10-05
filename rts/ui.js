@@ -9,6 +9,8 @@ const SVG = {
   build: '<svg viewBox="0 0 24 24"><path d="M4 20l9-9M12 4l8 8-3 3-8-8z" stroke="#e8c88a" stroke-width="3" fill="#c9965a" stroke-linejoin="round"/></svg>',
   ret: '<svg viewBox="0 0 24 24"><path d="M6 9h12l-1 11H7z" fill="#c9965a"/><path d="M9 9V6a3 3 0 016 0v3" stroke="#e8c88a" stroke-width="2" fill="none"/></svg>',
   back: '<svg viewBox="0 0 24 24"><path d="M18 12H7M12 6l-6 6 6 6" stroke="#ddd" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
+  load: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="8" ry="3.5" fill="#3a2a16" stroke="#c9965a" stroke-width="1.5"/><path d="M12 3v11M7 9l5 5 5-5" stroke="#bfe8a8" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
+  unload: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="8" ry="3.5" fill="#3a2a16" stroke="#c9965a" stroke-width="1.5"/><path d="M12 15V4M7 9l5-5 5 5" stroke="#ffd36b" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
   cancel: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#ff8a7a" stroke-width="3" stroke-linecap="round"/></svg>',
   revive: '<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 018-3 4.5 4.5 0 018 3c0 6-8 11-8 11z" fill="#ff9ad2"/></svg>',
   up: (c) => `<svg viewBox="0 0 24 24"><path d="M12 3l8 9h-5v8H9v-8H4z" fill="${c}"/></svg>`,
@@ -41,30 +43,35 @@ const UI = {
     mc.addEventListener('pointerup', () => { this.miniDrag = false; });
     $('info').addEventListener('pointerdown', ev => {
       const e = this.infoEnt; if (!e || e.dead) return;
-      const slot = ev.target.closest('.slot'), q = ev.target.closest('[data-q]');
+      const slot = ev.target.closest('.slot'), q = ev.target.closest('[data-q]'), drop = ev.target.closest('.drop');
+      // the little ✕ (or a right click on the slot) puts the item down at the hero's feet
+      if (slot && (drop || ev.button === 2)) { ev.preventDefault(); ev.stopPropagation(); if (e.items[+slot.dataset.i]) { CMD.exec({ t: 'drop', h: e.id, slot: +slot.dataset.i }); sfx('click'); } this.infoSig = ''; return; }
       if (slot) { ev.preventDefault(); const it = e.items[+slot.dataset.i]; if (!it) return; const I = ITEMS[it];
         if (I.use) { CMD.exec({ t: 'use', h: e.id, slot: +slot.dataset.i }); sfx('done'); }
-        else this.flash(I.name + ' is always working while your hero carries it: ' + I.desc);
+        else this.flash(I.name + ' is always working while your hero carries it: ' + I.desc + ' (✕ to drop it)');
         this.infoSig = ''; }
       if (q) { ev.preventDefault(); CMD.exec({ t: 'cancelq', b: e.id, i: +q.dataset.q }); this.infoSig = ''; }
     });
+    $('info').addEventListener('contextmenu', ev => { if (ev.target.closest('.slot')) ev.preventDefault(); });
     $('qHero').onclick = () => this.selectHero(); $('qArmy').onclick = () => this.selectArmy(); $('qIdle').onclick = () => this.idleWorker();
     this.arrows = {};
   },
   viewH() { return R.H - $('panel').offsetHeight; },
-  mine(e) { return e && !e.dead && e.owner === ME; },
+  mine(e) { return e && !e.dead && e.owner === ME && !(e.isUnit && e.tun); },   // (units underground can't be picked)
   setSel(list) {
     // heroes first, then fighters, then workers, then buildings — the first one drives the command card
     const rank = e => e.isUnit ? (e.def.hero ? 0 : e.def.worker ? 2 : 1) : 3;
     this.sel = list.filter(e => e && !e.dead).sort((a, b) => rank(a) - rank(b) || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0)).slice(0, 24); this.menu = 'main'; this.sub = 0; this.target = null; this.place = null; this.cardSig = ''; this.infoSig = ''; },
   primary() { const own = this.sel.filter(e => this.mine(e)); if (!own.length) return this.sel[0] || null;
     const kinds = [...new Set(own.map(e => e.kind))]; const k = kinds[this.sub % kinds.length]; return own.find(e => e.kind === k); },
+  // how many of your units wait in the tunnels (the guest is told by the host)
+  inNet() { return NET.role === 'guest' ? (G.players[ME].inNet || 0) : netUnits(ME).length; },
   ownUnits() { return this.sel.filter(e => this.mine(e) && e.isUnit); },
 
   // ── what is under a screen point ──
   pick(sx, sy) {
     const [wx, wy] = R.toWorld(sx, sy); let best = null, bd = 1e9;
-    for (const e of G.ents) { if (e.dead) continue;
+    for (const e of G.ents) { if (e.dead || (e.isUnit && e.tun)) continue;
       if (e.owner !== ME && (e.isUnit ? !visibleTo0(e) : !R.seenEnt(e))) continue;
       if (e.isUnit) { const h = SPR[e.def.spr].h / TILE; const dx = Math.abs(wx - e.x), dy = (e.y - wy);
         if (dx < Math.max(e.r, 0.35) + 0.15 && dy > -0.3 && dy < h + 0.1) { const d = dx + Math.abs(dy - h / 2) * 0.3 - (e.def.hero ? 0.2 : 0); if (d < bd) { bd = d; best = e; } } }
@@ -167,6 +174,7 @@ const UI = {
     const d = BUILDINGS[p.kind]; w.sort((a, b) => Math.hypot(a.x - p.tx, a.y - p.ty) - Math.hypot(b.x - p.tx, b.y - p.ty));
     if (!canAfford(ME, d.cost)) { this.flash('Not enough ' + (G.players[ME].fish < d.cost.f ? 'fish.' : 'wood.')); return; }
     if (!G.map.canPlace(p.tx, p.ty, d.size)) { this.flash("Can't build there."); return; }
+    if (tooCloseToFish(p.kind, p.tx, p.ty)) { this.flash(TOO_CLOSE_MSG); return; }
     if (CMD.exec({ t: 'build', id: w[0].id, kind: p.kind, tx: p.tx, ty: p.ty, shift: !!(shift && w[0].order && w[0].order.type === 'build') })) { this.ping(p.tx + d.size / 2, p.ty + d.size / 2, '#ffd36b'); sfx('ack'); if (!shift) { this.place = null; this.hint(); } }
   },
 
@@ -242,7 +250,8 @@ const UI = {
     // prices with the same pictures as the top bar: a fish and a log
     const costTip = c => (c.f ? '<img class="ci" src="rts/art/res_fish.png">' + c.f + ' fish' : '') + (c.w ? (c.f ? ' &nbsp;' : '') + '<img class="ci" src="rts/art/res_wood.png">' + c.w + ' wood' : '');
     if (p.kind === 'exchange') {
-      ['snout', 'mechboar', 'merlin'].forEach((k, i) => { const d = UNITS[k]; put(i, { key: 'QWE'[i], img: unitPic(k), title: 'Hire ' + d.name, tip: d.desc, cost: costTip(d.cost) + ', ' + d.sup + ' supply', n: p.stock[k] ? '' : 'out', on: true, off: !p.stock[k] || !canAfford(ME, d.cost), act: () => CMD.exec({ t: 'hire', ex: p.id, kind: k }) && sfx('done') }); });
+      ['snout', 'mechboar', 'merlin'].forEach((k, i) => { const d = UNITS[k], deal = p.deal && p.deal.kind === k ? p.deal : null, c = deal ? { f: deal.f, w: deal.w } : d.cost;
+        put(i, { key: 'QWE'[i], img: unitPic(k), title: 'Hire ' + d.name, tip: d.desc, cost: costTip(c) + ', ' + d.sup + ' supply', n: deal ? '½' : p.stock[k] ? '' : 'out', on: true, off: !(p.stock[k] || deal) || !canAfford(ME, c), act: () => CMD.exec({ t: 'hire', ex: p.id, kind: k }) && sfx('done') }); });
       return slots; }
     if (p.isUnit) {
       const units = this.ownUnits();
@@ -275,12 +284,18 @@ const UI = {
         if (d.hero && pl.heroDead) { const c = { f: 150 + 40 * pl.heroDead.level, w: 0 }; put(i, { key: keys[i], img: 'rts/art/item_heart.png', title: 'Revive hero (level ' + pl.heroDead.level + ')', cost: costTip(c), on: true, off: !canAfford(ME, c), act: () => CMD.exec({ t: 'revive', b: p.id }) && sfx('ack') }); return; }
         const heroBlocked = d.hero && (pl.hero || p.prodQ.some(q => q.unit === k));
         const reqOk = !d.req || reqMet(ME, d), typeTip = '<div style="opacity:.8;font-size:12px">' + TYPE_NAME[d.atk || 'normal'] + ' attack · ' + TYPE_NAME[d.arm || 'medium'] + ' armour' + (reqOk ? '' : ' · <span style="color:#ff9a8a">needs ' + d.req.map(r => BUILDINGS[r].name).join(', ') + '</span>') + '</div>';
-        put(i, { key: keys[i], img: unitPic(k), title: 'Train ' + d.name, tip: d.desc + (heroBlocked ? ' (one hero at a time)' : '') + typeTip, cost: costTip(d.cost) + ', ' + d.sup + ' supply · ' + d.time + 's', on: true, off: heroBlocked || !reqOk || !canAfford(ME, d.cost) || pl.supUsed + d.sup > pl.supCap,
+        put(i, { key: keys[i], img: unitPic(k), title: 'Train ' + d.name + (d.pair ? ' ×2' : ''), tip: d.desc + (heroBlocked ? ' (one hero at a time)' : '') + typeTip, cost: costTip(d.cost) + ', ' + qSup(k) + ' supply · ' + d.time + 's', on: true, off: heroBlocked || !reqOk || !canAfford(ME, d.cost) || pl.supUsed + qSup(k) > pl.supCap,
           act: () => { if (CMD.exec({ t: 'train', b: p.id, kind: k })) sfx('ack'); } }); });
       (p.def.res || []).forEach((u, i) => { const U = UPGRADES[u]; if (U.faction && U.faction !== pl.faction) return; const lvl = pl.up[u] || 0, max = lvl >= U.levels.length, c = U.levels[Math.min(lvl, U.levels.length - 1)];
         put(i, { key: keys[i], img: { weap: 'rts/art/item_claws.png', arm: 'rts/art/item_collar.png', catnip: 'spells/catnip.png', scurry: 'spells/zoomies.png' }[u], title: U.name + (U.levels.length > 1 ? ' ' + (lvl + 1) : ''), tip: U.desc, cost: max ? 'Done' : costTip(c) + ' · ' + c.time + 's', n: max ? '✓' : '',
           on: !max, off: max || pl.researching[u] || !canAfford(ME, c), act: () => { if (CMD.exec({ t: 'research', b: p.id, up: u })) sfx('ack'); } }); });
       if (p.prodQ.length) put(11, { key: 'Escape', svg: SVG.cancel, title: 'Cancel last', on: true, act: () => CMD.exec({ t: 'cancelq', b: p.id, i: p.prodQ.length - 1 }) });
+      // a Nest: the way into the tunnel network and out of it
+      if (p.kind === 'nest') { const inNet = this.inNet();
+        put(0, { key: 'Q', svg: SVG.load, title: 'Load', tip: 'Every fighting unit of yours near this Nest goes down into the tunnels. (Right-clicking a Nest with units selected does the same.)', on: true,
+          act: () => { if (CMD.exec({ t: 'load', b: p.id })) sfx('ack'); else this.flash('No units near this Nest.'); } });
+        put(1, { key: 'W', svg: SVG.unload, title: 'Unload', tip: 'Everyone in the tunnels comes up here, at this Nest.', n: inNet ? String(inNet) : '', on: true, off: !inNet,
+          act: () => { if (CMD.exec({ t: 'unload', b: p.id })) sfx('done'); else this.flash('Nobody is in the tunnels.'); } }); }
       if (p.def.prod) put(8, { key: 'Y', svg: SVG.move, title: 'Set rally point', tip: 'Where new units go. Right-click also sets it.', on: true, act: () => this.startTarget({ type: 'rally', hint: 'Click the rally point' }) });
     } else if (p.isBuilding && !p.built) put(11, { key: 'Escape', svg: SVG.cancel, title: 'Cancel construction', tip: 'Refunds 75%.', on: true, act: () => { CMD.exec({ t: 'cancelb', b: p.id }); this.setSel([]); } });
     return slots;
@@ -308,9 +323,9 @@ const UI = {
 
   // ── the info panel ──
   renderInfo() {
-    const el = $('info'); this.sel = this.sel.filter(e => !e.dead && (e.owner === ME || (e.isUnit ? visibleTo0(e) : true)));
+    const el = $('info'); this.sel = this.sel.filter(e => !e.dead && !(e.isUnit && e.tun) && (e.owner === ME || (e.isUnit ? visibleTo0(e) : true)));
     const p = this.primary(); const sel = this.sel;
-    const sig = sel.map(e => e.id + ':' + Math.round(e.hp) + ':' + (e.mana | 0) + ':' + (e.level || 0) + ':' + (e.items ? e.items.join() : '') + ':' + (e.prodQ ? e.prodQ.map(q => (q.unit || q.up || 'r') + (q.t / q.total * 20 | 0)).join() : '') + ':' + (e.amount || '') + ':' + (e.progress ? (e.progress * 50 | 0) : '') + (e.stock ? JSON.stringify(e.stock) : '')).join('|') + this.sub + (p && p.isUnit ? (uDmg(p) | 0) : '');
+    const sig = sel.map(e => e.id + ':' + Math.round(e.hp) + ':' + Math.round(e.shield || 0) + ':' + (e.morale || 0) + ':' + (e.mana | 0) + ':' + (e.level || 0) + ':' + (e.items ? e.items.join() : '') + ':' + (e.prodQ ? e.prodQ.map(q => (q.unit || q.up || 'r') + (q.t / q.total * 50 | 0) + '/' + Math.ceil(q.total - q.t)).join() : '') + ':' + (e.amount || '') + ':' + (e.progress ? (e.progress * 50 | 0) : '') + (e.stock ? JSON.stringify(e.stock) : '') + (e.deal ? Math.ceil(e.deal.until - G.time) : '')).join('|') + this.sub + (p && p.isUnit ? (uDmg(p) | 0) : '');
     if (sig === this.infoSig) return; this.infoSig = sig;
     if (!sel.length) { el.innerHTML = '<div class="stats"><div class="sub">' + (IS_TOUCH ? 'Tap a unit to select it. Hold and drag to select many.' : 'Select a unit or building. Drag a box to select many.') + '</div></div>'; return; }
     if (sel.length > 1) {
@@ -326,20 +341,33 @@ const UI = {
     let bag = '', h = '<div class="port"><img src="' + pic + '"></div><div class="stats"><h3>' + (e.def.name) + (e.isUnit && e.def.hero ? ' <span style="color:#ffd36b">Lv ' + e.level + '</span>' : '') + '</h3><div class="sub">' + owner + '</div>';
     if (!(e.def.invuln)) h += '<div>' + Math.ceil(e.hp) + ' / ' + Math.round(e.maxHp) + '</div><div class="bar"><b style="width:' + (e.hp / e.maxHp * 100) + '%;background:#5fd35a"></b></div>';
     if (e.isUnit) {
+      if (e.maxShield) h += '<div class="bar" title="fur shield"><b style="width:' + (e.shield / e.maxShield * 100) + '%;background:#9fd8ff"></b></div>';
       if (e.maxMana) h += '<div class="bar"><b style="width:' + (e.mana / e.maxMana * 100) + '%;background:#5aa0ff"></b></div>';
       const d = e.def, pl = G.players[e.owner], up = (pl.up && pl.up.weap || 0) * 2 + (e.level ? (e.level - 1) * 3 : 0) + itemBonus(e, 'dmg');
       h += '<div class="sub">Damage ' + (d.dmg[0] + up) + '–' + (d.dmg[1] + up) + ' ' + TYPE_NAME[atkType(e)] + ' · Armour ' + (Math.round(uArmor(e) * 10) / 10) + ' ' + TYPE_NAME[armType(e)] + ' · ' + (uRange(e) > 2 ? 'Range ' + uRange(e) : 'Melee') + '</div>';
       if (d.hero) { const need = HERO_XP[e.level] || 0, prev = HERO_XP[e.level - 1] || 0; if (e.level < HERO_MAX) h += '<div class="bar" title="experience"><b style="width:' + ((e.xp - prev) / (need - prev) * 100) + '%;background:#c98aff"></b></div>';
-        if (e.owner === ME) { bag = '<div class="bag"><div class="lbl">ITEMS</div><div class="slots">'; for (let i = 0; i < 3; i++) { const it = e.items[i]; bag += '<span class="slot' + (it && ITEMS[it].use ? ' usable' : '') + '" data-i="' + i + '" title="' + (it ? ITEMS[it].name + ': ' + ITEMS[it].desc + (ITEMS[it].use ? ' (click to use)' : ' (always on)') : 'empty slot') + '">' + (it ? '<img src="rts/art/item_' + it + '.png">' + (ITEMS[it].use ? '<b class="use">USE</b>' : '') : '') + '</span>'; } bag += '</div></div>'; } }
+        if (e.owner === ME) { bag = '<div class="bag"><div class="lbl">ITEMS</div><div class="slots">'; for (let i = 0; i < 3; i++) { const it = e.items[i]; bag += '<span class="slot' + (it && ITEMS[it].use ? ' usable' : '') + '" data-i="' + i + '" title="' + (it ? ITEMS[it].name + ': ' + ITEMS[it].desc + (ITEMS[it].use ? ' (click to use)' : ' (always on)') + ' — right click or ✕ to drop' : 'empty slot') + '">' + (it ? '<img src="rts/art/item_' + it + '.png">' + (ITEMS[it].use ? '<b class="use">USE</b>' : '') + '<b class="drop" title="Drop">✕</b>' : '') + '</span>'; } bag += '</div></div>'; } }
       if (d.worker && e.carry) h += '<div class="sub">Carrying ' + e.carry.amt + (e.carry.type === 'f' ? ' fish' : ' wood') + '</div>';
+      if (e.morale) h += '<div style="color:#ffcf5a">Morale ' + e.morale + ' — faster and fiercer</div>';
       if (d.desc && !d.hero) h += '<div class="sub">' + d.desc + '</div>';
     } else {
       if (!e.built) h += '<div class="sub">Under construction — ' + Math.round(e.progress * 100) + '%</div>';
       if (e.def.supply && e.built) h += '<div class="sub">Provides ' + e.def.supply + ' supply</div>';
+      if (e.kind === 'nest' && e.built && e.owner === ME) h += '<div style="color:#bfe8a8">In the tunnels: ' + this.inNet() + '</div>';
       if (e.def.desc) h += '<div class="sub">' + e.def.desc + '</div>';
+      if (e.kind === 'exchange' && e.deal) h += '<div style="color:#ffd36b">Special offer: ' + UNITS[e.deal.kind].name + ' at half price — ' + Math.max(0, Math.ceil(e.deal.until - G.time)) + 's left</div>';
       if (e.kind === 'exchange') h += '<div class="sub">In stock: Agent Snout ' + (e.stock.snout ? '✓' : '—') + ', Mech Boar ' + (e.stock.mechboar ? '✓' : '—') + ', Merlin ' + (e.stock.merlin ? '✓' : '—') + '</div>';
-      if (e.prodQ && e.prodQ.length && e.owner === ME) { h += '<div class="queue">'; e.prodQ.forEach((q, i) => { const src = q.unit ? unitPic(q.unit) : null;
-          h += '<span class="mini" data-q="' + i + '" title="click to cancel">' + (src ? '<img src="' + src + '">' : '<img src="' + (q.revive ? 'rts/art/item_heart.png' : ({ weap: 'rts/art/item_claws.png', arm: 'rts/art/item_collar.png', catnip: 'spells/catnip.png', scurry: 'spells/zoomies.png' }[q.up])) + '">') + '<span class="hp"><b style="width:' + (i === 0 ? q.t / q.total * 100 : 0) + '%;background:#9be38f"></b></span></span>'; }); h += '</div>'; }
+      // what's being made sits on the right, big, with a proper progress bar; the rest of the queue waits under it
+      if (e.prodQ && e.prodQ.length && e.owner === ME) {
+        const qPic = q => q.unit ? unitPic(q.unit) : q.revive ? 'rts/art/item_heart.png' : { weap: 'rts/art/item_claws.png', arm: 'rts/art/item_collar.png', catnip: 'spells/catnip.png', scurry: 'spells/zoomies.png' }[q.up];
+        const q0 = e.prodQ[0], k0 = Math.min(1, q0.t / q0.total), name = q0.unit ? UNITS[q0.unit].name : q0.revive ? 'Reviving hero' : (UPGRADES[q0.up] ? UPGRADES[q0.up].name : 'Upgrade');
+        bag = '<div class="train"><div class="now" data-q="0" title="click to cancel"><img src="' + qPic(q0) + '"></div><div class="tcol">'
+          + '<div class="lbl">' + (q0.unit ? 'TRAINING' : 'RESEARCHING') + '</div>'
+          + '<div class="tname">' + name + '</div>'
+          + '<div class="tbar"><b style="width:' + (k0 * 100) + '%"></b><span>' + Math.ceil(q0.total - q0.t) + 's</span></div>';
+        if (e.prodQ.length > 1) { bag += '<div class="queue">'; e.prodQ.forEach((q, i) => { if (i) bag += '<span class="mini" data-q="' + i + '" title="click to cancel"><img src="' + qPic(q) + '"></span>'; }); bag += '</div>'; }
+        bag += '</div></div>';
+      }
     }
     h += '</div>' + bag; el.innerHTML = h;
     this.infoEnt = e;

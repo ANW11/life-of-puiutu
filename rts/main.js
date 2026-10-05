@@ -59,7 +59,7 @@ const Main = {
       ME = 1; const o = d.opt, map = new GameMap(o.size, o.seed), bin = atob(d.terrain);
       for (let i = 0; i < bin.length; i++) map.t[i] = bin.charCodeAt(i);
       map.block.fill(0);
-      G = { map, n: map.n, time: 0, ents: [], byId: new Map(), nextId: 1, proj: [], fx: [], clouds: [], items: [], msgs: [], alerts: [], over: null, opt: o, events: {} };
+      G = { map, n: map.n, time: 0, ents: [], byId: new Map(), nextId: 1, proj: [], fx: [], clouds: [], items: [], msgs: [], alerts: [], over: null, opt: o, events: {}, floods: [], rain: null };
       G.players = d.factions.map((f, i) => ({ id: i, faction: f, fish: 0, wood: 0, supUsed: 0, supCap: 0, up: {}, researching: {}, stats: {} }));
       G.players.push({ id: P_CREEP, faction: 'creep', up: {} }, { id: P_NEUTRAL, faction: 'neutral', up: {} });
       G.vis = new Uint8Array(G.n * G.n); G.seen = new Uint8Array(G.n * G.n); G.visT = 0;
@@ -90,7 +90,7 @@ const Main = {
     $('endTitle').textContent = win ? 'Victory' : 'Defeat';
     const foe = G.players[1 - ME].faction === 'cats' ? 'the Feline Union' : 'the Rat Federation';
     $('endText').textContent = G.over.left ? (G.over.why || 'Your friend left.') + ' The field is yours.'
-      : (win ? (G.over.surrender ? 'Your opponent surrendered. ' : 'The border woods are yours. ') : G.over.surrender ? 'You withdrew from the field. ' : 'Your last building has fallen. ')
+      : (win ? (G.over.surrender ? 'Your opponent surrendered. ' : G.over.nohall ? 'Without a town hall, the enemy scattered. ' : 'The border woods are yours. ') : G.over.surrender ? 'You withdrew from the field. ' : G.over.nohall ? 'Without a town hall, your side scattered. ' : 'Your last building has fallen. ')
         + (mp ? 'Your friend played ' + foe + '.' : 'The ' + AI_STYLES[G.opt.style].name.toLowerCase() + ' played ' + foe + '.');
     const a = G.players[ME].stats || {}, b = G.players[1 - ME].stats || {};
     $('endStats').innerHTML = '<b>Time</b><span>' + mm + '</span><b>Units trained</b><span>' + a.trained + ' (enemy ' + b.trained + ')</span><b>Kills</b><span>' + a.killed + ' (enemy ' + b.killed + ')</span>'

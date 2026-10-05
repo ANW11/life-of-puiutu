@@ -99,11 +99,14 @@ class GameMap {
       const ahead = (x - s0.x) * toC.x + (y - s0.y) * toC.y;
       if (d > 10.5 && d < 15.5 && ahead < 3 && detail(x * 2, y * 2) > 0.2) this.setT(x, y, T_TREE); }
     this.clear(s0.x, s0.y, 9);
-    for (const e of ex) this.clear(e.x, e.y, 6);
+    for (const e of ex) this.clear(e.x, e.y, 9);   // room for a hall at the required distance from the pond
     this.clear(this.center.x, this.center.y, 6);
     // the home fishing pond: towards the middle, a little to the side, so the way out stays open
     const side = { x: -toC.y, y: toC.x }, fc = { x: s0.x + toC.x * 6 + side.x * 3.5, y: s0.y + toC.y * 6 + side.y * 3.5 };
     this.homeFish = { x: Math.round(fc.x - 1.5), y: Math.round(fc.y - 1.5) };
+    // …and as far from the hall as any hall may be from a pond (the rule in core.js: 3 clear tiles)
+    for (let k = 0; k < 12; k++) { const h = this.homeFish, gx = Math.max(h.x - (s0.x + 2), (s0.x - 2) - (h.x + 3), 0), gy = Math.max(h.y - (s0.y + 2), (s0.y - 2) - (h.y + 3), 0);
+      if (Math.max(gx, gy) >= 3) break; fc.x += toC.x * 0.5; fc.y += toC.y * 0.5; this.homeFish = { x: Math.round(fc.x - 1.5), y: Math.round(fc.y - 1.5) }; }
     // 7. roads: home to each expansion, each expansion and home to the middle, and one flank road
     //    across to the other side (where there is a river, that is where the fords appear)
     // one main road home → first expansion → middle; narrow paths to the others; on a river map a

@@ -64,10 +64,21 @@
   .bag .slot{width:64px;height:64px;margin:0;}
   .bag .slot img{max-width:54px !important;max-height:54px !important;}
   .bag .slot{position:relative;} .bag .slot.usable{border-color:#7dff7d;cursor:pointer;}
+  .bag .slot .drop{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#5a1a14;border:1px solid #c9604f;color:#ffd9d0;font-size:11px;line-height:16px;text-align:center;cursor:pointer;}
+  .bag .slot .drop:hover{background:#8a2a1e;}
   .bag .slot .use{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:9px;color:#9cff9c;text-shadow:0 1px 2px #000;}
   .slot{width:34px;height:34px;border:2px solid var(--wood);border-radius:6px;background:#2a1f12;display:inline-flex;align-items:center;justify-content:center;margin-right:3px;cursor:pointer;vertical-align:middle;}
   .slot i{width:18px;height:14px;border-radius:3px;display:block;}
-  .queue{display:flex;gap:4px;margin-top:6px;}
+  .train{margin-left:auto;flex:none;display:flex;align-items:center;gap:10px;padding-left:10px;}
+  .train .tcol{display:flex;flex-direction:column;gap:3px;}
+  .train .lbl{font-size:11px;opacity:.7;letter-spacing:.5px;}
+  .train .now{flex:none;width:80px;height:80px;border:2px solid #ffd36b;border-radius:8px;background:radial-gradient(#3a4a2a,#1a2210);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .train .now img{max-width:88%;max-height:88%;}
+  .train .tname{font-size:13px;font-weight:bold;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .train .tbar{position:relative;width:140px;height:14px;background:#000;border:1px solid var(--wood);border-radius:7px;overflow:hidden;}
+  .train .tbar b{display:block;height:100%;background:linear-gradient(#b6f2a8,#5fd35a);}
+  .train .tbar span{position:absolute;inset:0;text-align:center;font-size:10px;line-height:14px;color:#fff;text-shadow:0 1px 2px #000;}
+  .queue{display:flex;gap:4px;margin-top:2px;}
   /* messages + tooltip */
   #msgs{position:absolute;left:12px;bottom:calc(var(--panelH) + 10px);z-index:6;pointer-events:none;font-size:14px;font-weight:bold;text-shadow:0 2px 3px #000,0 0 4px #000;}
   #msgs div{margin-top:3px;transition:opacity .5s;}
@@ -105,11 +116,97 @@
     .stats{font-size:11px;line-height:1.35;} .stats h3{font-size:13px;}
     .bar{width:120px;}
     .mini{width:30px;height:30px;}
+    .train .now{width:44px;height:44px;} .train .tbar{width:96px;height:11px;} .train .tbar span{font-size:9px;line-height:11px;} .train .tname{font-size:10px;max-width:100px;} .train .lbl{display:none;} .train{gap:6px;}
     .bag .slot{width:40px;height:40px;} .bag .slot img{max-width:34px !important;max-height:34px !important;}
     #info{padding:5px;gap:6px;}
     .box{padding:14px 16px;} .box h1{font-size:24px;} .ch img{height:44px;} .big{font-size:16px;padding:8px;margin-top:12px;}
     #msgs{font-size:12px;}
   }
+
+  /* ── the start menu: the war seen from a hill, a wooden panel, the two banners ── */
+  #startOv{background:#0c0a07 url(rts/menu/bg.jpg) center/cover no-repeat;backdrop-filter:none;}
+  #startOv::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at center,rgba(10,7,4,.25) 0%,rgba(10,7,4,.55) 55%,rgba(6,4,2,.9) 100%);}
+  .box.menu{position:relative;width:min(980px,96vw);max-width:none;padding:16px 28px 14px;border:3px solid #8a6a3a;border-radius:18px;
+    background:linear-gradient(rgba(42,29,16,.84),rgba(24,16,9,.9));box-shadow:0 0 0 2px #2a1a0c,0 0 0 5px rgba(201,150,90,.35),0 24px 60px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,220,150,.15);
+    animation:mIn .45s ease-out both;}
+  .box.menu::before,.box.menu::after{content:'';position:absolute;width:26px;height:26px;border:3px solid #d9a441;pointer-events:none;}
+  .box.menu::before{left:8px;top:8px;border-right:0;border-bottom:0;border-radius:8px 0 0 0;}
+  .box.menu::after{right:8px;bottom:8px;border-left:0;border-top:0;border-radius:0 0 8px 0;}
+  @keyframes mIn{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+  .mHead{text-align:center;margin-bottom:4px;}
+  .box.menu h1{font-size:46px;letter-spacing:3px;line-height:1.05;margin:0;
+    background:linear-gradient(#fff3c4,#ffd36b 45%,#c98a2a);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 2px 0 #3a2208) drop-shadow(0 0 14px rgba(255,190,90,.35));}
+  .mHead p{font-style:italic;font-size:13px;opacity:.75;max-width:640px;margin:2px auto 0;}
+  .box.menu h2{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#d9a441;margin:10px 0 7px;display:flex;align-items:center;gap:10px;}
+  .box.menu h2::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(217,164,65,.6),transparent);}
+  /* faction cards */
+  #facPick{gap:14px;}
+  .ch.fac{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto 1fr auto;column-gap:14px;text-align:left;
+    padding:10px 14px 10px 10px;border-width:2px;border-radius:14px;overflow:hidden;transition:transform .18s,box-shadow .18s,filter .18s,border-color .18s;
+    animation:mIn .5s ease-out both;}
+  .ch.fac.rats{animation-delay:.08s;}
+  .ch.fac.cats{background:linear-gradient(120deg,rgba(40,70,140,.38),rgba(15,20,40,.55));border-color:#3f5f9e;}
+  .ch.fac.rats{background:linear-gradient(120deg,rgba(140,35,25,.38),rgba(40,14,10,.55));border-color:#8e3a2a;}
+  .ch.fac:not(.on){filter:saturate(.55) brightness(.8);}
+  .ch.fac:hover{filter:none;transform:translateY(-2px);}
+  .ch.fac.on{transform:translateY(-3px);}
+  .ch.fac.cats.on{border-color:#7fb0ff;box-shadow:0 0 0 2px rgba(127,176,255,.35),0 10px 26px rgba(40,90,200,.35);background:linear-gradient(120deg,rgba(50,90,180,.5),rgba(15,22,48,.6));}
+  .ch.fac.rats.on{border-color:#ff7a5a;box-shadow:0 0 0 2px rgba(255,122,90,.35),0 10px 26px rgba(200,50,30,.35);background:linear-gradient(120deg,rgba(170,45,30,.5),rgba(48,14,10,.6));}
+  .ch.fac .banner{grid-row:1/4;height:118px;width:auto;margin:0;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5));transform-origin:50% 8%;}
+  .ch.fac.on .banner{animation:sway 3.2s ease-in-out infinite;}
+  @keyframes sway{0%,100%{transform:rotate(-1.2deg);}50%{transform:rotate(1.2deg);}}
+  .ch.fac .hero{position:absolute;right:8px;bottom:6px;height:82px;margin:0;opacity:.95;filter:drop-shadow(0 3px 4px rgba(0,0,0,.6));}
+  .ch.fac.cats .hero{height:132px;right:4px;bottom:2px;}   /* the cat commander stands tall, the rat crouches */
+  .ch.fac.rats .hero{height:82px;}
+  .ch.fac .fname{font-size:21px;margin-top:4px;color:#fff1cf;text-shadow:0 2px 0 rgba(0,0,0,.5);}
+  .ch.fac small{font-size:12.5px;margin-top:3px;opacity:.85;padding-right:70px;}
+  .traits{grid-column:1/3;display:flex;flex-wrap:wrap;gap:8px;align-self:end;padding-right:80px;margin-top:6px;}
+  .traits i{display:flex;align-items:center;gap:6px;font-style:normal;font-weight:bold;font-size:13px;padding:3px 12px 3px 4px;border-radius:99px;
+    background:rgba(0,0,0,.35);border:1px solid rgba(255,220,150,.25);}
+  .traits img{width:38px;height:38px;margin:0;display:block;}
+  /* the options: pills in rows */
+  .opts{display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:center;margin-top:6px;}
+  .opts h2{margin:8px 0 !important;font-size:12px !important;}
+  .opts h2::after{display:none;}
+  .optSet{display:flex;flex-direction:column;gap:6px;margin:4px 0;}
+  .opts .choices{gap:6px;flex-wrap:wrap;}
+  .opts .ch{flex:1;min-width:84px;padding:6px 8px;border-radius:99px;font-size:13.5px;border-width:2px;background:rgba(0,0,0,.3);transition:background .15s,border-color .15s;}
+  .opts .ch:hover{border-color:#a07a3a;}
+  .opts .ch.on{border-color:#ffd36b;background:linear-gradient(rgba(255,211,107,.24),rgba(255,180,60,.1));}
+  .opts .ch small{font-size:10.5px;margin-top:0;}
+  #mpBox .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0;}
+  #mpBox .tbtn{font-size:13px;padding:7px 14px;border-radius:99px;background:rgba(0,0,0,.35);}
+  #mpBox .tbtn:hover{border-color:#d9a441;}
+  #codeIn{width:96px;font:bold 15px 'Trebuchet MS',sans-serif;text-transform:uppercase;padding:6px 10px;border-radius:8px;letter-spacing:4px;text-align:center;
+    border:2px solid #8a6a3a;background:linear-gradient(#2a1a0c,#160e06);color:#ffe7b0;box-shadow:inset 0 2px 4px rgba(0,0,0,.6);}
+  #mpStatus{font-size:12.5px;margin-top:2px;opacity:.85;}
+  #record{margin-top:10px;font-size:12.5px;text-align:center;opacity:.7;}
+  /* Start: the wooden plank */
+  #startBtn{display:block;margin:18px auto 2px;width:min(440px,90%);aspect-ratio:900/183;padding:2% 0 0;border:0;border-radius:0;
+    background:url(rts/menu/btn_start.png) center/100% 100% no-repeat;color:#fff3c4;font-size:26px;letter-spacing:3px;text-transform:uppercase;
+    text-shadow:0 2px 0 #3a2208,0 0 10px rgba(255,200,100,.5);filter:drop-shadow(0 6px 10px rgba(0,0,0,.55));transition:transform .12s,filter .12s;cursor:pointer;}
+  #startBtn:hover{transform:translateY(-2px) scale(1.02);filter:drop-shadow(0 8px 14px rgba(0,0,0,.6)) brightness(1.12);}
+  #startBtn:active{transform:translateY(2px) scale(.99);filter:drop-shadow(0 3px 5px rgba(0,0,0,.6)) brightness(.95);}
+  #startBtn:disabled{filter:grayscale(.7) brightness(.7);cursor:default;transform:none;}
+  .mFoot{justify-content:center;gap:10px;}
+  .mFoot .big{flex:0 0 auto;width:auto;margin-top:6px;font-size:13px;padding:6px 16px;border-radius:99px;}
+  @media (max-height:560px){
+    .box.menu{padding:10px 16px 10px;max-height:96vh;}
+    .box.menu h1{font-size:28px;} .mHead p{display:none;}
+    .box.menu h2{margin:6px 0 4px;}
+    .ch.fac{min-height:0;padding:6px 10px 6px 6px;} .ch.fac .banner{height:84px;} .ch.fac .hero{height:52px;}
+    .ch.fac .fname{font-size:16px;margin-top:0;} .ch.fac small{font-size:11px;}
+    .traits{margin-top:4px;grid-column:2;padding-right:60px;}   /* short screen: icons stay beside the text */ .traits i{font-size:0;padding:1px;gap:0;} .traits img{width:30px;height:30px;}
+    .opts .ch{padding:3px 6px;font-size:12px;} .opts .ch small{display:none;}
+    #startBtn{margin:16px auto 0;width:min(300px,70%);font-size:19px;}
+    #record{display:none;}
+    .ch.fac .banner{height:70px;} .ch.fac .hero{height:46px;} .ch.fac.cats .hero{height:68px;} .ch.fac.rats .hero{height:44px;}
+    .opts h2{margin:3px 0 !important;} .optSet{gap:4px;margin:2px 0;} #mpBox .row{margin:2px 0;} #mpBox .tbtn{padding:4px 12px;} #codeIn{padding:3px 8px;}
+    .mFoot{position:absolute;right:16px;bottom:12px;} .mFoot .big{margin:0;padding:4px 12px;font-size:12px;}
+  }
+  @media (max-width:640px){ .ch.fac{grid-template-columns:auto 1fr;} .ch.fac .hero{display:none;} .ch.fac small,.traits{padding-right:0;} }
 </style>
 </head>
 <body>
@@ -140,45 +237,61 @@
 </div>
 
 <!-- start -->
-<div class="ov show" id="startOv"><div class="box">
-  <h1>Border War</h1>
-  <p>The border woods, a few fishing ponds, and two armies who both think they own them. Build a base, raise an army and a hero, and drive the other side off the map.</p>
+<div class="ov show" id="startOv"><div class="box menu">
+  <header class="mHead">
+    <h1>Border War</h1>
+    <p>The border woods, a few fishing ponds, and two armies who both think they own them. Build a base, raise an army and a hero, and drive the other side off the map.</p>
+  </header>
   <h2>Your side</h2>
   <div class="choices" id="facPick">
-    <div class="ch on" data-v="cats"><img src="army/frames/cat_commander_walk0.png?v=2" alt="">The Feline Union<small>Cats: sturdy soldiers, hairball slingers, royal lions</small></div>
-    <div class="ch" data-v="rats"><img src="army/frames/rat_commander_walk0.png?v=2" alt="">The Rat Federation<small>Rats: cheap and fast, banana bandits, Seby's crayfish</small></div>
-  </div>
-  <h2>Play with a friend</h2>
-  <div id="mpBox">
-    <div class="row" style="align-items:center;flex-wrap:wrap;">
-      <button class="tbtn" id="hostBtn" style="font-size:14px;padding:8px 14px;">Host a game</button>
-      <input id="codeIn" maxlength="4" placeholder="CODE" style="width:90px;font:bold 16px Trebuchet MS;text-transform:uppercase;padding:7px 10px;border-radius:9px;border:2px solid #6b4a1f;background:#1a1108;color:#ffe7b0;text-align:center;letter-spacing:3px;">
-      <button class="tbtn" id="joinBtn" style="font-size:14px;padding:8px 14px;">Join</button>
-      <button class="tbtn" id="soloBtn" style="font-size:14px;padding:8px 14px;display:none;">Back to playing the AI</button>
+    <div class="ch fac cats on" data-v="cats">
+      <img class="banner" src="rts/menu/banner_cats.png" alt="">
+      <img class="hero" src="army/frames/cat_commander_walk0.png?v=2" alt="">
+      <span class="fname">The Feline Union</span><small>Cats: few but elite — fur shields, morale from every win</small>
+      <span class="traits"><i><img src="rts/menu/trait_shield.png" alt="">Fur shield</i><i><img src="rts/menu/trait_morale.png" alt="">Morale</i></span>
     </div>
-    <p id="mpStatus" style="margin-top:6px;font-size:13px;"></p>
+    <div class="ch fac rats" data-v="rats">
+      <img class="banner" src="rts/menu/banner_rats.png" alt="">
+      <img class="hero" src="army/frames/rat_commander_walk0.png?v=2" alt="">
+      <span class="fname">The Rat Federation</span><small>Rats: a swarm — hatch in pairs, heal fast, tunnel between Nests</small>
+      <span class="traits"><i><img src="rts/menu/trait_pairs.png" alt="">Pairs</i><i><img src="rts/menu/trait_tunnels.png" alt="">Tunnels</i></span>
+    </div>
   </div>
-  <h2 class="soloOnly">Opponent</h2>
-  <div class="choices soloOnly" id="lvlPick">
-    <div class="ch" data-v="easy">Easy<small>Takes it slow</small></div>
-    <div class="ch on" data-v="normal">Normal<small>A fair fight</small></div>
-    <div class="ch" data-v="hard">Hard<small>Gathers faster, attacks sooner</small></div>
+  <div class="opts">
+    <h2 class="soloOnly">Opponent</h2>
+    <div class="soloOnly optSet">
+      <div class="choices" id="lvlPick">
+        <div class="ch" data-v="easy">Easy<small>Takes it slow</small></div>
+        <div class="ch on" data-v="normal">Normal<small>A fair fight</small></div>
+        <div class="ch" data-v="hard">Hard<small>Gathers faster, attacks sooner</small></div>
+      </div>
+      <div class="choices" id="stylePick">
+        <div class="ch on" data-v="random">Surprise me<small>A random personality</small></div>
+        <div class="ch" data-v="rusher">Rusher<small>Early pressure</small></div>
+        <div class="ch" data-v="boomer">Boomer<small>Expands, big late army</small></div>
+        <div class="ch" data-v="turtle">Turtle<small>Towers and heavy units</small></div>
+      </div>
+    </div>
+    <h2>Map</h2>
+    <div class="choices" id="sizePick">
+      <div class="ch" data-v="64">Small<small>Quick games</small></div>
+      <div class="ch on" data-v="80">Medium<small>Room to expand</small></div>
+      <div class="ch" data-v="96">Large<small>Long evenings</small></div>
+    </div>
+    <h2>Play with a friend</h2>
+    <div id="mpBox">
+      <div class="row">
+        <button class="tbtn" id="hostBtn">Host a game</button>
+        <input id="codeIn" maxlength="4" placeholder="CODE">
+        <button class="tbtn" id="joinBtn">Join</button>
+        <button class="tbtn" id="soloBtn" style="display:none;">Back to playing the AI</button>
+      </div>
+      <p id="mpStatus"></p>
+    </div>
   </div>
-  <div class="choices soloOnly" id="stylePick" style="margin-top:8px;">
-    <div class="ch on" data-v="random">Surprise me<small>A random personality</small></div>
-    <div class="ch" data-v="rusher">Rusher<small>Early pressure</small></div>
-    <div class="ch" data-v="boomer">Boomer<small>Expands, big late army</small></div>
-    <div class="ch" data-v="turtle">Turtle<small>Towers and heavy units</small></div>
-  </div>
-  <h2>Map</h2>
-  <div class="choices" id="sizePick">
-    <div class="ch" data-v="64">Small<small>Quick games</small></div>
-    <div class="ch on" data-v="80">Medium<small>Room to expand</small></div>
-    <div class="ch" data-v="96">Large<small>Long evenings</small></div>
-  </div>
-  <p id="record" style="margin-top:10px;font-size:13px;"></p>
+  <p id="record"></p>
   <button class="big" id="startBtn">Start</button>
-  <div class="row"><button class="big alt" id="helpBtn" style="margin-top:8px;">How to play</button><button class="big alt" id="backBtn" style="margin-top:8px;display:none;">Back to Puiutu Land</button></div>
+  <div class="row mFoot"><button class="big alt" id="helpBtn">How to play</button><button class="big alt" id="backBtn" style="display:none;">Back to Puiutu Land</button></div>
 </div></div>
 
 <!-- help -->
@@ -229,14 +342,17 @@
   <div class="row"><button class="big" id="againBtn">Play again</button><button class="big alt" id="quitBtn2">Back</button></div>
 </div></div>
 
-<script src="rts/data.js?v=17"></script>
-<script src="rts/map.js?v=17"></script>
-<script src="rts/core.js?v=17"></script>
-<script src="rts/ai.js?v=17"></script>
-<script src="rts/render.js?v=17"></script>
-<script src="rts/ui.js?v=17"></script>
-<script src="rts/net.js?v=17"></script>
-<script src="rts/music.js?v=17"></script>
-<script src="rts/main.js?v=17"></script>
+<script src="rts/data.js?v=31"></script>
+<script src="rts/i18n.js?v=32"></script>
+<script src="rts/map.js?v=21"></script>
+<script src="rts/core.js?v=30"></script>
+<script src="rts/events.js?v=25"></script>
+<script src="rts/factions.js?v=30"></script>
+<script src="rts/ai.js?v=25"></script>
+<script src="rts/render.js?v=25"></script>
+<script src="rts/ui.js?v=31"></script>
+<script src="rts/net.js?v=30"></script>
+<script src="rts/music.js?v=21"></script>
+<script src="rts/main.js?v=25"></script>
 </body>
 </html>

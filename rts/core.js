@@ -14,7 +14,7 @@ function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
 function newGame(opt) {
   const map = new GameMap(opt.size || 80, opt.seed || ((Math.random() * 1e9) | 0));
   G = { map, n: map.n, time: 0, ents: [], byId: new Map(), nextId: 1, proj: [], fx: [], clouds: [], items: [],
-        msgs: [], alerts: [], over: null, opt, events: { migration: false } };
+        msgs: [], alerts: [], over: null, opt, events: { migration: false }, floods: [], rain: null };
   const fac = [opt.faction, opt.faction === 'cats' ? 'rats' : 'cats'];
   G.players = [0, 1].map(i => ({ id: i, faction: fac[i], fish: 500, wood: 200, supUsed: 0, supCap: 0,
     up: { weap: 0, arm: 0, catnip: 0, scurry: 0 }, ai: i === P_AI, researching: {},
@@ -29,13 +29,13 @@ function newGame(opt) {
   for (const p of [0, 1]) {
     const fac = G.players[p].faction, H = p ? mir(...layout.hall, 4) : layout.hall, F = p ? mir(...layout.fish, 3) : layout.fish;
     spawnBuilding(HALL[fac], p, H[0], H[1], true);
-    const fs = spawnFish(F[0], F[1], 12000);
+    const fs = spawnFish(F[0], F[1], 8000);   // runs low around minute eight or nine: time to expand
     const tc = map.toCenter;   // the workers start between the hall and the pond
     for (let i = 0; i < 5; i++) { let x = s0.x + 0.5 + tc.x * 3 + ((i % 3) - 1) * 0.7, y = s0.y + 0.5 + tc.y * 3 + ((i / 3 | 0) - 0.5) * 0.8; if (p) { x = n - x; y = n - y; }
       orderGather(spawnUnit(WORKER[fac], p, x, y), fs); }
   }
   // expansions and their fish
-  for (const e of map.expos) spawnFish(e.x - 1, e.y - 1, 10000);
+  for (const e of map.expos) spawnFish(e.x - 1, e.y - 1, 5000);
   // the Exchange
   spawnBuilding('exchange', P_NEUTRAL, map.center.x - 1, map.center.y - 1, true).stock = { snout: 1, mechboar: 1, merlin: 1 };
   // creep camps (mirrored pairs get the same camp so it stays fair)
@@ -74,6 +74,19 @@ function spawnFish(tx, ty, amount) {
   G.map.setBlock(tx, ty, 3, true);
   return f;
 }
+// a town hall keeps its distance from the fish: dropped right on a pond, every trip would be one
+// step long and the economy would run away. Counted in empty tiles between the two footprints.
+const HALL_POND_GAP = 3;
+function pondGap(tx, ty, size) {
+  let g = Infinity;
+  for (const f of G.ents) { if (f.dead || !f.isRes) continue;
+    const gx = Math.max(f.tx - (tx + size), tx - (f.tx + f.size), 0), gy = Math.max(f.ty - (ty + size), ty - (f.ty + f.size), 0);
+    g = Math.min(g, Math.max(gx, gy)); }
+  return g;
+}
+function tooCloseToFish(kind, tx, ty) { const d = BUILDINGS[kind]; return !!d.hall && pondGap(tx, ty, d.size) < HALL_POND_GAP; }
+function placeOk(kind, tx, ty, units) { return G.map.canPlace(tx, ty, BUILDINGS[kind].size, units) && !tooCloseToFish(kind, tx, ty); }
+const TOO_CLOSE_MSG = 'Town halls must stand at least ' + HALL_POND_GAP + ' tiles from a fishing pond.';
 function removeEnt(e) {
   e.dead = true; G.byId.delete(e.id);
   if (e.isBuilding || e.isRes) G.map.setBlock(e.tx, e.ty, e.size, false);
@@ -87,12 +100,12 @@ function playerHalls(p) { return G.ents.filter(e => !e.dead && e.owner === p && 
 // ── stats with upgrades, levels, items and buffs ──
 function itemBonus(u, k) { let s = 0; for (const it of u.items) { const p = ITEMS[it].pass; if (p && p[k]) s += p[k]; } return s; }
 function uDmg(u) { const d = u.def, pl = G.players[u.owner], up = (pl.up.weap || 0) * 2, lv = u.level ? (u.level - 1) * 3 : 0;
-  return rnd(d.dmg[0], d.dmg[1]) + up + lv + itemBonus(u, 'dmg'); }
+  return (rnd(d.dmg[0], d.dmg[1]) + up + lv + itemBonus(u, 'dmg')) * moraleMul(u, 'dmg'); }
 function uArmor(u) { if (u.isBuilding) return u.def.armor; const pl = G.players[u.owner];
   return u.def.armor + (pl.up.arm || 0) * 1.5 + (u.level ? (u.level - 1) * 0.4 : 0) + itemBonus(u, 'armor') + (u.buffs.ward ? 3 : 0); }
 function uSpeed(u) { let s = u.def.speed + itemBonus(u, 'speed');
   if (G.players[u.owner].up && G.players[u.owner].up.scurry && (u.kind === 'ratsoldier' || u.kind === 'scavenger')) s *= 1.15;
-  if (u.buffs.frenzy) s *= 1.2; if (u.buffs.slow) s *= 0.7; return s; }
+  if (u.buffs.frenzy) s *= 1.2; if (u.buffs.slow) s *= 0.7; return s * moraleMul(u, 'speed'); }
 function uRange(u) { let r = u.def.range; if (u.kind === 'slinger' && G.players[u.owner].up.catnip) r += 1.5; return r; }
 function uCd(u) { return u.def.cd * (u.buffs.frenzy ? 0.65 : 1) / (1 + itemBonus(u, 'aspd')); }
 function uMaxHp(u) { return u.def.hp + (u.level ? (u.level - 1) * 70 : 0) + itemBonus(u, 'hp'); }
@@ -103,7 +116,7 @@ function recalcSupply() {
     for (const e of G.ents) { if (e.dead || e.owner !== p) continue;
       if (e.isBuilding && e.built && e.def.supply) cap += e.def.supply;
       if (e.isUnit) used += e.def.sup || 0;
-      if (e.isBuilding) for (const q of e.prodQ) if (q.unit) used += UNITS[q.unit].sup || 0; }
+      if (e.isBuilding) for (const q of e.prodQ) if (q.unit) used += qSup(q.unit); }
     pl.supCap = Math.min(80, cap); pl.supUsed = used; }
 }
 function canAfford(p, cost) { const pl = G.players[p]; return pl.fish >= (cost.f || 0) && pl.wood >= (cost.w || 0); }
@@ -133,6 +146,7 @@ function orderStop(u) { setOrder(u, null); }
 function orderBuild(u, kind, tx, ty, q) {
   const d = BUILDINGS[kind]; if (!canAfford(u.owner, d.cost)) { say(u.owner, 'Not enough ' + (G.players[u.owner].fish < d.cost.f ? 'fish' : 'wood') + '.', '#ff9a8a'); return false; }
   if (!G.map.canPlace(tx, ty, d.size)) { say(u.owner, "Can't build there.", '#ff9a8a'); return false; }
+  if (tooCloseToFish(kind, tx, ty)) { say(u.owner, TOO_CLOSE_MSG, '#ff9a8a'); return false; }
   if (u.order && (u.order.type === 'gather' || u.order.type === 'chop')) u.prevWork = Object.assign({}, u.order, { phase: 'go' });
   pay(u.owner, d.cost); setOrder(u, { type: 'build', kind, tx, ty, site: true, started: false }, q); return true;
 }
@@ -143,6 +157,7 @@ function smartOrder(u, x, y, ent, tree, q) {
   if (ent && !ent.dead) {
     if (ent.isRes && u.def.worker) return orderGather(u, ent, q);
     if (ent.isBuilding && ent.owner === u.owner && !ent.built && u.def.worker) return setOrder(u, { type: 'repairbuild', target: ent.id }, q);
+    if (ent.isBuilding && ent.owner === u.owner && ent.kind === 'nest' && ent.built && !u.def.worker) return setOrder(u, { type: 'enter', nest: ent.id }, q);
     if (ent.isBuilding && ent.owner === u.owner && ent.def.hall && u.carry) return setOrder(u, { type: 'return' }, q);
     if (enemyOf(u.owner, ent.owner) && ent.owner !== P_NEUTRAL) return orderAttack(u, ent, q);
   }
@@ -176,7 +191,7 @@ function trainUnit(b, kind) {
   if (d.req && !reqMet(b.owner, d)) { say(b.owner, 'Requires ' + d.req.map(r => BUILDINGS[r].name).join(', ') + '.', '#ff9a8a'); return false; }
   if (d.hero && (pl.hero && G.byId.get(pl.hero) || b.prodQ.some(q => q.unit && UNITS[q.unit].hero) || pl.heroDead)) { say(b.owner, 'You already have a hero.', '#ff9a8a'); return false; }
   if (!canAfford(b.owner, d.cost)) { say(b.owner, 'Not enough ' + (pl.fish < d.cost.f ? 'fish' : 'wood') + '.', '#ff9a8a'); return false; }
-  if (pl.supUsed + d.sup > pl.supCap) { say(b.owner, 'Not enough supply — build more ' + (pl.faction === 'cats' ? 'Cottages' : 'Nests') + '.', '#ff9a8a'); return false; }
+  if (pl.supUsed + qSup(kind) > pl.supCap) { say(b.owner, 'Not enough supply — build more ' + (pl.faction === 'cats' ? 'Cottages' : 'Nests') + '.', '#ff9a8a'); return false; }
   pay(b.owner, d.cost); b.prodQ.push({ unit: kind, t: 0, total: d.time }); recalcSupply(); return true;
 }
 function reviveHero(b) {
@@ -198,11 +213,13 @@ function cancelQueue(b, i) {
 }
 function hireMerc(ex, kind, p) {
   const d = UNITS[kind], pl = G.players[p];
-  if (!ex.stock[kind]) { say(p, 'Out of stock — the pigs restock in a while.', '#ff9a8a'); return false; }
+  const deal = EV.deal(ex, kind), cost = deal ? { f: deal.f, w: deal.w } : d.cost;
+  if (!ex.stock[kind] && !deal) { say(p, 'Out of stock — the pigs restock in a while.', '#ff9a8a'); return false; }
   if (!G.ents.some(e => !e.dead && e.owner === p && e.isUnit && dist(e, ex) < 7)) { say(p, 'Bring a unit next to the Exchange first.', '#ff9a8a'); return false; }
-  if (!canAfford(p, d.cost)) { say(p, 'Not enough ' + (pl.fish < d.cost.f ? 'fish' : 'wood') + '.', '#ff9a8a'); return false; }
+  if (!canAfford(p, cost)) { say(p, 'Not enough ' + (pl.fish < cost.f ? 'fish' : 'wood') + '.', '#ff9a8a'); return false; }
   if (pl.supUsed + d.sup > pl.supCap) { say(p, 'Not enough supply.', '#ff9a8a'); return false; }
-  pay(p, d.cost); ex.stock[kind]--; ex.restock = ex.restock || {}; ex.restock[kind] = G.time + 120;
+  pay(p, cost);
+  if (deal) EV.dealTaken(ex, p); else { ex.stock[kind]--; ex.restock = ex.restock || {}; ex.restock[kind] = G.time + 120; }
   const u = spawnUnit(kind, p, ex.x + (p === 0 ? -2.2 : 2.2), ex.y + (p === 0 ? 2.2 : -2.2)); G.players[p].stats.trained++;
   recalcSupply(); say(p, d.name + ' hired.', '#ffd36b'); return u;
 }
@@ -216,9 +233,11 @@ function updateBuilding(b, dt) {
     else q.t += dt * (pl.ai ? AI_LEVELS[G.opt.level].income ** 0.5 : 1);
     if (q.t >= q.total) {
       b.prodQ.shift();
-      if (q.unit) { const sp = exitSpot(b); const u = spawnUnit(q.unit, b.owner, sp.x, sp.y); pl.stats.trained++;
-        if (b.rally) { if (b.rally.res && u.def.worker) orderGather(u, b.rally.res); else if (b.rally.tree && u.def.worker) orderChop(u, b.rally.tree.x, b.rally.tree.y); else orderMove(u, b.rally.x, b.rally.y); }
-        say(b.owner, u.def.name + ' ready.', '#bfe8a8'); }
+      if (q.unit) { const sp = exitSpot(b);
+        for (let k = 0; k < (UNITS[q.unit].pair ? 2 : 1); k++) {   // rat soldiers hatch two at a time
+          const u = spawnUnit(q.unit, b.owner, sp.x + k * 0.5, sp.y + k * 0.3); pl.stats.trained++;
+          if (b.rally) { if (b.rally.res && u.def.worker) orderGather(u, b.rally.res); else if (b.rally.tree && u.def.worker) orderChop(u, b.rally.tree.x, b.rally.tree.y); else orderMove(u, b.rally.x, b.rally.y); } }
+        say(b.owner, UNITS[q.unit].name + ' ready.', '#bfe8a8'); }
       if (q.up) { pl.up[q.up] = (pl.up[q.up] || 0) + 1; delete pl.researching[q.up]; say(b.owner, UPGRADES[q.up].name + ' researched.', '#bfe8a8'); }
       if (q.revive) { const h = pl.heroDead; pl.heroDead = null; const sp = exitSpot(b); const u = spawnUnit(HERO[pl.faction], b.owner, sp.x, sp.y);
         u.level = h.level; u.xp = h.xp; u.items = h.items; u.maxHp = uMaxHp(u); u.hp = u.maxHp; u.maxMana = u.def.mana + (u.level - 1) * 25; u.mana = u.maxMana;
@@ -245,7 +264,7 @@ function exitSpot(b) {
 function nearestEnemy(from, range, filter) {
   let best = null, bd = range;
   for (const e of G.ents) {
-    if (e.dead || e.isRes || !enemyOf(from.owner, e.owner) || e.owner === P_NEUTRAL) continue;
+    if (e.dead || e.isRes || e.tun || !enemyOf(from.owner, e.owner) || e.owner === P_NEUTRAL) continue;
     if (from.owner === P_CREEP && e.owner === P_CREEP) continue;
     if (filter && !filter(e)) continue;
     const d = dist(from, e) - (e.isBuilding ? e.size * 0.5 : e.r);
@@ -291,7 +310,7 @@ function attackStep(u, t, dt) {
   if (edgeDist(u, t) > range) { moveTo(u, t.x, t.y, dt, 0.1); return false; }
   u.path = null; u.moving = false; faceTo(u, t);
   if (u.atkCD <= 0) {
-    u.atkCD = uCd(u); u.swing = u.swingDur = Math.min(0.45, uCd(u) * 0.45); u.swingRanged = range > 2;
+    u.atkCD = uCd(u); u.combatT = G.time; u.swing = u.swingDur = Math.min(0.45, uCd(u) * 0.45); u.swingRanged = range > 2;
     let dmg = uDmg(u);
     if (u.def.beam) beamAttack(u, t, dmg);
     else if (u.def.proj || range > 2) fireProj(u, t, dmg, u.def.proj || 'arrow');
@@ -320,10 +339,11 @@ function beamAttack(u, t, dmg) {
 function atkType(e) { if (!e || !e.def) return 'normal'; if (e.isBuilding) return e.def.tower ? 'pierce' : 'normal'; return e.def.atk || 'normal'; }
 function armType(e) { if (e.isBuilding) return 'fortified'; return (e.def && e.def.arm) || 'medium'; }
 function hit(src, t, dmg, atype) {
-  if (t.dead || t.def && t.def.invuln) return;
+  if (t.dead || t.tun || t.def && t.def.invuln) return;
   if (atype !== 'spell') { const row = DMG_TABLE[atype || atkType(src)]; if (row) dmg *= row[armType(t)] || 1; }   // spells ignore the table
   const a = uArmor(t), red = a >= 0 ? (a * 0.06) / (1 + a * 0.06) : 0;
   dmg = Math.max(1, dmg * (1 - red));
+  if (t.isUnit) { dmg = shieldAbsorb(t, dmg); t.combatT = G.time; }
   t.hp -= dmg; t.hitT = G.time;
   if (t.buffs && t.buffs.ninelives && t.hp < 1) t.hp = 1;
   // being hit wakes up idle units, and creeps call their camp
@@ -357,6 +377,7 @@ function kill(t, src) {
   if (t.owner === P_CREEP && t.camp && !G.ents.some(e => !e.dead && e.camp === t.camp)) {
     const tier = t.camp.tierLoot || 0; if (Math.random() < 0.55 + tier * 0.2) { const pool = ITEM_TIERS[tier]; G.items.push({ id: pool[(Math.random() * pool.length) | 0], x: t.x, y: t.y }); }
   }
+  EV.onKill(t, killer); moraleOnKill(t, killer); nestLost(t);
   if (t.isBuilding) { recalcSupply(); checkEnd(); }
   if (t.isUnit) recalcSupply();
 }
@@ -371,6 +392,20 @@ function gainXP(h, xp) {
 }
 function checkEnd() {
   for (const p of [0, 1]) if (!G.ents.some(e => !e.dead && e.owner === p && e.isBuilding)) { G.over = { winner: 1 - p, t: G.time }; return; }
+}
+// a side with no town hall left (not even one going up) has HALL_GRACE seconds to raise a new one,
+// so a beaten army doesn't have to be chased down to the very last shed
+const HALL_GRACE = 90;
+function hallWatch() {
+  for (const p of [0, 1]) { const pl = G.players[p];
+    if (G.ents.some(e => !e.dead && e.owner === p && e.isBuilding && e.def.hall)) { pl.noHallAt = null; continue; }
+    if (pl.noHallAt == null) { pl.noHallAt = G.time; pl.hallWarn = 0;
+      say(p, 'Your last town hall has fallen! Raise a new one within ' + HALL_GRACE + ' seconds or the war is lost.', '#ff8a7a');
+      say(1 - p, 'The enemy has no town hall left. Hold them off for ' + HALL_GRACE + ' seconds and the war is yours.', '#bfe8a8'); continue; }
+    const left = HALL_GRACE - (G.time - pl.noHallAt);
+    const warns = [60, 30, 10]; while (pl.hallWarn < warns.length && left <= warns[pl.hallWarn]) say(p, warns[pl.hallWarn++] + ' seconds left to raise a town hall!', '#ff8a7a');
+    if (left <= 0) { G.over = { winner: 1 - p, t: G.time, nohall: true }; return; }
+  }
 }
 
 // ── hero abilities ──
@@ -392,6 +427,12 @@ function castAbility(h, a, x, y) {
     G.fx.push({ k: 'ring', x: h.x, y: h.y, t: G.time, r: 3, col: '200,120,255' }); }
   if (h.order && h.order.type === 'cast') nextOrder(h);
   return true;
+}
+// put an item down at the hero's feet (anyone's hero can pick it up again)
+function dropItem(h, slot) {
+  const id = h.items[slot]; if (!id) return;
+  h.items.splice(slot, 1); G.items.push({ id, x: h.x + h.facing * 0.7, y: h.y + 0.5 });
+  const mh = uMaxHp(h); h.maxHp = mh; h.hp = Math.min(h.hp, mh);
 }
 function useItem(h, slot) {
   const id = h.items[slot]; if (!id) return; const I = ITEMS[id]; if (!I.use) return;
@@ -418,10 +459,10 @@ function workerStep(u, dt) {
   if (o.type === 'gather') {
     const res = G.byId.get(o.res);
     if (!res || res.dead) { const alt = nearestFish(u, 14); if (alt) { o.res = alt.id; return; } u.order = null; return; }
-    if (u.carry && u.carry.type === 'f' && u.carry.amt >= 10) { o.phase = 'return'; return; }
+    if (u.carry && u.carry.type === 'f' && u.carry.amt >= ECON.carry) { o.phase = 'return'; return; }
     if (edgeDist(u, res) > 0.5) { moveTo(u, res.x, res.y, dt, 0.1); u.gatherT = 0; return; }
     u.moving = false; faceTo(u, res); u.gatherT += dt; u.working = true;
-    if (u.gatherT >= 2.1) { u.gatherT = 0; const got = Math.min(10, res.amount); res.amount -= got; u.carry = { type: 'f', amt: got }; o.phase = 'return';
+    if (u.gatherT >= ECON.fishTime) { u.gatherT = 0; const got = Math.min(ECON.carry, res.amount); res.amount -= got; u.carry = { type: 'f', amt: got }; o.phase = 'return';
       if (res.amount <= 0) { removeEnt(res); say(u.owner, 'A fishing spot has run dry.', '#ffcf8a'); } }
     return;
   }
@@ -434,11 +475,11 @@ function workerStep(u, dt) {
       if (!u.path && d > 1.6) { u.chopFail = (u.chopFail || 0) + 1; if (u.chopFail > 3) { const t = G.map.nearestTree(u.x, u.y, 12, (x, y) => x === o.tx && y === o.ty); if (t) { o.tx = t.x; o.ty = t.y; } u.chopFail = 0; } }
       return; }
     u.chopFail = 0; u.moving = false; faceTo(u, { x: cx, y: cy }); u.gatherT += dt; u.working = true;
-    if (u.gatherT >= 2.4) { u.gatherT = 0; const got = G.map.chop(o.tx, o.ty, carryWood(u)); u.carry = { type: 'w', amt: (u.carry && u.carry.type === 'w' ? u.carry.amt : 0) + got }; if (u.carry.amt > 0) o.phase = 'return'; }
+    if (u.gatherT >= ECON.woodTime) { u.gatherT = 0; const got = G.map.chop(o.tx, o.ty, carryWood(u)); u.carry = { type: 'w', amt: (u.carry && u.carry.type === 'w' ? u.carry.amt : 0) + got }; if (u.carry.amt > 0) o.phase = 'return'; }
     return;
   }
 }
-function carryWood(u) { return 10 + (G.players[u.owner].up.catnip ? 3 : 0); }
+function carryWood(u) { return ECON.carry + (G.players[u.owner].up.catnip ? 3 : 0); }
 function nearestFish(u, r) { let best = null, bd = r; for (const e of G.ents) if (!e.dead && e.isRes && dist(u, e) < bd) { bd = dist(u, e); best = e; } return best; }
 
 function buildStep(u, dt) {
@@ -447,7 +488,7 @@ function buildStep(u, dt) {
   if (!o.started) {
     const cx = o.tx + d.size / 2, cy = o.ty + d.size / 2;
     if (Math.max(Math.abs(u.x - cx), Math.abs(u.y - cy)) > d.size / 2 + 0.8) { moveTo(u, cx, cy, dt, 0.1); return; }
-    if (!G.map.canPlace(o.tx, o.ty, d.size)) { refund(u.owner, d.cost); say(u.owner, "Can't build there any more.", '#ff9a8a'); nextOrder(u); return; }
+    if (!placeOk(o.kind, o.tx, o.ty)) { refund(u.owner, d.cost); say(u.owner, "Can't build there any more.", '#ff9a8a'); nextOrder(u); return; }
     const b = spawnBuilding(o.kind, u.owner, o.tx, o.ty, false); b.builder = u.id; o.started = true; o.bid = b.id; G.players[u.owner].stats.built++;
     // anyone standing on the plot steps off it
     for (const e of G.ents) if (!e.dead && e.isUnit && e !== u && e.x > o.tx - 0.3 && e.x < o.tx + d.size + 0.3 && e.y > o.ty - 0.3 && e.y < o.ty + d.size + 0.3) { const p = G.map.nearestPassable(Math.floor(e.x), Math.floor(e.y), 6); if (p) { e.x = p.x + 0.5; e.y = p.y + 0.5; } }
@@ -472,6 +513,8 @@ function updateUnit(u, dt) {
   u.anim += dt; if (u.swing > 0) u.swing -= dt; u.atkCD -= dt; u.working = false;
   for (const k in u.buffs) if (u.buffs[k] < G.time) delete u.buffs[k];
   if (u.expire && G.time > u.expire) { removeEnt(u); recalcSupply(); return; }
+  if (u.tun && tunnelWait(u)) return;
+  factionTick(u, dt);
   if (u.def.hero) { u.hp = Math.min(u.maxHp, u.hp + dt * (0.6 + u.level * 0.15)); u.mana = Math.min(u.maxMana, u.mana + dt * (0.9 + u.level * 0.1)); }
   if (u.buffs.ward) u.hp = Math.min(u.maxHp, u.hp + 12 * dt);
   if (u.items.length) { const rg = itemBonus(u, 'regen'); if (rg) u.hp = Math.min(u.maxHp, u.hp + rg * dt); }
@@ -491,14 +534,16 @@ function updateUnit(u, dt) {
   switch (o.type) {
     case 'move':
       if (o.leash) u.hp = Math.min(u.maxHp, u.hp + 20 * dt);
+      if (!o.tunChecked) tunnelPlan(u, o); if (o.tun && tunnelStep(u, o, dt)) break;
       if (moveTo(u, o.x, o.y, dt)) nextOrder(u); break;
     case 'amove': {
+      if (!o.tunChecked) tunnelPlan(u, o); if (o.tun && tunnelStep(u, o, dt)) break;
       u.scanT = (u.scanT || 0) - dt;
       if (u.scanT <= 0) { u.scanT = 0.3; const e = nearestEnemy(u, u.def.sight * 0.85); if (e) { u.queue.unshift(o); u.order = { type: 'attack', target: e.id, auto: true, from: { x: u.x, y: u.y } }; u.path = null; break; } }
       if (moveTo(u, o.x, o.y, dt)) nextOrder(u); break; }
     case 'attack': {
       const t = G.byId.get(o.target);
-      if (!t || t.dead) { nextOrder(u); if (!u.order) autoAcquire(u, dt, true); break; }
+      if (!t || t.dead || t.tun) { nextOrder(u); if (!u.order) autoAcquire(u, dt, true); break; }
       // auto-acquired fights don't chase forever
       if (o.auto && o.from && Math.hypot(u.x - o.from.x, u.y - o.from.y) > 12) { nextOrder(u); break; }
       if (o.auto && u.scanT !== undefined) { u.scanT -= dt; if (u.scanT <= 0) { u.scanT = 0.6; if (t.isBuilding) { const e = nearestEnemy(u, u.def.sight * 0.7, x => x.isUnit); if (e) { o.target = e.id; break; } } } }
@@ -508,6 +553,7 @@ function updateUnit(u, dt) {
       if (o.phase === 'return' || o.type === 'return') { const hall = nearestHall(u); if (!hall) { u.order = null; break; } }
       workerStep(u, dt); break;
     case 'build': case 'repairbuild': buildStep(u, dt); break;
+    case 'enter': enterNetStep(u, o, dt); break;
     case 'cast': { const A = ABILITIES[o.a]; if (Math.hypot(o.x - u.x, o.y - u.y) > A.range) moveTo(u, o.x, o.y, dt); else { u.path = null; castAbility(u, o.a, o.x, o.y); if (u.order === o) nextOrder(u); } break; }
     case 'pickup': { const it = o.item; if (!G.items.includes(it)) { nextOrder(u); break; }
       if (Math.hypot(it.x - u.x, it.y - u.y) > 0.6) { moveTo(u, it.x, it.y, dt, 0.05); break; }
@@ -526,13 +572,14 @@ function autoAcquire(u, dt, now) {
 
 // ── units don't stack: a cheap spatial hash pushes overlapping bodies apart ──
 function separate() {
-  const cell = 2, grid = new Map(); const units = G.ents.filter(e => !e.dead && e.isUnit);
+  const cell = 2, grid = new Map(); const units = G.ents.filter(e => !e.dead && e.isUnit && !e.tun);
   for (const u of units) { const k = ((u.x / cell) | 0) * 1000 + ((u.y / cell) | 0); let a = grid.get(k); if (!a) grid.set(k, a = []); a.push(u); }
   for (const u of units) {
     const cx = (u.x / cell) | 0, cy = (u.y / cell) | 0;
     for (let gy = cy - 1; gy <= cy + 1; gy++) for (let gx = cx - 1; gx <= cx + 1; gx++) {
       const a = grid.get(gx * 1000 + gy); if (!a) continue;
       for (const v of a) { if (v.id <= u.id) continue;
+        if ((u.kind === 'coon' || v.kind === 'coon') && u.owner === v.owner) continue;   // the Coon walks straight through the camps
         const dx = v.x - u.x, dy = v.y - u.y, d = Math.hypot(dx, dy), min = (u.r + v.r) * 0.9;
         if (d < min && d > 0.0001) {
           // workers at work slide through each other, like in the real thing
@@ -558,7 +605,7 @@ function updateVision() {
   const n = G.n, vis = G.vis; vis.fill(0);
   for (const e of G.ents) {
     if (e.dead || e.owner !== ME) continue; if (e.isBuilding && !e.built && e.progress < 0.05) continue;
-    const r = e.def.sight || 7, cx = e.x, cy = e.y, r2 = r * r;
+    const r = (e.def.sight || 7) * (G.rain ? 0.8 : 1), cx = e.x, cy = e.y, r2 = r * r;
     for (let y = Math.max(0, Math.floor(cy - r)); y <= Math.min(n - 1, Math.ceil(cy + r)); y++)
       for (let x = Math.max(0, Math.floor(cx - r)); x <= Math.min(n - 1, Math.ceil(cx + r)); x++) {
         const dx = x + 0.5 - cx, dy = y + 0.5 - cy; if (dx * dx + dy * dy <= r2) { vis[y * n + x] = 1; G.seen[y * n + x] = 1; }
@@ -598,8 +645,9 @@ function stepGame(dt) {
   // mid-game event: a fish migration brings two rich spots to the side lanes
   if (!G.events.migration && G.time > 600) { G.events.migration = true;
     const L = G.map.lane, spots = [[L.x - 1, L.y - 1], [G.n - 3 - (L.x - 1), G.n - 3 - (L.y - 1)]];
-    for (const [x, y] of spots) if (G.map.canPlace(x, y, 3, G.ents)) { const f = spawnFish(x, y, 6000); f.rich = true; }
+    for (const [x, y] of spots) if (G.map.canPlace(x, y, 3, G.ents)) { const f = spawnFish(x, y, 3000); f.rich = true; }
     for (const p of [0, 1]) { say(p, 'A fish migration! Rich new fishing spots have appeared on the side lanes.', '#8fd8ff'); G.alerts.push({ p, x: L.x, y: L.y, t: G.time }); } }
+  EV.tick(); hallWatch();
   if (G.msgs.length > 6) G.msgs.splice(0, G.msgs.length - 6);
 }
 
@@ -634,7 +682,10 @@ function runCmd(c, p) {
       for (const id of c.ids || []) { const b = own(id); if (b && b.isBuilding && b.def.prod) b.rally = res ? { x: res.x, y: res.y, res } : c.tree ? { x: c.tree.x + 0.5, y: c.tree.y + 0.5, tree: c.tree } : { x: c.x, y: c.y }; } return true; }
     case 'cast': { const h = own(c.h); return !!(h && h.def.hero && h.def.abilities.includes(c.a) && castAbility(h, c.a, c.x, c.y)); }
     case 'use': { const h = own(c.h); if (h && h.def.hero) useItem(h, c.slot); return true; }
+    case 'drop': { const h = own(c.h); if (h && h.def.hero) dropItem(h, c.slot); return true; }
     case 'hire': { const ex = any(c.ex); return !!(ex && ex.kind === 'exchange' && UNITS[c.kind] && UNITS[c.kind].faction === 'pigs' && hireMerc(ex, c.kind, p)); }
+    case 'load': { const b = own(c.b); return !!(b && b.kind === 'nest' && b.built && loadNest(b)); }
+    case 'unload': { const b = own(c.b); return !!(b && b.kind === 'nest' && b.built && unloadNest(b)); }
     case 'surrender': if (!G.over) G.over = { winner: 1 - p, t: G.time, surrender: true }; return true;
   }
   return false;

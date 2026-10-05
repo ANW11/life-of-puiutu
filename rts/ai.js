@@ -18,7 +18,7 @@ const AI = {
     for (const e of G.ents) if (!e.dead && e.owner === this.p && e.isUnit && e.order && e.order.type === 'build' && e.order.kind === kind && !e.order.started) c++;
     for (const e of G.ents) if (!e.dead && e.owner === this.p && e.isBuilding) for (const q of e.prodQ) if (q.unit === kind) c++;
     return c; },
-  value(units) { let v = 0; for (const u of units) v += (u.def.cost ? u.def.cost.f + u.def.cost.w : 150) * (u.hp / u.maxHp); return v; },
+  value(units) { let v = 0; for (const u of units) v += (u.def.cost ? (u.def.cost.f + u.def.cost.w) / (u.def.pair ? 2 : 1) : 150) * ((u.hp + (u.shield || 0)) / (u.maxHp + (u.maxShield || 0))); return v; },
 
   update(dt) {
     this.t -= dt; if (this.t > 0) return; this.t = this.lv.think * (0.8 + Math.random() * 0.4);
@@ -70,12 +70,14 @@ const AI = {
     const workers = this.mine(e => e.isUnit && e.def.worker).length;
     if (this.count(barracks) < 1 && workers >= (this.styleId === 'rusher' ? 6 : 8)) return this.build(barracks);
     if (this.count(barracks) < 2 && T > (this.styleId === 'rusher' ? 200 : 520) && pl.fish > 250) return this.build(barracks);
+    // fish piling up: more places to spend it (the rats' cheap swarm needs this most)
+    if (this.count(barracks) < 4 && hasBuilt(this.p, barracks) && pl.fish > 700 && T > 240) return this.build(barracks);
     if (this.count(forge) < 1 && hasBuilt(this.p, barracks) && T > (this.styleId === 'rusher' ? 380 : 230)) { if (!this.build(forge) && !this.reserve.f) this.reserve = BUILDINGS[forge].cost; return; }
     if (this.count(beast) < 1 && hasBuilt(this.p, forge) && T > s.heavyAfter) { if (!this.build(beast) && !this.reserve.f) this.reserve = BUILDINGS[beast].cost; return; }
     if (this.count(tower) < s.towers && hasBuilt(this.p, barracks) && T > 180 && pl.wood > 120) return this.build(tower, true);
     // expand: by the clock, or when the home fish runs low
     const homeFish = G.ents.filter(e => !e.dead && e.isRes && dist(e, this.home) < 10).reduce((a, e) => a + e.amount, 0);
-    const wantHall = (this.count(hall) < 2 && (T > s.expandAt || homeFish < 2500)) || (this.count(hall) < 3 && T > s.expandAt + 600 && homeFish < 1500);
+    const wantHall = (this.count(hall) < 2 && (T > s.expandAt || homeFish < 2200)) || (this.count(hall) < 3 && (T > s.expandAt + 420 || homeFish < 600));
     if (wantHall) { if (!this.expand(hall) && !this.reserve.f) this.reserve = BUILDINGS[hall].cost; return; }
   },
   production(pl) {
@@ -85,7 +87,7 @@ const AI = {
     const have = { melee: 0, ranged: 0, heavy: 0, siege: 0 }; for (const u of army) for (const k in units) if (u.kind === units[k]) have[k]++;
     const total = Math.max(1, army.length);
     for (const b of this.mine(e => e.isBuilding && e.built && e.def.prod && !e.def.hall)) {
-      if (b.prodQ.length >= 2) continue;
+      if (b.prodQ.length >= (pl.fish > 500 ? 4 : 2)) continue;
       // keep some fish back for the next building in the order
       if (pl.fish < 150 && T > 120 && this.count(BUILD_MENU[fac][2]) < 2) continue;
       let pick = null, gap = -1;
@@ -137,11 +139,11 @@ const AI = {
       .sort((a, b) => dist(a, this.home) - dist(b, this.home));
     const e = opts[0]; if (!e) return false;
     // creeps still guard it? clear them first
-    const guards = G.ents.filter(c => !c.dead && c.owner === P_CREEP && dist(c, e) < 7);
+    const guards = G.ents.filter(c => !c.dead && c.owner === P_CREEP && c.camp && dist(c, e) < 7);
     if (guards.length) { this.creepTarget = guards[0].camp; guards[0].camp.forExpo = true; return false; }
-    for (let r = 2; r <= 6; r++) for (let a = 0; a < 16; a++) {
-      const ang = a / 16 * Math.PI * 2, x = Math.round(e.x + Math.cos(ang) * r * 1.1 - 1), y = Math.round(e.y + Math.sin(ang) * r * 1.1 - 1);
-      if (G.map.canPlace(x, y, d.size) && Math.max(Math.abs(x + 2 - e.x), Math.abs(y + 2 - e.y)) >= 3.4) { const b = this.builder({ x, y }); if (b) return orderBuild(b, kind, x, y); }
+    for (let r = 5; r <= 10; r++) for (let a = 0; a < 16; a++) {
+      const ang = a / 16 * Math.PI * 2, x = Math.round(e.x + Math.cos(ang) * r - 2), y = Math.round(e.y + Math.sin(ang) * r - 2);
+      if (placeOk(kind, x, y)) { const b = this.builder({ x, y }); if (b) return orderBuild(b, kind, x, y); }
     }
     return false;
   },
@@ -160,7 +162,11 @@ const AI = {
       else if (h.hp < h.maxHp * 0.22 && !(h.order && h.order.type === 'move' && h.order.flee)) { setOrder(h, { type: 'move', x: this.home.x, y: this.home.y, flee: true }); return; } }
     if (this.lv.micro || Math.random() < 0.5) this.cast(h);
     // loot on the ground nearby
-    const it = G.items.find(i => Math.hypot(i.x - h.x, i.y - h.y) < 8); if (it && h.items.length < 3 && !(h.order && h.order.type === 'pickup')) { orderPickup(h, it); return; }
+    const it = G.items.find(i => Math.hypot(i.x - h.x, i.y - h.y) < 8);
+    // the Coon's treasure is worth more than anything in the bag: put the cheapest thing down for it
+    if (it && it.id === 'goldbanana' && h.items.length >= 3 && !h.items.includes('goldbanana')) { const k = h.items.findIndex(i => ITEMS[i].use) >= 0 ? h.items.findIndex(i => ITEMS[i].use) : 0;
+      dropItem(h, k); }
+    if (it && h.items.length < 3 && !(h.order && h.order.type === 'pickup')) { orderPickup(h, it); return; }
     if (h.order && h.order.flee) { if (h.hp > h.maxHp * 0.7) h.order = null; return; }
   },
   cast(h) {
@@ -196,7 +202,14 @@ const AI = {
       for (const u of army) if (!this.attackForce.has(u.id) && !u.order && G.time - this.lastAttack > 30) { this.attackForce.add(u.id); orderAMove(u, target.x, target.y); }
       return;
     }
-    // 3. creeping with the hero and a few units while the army grows (or clearing a camp off an expansion we want)
+    // 3. the Coon walks past: worth a fight if he comes our side of the map and the army can take him
+    const coon = G.ents.find(e => !e.dead && e.kind === 'coon');
+    // (not while he walks past the big camps by the Exchange: that fight costs more than he's worth)
+    const byCamps = coon && G.ents.some(c => !c.dead && c.owner === P_CREEP && c.camp && dist(c, coon) < 6);
+    if (coon && !byCamps && army.length >= 6 && this.value(army) > 1400 && dist(coon, this.home) < dist(coon, this.enemyHome) + 10) {
+      for (const u of army) if (!u.order || u.order.type === 'move' || u.order.type === 'amove') orderAMove(u, coon.x, coon.y);
+      return; }
+    // 4. creeping with the hero and a few units while the army grows (or clearing a camp off an expansion we want)
     const clearing = this.creepTarget && this.creepTarget.forExpo && G.ents.some(c => !c.dead && c.camp === this.creepTarget);
     if (hero && G.time > 90 && (clearing || G.time < this.style.firstAttack * this.lv.attackMul + 120)) {
       const camp = this.creepTarget && G.ents.some(c => !c.dead && c.camp === this.creepTarget) ? this.creepTarget : this.pickCamp(hero, army.length);
@@ -205,14 +218,14 @@ const AI = {
     }
     // idle troops wait at the rally point
     for (const u of army) if (!u.order && Math.hypot(u.x - this.rally.x, u.y - this.rally.y) > 5) orderMove(u, this.rally.x + rnd(-2, 2), this.rally.y + rnd(-2, 2));
-    // 4. time to attack?
+    // 5. time to attack?
     const v = this.value(army), T = G.time, mul = this.lv.attackMul;
     const ready = T > this.style.firstAttack * mul && (v > this.style.attackValue * mul * (1 + this.attackWave * 0.25) || pl.supUsed >= 70) && T - this.lastAttack > 60;
     if (ready && army.length >= 4) { this.state = 'attack'; this.attackWave++; this.attackForce = new Set(army.map(u => u.id)); this.attackStart = v;
       const t = this.enemyTarget(); if (t) for (const u of army) orderAMove(u, t.x, t.y); }
   },
   pickCamp(hero, n) {
-    const camps = [...new Set(G.ents.filter(e => !e.dead && e.owner === P_CREEP).map(e => e.camp))];
+    const camps = [...new Set(G.ents.filter(e => !e.dead && e.owner === P_CREEP && e.camp).map(e => e.camp))];   // (the Coon has no camp)
     const maxTier = hero.level >= 4 && n >= 6 ? 2 : hero.level >= 2 && n >= 4 ? 1 : 0;
     return camps.filter(c => (c.tierLoot || 0) <= maxTier).sort((a, b) => Math.hypot(a.x - this.home.x, a.y - this.home.y) - Math.hypot(b.x - this.home.x, b.y - this.home.y))[0] || null;
   },
@@ -224,6 +237,13 @@ const AI = {
   },
   // late game: a Mech Boar when the army walks past the Exchange with money to spare
   mercs(pl) {
+    // Snout's special offer: send someone over if we can pay, buy it when they get there
+    const exd = G.ents.find(e => !e.dead && e.kind === 'exchange');
+    if (exd && exd.deal && canAfford(this.p, exd.deal) && pl.supUsed + UNITS[exd.deal.kind].sup <= pl.supCap) {
+      if (this.mine(e => e.isUnit && dist(e, exd) < 7).length) { const u = hireMerc(exd, exd.deal.kind, this.p); if (u) orderMove(u, this.rally.x, this.rally.y); return; }
+      const runner = this.mine(e => e.isUnit && !e.def.worker && !e.def.hero).sort((a, b) => dist(a, exd) - dist(b, exd))[0];
+      if (runner && !(runner.order && runner.order.deal)) setOrder(runner, { type: 'move', x: exd.x, y: exd.y + 2.5, deal: true });
+    }
     if (G.time < 480 || pl.fish < 600) return;
     const ex = G.ents.find(e => !e.dead && e.kind === 'exchange'); if (!ex) return;
     const near = this.mine(e => e.isUnit && dist(e, ex) < 7); if (!near.length) return;

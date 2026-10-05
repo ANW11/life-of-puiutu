@@ -59,20 +59,21 @@ const NET = {
         m: e.moving ? 1 : 0, w: e.working ? 1 : 0, s: e.swing > 0 ? r2(e.swing) : 0, sd: r2(e.swingDur || 0), sr: e.swingRanged ? 1 : 0,
         c: e.carry ? [e.carry.type, e.carry.amt] : 0, lv: e.level, xp: Math.round(e.xp), mn: Math.round(e.mana), mm: e.maxMana,
         it: e.items.length ? e.items : 0, cd: Object.keys(e.cds).length ? e.cds : 0, b: Object.keys(e.buffs).length ? e.buffs : 0,
-        or: e.order ? e.order.type : 0, ht: e.hitT ? r2(e.hitT) : 0 });
+        or: e.order ? e.order.type : 0, ht: e.hitT ? r2(e.hitT) : 0,
+        sh: e.maxShield ? Math.round(e.shield) : 0, ms: e.maxShield || 0, mo: e.morale || 0, hd: e.tun ? 1 : 0 });
       else if (e.isBuilding) ents.push({ i: e.id, k: e.kind, o: e.owner, B: 1, tx: e.tx, ty: e.ty, h: Math.round(e.hp), mh: e.maxHp, bu: e.built ? 1 : 0, pr: r2(e.progress),
         q: e.prodQ.length ? e.prodQ.map(q => ({ unit: q.unit, up: q.up, revive: q.revive, t: r2(q.t), total: q.total })) : 0,
-        ra: e.rally ? { x: r2(e.rally.x), y: r2(e.rally.y) } : 0, st: e.stock || 0, ht: e.hitT ? r2(e.hitT) : 0 });
+        ra: e.rally ? { x: r2(e.rally.x), y: r2(e.rally.y) } : 0, st: e.stock || 0, dl: e.deal || 0, ht: e.hitT ? r2(e.hitT) : 0 });
       else if (e.isRes) ents.push({ i: e.id, k: 'fishspot', o: e.owner, R: 1, tx: e.tx, ty: e.ty, am: e.amount, mx: e.max, ri: e.rich ? 1 : 0 });
     }
     const fell = G.map.felled.slice(this.sentFell); this.sentFell = G.map.felled.length;
     const msgs = G.msgs.filter(m => m.p === 1 && m.id > this.sentMsg); if (msgs.length) this.sentMsg = msgs[msgs.length - 1].id;
     const snap = { k: 'snap', t: r2(G.time), ents, fell,
-      pl: G.players.slice(0, 2).map(p => ({ faction: p.faction, fish: p.fish, wood: p.wood, supUsed: p.supUsed, supCap: p.supCap, up: p.up, researching: p.researching, hero: p.hero, heroDead: p.heroDead, stats: p.stats })),
+      pl: G.players.slice(0, 2).map(p => ({ faction: p.faction, fish: p.fish, wood: p.wood, supUsed: p.supUsed, supCap: p.supCap, up: p.up, researching: p.researching, hero: p.hero, heroDead: p.heroDead, stats: p.stats, inNet: netUnits(p.id).length })),
       proj: G.proj.map(p => ({ x: r2(p.x), y: r2(p.y), t: p.t, kind: p.kind, sp: p.sp })),
       fx: G.fx.filter(f => f.t > this.sentT).map(f => Object.assign({}, f)),
       cl: G.clouds.map(c => ({ x: c.x, y: c.y, r: c.r, until: c.until })), items: G.items,
-      msgs: msgs.map(m => ({ text: m.text, col: m.col })), al: G.alerts.filter(a => a.p === 1 && a.t > this.sentT), over: G.over };
+      msgs: msgs.map(m => ({ text: m.text, col: m.col })), rn: G.rain || 0, fd: G.floods || [], al: G.alerts.filter(a => a.p === 1 && a.t > this.sentT), over: G.over };
     this.sentT = G.time; return snap;
   },
 
@@ -93,14 +94,18 @@ const NET = {
       e.owner = s.o; e.hp = s.h; e.maxHp = s.mh; if (s.ht) e.hitT = s.ht;
       if (e.isUnit) { e.tgx = s.x; e.tgy = s.y; e.facing = s.f; e.moving = !!s.m; e.working = !!s.w; if (s.s) { e.swing = s.s; e.swingDur = s.sd; e.swingRanged = !!s.sr; }
         e.carry = s.c ? { type: s.c[0], amt: s.c[1] } : null; e.level = s.lv; e.xp = s.xp; e.mana = s.mn; e.maxMana = s.mm;
-        e.items = s.it || []; e.cds = s.cd || {}; e.buffs = s.b || {}; e.order = s.or ? { type: s.or } : null; }
-      if (e.isBuilding) { e.built = !!s.bu; e.progress = s.pr; e.prodQ = s.q || []; e.rally = s.ra || null; if (s.st) e.stock = s.st; }
+        e.items = s.it || []; e.cds = s.cd || {}; e.buffs = s.b || {}; e.order = s.or ? { type: s.or } : null;
+        e.shield = s.sh; e.maxShield = s.ms; e.morale = s.mo; e.tun = s.hd ? {} : null; }
+      if (e.isBuilding) { e.built = !!s.bu; e.progress = s.pr; e.prodQ = s.q || []; e.rally = s.ra || null; if (s.st) e.stock = s.st; e.deal = s.dl || null; }
       if (e.isRes) { e.amount = s.am; e.max = s.mx; e.rich = !!s.ri; }
     }
     for (const e of G.ents) if (!e.dead && !seen.has(e.id)) { e.dead = true; G.byId.delete(e.id); if (e.isBuilding || e.isRes) G.map.setBlock(e.tx, e.ty, e.size, false); }
     G.ents = G.ents.filter(e => !e.dead);
     for (const i of d.fell) { G.map.t[i] = T_STUMP; G.map.dirty.push(i); }
-    G.proj = d.proj; G.clouds = d.cl; G.items = d.items;
+    G.proj = d.proj; G.clouds = d.cl; G.items = d.items; G.rain = d.rn || null;
+    // floods come and go with the rain: lift the old water off the map, put the new down
+    const fk = JSON.stringify(d.fd || []); if (fk !== this.floodKey) { this.floodKey = fk;
+      for (const f of G.floods || []) G.map.setBlock(f.tx, f.ty, f.s, false); G.floods = d.fd || []; for (const f of G.floods) G.map.setBlock(f.tx, f.ty, f.s, true); }
     for (const f of d.fx) G.fx.push(f);
     for (const m of d.msgs) say(1, m.text, m.col);
     for (const a of d.al) G.alerts.push(a);

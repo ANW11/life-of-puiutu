@@ -17,7 +17,7 @@ const SPR = {
   merlin:        { walk: ['npcs/merlin_npc.png'], h: 46, wobble: true },
   rat_commander: { walk: [0,1,2,3].map(i => `army/frames/rat_commander_walk${i}.png?v=2`), atk: 'army/frames/rat_commander_atk.png?v=2', h: 34 },
   cat_herald:    { walk: [0,1,2,3,4,5].map(i => `army/frames/cat_emissary_walk${i}.png?v=2`), atk: 'army/frames/cat_emissary_atk.png?v=2', h: 36 },
-  rat_saboteur:  { walk: [0,1,2,3,4,5].map(i => `army/frames/rat_emissary_walk${i}.png?v=2`), atk: 'army/frames/rat_emissary_atk.png?v=2', h: 36 },
+  rat_saboteur:  { walk: [0,1,2,3,4,5].map(i => `army/frames/rat_emissary_walk${i}.png?v=2`), atk: 'army/frames/rat_emissary_atk.png?v=2', h: 36, faceLeft: true },
   pig_snout:     { walk: [0,1,2,3,4,5].map(i => `army/frames/pig_agent_walk${i}.png?v=2`), atk: 'army/frames/pig_agent_atk.png?v=2', h: 40 },
   mech_boar:     { walk: ['mobs/mechboar_frames/idle.png', 'mobs/mechboar_frames/walk1.png'], atk: 'mobs/mechboar_frames/attack.png', h: 76 },
   cr_pigeon:     { walk: ['mobs/enemy_pigeon.png'], h: 30, wobble: true },
@@ -26,6 +26,7 @@ const SPR = {
   cr_duck:       { walk: ['mobs/enemy_duck.png'], h: 34, wobble: true },
   cr_raccoon:    { walk: ['mobs/enemy_raccoon.png'], h: 48, wobble: true },
   cr_isopod:     { walk: ['mobs/deepsea_isopod.png'], h: 40, wobble: true },
+  cr_coon:       { walk: ['rts/art/coon/stalk0.png', 'rts/art/coon/stalk1.png'], atk: 'rts/art/coon/stalk2.png', idle: 'rts/art/coon/stalk3.png', h: 112 },   // the Evil Coon from the sewers, red-eyed
 };
 const PROJ_IMG = { hairball: 'fx/hairball_ball.png', banana: 'mobs/coon_banana.png', bomb_cat: 'spells/catnip.png', bomb_rat: 'spells/crystalspikes.png' };
 
@@ -52,17 +53,17 @@ const FX_IMG = { cloud: 'fx/catnip_cloud.png', impact: 'fx/impact_sheet.png', bu
 const UNITS = {
   // the Feline Union (cats)
   courier:   { name: 'Courier', faction: 'cats', spr: 'cat_courier', worker: true, hp: 220, armor: 0, dmg: [5, 7], range: 1, cd: 1.4, speed: 2.6, sight: 7, cost: { f: 75, w: 0 }, sup: 1, time: 13, r: 0.32, desc: 'Gathers fish and wood, builds.' },
-  soldier:   { name: 'Cat Soldier', faction: 'cats', spr: 'cat_soldier', hp: 440, armor: 2, dmg: [13, 16], range: 1, cd: 1.25, speed: 2.8, sight: 8, cost: { f: 125, w: 0 }, sup: 2, time: 17, r: 0.36, atk: 'normal', arm: 'medium', desc: 'Sturdy melee infantry in chain mail.' },
-  slinger:   { name: 'Hairball Slinger', faction: 'cats', spr: 'cat_slinger', hp: 280, armor: 0, dmg: [16, 19], range: 5.5, cd: 1.5, speed: 2.9, sight: 9, cost: { f: 125, w: 20 }, sup: 2, time: 20, r: 0.32, proj: 'hairball', atk: 'pierce', arm: 'light', desc: 'Ranged. Lobs hairballs from behind the line.' },
-  lion:      { name: 'Royal Lion', faction: 'cats', spr: 'cat_lion', hp: 1150, armor: 3, dmg: [30, 38], range: 1.3, cd: 1.6, speed: 2.5, sight: 9, cost: { f: 270, w: 110 }, sup: 5, time: 34, r: 0.62, splash: 0.9, atk: 'normal', arm: 'heavy', desc: 'Heavy. Its roaring bite hits everything next to the target.' },
+  soldier:   { name: 'Cat Soldier', faction: 'cats', spr: 'cat_soldier', hp: 480, armor: 2, dmg: [15, 17], range: 1, cd: 1.25, speed: 2.8, sight: 8, cost: { f: 150, w: 0 }, sup: 2, time: 18, r: 0.36, atk: 'normal', arm: 'medium', desc: 'Sturdy melee infantry in chain mail.' },
+  slinger:   { name: 'Hairball Slinger', faction: 'cats', spr: 'cat_slinger', hp: 300, armor: 0, dmg: [17, 20], range: 5.5, cd: 1.5, speed: 2.9, sight: 9, cost: { f: 150, w: 25 }, sup: 2, time: 21, r: 0.32, proj: 'hairball', atk: 'pierce', arm: 'light', desc: 'Ranged. Lobs hairballs from behind the line.' },
+  lion:      { name: 'Royal Lion', faction: 'cats', spr: 'cat_lion', hp: 950, armor: 3, dmg: [28, 34], range: 1.3, cd: 1.6, speed: 2.5, sight: 9, cost: { f: 290, w: 120 }, sup: 5, time: 34, r: 0.62, splash: 0.6, atk: 'normal', arm: 'heavy', desc: 'Heavy. Its roaring bite hits everything next to the target.' },
   catcmd:    { name: 'Cat Commander', faction: 'cats', spr: 'cat_commander', hero: true, hp: 650, armor: 3, dmg: [22, 28], range: 1.1, cd: 1.4, speed: 2.9, sight: 10, cost: { f: 425, w: 100 }, sup: 5, time: 38, r: 0.44, mana: 220, atk: 'hero', arm: 'hero', abilities: ['thunderpaw', 'purrward', 'ninelives'], desc: 'Hero. Grows stronger with every level.' },
   // the Rat Federation (rats)
-  scavenger: { name: 'Scavenger', faction: 'rats', spr: 'rat_scavenger', worker: true, hp: 190, armor: 0, dmg: [5, 6], range: 1, cd: 1.3, speed: 2.8, sight: 7, cost: { f: 65, w: 0 }, sup: 1, time: 11, r: 0.3, desc: 'Gathers fish and wood, builds. Cheap and quick.' },
-  ratsoldier:{ name: 'Rat Soldier', faction: 'rats', spr: 'rat_soldier', hp: 340, armor: 1, dmg: [11, 13], range: 1, cd: 1.15, speed: 3.0, sight: 8, cost: { f: 115, w: 0 }, sup: 2, time: 16, r: 0.34, atk: 'normal', arm: 'medium', desc: 'Fast, cheap melee. Never alone.' },
-  bandit:    { name: 'Banana Bandit', faction: 'rats', spr: 'rat_bandit', hp: 300, armor: 0, dmg: [16, 19], range: 5, cd: 1.6, speed: 2.8, sight: 9, cost: { f: 130, w: 25 }, sup: 2, time: 20, r: 0.34, proj: 'banana', atk: 'pierce', arm: 'light', desc: 'Ranged. A raccoon on the payroll, armed with fruit.' },
+  scavenger: { name: 'Scavenger', faction: 'rats', spr: 'rat_scavenger', worker: true, hp: 190, armor: 0, dmg: [5, 6], range: 1, cd: 1.3, speed: 2.8, sight: 7, cost: { f: 60, w: 0 }, sup: 1, time: 11, r: 0.3, desc: 'Gathers fish and wood, builds. Cheap and quick.' },
+  ratsoldier:{ name: 'Rat Soldier', faction: 'rats', spr: 'rat_soldier', hp: 250, armor: 1, dmg: [9, 12], range: 1, cd: 1.0, speed: 3.2, sight: 8, cost: { f: 125, w: 0 }, sup: 1, pair: true, time: 18, r: 0.3, atk: 'normal', arm: 'medium', desc: 'Fast, cheap melee. Never alone: they hatch two at a time.' },
+  bandit:    { name: 'Banana Bandit', faction: 'rats', spr: 'rat_bandit', hp: 270, armor: 0, dmg: [16, 19], range: 5.5, cd: 1.5, speed: 3.0, sight: 9, cost: { f: 100, w: 20 }, sup: 2, time: 17, r: 0.34, proj: 'banana', atk: 'pierce', arm: 'light', desc: 'Ranged. A raccoon on the payroll, armed with fruit.' },
   herald:    { name: 'Herald', faction: 'cats', spr: 'cat_herald', hp: 320, armor: 0, dmg: [38, 46], range: 7, cd: 3.0, speed: 2.3, sight: 9, cost: { f: 165, w: 70 }, sup: 3, time: 26, r: 0.34, proj: 'bomb_cat', splashR: 1.3, atk: 'siege', arm: 'medium', req: ['scratch'], desc: 'Advanced. Lobs catnip bombs from far away: slow, but walls and towers crumble. Hits everything around the target.' },
-  saboteur:  { name: 'Saboteur', faction: 'rats', spr: 'rat_saboteur', hp: 300, armor: 0, dmg: [38, 46], range: 7, cd: 3.0, speed: 2.4, sight: 9, cost: { f: 160, w: 70 }, sup: 3, time: 24, r: 0.34, proj: 'bomb_rat', splashR: 1.3, atk: 'siege', arm: 'medium', req: ['junkforge'], desc: 'Advanced. Throws crystal charges from far away: slow, but walls and towers crumble. Hits everything around the target.' },
-  lobster:   { name: "Seby's Crayfish", faction: 'rats', spr: 'rat_lobster', hp: 1300, armor: 4, dmg: [27, 33], range: 1.3, cd: 1.7, speed: 2.1, sight: 8, cost: { f: 260, w: 120 }, sup: 5, time: 34, r: 0.75, atk: 'normal', arm: 'heavy', desc: 'Heavy. One of Queen Seby\'s brood: slow, armoured, hard to kill.' },
+  saboteur:  { name: 'Saboteur', faction: 'rats', spr: 'rat_saboteur', hp: 320, armor: 0, dmg: [38, 46], range: 7, cd: 3.0, speed: 2.4, sight: 9, cost: { f: 145, w: 60 }, sup: 3, time: 22, r: 0.34, proj: 'bomb_rat', splashR: 1.3, atk: 'siege', arm: 'medium', req: ['junkforge'], desc: 'Advanced. Throws crystal charges from far away: slow, but walls and towers crumble. Hits everything around the target.' },
+  lobster:   { name: "Seby's Crayfish", faction: 'rats', spr: 'rat_lobster', hp: 1400, armor: 4, dmg: [32, 38], range: 1.3, cd: 1.7, speed: 2.1, sight: 8, cost: { f: 240, w: 110 }, sup: 5, time: 34, r: 0.75, splash: 0.7, atk: 'normal', arm: 'heavy', desc: 'Heavy. One of Queen Seby\'s brood: slow, armoured, hard to kill.' },
   ratcmd:    { name: 'Rat Commander', faction: 'rats', spr: 'rat_commander', hero: true, hp: 600, armor: 2, dmg: [21, 26], range: 1.1, cd: 1.2, speed: 3.1, sight: 10, cost: { f: 425, w: 100 }, sup: 5, time: 38, r: 0.42, mana: 220, atk: 'hero', arm: 'hero', abilities: ['plague', 'frenzy', 'swarmcall'], desc: 'Hero. Grows stronger with every level.' },
   // mercenaries (the Organization) — hired at the Pig Exchange
   snout:     { name: 'Agent Snout', faction: 'pigs', spr: 'pig_snout', hp: 520, armor: 1, dmg: [18, 22], range: 4.5, cd: 1.5, speed: 2.9, sight: 12, cost: { f: 200, w: 40 }, sup: 3, time: 0, r: 0.4, proj: 'coin', atk: 'pierce', arm: 'medium', desc: 'Mercenary. Sees far; his invoices slow what they hit.', slowOnHit: true },
@@ -76,24 +77,26 @@ const UNITS = {
   duck:      { name: 'Angry Duck', faction: 'creep', spr: 'cr_duck', hp: 320, armor: 1, dmg: [10, 13], range: 1, cd: 1.2, speed: 2.5, sight: 6, r: 0.34, bounty: 18, xp: 35 },
   raccoon:   { name: 'Wild Raccoon', faction: 'creep', spr: 'cr_raccoon', hp: 820, armor: 2, dmg: [24, 30], range: 1.1, cd: 1.5, speed: 2.4, sight: 7, r: 0.48, bounty: 55, xp: 120 },
   isopod:    { name: 'Deep Isopod', faction: 'creep', spr: 'cr_isopod', hp: 1300, armor: 5, dmg: [30, 38], range: 1.2, cd: 1.8, speed: 2.0, sight: 7, r: 0.55, bounty: 90, xp: 200, arm: 'heavy' },
+  // map event: the Coon crosses the woods with a sack of bananas (see events.js)
+  coon:      { name: 'The Coon', faction: 'creep', spr: 'cr_coon', hp: 2200, armor: 3, dmg: [30, 38], range: 5, cd: 1.25, speed: 1.25, sight: 8, r: 0.7, bounty: 200, xp: 320, proj: 'banana', atk: 'hero', arm: 'heavy', splashR: 1 },   // hero-type banana: hits cats and rats the same
 };
 
 // ── buildings ── size in tiles (square). prod: units it trains. res: upgrades it researches.
 const BUILDINGS = {
   // cats
-  den:        { name: 'Union Hall', faction: 'cats', hall: true, size: 4, hp: 1700, armor: 5, cost: { f: 385, w: 185 }, time: 90, supply: 12, sight: 10, prod: ['courier', 'catcmd'], style: 'cat_hall', desc: 'Town hall. Fish and wood are brought here.' },
-  cottage:    { name: 'Cottage', faction: 'cats', size: 2, hp: 500, armor: 2, cost: { f: 80, w: 20 }, time: 26, supply: 8, sight: 6, style: 'cat_house', desc: '+8 supply.' },
-  yard:       { name: 'Training Yard', faction: 'cats', size: 3, hp: 1100, armor: 4, cost: { f: 160, w: 60 }, time: 50, sight: 7, prod: ['soldier', 'slinger', 'herald'], req: ['den'], style: 'cat_barracks', desc: 'Trains Soldiers, Slingers and (with a Scratching Post) Heralds.' },
-  scratch:    { name: 'Scratching Post', faction: 'cats', size: 2, hp: 700, armor: 3, cost: { f: 140, w: 60 }, time: 45, sight: 6, res: ['weap', 'arm', 'catnip'], req: ['yard'], style: 'cat_forge', desc: 'Researches upgrades.' },
-  pride:      { name: 'Pride Rock', faction: 'cats', size: 3, hp: 1000, armor: 4, cost: { f: 180, w: 150 }, time: 60, sight: 7, prod: ['lion'], req: ['scratch'], style: 'cat_beast', desc: 'Where the Royal Lions answer the call.' },
-  cattower:   { name: 'Watch Tower', faction: 'cats', size: 2, hp: 550, armor: 4, cost: { f: 90, w: 80 }, time: 40, sight: 11, tower: { dmg: [16, 20], range: 7, cd: 1.1, proj: 'hairball' }, req: ['yard'], style: 'cat_tower', desc: 'Defensive tower.' },
+  den:        { name: 'Union Hall', faction: 'cats', hall: true, size: 4, hp: 2380, armor: 5, cost: { f: 385, w: 185 }, time: 90, supply: 12, sight: 10, tower: { dmg: [12, 15], range: 6.5, cd: 1.3, proj: 'hairball' }, prod: ['courier', 'catcmd'], style: 'cat_hall', desc: 'Town hall. Fish and wood are brought here. Shoots at enemies that come close.' },
+  cottage:    { name: 'Cottage', faction: 'cats', size: 2, hp: 700, armor: 2, cost: { f: 80, w: 20 }, time: 26, supply: 8, sight: 6, style: 'cat_house', desc: '+8 supply.' },
+  yard:       { name: 'Training Yard', faction: 'cats', size: 3, hp: 1540, armor: 4, cost: { f: 160, w: 60 }, time: 50, sight: 7, prod: ['soldier', 'slinger', 'herald'], req: ['den'], style: 'cat_barracks', desc: 'Trains Soldiers, Slingers and (with a Scratching Post) Heralds.' },
+  scratch:    { name: 'Scratching Post', faction: 'cats', size: 2, hp: 980, armor: 3, cost: { f: 140, w: 60 }, time: 45, sight: 6, res: ['weap', 'arm', 'catnip'], req: ['yard'], style: 'cat_forge', desc: 'Researches upgrades.' },
+  pride:      { name: 'Pride Rock', faction: 'cats', size: 3, hp: 1400, armor: 4, cost: { f: 180, w: 150 }, time: 60, sight: 7, prod: ['lion'], req: ['scratch'], style: 'cat_beast', desc: 'Where the Royal Lions answer the call.' },
+  cattower:   { name: 'Watch Tower', faction: 'cats', size: 2, hp: 770, armor: 4, cost: { f: 90, w: 80 }, time: 40, sight: 11, tower: { dmg: [16, 20], range: 7, cd: 1.1, proj: 'hairball' }, req: ['yard'], style: 'cat_tower', desc: 'Defensive tower.' },
   // rats
-  burrow:     { name: 'Great Burrow', faction: 'rats', hall: true, size: 4, hp: 1600, armor: 5, cost: { f: 370, w: 180 }, time: 90, supply: 12, sight: 10, prod: ['scavenger', 'ratcmd'], style: 'rat_hall', desc: 'Town hall. Fish and wood are brought here.' },
-  nest:       { name: 'Nest', faction: 'rats', size: 2, hp: 450, armor: 1, cost: { f: 75, w: 15 }, time: 22, supply: 8, sight: 6, style: 'rat_house', desc: '+8 supply.' },
-  warren:     { name: 'Warren', faction: 'rats', size: 3, hp: 1000, armor: 3, cost: { f: 150, w: 55 }, time: 45, sight: 7, prod: ['ratsoldier', 'bandit', 'saboteur'], req: ['burrow'], style: 'rat_barracks', desc: 'Trains Rat Soldiers, Banana Bandits and (with a Junk Forge) Saboteurs.' },
-  junkforge:  { name: 'Junk Forge', faction: 'rats', size: 2, hp: 650, armor: 3, cost: { f: 135, w: 55 }, time: 42, sight: 6, res: ['weap', 'arm', 'scurry'], req: ['warren'], style: 'rat_forge', desc: 'Researches upgrades.' },
-  pit:        { name: 'Crayfish Pit', faction: 'rats', size: 3, hp: 1050, armor: 4, cost: { f: 175, w: 150 }, time: 60, sight: 7, prod: ['lobster'], req: ['junkforge'], style: 'rat_beast', desc: "Where Seby's Crayfish are raised." },
-  spiketower: { name: 'Spike Tower', faction: 'rats', size: 2, hp: 520, armor: 4, cost: { f: 85, w: 80 }, time: 38, sight: 11, tower: { dmg: [17, 21], range: 7, cd: 1.1, proj: 'spike' }, req: ['warren'], style: 'rat_tower', desc: 'Defensive tower.' },
+  burrow:     { name: 'Great Burrow', faction: 'rats', hall: true, size: 4, hp: 2240, armor: 5, cost: { f: 365, w: 175 }, time: 90, supply: 12, sight: 10, tower: { dmg: [12, 15], range: 6.5, cd: 1.3, proj: 'spike' }, prod: ['scavenger', 'ratcmd'], style: 'rat_hall', desc: 'Town hall. Fish and wood are brought here. Shoots at enemies that come close.' },
+  nest:       { name: 'Nest', faction: 'rats', size: 2, hp: 630, armor: 1, cost: { f: 75, w: 15 }, time: 22, supply: 8, sight: 6, style: 'rat_house', desc: '+8 supply. Tunnels: Load sends nearby units underground, Unload brings them all up at any Nest. Rats going far also take the tunnels on their own.' },
+  warren:     { name: 'Warren', faction: 'rats', size: 3, hp: 1400, armor: 3, cost: { f: 150, w: 55 }, time: 45, sight: 7, prod: ['ratsoldier', 'bandit', 'saboteur'], req: ['burrow'], style: 'rat_barracks', desc: 'Trains Rat Soldiers, Banana Bandits and (with a Junk Forge) Saboteurs.' },
+  junkforge:  { name: 'Junk Forge', faction: 'rats', size: 2, hp: 910, armor: 3, cost: { f: 135, w: 55 }, time: 42, sight: 6, res: ['weap', 'arm', 'scurry'], req: ['warren'], style: 'rat_forge', desc: 'Researches upgrades.' },
+  pit:        { name: 'Crayfish Pit', faction: 'rats', size: 3, hp: 1470, armor: 4, cost: { f: 175, w: 150 }, time: 60, sight: 7, prod: ['lobster'], req: ['junkforge'], style: 'rat_beast', desc: "Where Seby's Crayfish are raised." },
+  spiketower: { name: 'Spike Tower', faction: 'rats', size: 2, hp: 728, armor: 4, cost: { f: 85, w: 80 }, time: 38, sight: 11, tower: { dmg: [17, 21], range: 7, cd: 1.1, proj: 'spike' }, req: ['warren'], style: 'rat_tower', desc: 'Defensive tower.' },
   // neutral
   exchange:   { name: 'Pig Exchange', faction: 'neutral', size: 3, hp: 99999, armor: 99, sight: 6, style: 'pig_exchange', invuln: true, desc: 'The Organization sells to both sides. Bring a unit close to hire.' },
 };
@@ -138,6 +141,7 @@ const ITEMS = {
   scroll:  { name: 'Scroll of Rally', col: '#e8d6a8', use: 'rally', desc: 'Heals nearby allies for 250.' },
   mouse:   { name: 'Yarn Mouse', col: '#a8f04a', pass: { aspd: 0.15 }, desc: 'A toy to chase: attacks 15% faster.' },
   carrot:  { name: 'Rope Carrot', col: '#ff8a3a', pass: { regen: 4 }, desc: 'Something to chew on: +4 health per second.' },
+  goldbanana: { name: 'Golden Banana', col: '#ffd36b', pass: { dmg: 8, hp: 200, speed: 0.3 }, desc: "The Coon's treasure: +8 damage, +200 health, +0.3 move speed." },
 };
 const ITEM_TIERS = [['potion', 'mana', 'scroll', 'carrot'], ['claws', 'collar', 'bell', 'mouse'], ['heart', 'claws', 'collar', 'mouse']];
 
@@ -154,11 +158,22 @@ const CAMPS = [
   { tier: 2, units: ['isopod', 'raccoon', 'duck', 'duck'] },
 ];
 
+// ── how fast the economy runs: what a worker carries per trip and how long one trip's work takes (s) ──
+const ECON = { carry: 8, fishTime: 2.5, woodTime: 2.8 };
+
+// ── what makes each side play differently (logic in factions.js) ──
+// rats: a swarm that heals itself and travels underground; cats: few, shielded, and bolder with every win
+const FACTION_RULES = {
+  rats: { regen: 0.015, regenAfter: 4, tunnelDelay: 1.2 },
+  cats: { regen: 0.006, regenAfter: 6, shield: 0.2, shieldAfter: 4, shieldFill: 6,
+          morale: { dmg: 0.06, speed: 0.05, max: 2, dur: 6, radius: 7 } },
+};
+
 // ── AI personalities and difficulty ──
 const AI_STYLES = {
-  rusher:  { name: 'Rusher',  firstAttack: 210, attackValue: 900,  workers: 14, expandAt: 900, mix: { melee: 0.62, ranged: 0.3, heavy: 0.0, siege: 0.08 }, towers: 0, heavyAfter: 600 },
-  boomer:  { name: 'Boomer',  firstAttack: 480, attackValue: 2200, workers: 22, expandAt: 330, mix: { melee: 0.36, ranged: 0.3, heavy: 0.22, siege: 0.12 }, towers: 1, heavyAfter: 420 },
-  turtle:  { name: 'Turtle',  firstAttack: 560, attackValue: 2600, workers: 18, expandAt: 600, mix: { melee: 0.3, ranged: 0.3, heavy: 0.25, siege: 0.15 }, towers: 4, heavyAfter: 360 },
+  rusher:  { name: 'Rusher',  firstAttack: 345, attackValue: 1690,  workers: 14, expandAt: 900, mix: { melee: 0.62, ranged: 0.3, heavy: 0.0, siege: 0.08 }, towers: 0, heavyAfter: 600 },
+  boomer:  { name: 'Boomer',  firstAttack: 690, attackValue: 3640, workers: 22, expandAt: 330, mix: { melee: 0.36, ranged: 0.3, heavy: 0.22, siege: 0.12 }, towers: 1, heavyAfter: 420 },
+  turtle:  { name: 'Turtle',  firstAttack: 805, attackValue: 4290, workers: 18, expandAt: 600, mix: { melee: 0.3, ranged: 0.3, heavy: 0.25, siege: 0.15 }, towers: 4, heavyAfter: 360 },
 };
 const AI_LEVELS = {
   easy:   { name: 'Easy',   income: 0.8,  think: 1.6, micro: false, attackMul: 1.25 },
