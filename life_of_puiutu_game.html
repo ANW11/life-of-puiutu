@@ -902,7 +902,7 @@
   .qbtn:disabled{filter:grayscale(.6);opacity:.55;cursor:default;}
 
   /* ---------- NEW MENU (custom art) ---------- */
-  .menu-bg{position:absolute;inset:0;background:#bcd9ec url('ui/menu_bg.jpg') center/cover no-repeat;}
+  .menu-bg{position:absolute;inset:0;background:#bcd9ec url('ui/menu_day.jpg') center/cover no-repeat;transition:background-image .6s;}
   /* the title screen fills the whole window, landscape: the logo over the sky, Play over the grass */
   #menu .top{width:100%;max-width:none;height:100%;border-radius:0;box-shadow:none;}
   #menu .statbar{display:none;}
@@ -998,11 +998,20 @@
 </head>
 <body>
 <div id="app">
+<script>
+// The title screen follows the player's own clock: sunrise, day, sunset or night.
+function menuSkyFor(h){ return h>=5&&h<9 ? 'sunrise' : h>=9&&h<17 ? 'day' : h>=17&&h<20 ? 'sunset' : 'night'; }
+function updateMenuSky(){ const el=document.getElementById('menuBg'); if(!el) return;
+  const k=menuSkyFor(new Date().getHours()); if(el.dataset.sky===k) return; el.dataset.sky=k;
+  el.style.backgroundImage="url('ui/menu_"+k+".jpg')"; }
+document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval(updateMenuSky, 60000); });
+['sunrise','day','sunset','night'].forEach(k=>{ const im=new Image(); im.src='ui/menu_'+k+'.jpg'; });   // no flash when the hour turns
+</script>
 
   <!-- ============ MENU ============ -->
   <div id="menu" class="screen active">
     <div class="top">
-      <div class="menu-bg"></div>
+      <div class="menu-bg" id="menuBg"></div>
       <img class="title-img" src="ui/title_pixel.png" alt="Life of Puiutu">
 
       <!-- Shop, Profile and Inventory now live in the phone; kept here hidden so their scripts still find them -->
