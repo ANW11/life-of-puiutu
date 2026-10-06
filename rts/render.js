@@ -344,7 +344,7 @@ const R = {
     if (!b.built) { g.globalAlpha = 0.45 + 0.55 * k; }
     if (G.time - (b.hitT || -9) < 0.1) g.filter = 'brightness(1.6)';
     if (pic) {   // hand-made art: sits on the footprint, a little wider than it, feet on the bottom edge
-      const w = s * (b.def.hall ? 1.55 : 1.45), h = w * pic.naturalHeight / pic.naturalWidth;   // halls stand taller than their plot
+      const w = s * (b.def.artScale || (b.def.hall ? 1.55 : 1.45)), h = w * pic.naturalHeight / pic.naturalWidth;   // halls stand taller than their plot
       g.drawImage(pic, x + s / 2 - w / 2, y + s - h + 4, w, h);
       if (!b.built) { const sc = art('scaffold'); g.globalAlpha = 1; if (sc) g.drawImage(sc, x - 4, y + s - (s + 8) * sc.naturalHeight / sc.naturalWidth + 4, s + 8, (s + 8) * sc.naturalHeight / sc.naturalWidth); }
       // a small team flag so you can tell yours from theirs at a glance
