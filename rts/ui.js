@@ -61,7 +61,8 @@ const UI = {
   setSel(list) {
     // heroes first, then fighters, then workers, then buildings — the first one drives the command card
     const rank = e => e.isUnit ? (e.def.hero ? 0 : e.def.worker ? 2 : 1) : 3;
-    this.sel = list.filter(e => e && !e.dead).sort((a, b) => rank(a) - rank(b) || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0)).slice(0, 24); this.menu = 'main'; this.sub = 0; this.target = null; this.place = null; this.cardSig = ''; this.infoSig = ''; },
+    // up to 150: a whole army fits (supply tops out at SUPPLY_MAX, and rat pairs are 1 each)
+    this.sel = list.filter(e => e && !e.dead).sort((a, b) => rank(a) - rank(b) || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0)).slice(0, 150); this.menu = 'main'; this.sub = 0; this.target = null; this.place = null; this.cardSig = ''; this.infoSig = ''; },
   primary() { const own = this.sel.filter(e => this.mine(e)); if (!own.length) return this.sel[0] || null;
     const kinds = [...new Set(own.map(e => e.kind))]; const k = kinds[this.sub % kinds.length]; return own.find(e => e.kind === k); },
   // how many of your units wait in the tunnels (the guest is told by the host)
@@ -329,7 +330,7 @@ const UI = {
     if (sig === this.infoSig) return; this.infoSig = sig;
     if (!sel.length) { el.innerHTML = '<div class="stats"><div class="sub">' + (IS_TOUCH ? 'Tap a unit to select it. Hold and drag to select many.' : 'Select a unit or building. Drag a box to select many.') + '</div></div>'; return; }
     if (sel.length > 1) {
-      el.innerHTML = ''; const g = document.createElement('div'); g.className = 'grid';
+      el.innerHTML = ''; const g = document.createElement('div'); g.className = 'grid' + (sel.length > 60 ? ' tiny' : sel.length > 24 ? ' dense' : '');   // big selections: smaller portraits
       for (const e of sel) { const d = document.createElement('div'); d.className = 'mini'; if (e === p) d.style.borderColor = '#ffd36b';
         const k = e.hp / e.maxHp; d.innerHTML = '<img src="' + (e.isUnit ? unitPic(e.kind) : buildingIcon(e.kind)) + '"><span class="hp"><b style="width:' + (k * 100) + '%;background:' + (k > 0.6 ? '#5fd35a' : k > 0.3 ? '#e8c84a' : '#e05545') + '"></b></span>';
         d.onpointerdown = ev => { ev.preventDefault(); if (ev.shiftKey) this.setSel(this.sel.filter(s => s !== e)); else this.setSel([e]); }; g.appendChild(d); }

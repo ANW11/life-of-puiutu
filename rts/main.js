@@ -16,6 +16,15 @@ const Main = {
     $('qMenu').onclick = () => this.togglePause(true);
     const mb = $('qMusic'), showMusic = () => { mb.style.opacity = S.musicOn ? 1 : 0.45; mb.textContent = S.musicOn ? 'Music' : 'Muted'; };
     mb.onclick = () => { Jukebox.toggle(); showMusic(); }; showMusic();
+    // settings: music and game speed, kept in step with the Music button and the pause menu's speed
+    const syncSet = () => {
+      $('setMusic').querySelectorAll('.ch').forEach(c => c.classList.toggle('on', (+c.dataset.v === 1) === !!S.musicOn));
+      [$('setSpeed'), $('speedPick')].forEach(box => box.querySelectorAll('.ch').forEach(c => c.classList.toggle('on', +c.dataset.v === (this.speed || 1))));
+    };
+    $('qSettings').onclick = () => { syncSet(); $('setOv').classList.add('show'); };
+    $('setClose').onclick = () => $('setOv').classList.remove('show');
+    $('setMusic').querySelectorAll('.ch').forEach(c => c.onclick = () => { if ((+c.dataset.v === 1) !== !!S.musicOn) { Jukebox.toggle(); showMusic(); } syncSet(); });
+    $('setSpeed').querySelectorAll('.ch').forEach(c => c.onclick = () => { this.speed = +c.dataset.v; syncSet(); });
     $('surrenderBtn').onclick = () => { if (G && !G.over) { CMD.exec({ t: 'surrender' }); this.togglePause(false); } };
     // playing a friend
     NET.onStatus = (text, ready) => { $('mpStatus').innerHTML = text; $('startBtn').disabled = NET.role === 'host' && !NET.peer; $('startBtn').textContent = NET.role === 'guest' ? 'Waiting for host…' : NET.role === 'host' ? (NET.peer ? 'Start vs friend' : 'Waiting for friend…') : 'Start'; };

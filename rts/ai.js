@@ -62,7 +62,7 @@ const AI = {
     const fac = this.fac(), house = BUILD_MENU[fac][1];
     const building = this.mine(e => e.isUnit && e.order && e.order.type === 'build' && e.order.kind === house).length + this.mine(e => e.isBuilding && e.kind === house && !e.built).length;
     const prod = this.mine(e => e.isBuilding && e.built && e.def.prod).length;
-    if (pl.supCap < 80 && pl.supCap - pl.supUsed < 3 + prod * 2 && building < (pl.supUsed > 30 ? 2 : 1)) this.build(house);
+    if (pl.supCap < SUPPLY_MAX && pl.supCap - pl.supUsed < 3 + prod * 2 && building < (pl.supUsed > 30 ? 2 : 1)) this.build(house);
   },
   // the build order: what to raise next, depending on personality and how far into the game we are
   buildings(pl) {
@@ -220,7 +220,7 @@ const AI = {
     for (const u of army) if (!u.order && Math.hypot(u.x - this.rally.x, u.y - this.rally.y) > 5) orderMove(u, this.rally.x + rnd(-2, 2), this.rally.y + rnd(-2, 2));
     // 5. time to attack?
     const v = this.value(army), T = G.time, mul = this.lv.attackMul;
-    const ready = T > this.style.firstAttack * mul && (v > this.style.attackValue * mul * (1 + this.attackWave * 0.25) || pl.supUsed >= 70) && T - this.lastAttack > 60;
+    const ready = T > this.style.firstAttack * mul && (v > this.style.attackValue * mul * (1 + this.attackWave * 0.25) || pl.supUsed >= SUPPLY_MAX - 10) && T - this.lastAttack > 60;
     if (ready && army.length >= 4) { this.state = 'attack'; this.attackWave++; this.attackForce = new Set(army.map(u => u.id)); this.attackStart = v;
       const t = this.enemyTarget(); if (t) for (const u of army) orderAMove(u, t.x, t.y); }
   },

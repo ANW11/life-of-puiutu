@@ -13,19 +13,19 @@ const SPR = {
   rat_scavenger: { walk: [0,1,2,3,4,5].map(i => `army/frames/rat_emissary_walk${i}.png?v=2`), atk: 'army/frames/rat_emissary_atk.png?v=2', h: 32 },
   rat_soldier:   { walk: [0,1,2,3].map(i => `army/frames/rat_soldier_walk${i}.png?v=2`), atk: 'army/frames/rat_soldier_atk.png?v=2', h: 30, faceLeft: true, atkFaceRight: true },
   rat_bandit:    { walk: ['mobs/coon_walk0.png', 'mobs/coon_walk1.png'], atk: 'mobs/coon_throw.png', h: 36 },
-  rat_lobster:   { walk: ['mobs/seby/s1.png', 'mobs/seby/s2.png', 'mobs/seby/s3.png', 'mobs/seby/s2.png'], atk: 'mobs/seby/s4.png', h: 76 },   // Seby's brood
+  rat_lobster:   { walk: [0,1,2,3,4,5].map(i => `mobs/seby/anim/walk${i}.png`), atk: 'mobs/seby/anim/claw1.png', h: 112 },   // Seby's brood — the main game's 6-frame scuttle; these frames stand on the canvas floor
   merlin:        { walk: ['npcs/merlin_npc.png'], h: 46, wobble: true },
   rat_commander: { walk: [0,1,2,3].map(i => `army/frames/rat_commander_walk${i}.png?v=2`), atk: 'army/frames/rat_commander_atk.png?v=2', h: 34 },
   cat_herald:    { walk: [0,1,2,3,4,5].map(i => `army/frames/cat_emissary_walk${i}.png?v=2`), atk: 'army/frames/cat_emissary_atk.png?v=2', h: 36 },
   rat_saboteur:  { walk: [0,1,2,3,4,5].map(i => `army/frames/rat_emissary_walk${i}.png?v=2`), atk: 'army/frames/rat_emissary_atk.png?v=2', h: 36, faceLeft: true },
   pig_snout:     { walk: [0,1,2,3,4,5].map(i => `army/frames/pig_agent_walk${i}.png?v=2`), atk: 'army/frames/pig_agent_atk.png?v=2', h: 40 },
   mech_boar:     { walk: ['mobs/mechboar_frames/idle.png', 'mobs/mechboar_frames/walk1.png'], atk: 'mobs/mechboar_frames/attack.png', h: 76 },
-  cr_pigeon:     { walk: ['mobs/enemy_pigeon.png'], h: 30, wobble: true },
-  cr_pigeon_b:   { walk: ['mobs/pigeon_v3.png'], h: 34, wobble: true },
-  cr_pigeon_w:   { walk: ['mobs/pigeon_v9.png'], h: 40, wobble: true },
-  cr_duck:       { walk: ['mobs/enemy_duck.png'], h: 34, wobble: true },
+  cr_pigeon:     { walk: [0,1,2,3].map(i => `mobs/birds/pigeon_v5_walk${i}.png`), atk: 'mobs/birds/pigeon_v5_atk1.png', h: 30 },   // the main game's strut + peck
+  cr_pigeon_b:   { walk: [0,1,2,3].map(i => `mobs/birds/pigeon_v2_walk${i}.png`), atk: 'mobs/birds/pigeon_v2_atk1.png', h: 34 },   // the dark one (the brown v3 has no walk frames)
+  cr_pigeon_w:   { walk: [0,1,2,3].map(i => `mobs/birds/pigeon_v9_walk${i}.png`), atk: 'mobs/birds/pigeon_v9_atk1.png', h: 40 },
+  cr_duck:       { walk: [0,1,2,3].map(i => `mobs/birds/duck_walk${i}.png`), atk: 'mobs/birds/duck_atk1.png', h: 34 },   // waddle + quack-bite
   cr_raccoon:    { walk: ['mobs/enemy_raccoon.png'], h: 48, wobble: true },
-  cr_isopod:     { walk: ['mobs/deepsea_isopod.png'], h: 40, wobble: true },
+  cr_isopod:     { walk: ['mobs/deepsea_isopod_flat.png'], h: 34, faceLeft: true, crawl: true },   // levelled art, head on the left; crawls like in the main game
   cr_coon:       { walk: ['rts/art/coon/stalk0.png', 'rts/art/coon/stalk1.png'], atk: 'rts/art/coon/stalk2.png', idle: 'rts/art/coon/stalk3.png', h: 112 },   // the Evil Coon from the sewers, red-eyed
 };
 const PROJ_IMG = { hairball: 'fx/hairball_ball.png', banana: 'mobs/coon_banana.png', bomb_cat: 'spells/catnip.png', bomb_rat: 'spells/crystalspikes.png' };
@@ -159,6 +159,7 @@ const CAMPS = [
 ];
 
 // ── how fast the economy runs: what a worker carries per trip and how long one trip's work takes (s) ──
+const SUPPLY_MAX = 100;   // the most supply houses can give, however many you build
 const ECON = { carry: 8, fishTime: 2.5, woodTime: 2.8 };
 
 // ── what makes each side play differently (logic in factions.js) ──

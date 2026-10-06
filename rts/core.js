@@ -117,7 +117,7 @@ function recalcSupply() {
       if (e.isBuilding && e.built && e.def.supply) cap += e.def.supply;
       if (e.isUnit) used += e.def.sup || 0;
       if (e.isBuilding) for (const q of e.prodQ) if (q.unit) used += qSup(q.unit); }
-    pl.supCap = Math.min(80, cap); pl.supUsed = used; }
+    pl.supCap = Math.min(SUPPLY_MAX, cap); pl.supUsed = used; }
 }
 function canAfford(p, cost) { const pl = G.players[p]; return pl.fish >= (cost.f || 0) && pl.wood >= (cost.w || 0); }
 function pay(p, cost) { const pl = G.players[p]; pl.fish -= cost.f || 0; pl.wood -= cost.w || 0; }

@@ -49,6 +49,7 @@ const RO = {
   'Touch': 'Atingere', 'Tap': 'Atinge', 'select your unit, or order the selected ones (move / attack / gather)': 'selectează unitatea sau dă ordine celor selectate (mută / atacă / adună)',
   'Drag': 'Trage', 'move the camera; two fingers zoom': 'mută camera; două degete fac zoom', 'Hold, then drag': 'Ține apăsat, apoi trage',
   'box-select': 'selectare cu dreptunghi', 'Hero / Army / Idle': 'Erou / Armată / Liberi', 'quick selection buttons at the top': 'butoanele de selecție rapidă de sus',
+  'Settings': 'Setări', 'On': 'Pornită', 'Off': 'Oprită', 'Close': 'Închide',
   'Got it': 'Am înțeles', 'Paused': 'Pauză', 'Game speed': 'Viteza jocului', 'Slow': 'Încet', 'Fast': 'Repede',
   'Resume': 'Continuă', 'Surrender': 'Capitulează', 'Quit': 'Ieși', 'Victory': 'Victorie', 'Defeat': 'Înfrângere',
   'Play again': 'Joacă din nou', 'Back': 'Înapoi',

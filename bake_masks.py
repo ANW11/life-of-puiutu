@@ -44,8 +44,33 @@ def bake(fn):
         out.append(str(j - i) + CH[cells[i]]); i = j
     return ''.join(out)
 
+def bake_occ(fn):
+    # the occluder grid the game builds in hubOccluders(): 4px cells, sampled at (gx*4+1, gy*4+1),
+    # '#' where the mask is painted (alpha > 100). Used when the page can't read pixels (file://).
+    import math
+    im = Image.open(fn).convert('RGBA'); W, H = im.size; px = im.load(); Q = 4
+    GW, GH = math.ceil(W / Q), math.ceil(H / Q); cells = []
+    for gy in range(GH):
+        for gx in range(GW):
+            cells.append('#' if px[min(W - 1, gx * Q + 1), min(H - 1, gy * Q + 1)][3] > 100 else '.')
+    out = []; i = 0; n = len(cells)
+    while i < n:
+        j = i
+        while j < n and cells[j] == cells[i]: j += 1
+        out.append(str(j - i) + cells[i]); i = j
+    return GW, GH, ''.join(out)
+
 def main():
     src = open(HTML).read()
+    occs = sorted(set(re.findall(r"occ:'([^']+)'", src)))
+    oparts = []
+    for o in occs:
+        if not os.path.isfile(o): print('  ! lipseste fisierul:', o); continue
+        gw, gh, rle = bake_occ(o)
+        oparts.append(json.dumps(o) + ':{gw:%d,gh:%d,rle:%s}' % (gw, gh, json.dumps(rle)))
+        print('  baked occ %-24s %5d chars' % (o, len(rle)))
+    src, n = re.subn(r'const OCC_BAKED=\{.*?\};', lambda m: 'const OCC_BAKED={' + ', '.join(oparts) + '};', src, count=1)
+    if n != 1: print('EROARE: nu am gasit "const OCC_BAKED=...;" in HTML.')
     masks = sorted(set(re.findall(r"mask(?:Solved)?:'([^']+)'", src)))
     if not masks:
         print('Nu am gasit nicio masca in HTML.'); return
@@ -57,7 +82,7 @@ def main():
         parts.append(json.dumps(m) + ':{w:%d,h:%d,rle:%s}' % (GW, GH, json.dumps(rle)))
         print('  baked %-26s %5d chars' % (m, len(rle)))
     const = 'const MASK_BAKED={' + ', '.join(parts) + '};'
-    new, n = re.subn(r'const MASK_BAKED=\{.*?\};', const, src, count=1)
+    new, n = re.subn(r'const MASK_BAKED=\{.*?\};', lambda m: const, src, count=1)
     if n != 1:
         print('EROARE: nu am gasit linia "const MASK_BAKED=...;" in HTML.'); return
     open(HTML, 'w').write(new)

@@ -215,6 +215,8 @@ const R = {
     // shadow
     g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(x, y + 2, Math.max(w * 0.32, 8), Math.max(h * 0.12, 4), 0, 0, 7); g.fill();
     let bob = 0, sq = 1; if (S.wobble && u.moving) { bob = Math.abs(Math.sin(u.anim * 12)) * 3; sq = 1 + Math.sin(u.anim * 24) * 0.04; }
+    // a crawler (the isopod) never hops: a low ripple of legs and a slight rock while it moves
+    let rock = 0; if (S.crawl && u.moving) { bob = Math.abs(Math.sin(u.anim * 28)) * 0.8; sq = 1 - Math.sin(u.anim * 28) * 0.015; rock = Math.sin(u.anim * 14) * 0.025; }
     if (u.working && !u.moving) bob = Math.abs(Math.sin(u.anim * 9)) * 2;
     // the attack, for every unit whether or not its sheet has an attack pose: melee units lunge
     // forward, lean in and leave a slash; ranged ones rock back as they throw
@@ -227,6 +229,7 @@ const R = {
     g.save(); g.translate(x + lunge * u.facing, y - bob); if (flip) g.scale(-1, 1);
     // lean towards the front of the sprite (its art faces right after the flip handling)
     if (tilt) { g.translate(0, -h * 0.15); g.rotate(tilt * (faceLeft ? -1 : 1)); g.translate(0, h * 0.15); }
+    if (rock) g.rotate(rock);
     if (u.buffs.stun) g.rotate(Math.sin(u.anim * 20) * 0.05);
     if (G.time - (u.hitT || -9) < 0.12) g.filter = 'brightness(2.2)';
     if (u.def.summon) g.filter = 'hue-rotate(250deg) saturate(1.4)';

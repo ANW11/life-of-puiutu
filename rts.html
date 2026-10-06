@@ -23,6 +23,9 @@
   #rSup i{width:20px;height:20px;background-image:url(rts/art/cottage.png);}
   #rSup.full{color:#ff8a7a;}
   #clock{margin-left:auto;opacity:.85;font-variant-numeric:tabular-nums;}
+  #qSettings{background:none;border:0;padding:0;width:30px;height:30px;cursor:pointer;flex:none;}
+  #qSettings img{width:100%;height:100%;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));}
+  #qSettings:active{transform:scale(.92);}
   .tbtn{background:rgba(20,14,8,.7);border:2px solid var(--wood);border-radius:9px;color:var(--ink);font-weight:bold;font-size:12px;padding:4px 9px;cursor:pointer;}
   .tbtn:active{transform:scale(.95);}
   #quick{display:flex;gap:6px;}
@@ -52,7 +55,9 @@
   .stats .sub{opacity:.7;font-size:12px;}
   .bar{height:8px;border-radius:4px;background:#000;overflow:hidden;margin:3px 0;width:170px;max-width:100%;}
   .bar b{display:block;height:100%;}
-  .grid{display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;}
+  .grid{display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;max-height:100%;overflow-y:auto;}
+  .grid.dense{gap:3px;} .grid.dense .mini{width:31px;height:31px;}
+  .grid.tiny{gap:2px;} .grid.tiny .mini{width:24px;height:24px;border-width:1px;border-radius:4px;} .grid.tiny .mini .hp{height:2px;left:1px;right:1px;bottom:1px;}
   .mini{width:40px;height:40px;border:2px solid var(--wood);border-radius:6px;background:#22301a;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .mini img{max-width:88%;max-height:88%;}
   .mini .hp{position:absolute;left:2px;right:2px;bottom:2px;height:3px;background:#000;}
@@ -223,6 +228,7 @@
   </div>
   <div id="clock">0:00</div>
   <button class="tbtn" id="qMusic" title="Music on/off">Music</button>
+  <button id="qSettings" title="Settings"><img src="rts/art/btn_settings.png" alt="Settings"></button>
   <button class="tbtn" id="qMenu" title="Menu (F10)">Menu</button>
 </div>
 
@@ -322,6 +328,18 @@
   <button class="big" id="helpClose">Got it</button>
 </div></div>
 
+<!-- settings (the gear in the top bar) -->
+<div class="ov" id="setOv"><div class="box" style="min-width:280px;">
+  <h1>Settings</h1>
+  <h2>Music</h2>
+  <div class="choices" id="setMusic"><div class="ch" data-v="1">On</div><div class="ch" data-v="0">Off</div></div>
+  <h2>Game speed</h2>
+  <div class="choices" id="setSpeed">
+    <div class="ch" data-v="0.75">Slow</div><div class="ch on" data-v="1">Normal</div><div class="ch" data-v="1.4">Fast</div>
+  </div>
+  <button class="big" id="setClose">Close</button>
+</div></div>
+
 <!-- pause -->
 <div class="ov" id="pauseOv"><div class="box" style="min-width:280px;">
   <h1>Paused</h1>
@@ -342,17 +360,17 @@
   <div class="row"><button class="big" id="againBtn">Play again</button><button class="big alt" id="quitBtn2">Back</button></div>
 </div></div>
 
-<script src="rts/data.js?v=31"></script>
-<script src="rts/i18n.js?v=32"></script>
+<script src="rts/data.js?v=38"></script>
+<script src="rts/i18n.js?v=33"></script>
 <script src="rts/map.js?v=21"></script>
-<script src="rts/core.js?v=30"></script>
+<script src="rts/core.js?v=35"></script>
 <script src="rts/events.js?v=25"></script>
 <script src="rts/factions.js?v=30"></script>
-<script src="rts/ai.js?v=25"></script>
-<script src="rts/render.js?v=25"></script>
-<script src="rts/ui.js?v=31"></script>
+<script src="rts/ai.js?v=35"></script>
+<script src="rts/render.js?v=26"></script>
+<script src="rts/ui.js?v=35"></script>
 <script src="rts/net.js?v=30"></script>
 <script src="rts/music.js?v=21"></script>
-<script src="rts/main.js?v=25"></script>
+<script src="rts/main.js?v=26"></script>
 </body>
 </html>
