@@ -3557,18 +3557,18 @@ function buildAreas(){
         // Placed by hand with the airship tool (I). h is multiplied by this area's depth scale, so it
         // is NOT the street's 569: 640 here draws the ship at the same on-screen size as in the square.
         decor:[{img:'props/aeronava.png', xf:0.1116, yf:0.7545, zf:0.500, h:640, bob:9},
-               {img:'ui/tailor/stall.png?v=2', xf:0.47, yf:0.86, h:200},                  // his stall, against the battlement
+               {img:'ui/tailor/stall.png?v=3', xf:0.47, yf:0.86, h:200, crisp:true},   // ~100 art px tall, hard pixels: the map's own pixel size                  // his stall, against the battlement
                {img:'ui/tailor/merchant.png', xf:0.545, yf:0.88, h:170, breathe:true}],   // the Merchant — the commander's height, drawn smooth like the other characters
         // the Merchant: a hooded stranger who sells looks (skins) for coin, in the open courtyard
         spots:[{type:'merchant', xf:0.51, yf:0.82, r:115}],
         // two commanders keep the Great Door between the stone lions, on either edge of the carpet. Like the
         // lions they never move: no patrol, no idle turning, both looking out toward the airship (left).
         garrison:[
-          {unit:'cat_commander', name:'Gate Commander', xf:0.738, yf:0.870, facing:-1, rank:'commander', scale:1.15, lines:[
+          {unit:'cat_commander', name:'Gate Commander', xf:0.738, yf:0.900, facing:-1, rank:'commander', scale:1.15, lines:[
             'Gate Commander: The King is expecting you. That is the only reason this door is open.',
             'Gate Commander: Paws where I can see them. All four, if you can manage it.',
             'Gate Commander: I have stood here eleven years. The lions have stood here longer. We do not talk.']},
-          {unit:'cat_commander', name:'Gate Commander', xf:0.842, yf:0.870, facing:-1, rank:'commander', scale:1.15, lines:[
+          {unit:'cat_commander', name:'Gate Commander', xf:0.842, yf:0.900, facing:-1, rank:'commander', scale:1.15, lines:[
             'Gate Commander: Bow at the second step, not the first. Everyone bows at the first.',
             'Gate Commander: Whatever you have heard in the city — do not repeat it in there.']},
         ],
