@@ -12623,7 +12623,7 @@ const BEACH_NOTES=[
   ['Shelly — the skull is real. I buried it again where the whale lies. Do not tell the crown. — an old digger','Shelly — craniul e adevărat. L-am îngropat la loc unde zace balena. Nu spune coroanei. — un săpător bătrân'],
 ];
 function fossilName(f){ return LT(f.name[0],f.name[1]); }
-function fossilArt(id){ return 'ui/forge/px/fossil_'+id+'.png?v=4'; }
+function fossilArt(id){ return 'ui/forge/px/fossil_'+id+'.png?v=5'; }
 function beachArt(id){ return 'ui/forge/px/beach_'+id+'.png?v=2'; }
 function weightedPick(list,wf){ const tot=list.reduce((a,x)=>a+wf(x),0); let r=Math.random()*tot; for(const x of list){ r-=wf(x); if(r<=0) return x; } return list[list.length-1]; }
 // what the tide turns up: the rarer pieces are weighted up so a patient beachcomber does see them
