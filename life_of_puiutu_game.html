@@ -3558,23 +3558,23 @@ function buildAreas(){
         // is NOT the street's 569: 640 here draws the ship at the same on-screen size as in the square.
         decor:[{img:'props/aeronava.png', xf:0.1116, yf:0.7545, zf:0.500, h:640, bob:9},
                {img:'ui/tailor/stall.png?v=3', xf:0.47, yf:0.86, h:200, crisp:true},   // ~100 art px tall, hard pixels: the map's own pixel size                  // his stall, against the battlement
-               {img:'ui/tailor/merchant.png', xf:0.545, yf:0.88, h:170, breathe:true}],   // the Merchant — the commander's height, drawn smooth like the other characters
+               {img:'ui/tailor/merchant.png', xf:0.551, yf:0.8658, h:147, breathe:true}],   // the Merchant — the commander's height, drawn smooth like the other characters
         // the Merchant: a hooded stranger who sells looks (skins) for coin, in the open courtyard
         spots:[{type:'merchant', xf:0.51, yf:0.82, r:115}],
         // two commanders keep the Great Door between the stone lions, on either edge of the carpet. Like the
         // lions they never move: no patrol, no idle turning, both looking out toward the airship (left).
         garrison:[
-          {unit:'cat_commander', name:'Gate Commander', xf:0.738, yf:0.900, facing:-1, rank:'commander', scale:1.15, lines:[
+          {unit:'cat_commander', name:'Gate Commander', xf:0.7516, yf:0.8431, facing:-1, rank:'commander', scale:1.15, lines:[
             'Gate Commander: The King is expecting you. That is the only reason this door is open.',
             'Gate Commander: Paws where I can see them. All four, if you can manage it.',
             'Gate Commander: I have stood here eleven years. The lions have stood here longer. We do not talk.']},
-          {unit:'cat_commander', name:'Gate Commander', xf:0.842, yf:0.900, facing:-1, rank:'commander', scale:1.15, lines:[
+          {unit:'cat_commander', name:'Gate Commander', xf:0.8135, yf:0.8617, facing:-1, rank:'commander', scale:1.15, lines:[
             'Gate Commander: Bow at the second step, not the first. Everyone bows at the first.',
             'Gate Commander: Whatever you have heard in the city — do not repeat it in there.']},
         ],
         // left, back down the mast -> the City; right, the great door -> the throne hall
         doors:[{xf:0.1453, yf:0.712, r:72, glowXf:0.141, glowYf:0.7006, glowR:56, glowRGB:'255,210,120', to:'street', label:'Board the airship down', icon:'', toSpawn:{xf:0.250, yf:0.860}},
-               {xf:0.752, yf:0.845, r:82, glowXf:0.8117, glowYf:0.5998, glowR:60, glowRGB:'255,200,90', to:'throneroom', label:'The Great Door', icon:'', sigil:'paw', toSpawn:{xf:0.060, yf:0.880}}],
+               {xf:0.7768, yf:0.8155, r:82, glowXf:0.8117, glowYf:0.5998, glowR:60, glowRGB:'255,200,90', to:'throneroom', label:'The Great Door', icon:'', sigil:'paw', toSpawn:{xf:0.060, yf:0.880}}],
       },
       platforms:[], npcs:[],
     },
@@ -15453,8 +15453,8 @@ document.addEventListener('keydown',e=>{
     if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>toast('Placements copied to clipboard!'),()=>toast('Exported to console (clipboard blocked)')); }
     else toast('Exported to console'); e.preventDefault(); return; }
   if(PLACE_ON && PLACE_SEL){ const r=PLACE_SEL.r, sk=PLACE_SEL.sk;
-    if(e.code==='ArrowUp'){ if(sk)r[sk]+=4; placeLog(); placeSave(); e.preventDefault(); return; }
-    if(e.code==='ArrowDown'){ if(sk)r[sk]=Math.max(4,r[sk]-4); placeLog(); placeSave(); e.preventDefault(); return; }
+    if(e.code==='ArrowUp'){ if(sk)r[sk]=placeRound(sk,sk==='scale'?r[sk]+0.05:r[sk]+4); placeLog(); placeSave(); placeLive(); e.preventDefault(); return; }
+    if(e.code==='ArrowDown'){ if(sk)r[sk]=placeRound(sk,sk==='scale'?r[sk]-0.05:r[sk]-4); placeLog(); placeSave(); placeLive(); e.preventDefault(); return; }
     if(e.code==='BracketLeft'){ r.cut=Math.max(0.1,(r.cut||1)-0.02); placeLog(); placeSave(); e.preventDefault(); return; }
     if(e.code==='BracketRight'){ r.cut=Math.min(1,(r.cut||1)+0.02); placeLog(); placeSave(); e.preventDefault(); return; }
   }
@@ -15901,11 +15901,17 @@ function travelTo(id){
 let PLACE_ON=false, PLACE_SEL=null, PLACE_DRAG=false;
 const PLACE_OV=(()=>{ try{ return JSON.parse(localStorage.getItem('puiutu_place')||'{}'); }catch(e){ return {}; } })();
 function placeSizeKey(r){ return ('h' in r)?'h':('r' in r)?'r':('glowR' in r)?'glowR':null; }
+function placeRound(sk,v){ return sk==='scale' ? Math.max(0.2,Math.round(v*100)/100) : Math.max(4,Math.round(v)); }
 // every editable handle in the hub. Each handle has its own field pair (fx,fy) + size key (sk),
 // so doors expose BOTH a trigger handle (xf/yf,r) and a GLOW handle (glowXf/glowYf,glowR = the prompt/text spot).
 function placeItems(){ const H=A&&A.hub, arr=[]; if(!H) return arr;
   const add=(o,label,fx,fy,sk)=>{ fx=fx||'xf'; fy=fy||'yf'; if(o && typeof o[fx]==='number' && typeof o[fy]==='number') arr.push({r:o,label,fx,fy,sk:(sk!==undefined?sk:placeSizeKey(o))}); };
-  ['bankdesk','fishbarrel','divesuit','seal','cave','merge','potions','merlin','rocky','tomy','npc','boss','spawn','exit','coonStart'].forEach(k=>add(H[k],k));
+  const guardsOnly = curArea==='castleentrance';
+  if(!guardsOnly) ['bankdesk','fishbarrel','divesuit','seal','cave','merge','potions','merlin','rocky','tomy','npc','boss','spawn','exit','coonStart'].forEach(k=>add(H[k],k));
+  if(guardsOnly){
+    if(H.decor) H.decor.forEach((d,i)=>add(d,'decor['+i+'] '+String(d.img||'').split('/').pop().split('?')[0],'xf','yf','h'));
+    if(H.garrison) H.garrison.forEach((g,i)=>{ if(g.scale==null) g.scale=1; add(g,'garrison['+i+'] '+(g.name||g.unit),'xf','yf','scale'); });
+    return arr; }
   if(H.staff) H.staff.forEach((s,i)=>add(s,'staff['+i+'] '+(s.img||'')));
   if(H.crystals) H.crystals.forEach((c,i)=>add(c,'crystal['+i+']','xf','yf','h'));
   if(H.spots) H.spots.forEach((s,i)=>add(s,'spot['+i+'] '+s.type));
@@ -15913,7 +15919,9 @@ function placeItems(){ const H=A&&A.hub, arr=[]; if(!H) return arr;
   if(H.doors) H.doors.forEach((d,i)=>{ add(d,'door['+i+']'+d.to,'xf','yf','r'); if('glowXf' in d) add(d,'door['+i+'] GLOW/text','glowXf','glowYf','glowR'); });
   if(H.seal && 'portalXf' in H.seal) add(H.seal,'seal SWIRL','portalXf','portalYf');
   // scenery too (the moored airship, carts, …): drag to move, mouse wheel / ↑↓ to scale
-  if(H.decor) H.decor.forEach((d,i)=>add(d,'decor['+i+'] '+String(d.img||'').split('/').pop(),'xf','yf','h'));
+  if(H.decor) H.decor.forEach((d,i)=>add(d,'decor['+i+'] '+String(d.img||'').split('/').pop().split('?')[0],'xf','yf','h'));
+  // guards / NPCs standing in the area (drag to move, wheel to scale)
+  if(H.garrison) H.garrison.forEach((g,i)=>{ if(g.scale==null) g.scale=1; add(g,'garrison['+i+'] '+(g.name||g.unit),'xf','yf','scale'); });
   return arr; }
 // a small panel while place mode is on: what is selected, and a button that copies the numbers
 function placePanel(){
@@ -15925,7 +15933,7 @@ function placePanel(){
     el.innerHTML='<div id="ppTxt"></div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
       '<button id="ppMinus">− size</button><button id="ppPlus">+ size</button><button id="ppCopy" style="font-weight:bold">Copy data</button></div>';
     document.body.appendChild(el);
-    const step=f=>{ if(!PLACE_SEL||!PLACE_SEL.sk) return; const r=PLACE_SEL.r; r[PLACE_SEL.sk]=Math.max(4,Math.round(r[PLACE_SEL.sk]*f)); placeLog(); placeSave(); placePanel(); };
+    const step=f=>{ if(!PLACE_SEL||!PLACE_SEL.sk) return; const r=PLACE_SEL.r; r[PLACE_SEL.sk]=placeRound(PLACE_SEL.sk,r[PLACE_SEL.sk]*f); placeLog(); placeSave(); placePanel(); placeLive(); };
     el.querySelector('#ppMinus').onclick=()=>step(1/1.05); el.querySelector('#ppPlus').onclick=()=>step(1.05);
     el.querySelector('#ppCopy').onclick=()=>{ const txt=placeExport();
       (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied — paste it to Claude'),()=>{ console.log(txt); toast('Clipboard blocked — data is in the console'); }); };
@@ -15944,6 +15952,7 @@ function airshipTool(){
     toast('Airship tool — drag it, wheel to scale, Copy data when done'); };
   if(curArea!=='castleentrance'){ enterArea('castleentrance'); setTimeout(pick,700); } else pick();
 }
+function placeLive(){ if(PLACE_SEL && /^garrison\[/.test(PLACE_SEL.label)) refreshGarrison(); }
 // everything you moved in this area, in the same fields the area data uses
 function placeExport(){ return JSON.stringify({ area:curArea, changes:PLACE_OV[curArea]||{} }, null, 2); }
 function placeLog(){ placePanel(); if(!PLACE_SEL) return; const it=PLACE_SEL, r=it.r;
@@ -15952,7 +15961,7 @@ function placeLog(){ placePanel(); if(!PLACE_SEL) return; const it=PLACE_SEL, r=
   console.log(s); }
 function placeSave(){ if(!PLACE_SEL) return; const it=PLACE_SEL, r=it.r, o={};
   o[it.fx]=+r[it.fx].toFixed(4); o[it.fy]=+r[it.fy].toFixed(4);
-  if(it.sk) o[it.sk]=Math.round(r[it.sk]); if('cut' in r) o.cut=+Number(r.cut).toFixed(3);
+  if(it.sk) o[it.sk]=placeRound(it.sk,r[it.sk]); if('cut' in r) o.cut=+Number(r.cut).toFixed(3);
   const a=PLACE_OV[curArea]=PLACE_OV[curArea]||{}; a[it.label]=Object.assign(a[it.label]||{}, o);
   localStorage.setItem('puiutu_place', JSON.stringify(PLACE_OV)); }
 function applyPlaceOverrides(){ const ov=PLACE_OV[curArea]; if(!ov) return; for(const it of placeItems()){ const o=ov[it.label]; if(o) Object.assign(it.r,o); } }
@@ -15979,10 +15988,10 @@ cv.addEventListener('pointerdown',e=>{
 });
 cv.addEventListener('pointermove',e=>{ if(!PLACE_ON||!PLACE_DRAG||!PLACE_SEL) return;
   const vp=viewPoint(e), sx=vp.x, sy=vp.y;
-  PLACE_SEL.r[PLACE_SEL.fx]=Math.max(0,Math.min(1,(sx+HUB.camx)/HUB.worldW)); PLACE_SEL.r[PLACE_SEL.fy]=Math.max(0,Math.min(1,sy/VH)); placePanel(); });
+  PLACE_SEL.r[PLACE_SEL.fx]=Math.max(0,Math.min(1,(sx+HUB.camx)/HUB.worldW)); PLACE_SEL.r[PLACE_SEL.fy]=Math.max(0,Math.min(1,sy/VH)); placePanel(); placeLive(); });
 cv.addEventListener('pointerup',()=>{ if(PLACE_DRAG){ placeLog(); placeSave(); } PLACE_DRAG=false; });
 cv.addEventListener('wheel',e=>{ if(!PLACE_ON||!PLACE_SEL||!PLACE_SEL.sk) return; e.preventDefault();
-  const r=PLACE_SEL.r; r[PLACE_SEL.sk]=Math.max(4,Math.round(r[PLACE_SEL.sk]*(e.deltaY<0?1.04:1/1.04))); placeLog(); placeSave(); },{passive:false});
+  const r=PLACE_SEL.r; r[PLACE_SEL.sk]=placeRound(PLACE_SEL.sk,r[PLACE_SEL.sk]*(e.deltaY<0?1.04:1/1.04)); placeLog(); placeSave(); placeLive(); },{passive:false});
 document.getElementById('btnMap').addEventListener('click',openMap);
 document.getElementById('btnGacha').addEventListener('click',gachaOpen);
 // ── Border War: the RTS, in its own page, opened over the game ──
