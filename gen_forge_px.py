@@ -32,6 +32,8 @@ def lie_flat(im):
 # items drawn bigger than the rest (lying-flat things that would otherwise shrink to a speck). Their
 # grid grows by the same factor, so their pixels stay the same size on screen as everyone else's.
 SIZE={'charm_heart':1.6}
+# turned so they lie naturally on a shelf (degrees, counter-clockwise)
+ROT={'fossil_ammonite':90,'fossil_sharktooth':90}
 os.makedirs('ui/forge/px',exist_ok=True)
 META={}
 def ground_sink(tile):
@@ -48,6 +50,7 @@ def ground_sink(tile):
 for key,src in SRC.items():
     if not os.path.exists(src): print('missing',src); continue
     im=trim(Image.open(src).convert('RGBA'))
+    if key in ROT: im=trim(im.rotate(ROT[key],resample=Image.NEAREST,expand=True))
     if key=='charm_carrot':
         im=trim(lie_flat(im))
         if np.array(im)[:, :im.width//3, 3].sum() < np.array(im)[:, -im.width//3:, 3].sum(): pass
