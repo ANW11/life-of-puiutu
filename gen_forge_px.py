@@ -33,7 +33,7 @@ def lie_flat(im):
 # grid grows by the same factor, so their pixels stay the same size on screen as everyone else's.
 SIZE={'charm_heart':1.6}
 # turned so they lie naturally on a shelf (degrees, counter-clockwise)
-ROT={'fossil_ammonite':90,'fossil_sharktooth':90}
+ROT={'fossil_trilobite':90,'fossil_sharktooth':90}
 os.makedirs('ui/forge/px',exist_ok=True)
 META={}
 def ground_sink(tile):
