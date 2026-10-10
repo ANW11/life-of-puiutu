@@ -5076,8 +5076,10 @@ function doInteract(){
       // defensive: a closed road is no longer offered as a door at all, so this should be
       // unreachable — but if it ever is, it stays quiet unless somebody is there to speak
       if(dr.requires && !gateOpen(dr.requires)){ npcSay(dr.lockedMsg, dr.speaker); return; }
-      // the Lair's tunnel is sealed by a conduit gate: power it once and it stays open (the cave art swaps in place)
-      if(dr.to==='sebyboss' && !S.sebyGateOpen){ circOpen(()=>{ S.sebyGateOpen=true; save(); toast('The gate grinds open — the way to the Lair is clear.'); }); }
+      // the Lair's tunnel is sealed by a conduit gate, and it has to be powered EVERY time you go in.
+      // The first time it also opens for good in the art (the cave swaps in place); after that the
+      // puzzle still stands between you and Seby, and solving it walks you straight through.
+      if(dr.to==='sebyboss'){ circOpen(()=>{ if(!S.sebyGateOpen){ S.sebyGateOpen=true; save(); toast('The gate grinds open — the way to the Lair is clear.'); } go(); }); }
       // a door with a sigil plate stays shut until its crest is formed. Unlike the conduit this
       // is solved ONCE — a door you have opened is a door you have opened.
       else if(dr.sigil && !(S.locks&&S.locks[dr.sigil])){ lockOpen(dr.sigil, go); }
@@ -10718,7 +10720,7 @@ function drawHub(){
     if(near){ g.globalAlpha=0.55+0.35*pr; g.strokeStyle=dr.glowRGB?'rgba('+rgb+',1)':'#ffe066'; g.lineWidth=3; g.beginPath(); g.ellipse(gx,gy,glowR*0.66,glowR*0.66,0,0,7); g.stroke(); }
     g.restore();
     if(near){ g.save(); g.textAlign='center'; g.font='bold 14px Trebuchet MS';
-      const lbl='Press E — '+((dr.lockedLabel && dr.to==='sebyboss' && !S.sebyGateOpen)?dr.lockedLabel:dr.label), tw=g.measureText(lbl).width+18;
+      const lbl='Press E — '+((dr.lockedLabel && dr.to==='sebyboss')?dr.lockedLabel:dr.label), tw=g.measureText(lbl).width+18;
       const ly = (gy-glowR-6 < 100) ? (gy+glowR+22) : (gy-glowR-6);   // below the glow if it'd hit the top bar
       g.globalAlpha=0.6+0.4*pr; g.fillStyle='rgba(20,14,8,.85)'; roundRectPath(gx-tw/2,ly-18,tw,24,8); g.fill();
       g.fillStyle='#ffe7b0'; g.fillText(lbl,gx,ly-1); g.restore(); }
