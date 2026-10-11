@@ -945,7 +945,7 @@
   .spellSlot.buddySlot .bIco{position:relative;font:900 24px 'Trebuchet MS',sans-serif;color:#ffe7b0;text-shadow:0 2px 0 #3a1424;}
   .spellSlot.buddySlot.ready{box-shadow:0 0 14px 3px #ffb0cf,0 3px 0 #3a2a16;animation:buddyPulse 1s ease-in-out infinite;}
   @keyframes buddyPulse{50%{transform:scale(1.07);}}
-  /* Rocky's training: the current step and the key to press, top centre */
+  /* Tomy's lessons: the current step and the key to press, top centre */
   #trainPanel{position:absolute;left:50%;top:58px;transform:translate(-50%,-8px);z-index:9;min-width:250px;max-width:min(92vw,420px);
     padding:9px 16px 10px;border-radius:14px;background:rgba(28,20,10,.9);border:2px solid #b89a5e;color:#ffe7b0;text-align:center;
     font-family:'Trebuchet MS',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;opacity:0;transition:opacity .25s, transform .25s;}
@@ -3076,20 +3076,20 @@ function buildAreas(){
             'Union Soldier: Road east is closed for now. Nothing personal.',
             'Union Soldier: Orders. I do not write them, I just stand in front of them.',
             'Union Soldier: Try the west road. Nobody guards the west road.']},
-          {unit:'snout', xf:0.108, yf:0.836, facing:1, idle:true, patrol:0.006, scale:0.92,
+          {unit:'snout', xf:0.1058, yf:0.8331, facing:1, idle:true, patrol:0.006, scale:0.92,
            name:'Agent Snout', showFn:'snoutAtCave', talkFn:'snout', lines:[
             'Agent Snout: Closed for excavation, I\'m afraid. Survey work.',
             'Agent Snout: Nothing down there but rock. Rock, and a great deal of paperwork.',
             'Agent Snout: Come back later. Much later. Oink.']},
         ],
-        cave:{xf:0.074, yf:0.804, r:120, to:'cave', label:'Crystal Cave',
+        cave:{xf:0.0672, yf:0.7737, r:120, to:'cave', label:'Crystal Cave',
               requires:'caveOpen',
               lockedMsg:'Agent Snout: Closed for excavation, sorry. Survey work. Come back later.', speaker:'snout'},  // interact to enter
         merge:{xf:0.742, yf:0.674, r:95, label:'Fruit Merge'},   // fruit barrel by the orange tree
         // ── The Glow: the big painted mushroom in the clearing. Walk up to its mound to talk. ──
         shroom:{xf:0.472, yf:0.725, r:120, glowXf:0.472, glowYf:0.620, glowR:118, baseYf:0.70},   // baseYf: foot of the stem (the Glow rises there in its cutscene)
         // the stone tower (top-left): glows when you're near, E -> Tower Garden (arrive by the gate)
-        doors:[{xf:0.076, yf:0.355, r:42, to:'towergarden', label:'Tower Garden', icon:'', glowXf:0.059, glowYf:0.287, glowR:46,
+        doors:[{xf:0.076, yf:0.355, r:42, to:'towergarden', label:'Tower Garden', icon:'', glowXf:0.0666, glowYf:0.2938, glowR:142,
                 requires:'towerOpen',
                 lockedMsg:'A voice from somewhere behind you: “Not yet. Talk to me first.”',
                 toSpawn:{xf:0.25, yf:0.89}}],   // arrive in the courtyard right in front of the wooden gate
@@ -3148,12 +3148,12 @@ function buildAreas(){
             'Rat Emissary: The sea takes the weak. I am doing you a kindness.',
             'Rat Emissary: Come back when something has taught you to fight.']},
         ],
-        doors:[{xf:0.210, yf:0.825, r:78, glowXf:0.187, glowYf:0.674, glowR:66, to:'garden', label:'Back to Garden', icon:'', toSpawn:{xf:0.07, yf:0.44}},
-               {xf:0.487, yf:0.707, r:120, glowXf:0.507, glowYf:0.537, glowR:62, to:'library', label:'Library', icon:'',
+        doors:[{xf:0.210, yf:0.825, r:78, glowXf:0.1908, glowYf:0.6718, glowR:102, to:'garden', label:'Back to Garden', icon:'', toSpawn:{xf:0.07, yf:0.44}},
+               {xf:0.487, yf:0.707, r:120, glowXf:0.5043, glowYf:0.5626, glowR:87, to:'library', label:'Library', icon:'',
                 requires:'libraryOpen',
                 lockedMsg:'The flock wheels down over the courtyard. Nobody is getting to that door yet.',
                 toSpawn:{xf:0.78, yf:0.50}},
-               {xf:0.83, yf:0.80, r:82, glowXf:0.887, glowYf:0.617, glowR:60, to:'beach', label:'Beach', icon:'',
+               {xf:0.83, yf:0.80, r:82, glowXf:0.8913, glowYf:0.6248, glowR:107, to:'beach', label:'Beach', icon:'',
                 requires:'beachOpen',
                 lockedMsg:'Rat Emissary: Turn around, kitten. You are not strong enough to be down there.', speaker:'rat_emissary',
                 toSpawn:{xf:0.22, yf:0.83}}],
@@ -3272,7 +3272,7 @@ function buildAreas(){
         walkTop:0.40, walkBot:0.96,
         scaleFar:0.64, scaleNear:1.06,
         spawn:{xf:0.0822, yf:0.6298},                 // arrive from the cave passage on the left
-        seal:{xf:0.567, yf:0.669, r:96, portalXf:0.568, portalYf:0.608},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
+        seal:{xf:0.5709, yf:0.5988, r:311, portalXf:0.5695, portalYf:0.6511},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
         // the left ruins archway -> back up to Ocean Depths
         doors:[{xf:0.061, yf:0.562, r:60, glowXf:0.060, glowYf:0.503, glowR:56, glowRGB:'90,180,255', to:'ocean1', label:'Back to Ocean Depths', icon:'', toSpawn:{xf:0.13, yf:0.66}}],
       },
@@ -3743,6 +3743,19 @@ const QUESTS={
 // keyed on the English source covers the lot without touching hundreds of string literals.
 // Anything with no entry falls through in English, so a partial dictionary is never broken.
 const RO = {
+  "Mrrp… oh. You are awake. Hello, Puiutu.":"Mrrr… oh. Te-ai trezit. Bună, Puiutu.",
+  "I am Tomy. I have been sleeping in this sunbeam for a long, long time, so I know this garden very well.":"Eu sunt Tomy. Dorm în raza asta de soare de foarte, foarte mult timp, așa că știu grădina asta foarte bine.",
+  "Before you go anywhere, let an old cat show you how things work here. Come over to me first. Walk.":"Înainte să pleci undeva, lasă o pisică bătrână să-ți arate cum merg lucrurile pe aici. Întâi vino la mine. Mergi.",
+  "Good. Now jump.":"Bun. Acum sari.",
+  "A jump gets you out of the way of a claw, and up onto things. Hold the direction while you jump, or you land where you started.":"O săritură te scoate din calea unei gheare și te urcă pe lucruri. Ține direcția apăsată cât sari, altfel aterizezi de unde ai plecat.",
+  "See that straw dummy? Pretend it is a pigeon. The pigeons around here are rude.":"Vezi manechinul ăla de paie? Prefă-te că e un porumbel. Porumbeii de pe aici sunt nesimțiți.",
+  "…Yes, it is a hairball. I did not name it.":"…Da, e un ghem de blană. Nu eu i-am pus numele.",
+  "So… *bap*. Sorry! A small paw on the nose. That is what a hit feels like.":"Deci… *pac*. Scuze! O lăbuță mică pe nas. Așa se simte o lovitură.",
+  "Here, fish broth. Drink it. Press Q.":"Poftim, supă de pește. Bea-o. Apasă Q.",
+  "Now, the big mushroom in the middle of the garden.":"Acum, ciuperca mare din mijlocul grădinii.",
+  "It has been waiting for you to wake up. It never talks to me. Go and see what it wants with you.":"Te-a așteptat să te trezești. Cu mine nu vorbește niciodată. Du-te și vezi ce vrea de la tine.",
+  "Talk to the mushroom in the middle of the garden.":"Vorbește cu ciuperca din mijlocul grădinii.",
+  "The mushroom is quiet. Tomy is still talking to you.":"Ciuperca tace. Tomy încă îți vorbește.",
   "To swipe: press F, or click with the RIGHT mouse button. (The left button is for walking.)":"Ca să zgârii: apasă F sau dă click cu butonul DREPT al mouse-ului. (Butonul stâng e pentru mers.)",
   "Get right up close first — claws only reach a little way, too far and you hit air.":"Apropie-te bine întâi — ghearele ajung doar puțin, prea departe și lovești aerul.",
   "or right mouse click":"sau click dreapta pe mouse",
@@ -5287,9 +5300,9 @@ function sewerClimbOut(){
 }
 function doInteract(){
   if(!inGame || loreActive || LIGHTS.active || CIRC.active || LOCK.active) return;
-  // Rocky's last lesson: press E next to him
-  if(TRAIN.on && TRAIN_STEPS[TRAIN.step] && TRAIN_STEPS[TRAIN.step].id==='talk' && !TRAIN.waiting && rockyInHub()
-     && Math.hypot(HUB.cat.x-HUB.rocky.x,HUB.cat.y-HUB.rocky.y)<110){ TRAIN.talked=true; return; }
+  // Tomy's last lesson: press E next to him
+  if(TRAIN.on && TRAIN_STEPS[TRAIN.step] && TRAIN_STEPS[TRAIN.step].id==='talk' && !TRAIN.waiting && hubTomy()
+     && Math.hypot(HUB.cat.x-hubTomy().x,HUB.cat.y-hubTomy().y)<110){ TRAIN.talked=true; return; }
   const t=interactTarget();
   if(t==='sewerexit'){ sewerClimbOut(); return; }
   if(t==='rocky') openDialogue(HUB_ROCKY_NPC);
@@ -5602,7 +5615,7 @@ function startGame(){
   P.maxHp=playerMaxHp(); P.hp=P.maxHp;                  // you always come into the game rested:
   P.maxMana=playerMaxMana(); P.mana=P.maxMana;          // full health, full mana
   SPELLS.filter(s=>s.source==='start').forEach(s=>grantSpell(s.id));   // starter spellbook
-  if(!S.introSeen) playIntro(()=>toast('Something is glowing in the garden.'));
+  if(!S.introSeen) playIntro();
   if(S.companion) spawnCompanion();
   initUIBar(); syncHUD();
   SFX.ac(); MUSIC.start();          // resume audio on user gesture
@@ -7343,7 +7356,10 @@ const TOMY_LINES=[
   'Forever napping in the sun. We miss you, Tomy.',
 ];
 let _tomyLine=0;
-function tomyTalk(){ sayLines('Tomy', [TOMY_LINES[_tomyLine % TOMY_LINES.length]],
+function tomyTalk(){
+  const st=TRAIN.on && TRAIN_STEPS[TRAIN.step];
+  if(st){ if(!TRAIN.waiting) trainSay([st.say[st.say.length-1]]); return; }
+  sayLines('Tomy', [TOMY_LINES[_tomyLine % TOMY_LINES.length]],
                                {portrait:'tomy', bg:'#cfe6a8', tone:600}); _tomyLine++; }
 const FISHBARREL_IMG=new Image(); FISHBARREL_IMG.src='fishing/fishing barrel.png';        // high-res barrel art
 const FISHBARREL_SMALL=new Image(); FISHBARREL_SMALL.src='fishing/barell_overworld.png'; // clean low-detail overworld prop (falls back to the high-res art when absent)
@@ -8031,7 +8047,7 @@ function enterHub(fromRight){
   HUB.lvMob=lvlScale(false); HUB.lvBoss=lvlScale(true);
   HUB.dmgScale=(AREA_BOSS[curArea] ? HUB.lvBoss : HUB.lvMob).dmg;   // every hit you take in this room
   spawnHubMobs();
-  if(H.tutorial==='combat') setTimeout(()=>{ if(curArea==='towergarden') trainStart(); }, 400); else if(TRAIN.on){ TRAIN.on=false; TRAIN.dummy=null; trainPanel(); }
+  if(curArea==='garden') setTimeout(()=>{ if(curArea==='garden') trainStart(); }, 400); else if(TRAIN.on){ TRAIN.on=false; TRAIN.dummy=null; trainPanel(); }
   armyInit();   // Feline Union vs Rat Federation (zones with hub.battle)
   initGarrison();   // stationed troops (no combat) — see the City
   HUB.fish=[];                          // fish removed → coins now spawn on walkable ground
@@ -10593,7 +10609,7 @@ function drawHub(){
   if(!HUB.square) for(const d of HUB.ducks){ if(!d.dead) items.push({z:d.y, t:'mob', d}); }
   if(rockyInHub()) items.push({z:HUB.rocky.y, t:'rocky'});
   if(HUB.snout.on) items.push({z:HUB.snout.y, t:'buddysnout'});
-  if(TRAIN.dummy && curArea==='towergarden') items.push({z:TRAIN.dummy.y, t:'traindummy'});
+  if(TRAIN.dummy && curArea==='garden') items.push({z:TRAIN.dummy.y, t:'traindummy'});
   if(HUB.pigletIn && (HUB.pigletIn.phase==='walk'||HUB.pigletIn.phase==='fill')) items.push({z:HUB.pigletIn.y, t:'pigletin'});
   const mgPos=hubMerge(); if(mgPos) items.push({z:mgPos.y, t:'barrel', p:mgPos});
   const mlPos=hubMerlin(); if(mlPos) items.push({z:mlPos.y, t:'merlin', p:mlPos});
@@ -12660,6 +12676,7 @@ function glowLines(){
   ];
 }
 function shroomTalk(){
+  if(!S.metGlow && !(S.tut&&S.tut.training) && !testMode()){ toast('The mushroom is quiet. Tomy is still talking to you.'); return; }
   storySet('seek_wizard');            // the mushroom is the only thing that opens the west road
   const first=!S.metGlow;
   sayLines('The Glow', glowLines(), {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300, then:()=>{
@@ -12671,16 +12688,9 @@ function shroomTalk(){
 
 //──────── TUTORIAL — one lesson per mechanic, at the moment it first matters ────────────────
 // Not a wall of instructions at the start. Each beat waits for the situation that makes it
-// useful and fires once, then never again. Rocky teaches fighting because he is the one
-// standing in the fight; the Glow teaches everything else, because it is the voice in your head.
+// useful and fires once, then never again. Tomy teaches the controls in the garden before anything
+// else; Rocky talks you through the first real fight; the Glow teaches the rest.
 const TUT_BEATS=[
-  // ── moving and looking ──
-  {id:'move',    who:'glow', when:()=>curArea==='garden' && (S.story||0)<1,
-   lines:['Arrows or WASD to walk. Or just click where you want to go.',
-          'Press E when something is worth touching. The button in the corner does the same.']},
-  {id:'jump',    who:'glow', when:()=>curArea==='garden' && HUB.cat && HUB.cat.x>HUB.worldW*0.60 && (S.story||0)<1,
-   lines:['Space jumps. You will need it to get up to me.',
-          'Hold the direction while you jump — a cat that lets go mid-air lands where it started.']},
   // ── fighting ──
   {id:'open',    who:'rocky', lines:['Heads up! They have seen you.',
           'Get close and right-click (on a phone, tap the F button). Claws only work in reach.']},
@@ -12728,59 +12738,63 @@ function tutorialFire(id){
   const sp=tutSpeaker(beat.who);
   sayLines(sp.name, beat.lines, sp.opt);
 }
-//──────── ROCKY'S TRAINING — the first fight, taught one key at a time ─────────────────────────
-// The first time you step into the Tower Garden, the pigeons are not there yet. Rocky is. He walks you
-// through every control, and each step waits until you have actually done it — walked, jumped, clawed
-// the straw dummy, cast, drunk — before the next one. Only when you come and talk to him do the birds
-// arrive, and the fight is the exam. A panel at the top always shows the step and its keys.
+//──────── TOMY'S LESSONS — the controls, taught one key at a time ─────────────────────────────
+// The very first thing in the game: Tomy, dozing in his sunbeam in the garden, wakes up and walks you
+// through every control. Each step waits until you have actually done it — walked, jumped, clawed the
+// straw dummy, cast, drunk — before the next one. Only then does the Glow answer. A panel at the top
+// always shows the step and its keys. (The garden's ducks wait outside until class is over.)
 const TRAIN={on:false, step:-1, hits:0, jumped:false, cast:false, drank:false, talked:false, dummy:null, wob:0, waiting:false};
 function trainTouch(){ return matchMedia('(pointer:coarse)').matches; }
 const TRAIN_STEPS=[
   {id:'walk',   key:['WASD / ← ↑ → ↓','or left-click the ground'], touchKey:['the joystick','or tap the ground'],
-   say:['Woof! You came through the gate. Good.','Those birds are coming back any moment. Before they do, I am going to teach you everything. Properly.','First: come over here to me. Walk.'],
-   task:()=>LT('Walk over to Rocky','Mergi până la Rocky'), done:()=>{ const r=HUB.rocky,c=HUB.cat; return Math.hypot(c.x-r.x,c.y-r.y)<100; }},
+   say:['Mrrp… oh. You are awake. Hello, Puiutu.','I am Tomy. I have been sleeping in this sunbeam for a long, long time, so I know this garden very well.','Before you go anywhere, let an old cat show you how things work here. Come over to me first. Walk.'],
+   task:()=>LT('Walk over to Tomy','Mergi până la Tomy'), done:()=>{ const t=hubTomy(),c=HUB.cat; return !!t && Math.hypot(c.x-t.x,c.y-t.y)<100; }},
   {id:'jump',   key:['Space'], touchKey:['the ⤒ button'],
-   say:['Nice walking. Now jump.','A jump gets you out of the way of a claw — and over things in the garden.'],
+   say:['Good. Now jump.','A jump gets you out of the way of a claw, and up onto things. Hold the direction while you jump, or you land where you started.'],
    task:()=>LT('Jump once','Sari o dată'), done:()=>TRAIN.jumped},
   {id:'claws',  key:['F','or right mouse click'], touchKey:['the F button'],
-   say:['See the straw dummy? That is your pigeon.','To swipe: press F, or click with the RIGHT mouse button. (The left button is for walking.)','Get right up close first — claws only reach a little way, too far and you hit air.','Three good hits.'],
+   say:['See that straw dummy? Pretend it is a pigeon. The pigeons around here are rude.','To swipe: press F, or click with the RIGHT mouse button. (The left button is for walking.)','Get right up close first — claws only reach a little way, too far and you hit air.','Three good hits.'],
    task:()=>LT('Claw the dummy','Zgârie manechinul')+' ('+Math.min(3,TRAIN.hits)+'/3)', done:()=>TRAIN.hits>=3},
   {id:'spell',  key:['1','2  3  4 for the other slots'], touchKey:['tap the first spell','in the bar at the bottom'],
-   say:['Now magic. Your spells live in the bar at the bottom, one per key.','Press 1. Hairball Volley flies the way you are facing — turn toward the dummy first.'],
+   say:['Now magic. Your spells live in the bar at the bottom, one per key.','…Yes, it is a hairball. I did not name it.','Press 1. Hairball Volley flies the way you are facing — turn toward the dummy first.'],
    task:()=>LT('Cast Hairball Volley','Aruncă Hairball Volley'), done:()=>TRAIN.cast},
   {id:'potion', key:['Q','Z for mana potions'], touchKey:['tap the red potion','next to your spells'],
-   say:['See the blue orb? That is mana. Every spell eats some, and it fills back up slowly — do not waste it.','The red one is your health. It does NOT come back by itself in a fight.','So… *nip*. Sorry! That is what a hit feels like. Here, fish broth — drink it. Press Q.'],
+   say:['See the blue orb? That is mana. Every spell eats some, and it fills back up slowly — do not waste it.','The red one is your health. It does NOT come back by itself in a fight.','So… *bap*. Sorry! A small paw on the nose. That is what a hit feels like.','Here, fish broth. Drink it. Press Q.'],
    start:()=>{ bagAdd('broth',1); P.hp=Math.max(1,Math.round(P.maxHp*0.55)); P.lastHit=Date.now(); save(); syncHUD&&syncHUD(); },
    task:()=>LT('Drink a potion','Bea o poțiune'), done:()=>TRAIN.drank},
   {id:'talk',   key:['E'], touchKey:['the E button'],
    say:['Last one. When there is someone to talk to, or a door, or a thing worth touching, press E.','Come talk to me.'],
-   task:()=>LT('Talk to Rocky','Vorbește cu Rocky'), done:()=>TRAIN.talked},
+   task:()=>LT('Talk to Tomy','Vorbește cu Tomy'), done:()=>TRAIN.talked},
 ];
-function trainSay(lines, then){ sayLines('Rocky', lines, Object.assign({}, tutSpeaker('rocky').opt, {then})); }
+const TOMY_SAY={portrait:'tomy', bg:'#cfe6a8', tone:600};
+function trainSay(lines, then){ sayLines('Tomy', lines, Object.assign({}, TOMY_SAY, {then})); }
 function trainStart(){
-  if(testMode() || TRAIN.on || (S.tut&&S.tut.training) || storyAt('pigeons')) return;
+  if(testMode() || TRAIN.on || (S.tut&&S.tut.training) || S.metGlow || !hubTomy()) return;
   Object.assign(TRAIN,{on:true, step:-1, hits:0, jumped:false, cast:false, drank:false, talked:false, wob:0, waiting:false});
-  let d={x:0.67*HUB.worldW, y:0.87*VH};   // on the open cobbles beside Rocky, well clear of the rat emissary by the arch if(maskReady()){ const p=nearestWalk(d.x,d.y); if(p) d=p; }
+  const t=hubTomy();
+  let d={x:t.x+0.07*HUB.worldW, y:t.y+0.06*VH};   // on the grass a few steps from his sunbeam
+  if(maskReady()){ const p=nearestWalk(d.x,d.y); if(p) d=p; }
   TRAIN.dummy=d;
   for(const b of HUB.ducks){ b.dead=true; b.respawnAt=0; }   // gone before his first word, not after it
-  S.tut=S.tut||{}; S.tut.open=true;      // the old one-line fight hint is folded into this
   trainNext();
 }
 function trainNext(){
-  TRAIN.step++; trainPanel();
+  TRAIN.step++; TRAIN.waiting=true; trainPanel();   // the panel comes up once he has finished talking
   const st=TRAIN_STEPS[TRAIN.step];
   if(!st){ trainFinish(); return; }
-  TRAIN.waiting=true;
-  const go=()=>{ if(dialogueActive){ setTimeout(go,300); return; }
+  const go=()=>{ const intro=document.getElementById('introScreen');
+    if(dialogueActive || (intro && intro.classList.contains('show'))){ setTimeout(go,300); return; }   // after the intro cards, never over them
     trainSay(st.say, ()=>{ if(st.start) st.start(); TRAIN.waiting=false; trainPanel(); }); };
   setTimeout(go, TRAIN.step ? 500 : 900);
 }
 function trainFinish(){
   trainSay(['That is everything. Walk, jump, claws up close, spells from the bar, drink before you are empty, E to talk.',
-            'And keep moving between swings — a cat that stands still gets pecked.','…Here they come!'], ()=>{
-    TRAIN.on=false; TRAIN.dummy=null; S.tut.training=true; save(); trainPanel();
-    for(const d of HUB.ducks){ d.dead=false; d.respawnAt=0; d.hp=d.maxHp||d.hp; d.x=d.homeX; d.y=d.homeY-120; d.aggro=true; }
-    SFX.tone&&SFX.tone(700,0.08,'square',0.04);
+            'Now, the big mushroom in the middle of the garden.',
+            'It has been waiting for you to wake up. It never talks to me. Go and see what it wants with you.'], ()=>{
+    TRAIN.on=false; TRAIN.dummy=null; S.tut=S.tut||{}; S.tut.training=true; save(); trainPanel();
+    for(const d of HUB.ducks){ d.dead=false; d.respawnAt=0; d.hp=d.maxHp||d.hp; d.x=d.homeX; d.y=d.homeY; }   // the ducks wander back
+    toast('Talk to the mushroom in the middle of the garden.');
+    SFX.seq&&SFX.seq([523,659,784],'triangle',0.05);
   });
 }
 function updateTraining(now){
@@ -12821,7 +12835,7 @@ function trainPanel(flash){
   const st=TRAIN_STEPS[TRAIN.step];
   if(!TRAIN.on || !st){ el.classList.remove('on'); return; }
   const keys=(trainTouch()?st.touchKey:st.key)||[];
-  el.innerHTML='<div class="tp-step">'+LT('Rocky\'s training','Antrenamentul lui Rocky')+' · '+(TRAIN.step+1)+'/'+TRAIN_STEPS.length+'</div>'
+  el.innerHTML='<div class="tp-step">'+LT('Tomy\'s lessons','Lecțiile lui Tomy')+' · '+(TRAIN.step+1)+'/'+TRAIN_STEPS.length+'</div>'
     +'<div class="tp-task">'+dlgEsc(st.task())+'</div>'
     +'<div class="tp-keys">'+keys.map((k,i)=>i===0?'<kbd>'+dlgEsc(T(k))+'</kbd>':'<span>'+dlgEsc(T(k))+'</span>').join(' ')+'</div>'
     +'<div class="tp-dots">'+TRAIN_STEPS.map((s,i)=>'<i class="'+(i<TRAIN.step?'done':i===TRAIN.step?'cur':'')+'"></i>').join('')+'</div>';
@@ -12831,7 +12845,7 @@ function trainPanel(flash){
 // checked on a slow tick: every beat with a `when` fires itself the first time it is true
 let _tutTick=0;
 function tutorialWatch(now){
-  if(testMode() || !inGame || HUB.cine || TRAIN.on) return;   // never over a scene, nor over Rocky's lesson
+  if(testMode() || !inGame || HUB.cine || TRAIN.on) return;   // never over a scene, nor over Tomy's lesson
   if(now-_tutTick < 900) return; _tutTick=now;
   S.tut=S.tut||{};
   for(const b of TUT_BEATS){ if(b.when && !S.tut[b.id] && b.when()){ tutorialFire(b.id); return; } }
