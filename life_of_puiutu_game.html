@@ -3148,12 +3148,12 @@ function buildAreas(){
             'Rat Emissary: The sea takes the weak. I am doing you a kindness.',
             'Rat Emissary: Come back when something has taught you to fight.']},
         ],
-        doors:[{xf:0.210, yf:0.825, r:78, glowXf:0.1908, glowYf:0.6718, glowR:102, to:'garden', label:'Back to Garden', icon:'', toSpawn:{xf:0.07, yf:0.44}},
-               {xf:0.487, yf:0.707, r:120, glowXf:0.5043, glowYf:0.5626, glowR:87, to:'library', label:'Library', icon:'',
+        doors:[{xf:0.1975, yf:0.7857, r:78, glowXf:0.1908, glowYf:0.6718, glowR:102, to:'garden', label:'Back to Garden', icon:'', toSpawn:{xf:0.07, yf:0.44}},
+               {xf:0.509, yf:0.6855, r:153, glowXf:0.5098, glowYf:0.5634, glowR:87, to:'library', label:'Library', icon:'',
                 requires:'libraryOpen',
                 lockedMsg:'The flock wheels down over the courtyard. Nobody is getting to that door yet.',
                 toSpawn:{xf:0.78, yf:0.50}},
-               {xf:0.83, yf:0.80, r:82, glowXf:0.8913, glowYf:0.6248, glowR:107, to:'beach', label:'Beach', icon:'',
+               {xf:0.8609, yf:0.7393, r:82, glowXf:0.8913, glowYf:0.6248, glowR:107, to:'beach', label:'Beach', icon:'',
                 requires:'beachOpen',
                 lockedMsg:'Rat Emissary: Turn around, kitten. You are not strong enough to be down there.', speaker:'rat_emissary',
                 toSpawn:{xf:0.22, yf:0.83}}],
@@ -3168,11 +3168,11 @@ function buildAreas(){
         maskWalk:'yellow',
         walkTop:0.45, walkBot:0.98,
         scaleFar:0.80, scaleNear:1.02,
-        spawn:{xf:0.820, yf:0.500},               // arrive on the right platform, in front of the big door
+        spawn:{xf:0.8136, yf:0.4812},               // arrive on the right platform, in front of the big door
         merlin:{xf:0.13, yf:0.57},              // Merlin the wizard-dog, on the raised corner by the armchair
         potions:{xf:0.505, yf:0.630, r:82},       // the alchemy table of potions -> Color Sort minigame
         doors:[// the big castle gate (right): back to the Tower Garden courtyard
-               {xf:0.820, yf:0.490, r:60, glowXf:0.820, glowYf:0.300, glowR:58, to:'towergarden', label:'Back to Tower Garden', icon:'', toSpawn:{xf:0.45, yf:0.92}},
+               {xf:0.8138, yf:0.4683, r:60, glowXf:0.8108, glowYf:0.3069, glowR:128, to:'towergarden', label:'Back to Tower Garden', icon:'', toSpawn:{xf:0.45, yf:0.92}},
                // the stairwell's blue arch: down to the archive under the library
                {xf:0.310, yf:0.925, r:70, glowXf:0.305, glowYf:0.790, glowR:62, glowRGB:'120,120,255', to:'librarylower', label:'Lower Archive', icon:''}],
       },
@@ -3229,7 +3229,7 @@ function buildAreas(){
                    {x0:0.50, x1:0.67, y0:0.42, y1:0.60}],  // …and around the whale skeleton (fractions of the map)
         // the castle gate (left): back to the Tower Garden. Diving into the sea is now
         // gated behind the Diving Suit station (see `divesuit` above), not a free door.
-        doors:[{xf:0.173, yf:0.741, r:74, glowXf:0.175, glowYf:0.609, glowR:60, to:'towergarden', label:'Back to Tower Garden', icon:'', toSpawn:{xf:0.78, yf:0.86}}],
+        doors:[{xf:0.173, yf:0.741, r:86, glowXf:0.1789, glowYf:0.6195, glowR:102, to:'towergarden', label:'Back to Tower Garden', icon:'', toSpawn:{xf:0.78, yf:0.86}}],
       },
       platforms:[], npcs:[],
     },
@@ -3247,8 +3247,8 @@ function buildAreas(){
         scaleFar:0.62, scaleNear:1.05,
         spawn:{xf:0.798, yf:0.463},                 // sink down onto the seabed
         // far-right reef -> surface (Beach); top-left cave archway -> deeper (ocean 2)
-        doors:[{xf:0.835, yf:0.446, r:82, glowXf:0.861, glowYf:0.427, glowR:62, to:'beach', label:'Surface (Beach)', icon:'', toSpawn:{xf:0.80, yf:0.74}},
-               {xf:0.133, yf:0.3487, r:60, glowXf:0.133, glowYf:0.252, glowR:58, glowRGB:'90,180,255', to:'ocean2', label:'Sunken Sanctum', icon:''}],
+        doors:[{xf:0.835, yf:0.446, r:82, glowXf:0.861, glowYf:0.427, glowR:87, to:'beach', label:'Surface (Beach)', icon:'', toSpawn:{xf:0.80, yf:0.74}},
+               {xf:0.133, yf:0.3487, r:60, glowXf:0.1291, glowYf:0.2464, glowR:74, glowRGB:'90,180,255', to:'ocean2', label:'Sunken Sanctum', icon:''}],
       },
       platforms:[], npcs:[],
     },
@@ -3274,7 +3274,7 @@ function buildAreas(){
         spawn:{xf:0.0822, yf:0.6298},                 // arrive from the cave passage on the left
         seal:{xf:0.5709, yf:0.5988, r:311, portalXf:0.5695, portalYf:0.6511},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
         // the left ruins archway -> back up to Ocean Depths
-        doors:[{xf:0.061, yf:0.562, r:60, glowXf:0.060, glowYf:0.503, glowR:56, glowRGB:'90,180,255', to:'ocean1', label:'Back to Ocean Depths', icon:'', toSpawn:{xf:0.13, yf:0.66}}],
+        doors:[{xf:0.061, yf:0.562, r:112, glowXf:0.060, glowYf:0.503, glowR:56, glowRGB:'90,180,255', to:'ocean1', label:'Back to Ocean Depths', icon:'', toSpawn:{xf:0.13, yf:0.66}}],
       },
       platforms:[], npcs:[],
     },
@@ -3318,12 +3318,12 @@ function buildAreas(){
         maskWalk:'orange', mob:'clobster',
         walkTop:0.44, walkBot:0.97,
         scaleFar:0.70, scaleNear:1.05,
-        spawn:{xf:0.085, yf:0.60},                // arrive at the foot of the runed archway (from the garden)
+        spawn:{xf:0.1234, yf:0.4793},                // arrive at the foot of the runed archway (from the garden)
         mobXf:[0.18,0.30,0.42,0.55,0.68,0.80],    // Crystal Lobster spawn spots along the cave floor
         // the same archway leads back up to the garden
-        doors:[{xf:0.085, yf:0.60, r:80, glowXf:0.105, glowYf:0.32, glowR:70, to:'garden', label:'Back to Garden', icon:'', toSpawn:{xf:0.10, yf:0.74}},
+        doors:[{xf:0.1235, yf:0.4513, r:137, glowXf:0.1134, glowYf:0.3227, glowR:105, to:'garden', label:'Back to Garden', icon:'', toSpawn:{xf:0.10, yf:0.74}},
                // the glowing RED tunnel — descend into Queen Seby's lair
-               {xf:0.9009, yf:0.5386, r:88, glowXf:0.9224, glowYf:0.3946, glowR:88, to:'sebyboss', label:'Seby Boss Fight', lockedLabel:'Power the gate', icon:'', toSpawn:{xf:0.90, yf:0.70}}],
+               {xf:0.9042, yf:0.5284, r:107, glowXf:0.9146, glowYf:0.3859, glowR:118, to:'sebyboss', label:'Seby Boss Fight', lockedLabel:'Power the gate', icon:'', toSpawn:{xf:0.90, yf:0.70}}],
       },
       platforms:[], npcs:[],
     },
@@ -3423,11 +3423,11 @@ function buildAreas(){
         ],
         // left -> back to the Garden; centre -> the Bank; far right, over the bridge -> the Slums
         doors:[{xf:0.258, yf:0.7018, r:72, glowXf:0.2438, glowYf:0.5994, glowR:58, to:'garden', label:'Back to Garden', icon:'', toSpawn:{xf:0.90, yf:0.86}},
-               {xf:0.900, yf:0.700, r:64, glowXf:0.925, glowYf:0.660, glowR:56, to:'slum', label:'The Slums', icon:'',
+               {xf:0.9154, yf:0.7106, r:122, glowXf:0.9167, glowYf:0.6901, glowR:111, to:'slum', label:'The Slums', icon:'',
                 requires:'slumOpen',
                 lockedMsg:'Union Soldier: Bridge is shut. That side of the river is far too dangerous for you.', speaker:'cat_soldier',
                 toSpawn:{xf:0.085, yf:0.80}},
-               {xf:0.500, yf:0.700, r:72, glowXf:0.5043, glowYf:0.5771, glowR:54, glowRGB:'255,210,120', to:'bank', label:'Whisker Savings Bank', icon:'', toSpawn:{xf:0.50, yf:0.90}},
+               {xf:0.500, yf:0.700, r:72, glowXf:0.5043, glowYf:0.5771, glowR:92, glowRGB:'255,210,120', to:'bank', label:'Whisker Savings Bank', icon:'', toSpawn:{xf:0.50, yf:0.90}},
                // The boarding point for the royal airship. There is nothing here at all until the
                // summons arrives — no gate, no rope, no refusal. The castle is simply somewhere
                // you have no way of reaching, which is the honest version of how it works.
@@ -3435,7 +3435,7 @@ function buildAreas(){
                // glows. The castle is simply not a place you can get to, and the game never brings
                // it up. The line about "the castle sends for you" belongs to a guard you can walk
                // up to and ask — not to an empty patch of cobbles you happened to cross.
-               {xf:0.3669, yf:0.7497, r:74, glowXf:0.3625, glowYf:0.7193, glowR:54, glowRGB:'190,170,255',
+               {xf:0.3669, yf:0.7497, r:74, glowXf:0.3717, glowYf:0.7047, glowR:54, glowRGB:'190,170,255',
                 to:'castleentrance', label:'Board the airship', icon:'', toSpawn:{xf:0.1465, yf:0.7177},
                 requires:'castleSummons'}],
       },
@@ -3468,12 +3468,12 @@ function buildAreas(){
         ],
         warn:'NomNom: Careful, Puiutu… something really BAD lives deeper in here.',
         // back across the bridge -> the City; the dark alley (right) -> the Sewers (Evil Coon's chase)
-        doors:[{xf:0.095, yf:0.726, r:78, glowXf:0.031, glowYf:0.768, glowR:54, glowRGB:'255,210,120', to:'street', label:'Back to the City', icon:'', toSpawn:{xf:0.895, yf:0.700}},
-               {xf:0.752, yf:0.44, r:74, glowXf:0.758, glowYf:0.37, glowR:56, glowRGB:'130,170,255', to:'slum2', label:'Up to the Rat Warren', icon:'',
+        doors:[{xf:0.0561, yf:0.7527, r:148, glowXf:0.0351, glowYf:0.7582, glowR:84, glowRGB:'255,210,120', to:'street', label:'Back to the City', icon:'', toSpawn:{xf:0.895, yf:0.700}},
+               {xf:0.7615, yf:0.444, r:95, glowXf:0.7687, glowYf:0.3959, glowR:91, glowRGB:'130,170,255', to:'slum2', label:'Up to the Rat Warren', icon:'',
                 requires:'warrenOpen',
                 lockedMsg:'The Glow: Neither of them is winning. Neither of them is losing. You are not getting past.',
                 toSpawn:{xf:0.13, yf:0.88}},
-               {xf:0.937, yf:0.474, r:74, glowXf:0.938, glowYf:0.384, glowR:54, glowRGB:'120,40,40', to:'sewerentrance', label:'Into the sewers…', icon:'', toSpawn:{xf:0.244, yf:0.657}}],
+               {xf:0.9421, yf:0.4593, r:74, glowXf:0.9409, glowYf:0.4094, glowR:118, glowRGB:'120,40,40', to:'sewerentrance', label:'Into the sewers…', icon:'', toSpawn:{xf:0.244, yf:0.657}}],
       },
       platforms:[], npcs:[],
     },
@@ -3491,9 +3491,9 @@ function buildAreas(){
         mob:'rat', mobXf:[0.34,0.44,0.54,0.62,0.68],   // hostile Rat Federation soldiers guard the climb to the fortress
         warn:'Wooden shanties climb toward a fortress of scavenged junk… this is rat territory.',
         // back down the alley -> the Slums
-        doors:[{xf:0.1311, yf:0.8375, r:72, glowXf:0.1291, glowYf:0.7364, glowR:52, glowRGB:'255,210,120', to:'slum', label:'Back to the Slums', icon:'', toSpawn:{xf:0.78, yf:0.62}},
+        doors:[{xf:0.1311, yf:0.8375, r:167, glowXf:0.1289, glowYf:0.7359, glowR:78, glowRGB:'255,210,120', to:'slum', label:'Back to the Slums', icon:'', toSpawn:{xf:0.78, yf:0.62}},
                // the bone-arch gateway -> the Rat Warren mines (mine-cart escape minigame)
-               {xf:0.665, yf:0.78, r:80, glowXf:0.7033, glowYf:0.7011, glowR:60, glowRGB:'255,170,80', minigame:'minecart', label:'Into the mines…', icon:''}],
+               {xf:0.6953, yf:0.7652, r:107, glowXf:0.7033, glowYf:0.6972, glowR:92, glowRGB:'255,170,80', minigame:'minecart', label:'Into the mines…', icon:''}],
       },
       platforms:[], npcs:[],
     },
@@ -3551,8 +3551,8 @@ function buildAreas(){
                  catSpawn:{xf:0.30, yf:0.66}, ratSpawn:{xf:0.95, yf:0.64} },
         warn:'The cats and rats are at war in here… Puiutu walks straight into the crossfire.',
         // left -> back to the slum; far-right dark doorway -> the Coon chase
-        doors:[{xf:0.225, yf:0.633, r:74, glowXf:0.193, glowYf:0.534, glowR:54, glowRGB:'255,210,120', to:'slum', label:'Back to the Slums', icon:'', toSpawn:{xf:0.90, yf:0.62}},
-               {xf:0.969, yf:0.614, r:72, glowXf:0.980, glowYf:0.518, glowR:48, glowRGB:'120,40,40', to:'sewer', label:'Enter the dark sewer', icon:''}],
+        doors:[{xf:0.2193, yf:0.6279, r:95, glowXf:0.2044, glowYf:0.5288, glowR:97, glowRGB:'255,210,120', to:'slum', label:'Back to the Slums', icon:'', toSpawn:{xf:0.90, yf:0.62}},
+               {xf:0.967, yf:0.6127, r:92, glowXf:0.9576, glowYf:0.5396, glowR:111, glowRGB:'120,40,40', to:'sewer', label:'Enter the dark sewer', icon:''}],
       },
       platforms:[], npcs:[],
     },
@@ -11031,21 +11031,19 @@ function drawHub(){
           const px=gx+Math.cos(ang)*rr, py=gy+Math.sin(ang)*rr*0.6; t===0?g.moveTo(px,py):g.lineTo(px,py); }
         g.stroke(); }
       g.globalAlpha=1; }
-    if(near){ g.globalAlpha=0.55+0.35*pr; g.strokeStyle=dr.glowRGB?'rgba('+rgb+',1)':'#ffe066'; g.lineWidth=3; g.beginPath(); g.ellipse(gx,gy,glowR*0.66,glowR*0.66,0,0,7); g.stroke(); }
     g.restore();
-    if(near){ g.save(); g.textAlign='center'; g.font='bold 14px Trebuchet MS';
-      const lbl='Press E — '+((dr.lockedLabel && dr.to==='sebyboss')?dr.lockedLabel:dr.label), tw=g.measureText(lbl).width+18;
-      const ly = (gy-glowR-6 < 100) ? (gy+glowR+22) : (gy-glowR-6);   // below the glow if it'd hit the top bar
-      g.globalAlpha=0.6+0.4*pr; g.fillStyle='rgba(20,14,8,.85)'; roundRectPath(gx-tw/2,ly-18,tw,24,8); g.fill();
-      g.fillStyle='#ffe7b0'; g.fillText(lbl,gx,ly-1); g.restore(); }
+    drawCueMotes(g, gx, gy, glowR, rgb, near);
+    if(near){ const below=(gy-glowR-6 < 100), ly = below ? (gy+glowR+22) : (gy-glowR-6);   // below the glow if it'd hit the top bar
+      drawPressE(g, gx, ly, (dr.lockedLabel && dr.to==='sebyboss')?dr.lockedLabel:dr.label, rgb, below); }
   }
-  if(HUB.nearCave){ const cv2=hubCave(), sx=cv2.x-HUB.camx, pr=0.6+0.4*Math.sin(Date.now()*0.006);
-    g.save(); g.textAlign='center'; g.font='bold 14px Trebuchet MS';
-    const lbl='Press E — '+A.hub.cave.label, tw=g.measureText(lbl).width+18;
-    g.globalAlpha=0.55+0.45*pr; g.fillStyle='rgba(10,16,34,.85)'; roundRectPath(sx-tw/2,cv2.y-118,tw,24,8); g.fill();
-    g.fillStyle='#bfeeff'; g.fillText(lbl,sx,cv2.y-101);
-    g.strokeStyle='rgba(150,210,255,'+pr+')'; g.lineWidth=3; g.beginPath(); g.ellipse(sx,cv2.y,48,22,0,0,7); g.stroke();
-    g.restore();
+  // the cave mouth: blue motes drift out of it whenever it is open (faint from afar, brighter up close)
+  const cvM=hubCave();
+  if(cvM && !(A.hub.cave.requires && !gateOpen(A.hub.cave.requires))){ const sx=cvM.x-HUB.camx, cy=cvM.y-30, R=72;
+    const pr=0.6+0.4*Math.sin(Date.now()*0.004), gr=g.createRadialGradient(sx,cy,4,sx,cy,R);   // a cold breath of light from inside
+    gr.addColorStop(0,'rgba(150,210,255,'+(HUB.nearCave?0.45:0.22)*pr+')'); gr.addColorStop(1,'rgba(150,210,255,0)');
+    g.save(); g.fillStyle=gr; g.beginPath(); g.arc(sx,cy,R,0,7); g.fill(); g.restore();
+    drawCueMotes(g, sx, cy, R, '150,210,255', HUB.nearCave);
+    if(HUB.nearCave) drawPressE(g, sx, cvM.y-101, A.hub.cave.label, '150,210,255', false);
   }
   // ── the climb: stepping mushrooms sprouted by The Glow, plus the nudge to jump ──
   if(A.hub.stones) drawClimbStones();
@@ -16879,31 +16877,31 @@ function askName(after){
 // place when you look at it. The whole world is on screen at once: no zooming, no dragging.
 // x/y: the place on maps/worldmap.png, in percent. ico: its glyph. reg: the region it belongs to.
 const MAP_LOCS=[
-  {id:'garden',  name:'Garden',          x:52.6, y:68.0, ico:'tree',   reg:'forest', desc:'Where Puiutu wakes up. Something old lives under the clearing.'},
-  {id:'cave',    name:'Crystal Cave',    x:31.1, y:51.0, ico:'cave',   reg:'forest', desc:'Closed for survey work, they said. There is a gate at the bottom, and something guarding it.'},
-  {id:'library', name:'Library', dest:'towergarden', x:18.5, y:17.5, ico:'tower', reg:'hill', desc:'The old wizard\'s tower. The prophecy he keeps there is not very specific.'},
-  {id:'beach',   name:'Beach',           x:8.5, y:44.5, ico:'anchor', reg:'coast', desc:'Sand, a pier, a fort, and a pig who will talk for five fish.'},
-  {id:'ocean1',  name:'Ocean Depths',    x:3.8,  y:24.0, ico:'wave',   reg:'coast', desc:'The shallows. Nobody breathes down there without a suit.'},
-  {id:'ocean2',  name:'Sunken Sanctum',  x:12.0, y:69.1, ico:'pillar', reg:'deep',  desc:'Drowned ruins around a sealed portal. The runes want something violet.'},
-  {id:'street',  name:'City',            x:66.4, y:50.5, ico:'town',   reg:'city',  desc:'The square. Union soldiers, a fountain, and the most elegant cat in town.'},
-  {id:'bank',    name:'Whisker Savings Bank', x:67.9, y:39.3, ico:'coin', reg:'city', desc:'Every little fish counts. Neutral, they say. Very neutral.'},
-  {id:'castleentrance', name:'Castle Gate', x:86.0, y:19.5, ico:'castle', reg:'heights', desc:'The Cat King\'s castle. Lions on every wall.'},
-  {id:'slum',    name:'The Slums',       x:80.1, y:77.0, ico:'hut',    reg:'slums', desc:'Shacks on stilts. NomNom\'s forge, and an alley everyone avoids.'},
-  {id:'slum2',   name:'The Rat Warren',  x:93.0, y:50.0, ico:'pick',   reg:'warren', desc:'Wooden shanties climbing toward a fortress of scavenged junk.'},
-  {id:'sewerentrance', name:'Sewer Tunnel', x:90.6, y:89.3, ico:'drop', reg:'slums', desc:'Where both armies go down, and keep going down.'},
+  {id:'garden',  name:'Garden',          x:52.9, y:22.3, ico:'tree',   reg:'forest', desc:'Where Puiutu wakes up. Something old lives under the clearing.'},
+  {id:'cave',    name:'Crystal Cave',    x:35.9, y:17.5, ico:'cave',   reg:'forest', desc:'Closed for survey work, they said. There is a gate at the bottom, and something guarding it.'},
+  {id:'library', name:'Library', dest:'towergarden', x:17.9, y:21.8, ico:'tower', reg:'hill', desc:'The old wizard\'s tower. The prophecy he keeps there is not very specific.'},
+  {id:'beach',   name:'Beach',           x:19.1, y:42.5, ico:'anchor', reg:'coast', desc:'Sand, a pier, a fort, and a pig who will talk for five fish.'},
+  {id:'ocean1',  name:'Ocean Depths',    x:2.4,  y:21.0, ico:'wave',   reg:'coast', desc:'The shallows. Nobody breathes down there without a suit.'},
+  {id:'ocean2',  name:'Sunken Sanctum',  x:12.6, y:75.5, ico:'pillar', reg:'deep',  desc:'Drowned ruins around a sealed portal. The runes want something violet.'},
+  {id:'street',  name:'City',            x:58.6, y:60.0, ico:'town',   reg:'city',  desc:'The square. Union soldiers, a fountain, and the most elegant cat in town.'},
+  {id:'bank',    name:'Whisker Savings Bank', x:61.0, y:46.8, ico:'coin', reg:'city', desc:'Every little fish counts. Neutral, they say. Very neutral.'},
+  {id:'castleentrance', name:'Castle Gate', x:84.9, y:17.0, ico:'castle', reg:'heights', desc:'The Cat King\'s castle. Lions on every wall.'},
+  {id:'slum',    name:'The Slums',       x:62.2, y:79.7, ico:'hut',    reg:'slums', desc:'Shacks on stilts. NomNom\'s forge, and an alley everyone avoids.'},
+  {id:'slum2',   name:'The Rat Warren',  x:89.7, y:65.9, ico:'pick',   reg:'warren', desc:'Wooden shanties climbing toward a fortress of scavenged junk.'},
+  {id:'sewerentrance', name:'Sewer Tunnel', x:87.6, y:86.1, ico:'drop', reg:'slums', desc:'Where both armies go down, and keep going down.'},
 ];
 // region names, laid on the land in wide capitals once you have set foot there.
 // The Rat King's lair and the Dreamer's trench are not on the map at all: places you find, not
 // places you are shown.
 const MAP_REGIONS={
-  forest: {name:'The Green Forest', x:50, y:86},
-  hill:   {name:'The Wizard\'s Keep', x:24, y:12},
-  coast:  {name:'The Salt Coast',   x:14, y:53},
-  deep:   {name:'The Deep',         x:12, y:82},
-  city:   {name:'Whisker City',     x:55, y:30},
-  heights:{name:'The Royal Heights',x:83, y:32},
-  warren: {name:'Rattania',         x:92, y:64},
-  slums:  {name:'The Slums',        x:76, y:93},
+  forest: {name:'The Green Forest', x:48, y:37},
+  hill:   {name:'The Wizard\'s Keep', x:22, y:3},
+  coast:  {name:'The Salt Coast',   x:12, y:53},
+  deep:   {name:'The Deep',         x:14, y:90},
+  city:   {name:'Whisker City',     x:52, y:68},
+  heights:{name:'The Royal Heights',x:80, y:30},
+  warren: {name:'Rattania',         x:90, y:42},
+  slums:  {name:'The Slums',        x:64, y:96},
 };
 // what the story wants from you next, and where that is
 const MAP_OBJECTIVE={ awake:'garden', seek_wizard:'library', pigeons:'library', prophecy:'library', zoomies:'beach',
@@ -17077,6 +17075,38 @@ function placeSizeKey(r){ return ('h' in r)?'h':('r' in r)?'r':('glowR' in r)?'g
 function placeRound(sk,v){ return sk==='scale' ? Math.max(0.2,Math.round(v*100)/100) : Math.max(4,Math.round(v)); }
 // every editable handle in the hub. Each handle has its own field pair (fx,fy) + size key (sk),
 // so doors expose BOTH a trigger handle (xf/yf,r) and a GLOW handle (glowXf/glowYf,glowR = the prompt/text spot).
+// ── "you can go in here": instead of a ring, motes of light drift up out of the doorway, and when you
+// are close a little arrow bobs over it under a [E] keycap label. Tinted with the door's own colour.
+function drawCueMotes(g, gx, gy, R, rgb, near){
+  const now=Date.now(), n=near?14:9;
+  g.save();
+  for(let i=0;i<n;i++){
+    const sp=0.00022+((i*37)%7)*0.00003, t=(now*sp+i*0.618)%1;          // 0 → 1 over its life
+    const x=gx+Math.sin(i*2.3+now*0.0009+t*3)*R*0.45, y=gy+R*0.55-t*R*1.35;
+    const a=Math.sin(t*Math.PI)*(near?1:0.75), sz=(1.8+((i*13)%3)*0.8)*(near?1.3:1);
+    g.globalAlpha=a; g.fillStyle='rgba('+rgb+',1)'; g.shadowColor='rgba('+rgb+',1)'; g.shadowBlur=8;
+    g.fillRect(Math.round(x-sz/2), Math.round(y-sz/2), Math.ceil(sz), Math.ceil(sz));   // square: reads as pixel art
+  }
+  g.restore();
+}
+function drawPressE(g, cx, ly, label, rgb, below){
+  const now=Date.now(), pr=0.6+0.4*Math.sin(now*0.005);
+  g.save(); g.textAlign='left'; g.textBaseline='middle'; g.font='bold 14px Trebuchet MS';
+  const key=trainTouch()?'Tap':'E', name=T(label);
+  const kw=Math.max(22, g.measureText(key).width+12), tw=g.measureText(name).width, w=kw+8+tw+20, x0=cx-w/2, y0=ly-19;
+  g.globalAlpha=0.75+0.25*pr; g.fillStyle='rgba(20,14,8,.88)'; roundRectPath(x0,y0,w,26,9); g.fill();
+  g.strokeStyle='rgba('+rgb+',.55)'; g.lineWidth=1.5; roundRectPath(x0+.5,y0+.5,w-1,25,9); g.stroke();
+  // the keycap
+  g.globalAlpha=1; g.fillStyle='#6b4a22'; roundRectPath(x0+6,y0+4,kw,19,5); g.fill();
+  g.fillStyle='#f6e6be'; roundRectPath(x0+6,y0+3,kw,17,5); g.fill();
+  g.fillStyle='#3a2410'; g.textAlign='center'; g.fillText(key, x0+6+kw/2, y0+12);
+  g.fillStyle='#ffe7b0'; g.textAlign='left'; g.fillText(name, x0+6+kw+8, y0+13);
+  // the arrow, bobbing toward the doorway
+  const bob=Math.sin(now*0.006)*4, dir=below?-1:1, ay=below ? y0-8+bob : y0+26+10+bob;
+  g.fillStyle='rgba('+rgb+',1)'; g.shadowColor='rgba('+rgb+',.9)'; g.shadowBlur=10;
+  g.beginPath(); g.moveTo(cx-8,ay-5*dir); g.lineTo(cx+8,ay-5*dir); g.lineTo(cx,ay+5*dir); g.closePath(); g.fill();
+  g.restore();
+}
 function placeItems(){ const H=A&&A.hub, arr=[]; if(!H) return arr;
   const add=(o,label,fx,fy,sk)=>{ fx=fx||'xf'; fy=fy||'yf'; if(o && typeof o[fx]==='number' && typeof o[fy]==='number') arr.push({r:o,label,fx,fy,sk:(sk!==undefined?sk:placeSizeKey(o))}); };
   const guardsOnly = curArea==='castleentrance';
@@ -17126,8 +17156,8 @@ function airshipTool(){
   if(curArea!=='castleentrance'){ enterArea('castleentrance'); setTimeout(pick,700); } else pick();
 }
 function placeLive(){ if(PLACE_SEL && /^garrison\[/.test(PLACE_SEL.label)) refreshGarrison(); }
-// everything you moved in this area, in the same fields the area data uses
-function placeExport(){ return JSON.stringify({ area:curArea, changes:PLACE_OV[curArea]||{} }, null, 2); }
+// everything you moved, in every area, in the same fields the area data uses
+function placeExport(){ return JSON.stringify(PLACE_OV, null, 2); }
 function placeLog(){ placePanel(); if(!PLACE_SEL) return; const it=PLACE_SEL, r=it.r;
   let s=it.label+''+it.fx+':'+(+r[it.fx].toFixed(3))+', '+it.fy+':'+(+r[it.fy].toFixed(3));
   if(it.sk) s+=', '+it.sk+':'+Math.round(r[it.sk]); if('cut' in r) s+=', cut:'+Number(r.cut).toFixed(2);
