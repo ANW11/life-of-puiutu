@@ -276,40 +276,78 @@
     border:3px solid rgba(255,255,255,.35);background:rgba(40,28,14,.6);color:#fff;font-size:20px;
     display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(3px);}
 
-  /* ---------- FAST-TRAVEL MAP ---------- */
-  #mapModal{position:absolute;inset:0;z-index:55;display:none;align-items:center;justify-content:center;
-    background:rgba(10,8,5,.72);backdrop-filter:blur(3px);}
-  #mapModal.show{display:flex;}
-  /* the map is 3:2 — size it by whichever runs out first, width or height, so it always fits */
-  .map-img-wrap{position:relative;width:min(94vw, calc((100vh - 40px) * 1.5), 880px);}
-  #mapImg{width:100%;display:block;filter:drop-shadow(0 14px 28px rgba(0,0,0,.55));}   /* the parchment's own torn edge is the frame */
-  .hot{position:absolute;border:none;background:transparent;cursor:pointer;padding:0;
-    display:flex;align-items:center;justify-content:center;transition:background .2s, filter .2s;}
-  .hot::after{content:attr(data-label);color:#fff;font-weight:900;font-size:13px;letter-spacing:.3px;
-    white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;
-    text-shadow:0 1px 3px #000, 0 0 9px rgba(0,0,0,.85);}
-  /* soft glow on hover — no box, no border */
-  .hot:hover{background:radial-gradient(ellipse at center, rgba(255,224,120,.55), rgba(255,224,120,0) 62%);}
-  .hot:hover::after{opacity:1;}
-  .hot.here{background:radial-gradient(ellipse at center, rgba(90,170,255,.42), rgba(90,170,255,0) 62%);
-    animation:hotPulse 1.6s ease-in-out infinite;}
-  .hot.here::after{opacity:1;color:#cfe9ff;}
-  @keyframes hotPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.45)}}
-  /* places you have not found yet sit under fog: greyed, blurred, nameless */
-  .hot.locked{cursor:not-allowed;
-    background:radial-gradient(ellipse at center, rgba(214,212,220,.94) 0%, rgba(200,198,208,.84) 55%, rgba(190,188,198,0) 88%);
-    -webkit-backdrop-filter:blur(7px) grayscale(1); backdrop-filter:blur(7px) grayscale(1);
-    -webkit-mask-image:radial-gradient(ellipse at center, #000 62%, transparent 92%);
-    mask-image:radial-gradient(ellipse at center, #000 62%, transparent 92%);
-    transform:scale(1.18);
-    animation:fogDrift 7s ease-in-out infinite;}
-  @keyframes fogDrift{0%,100%{opacity:.92}50%{opacity:1}}
-  .hot.locked::after{opacity:.85;color:#5e5a66;font-size:15px;text-shadow:0 0 6px rgba(255,255,255,.7);}
-  .hot.locked:hover{background:radial-gradient(ellipse at center, rgba(214,212,220,.9) 0%, rgba(196,194,204,.7) 42%, rgba(190,188,198,0) 72%);}
-  .map-close:empty::before{content:'\00D7';font-size:24px;line-height:1;}
-  .map-close{position:absolute;top:-15px;right:-15px;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;
-    background:#b5453a;border:3px solid #fff;color:#fff;font-weight:bold;cursor:pointer;font-size:16px;
-    box-shadow:0 4px 10px rgba(0,0,0,.4);}
+  /* ---------- WORLD MAP (Witcher / Skyrim / Origins style) ---------- */
+  #mapModal{position:absolute;inset:0;z-index:55;display:none;background:#0b0907;opacity:0;transition:opacity .25s;}
+  #mapModal.show{display:block;opacity:1;animation:wmIn .35s ease-out;}
+  @keyframes wmIn{from{opacity:0}to{opacity:1}}
+  #wmView{position:absolute;inset:0;overflow:hidden;touch-action:none;
+    cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23f3e2b4' stroke-width='1.5'/%3E%3Cpath d='M16 2v8M16 22v8M2 16h8M22 16h8' stroke='%23f3e2b4' stroke-width='1.5'/%3E%3C/svg%3E") 16 16, crosshair;}
+  #wmWorld{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;}
+  #wmImg{position:absolute;inset:0;width:100%;height:100%;user-select:none;-webkit-user-drag:none;}
+  #wmFog{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  #wmRegions,#wmIcons{position:absolute;inset:0;pointer-events:none;}
+  /* region names: wide spaced capitals laid on the land */
+  .wm-region{position:absolute;transform:translate(-50%,-50%) scale(var(--inv));opacity:0;transition:opacity .4s;
+    font:600 15px Georgia,'Times New Roman',serif;letter-spacing:.38em;text-transform:uppercase;white-space:nowrap;
+    color:rgba(255,246,222,.92);text-shadow:0 0 6px rgba(0,0,0,.9),0 2px 3px rgba(0,0,0,.8);}
+  .wm-region.on{opacity:1;}
+  #wmRegions{display:none;}   /* the land speaks for itself: region names only on the card */
+  /* places: a dark round badge with a pale glyph; gold when you look at it */
+  .wm-pin{position:absolute;pointer-events:none;transform:translate(-50%,-50%) scale(var(--inv));background:none;border:0;padding:0;
+    display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transition:opacity .3s;}
+  .wm-pin.known,.wm-pin.obj{pointer-events:auto;opacity:1;cursor:inherit;}
+  .wm-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 40% 35%,#2b241b,#15110c);border:2px solid #b89a5e;color:#efe2c0;
+    box-shadow:0 2px 6px rgba(0,0,0,.7);transition:transform .15s, border-color .15s, color .15s;}
+  .wm-badge svg{width:20px;height:20px;}
+  .wm-name{font:600 12px Georgia,serif;letter-spacing:.06em;color:#f6ead0;white-space:nowrap;
+    text-shadow:0 0 4px #000,0 1px 2px #000;opacity:0;transition:opacity .15s;}
+  .wm-pin.hot .wm-badge{transform:scale(1.18);border-color:#ffd46b;color:#ffd46b;}
+  .wm-pin.hot .wm-name, .wm-pin.here .wm-name{opacity:1;}
+  .wm-pin.here .wm-badge{border-color:#ffd46b;color:#ffd46b;box-shadow:0 0 0 4px rgba(255,212,107,.25),0 0 18px rgba(255,212,107,.6);
+    animation:wmHere 1.6s ease-in-out infinite;}
+  @keyframes wmHere{50%{box-shadow:0 0 0 8px rgba(255,212,107,.08),0 0 26px rgba(255,212,107,.8);}}
+  /* the objective: a gold diamond above the place */
+  .wm-pin.obj::before{content:'';position:absolute;top:-20px;width:12px;height:12px;background:#ffd46b;transform:rotate(45deg);
+    box-shadow:0 0 10px rgba(255,212,107,.9);animation:wmObj 1.2s ease-in-out infinite;}
+  @keyframes wmObj{50%{transform:translateY(-4px) rotate(45deg);}}
+  /* frame: a dark vignette at the screen edges, a header, the card, a legend */
+  #wmVignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 90px 10px rgba(0,0,0,.35);}
+  #wmTop{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:18px;padding:14px 64px 26px 24px;pointer-events:none;
+    background:linear-gradient(rgba(8,6,4,.85),rgba(8,6,4,0));}
+  #wmTitle{font:700 20px Georgia,serif;letter-spacing:.35em;color:#f3e2b4;text-transform:uppercase;}
+  #wmObj{display:flex;align-items:center;gap:8px;font:14px Georgia,serif;color:#e8dcc0;min-width:0;}
+  #wmObj i{width:9px;height:9px;background:#ffd46b;transform:rotate(45deg);flex:none;box-shadow:0 0 8px rgba(255,212,107,.8);}
+  #wmObj span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #wmCard{position:absolute;right:22px;top:72px;width:min(300px,calc(100% - 44px));padding:16px 18px 14px;
+    background:linear-gradient(rgba(16,12,8,.94),rgba(10,8,5,.94));border:1px solid #6e5a36;border-top:2px solid #b89a5e;
+    box-shadow:0 10px 30px rgba(0,0,0,.6);color:#e8dcc0;font-family:Georgia,serif;
+    opacity:0;transform:translateX(12px);transition:opacity .18s, transform .18s;pointer-events:none;}
+  #wmCard.on{opacity:1;transform:none;pointer-events:auto;}
+  #wmCardReg{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#b89a5e;margin-bottom:4px;}
+  #wmCardName{font-size:21px;color:#fff3d6;margin-bottom:8px;}
+  #wmCardDesc{font-size:13.5px;line-height:1.45;color:#d8ccb0;margin-bottom:10px;}
+  #wmCardObj{font-size:12px;color:#ffd46b;margin-bottom:10px;}
+  #wmCardQuests{margin:-2px 0 10px;font-size:12.5px;line-height:1.4;color:#e8dcc0;}
+  #wmCardQuests div{margin-bottom:4px;} #wmCardQuests b{color:#7fd0ff;margin-right:3px;} #wmCardQuests .rdy b{color:#8be08b;}
+  /* an active quest here: a small blue "!" pinned to the badge (green tick when it is ready to hand in) */
+  .wm-pin.quest::after{content:'!';position:absolute;top:-6px;right:-8px;width:17px;height:17px;border-radius:50%;
+    background:#2f6fb5;border:1.5px solid #dff0ff;color:#fff;font:900 12px/15px Georgia,serif;text-align:center;
+    box-shadow:0 0 8px rgba(80,170,255,.8);animation:wmObj 1.4s ease-in-out infinite;}
+  .wm-pin.qready::after{content:'✔';background:#3f8f3f;border-color:#e4ffe0;box-shadow:0 0 8px rgba(120,230,120,.8);font-size:10px;}
+  #wmLegend b.q{border:1.5px solid #dff0ff;background:#2f6fb5;color:#fff;font:900 9px/9px Georgia,serif;text-align:center;}
+  #wmTravel{width:100%;padding:8px;font:600 13px Georgia,serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+    color:#1b140b;background:linear-gradient(#f0d58e,#c9a456);border:1px solid #7a5f2e;}
+  #wmTravel:disabled{cursor:default;color:#9c8d70;background:#2a231a;border-color:#4a3e2c;}
+  #wmLegend{position:absolute;left:22px;bottom:18px;display:flex;gap:16px;font:12px Georgia,serif;color:#d8ccb0;pointer-events:none;
+    text-shadow:0 1px 2px #000;}
+  #wmLegend span{display:flex;align-items:center;gap:6px;}
+  #wmLegend b{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid #ffd46b;background:#15110c;}
+  #wmLegend b.k{border-color:#b89a5e;} #wmLegend b.o{border:0;border-radius:0;width:9px;height:9px;background:#ffd46b;transform:rotate(45deg);}
+  #wmHint{position:absolute;right:22px;bottom:18px;font:12px Georgia,serif;color:#a89a7c;pointer-events:none;text-shadow:0 1px 2px #000;}
+  #mapClose{position:absolute;top:12px;right:16px;width:36px;height:36px;border-radius:50%;padding:0;cursor:pointer;z-index:3;
+    background:rgba(20,15,10,.8);border:1.5px solid #b89a5e;color:#f3e2b4;font-size:20px;line-height:1;}
+  @media (max-width:640px){ #wmCard{top:auto;bottom:52px;right:12px;left:12px;width:auto;} #wmHint{display:none;} #wmTitle{font-size:15px;} }
 
   /* ---------- NAME modal ---------- */
   #nameModal{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
@@ -901,6 +939,27 @@
     text-shadow:0 1px 2px #000;font-family:'Trebuchet MS',sans-serif;}
   .spellSlot.potSlot svg,.spellSlot.potSlot .forgeArt{width:38px;height:38px;object-fit:contain;}
   #spellBar .barGap{width:6px;}
+  /* the companion's special: fills from the bottom as you fight beside them */
+  .spellSlot.buddySlot{border-color:#a8577a;background:rgba(58,22,40,.82);overflow:hidden;}
+  .spellSlot.buddySlot .bFill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(#ffb0cf,#c2507f);opacity:.55;transition:height .2s;}
+  .spellSlot.buddySlot .bIco{position:relative;font:900 24px 'Trebuchet MS',sans-serif;color:#ffe7b0;text-shadow:0 2px 0 #3a1424;}
+  .spellSlot.buddySlot.ready{box-shadow:0 0 14px 3px #ffb0cf,0 3px 0 #3a2a16;animation:buddyPulse 1s ease-in-out infinite;}
+  @keyframes buddyPulse{50%{transform:scale(1.07);}}
+  /* Rocky's training: the current step and the key to press, top centre */
+  #trainPanel{position:absolute;left:50%;top:58px;transform:translate(-50%,-8px);z-index:9;min-width:250px;max-width:min(92vw,420px);
+    padding:9px 16px 10px;border-radius:14px;background:rgba(28,20,10,.9);border:2px solid #b89a5e;color:#ffe7b0;text-align:center;
+    font-family:'Trebuchet MS',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;opacity:0;transition:opacity .25s, transform .25s;}
+  #trainPanel.on{opacity:1;transform:translate(-50%,0);}
+  #trainPanel.flash{border-color:#8be08b;box-shadow:0 0 18px rgba(139,224,139,.7);}
+  #trainPanel .tp-step{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#b89a5e;}
+  #trainPanel .tp-task{font-size:17px;font-weight:bold;margin:3px 0 6px;}
+  #trainPanel .tp-keys{font-size:12px;color:#d8ccb0;display:flex;gap:7px;justify-content:center;align-items:center;flex-wrap:wrap;}
+  #trainPanel kbd{display:inline-block;min-width:26px;padding:3px 9px;border-radius:6px;background:#f6e6be;color:#3a2410;
+    font:bold 14px 'Trebuchet MS',sans-serif;box-shadow:0 3px 0 #8a6a3a;}
+  #trainPanel .tp-dots{display:flex;gap:5px;justify-content:center;margin-top:7px;}
+  #trainPanel .tp-dots i{width:8px;height:8px;border-radius:50%;background:#4a3a24;}
+  #trainPanel .tp-dots i.done{background:#8be08b;} #trainPanel .tp-dots i.cur{background:#ffd46b;box-shadow:0 0 6px #ffd46b;}
+  body.cinema #trainPanel{display:none;}
   #buffRow{position:absolute;left:50%;transform:translateX(-50%);bottom:122px;z-index:8;display:flex;gap:6px;pointer-events:none;}
   #buffRow .bf{display:flex;align-items:center;gap:4px;padding:2px 8px 2px 3px;border-radius:12px;
     background:rgba(20,14,8,.75);border:2px solid #6b4a1f;color:#ffe7b0;font:bold 11px 'Trebuchet MS',sans-serif;}
@@ -940,8 +999,17 @@
   /* ── 📱 Phone overlay ── */
   .phone-modal{background:rgba(8,5,3,.82);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
   #phoneClose{position:absolute;top:14px;right:14px;z-index:5;}
-  .phone-frame{position:relative;height:94vh;aspect-ratio:1632/2604;max-width:96vw;
+  /* the phone fills the window top to bottom, centred: only a sliver of the wooden frame's top and bottom
+     edge runs off, evenly, so the gold corners, the status bar and the paw Home button all stay in view */
+  .phone-modal{overflow:hidden;}
+  .phone-frame{position:relative;flex:0 0 auto;height:104vh;aspect-ratio:1632/2604;
     background:url('Phone/catphone.png') center/contain no-repeat;}
+  /* a tall, narrow window (a phone held upright): the whole phone, as big as it fits */
+  @media (orientation:portrait){ .phone-frame{height:min(98vh,150vw);transform:none;} }
+  /* a real phone held sideways: the cat phone turns on its side to fill the screen —
+     turn your phone upright and it stands up full size (the portrait rule above) */
+  @media (orientation:landscape) and (max-height:520px), (pointer:coarse) and (orientation:landscape){
+    .phone-frame{height:min(96vw,154vh);transform:rotate(-90deg);} }
   .phone-status{position:absolute;top:18.3%;transform:translateY(-50%);left:0;right:0;text-align:center;color:#fff;
     font-family:'Trebuchet MS',sans-serif;font-weight:bold;font-size:min(2.2vh,14px);
     letter-spacing:.5px;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none;}
@@ -949,16 +1017,16 @@
     text-shadow:0 1px 0 rgba(255,255,255,.5);font-family:'Trebuchet MS',sans-serif;pointer-events:none;}
   .phone-clock .pTime{font-size:min(11vh,62px);font-weight:900;line-height:1;letter-spacing:1px;
     font-variant-numeric:tabular-nums;}
-  .phone-clock .pDate{font-size:min(3.1vh,18px);font-weight:bold;margin-top:6px;opacity:.85;}
-  .phone-apps{position:absolute;left:17%;right:17%;top:66%;display:grid;grid-template-columns:repeat(3,1fr);row-gap:min(1.2vh,7px);}
-  .phone-apps .pa-ico{width:52%;}
+  .phone-clock .pDate{font-size:min(3.6vh,24px);font-weight:bold;margin-top:6px;opacity:.85;}
+  .phone-apps{position:absolute;left:22%;right:21%;top:63%;display:grid;grid-template-columns:repeat(3,1fr);row-gap:min(1.6vh,12px);}
+  .phone-apps .pa-ico{width:76%;}
   .pa-art{background-size:contain;background-color:#f6e7c8;}
   /* apps run ON the phone: the screen area of catphone.png (measured: 20.2% / 79.2% down, 21% / 79.8% across) */
   #phoneScreen{position:absolute;left:21%;right:20.2%;top:20.2%;bottom:20.8%;display:none;flex-direction:column;
     background:#f6ead0;border-radius:2px;overflow:hidden;z-index:4;}
   #phoneScreen.on{display:flex;}
   .ps-bar{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:5px 6px;background:#4a3320;color:#ffe7b0;
-    font-family:'Trebuchet MS',sans-serif;font-weight:bold;font-size:min(2.2vh,14px);}
+    font-family:'Trebuchet MS',sans-serif;font-weight:bold;font-size:min(2.8vh,19px);}
   #phoneBack{background:#6b4a1f;color:#ffe7b0;border:0;border-radius:8px;width:2em;height:1.7em;font-size:1.15em;font-weight:900;
     line-height:1;cursor:pointer;flex:0 0 auto;}
   #phoneBack:active{transform:scale(.92);}
@@ -971,7 +1039,7 @@
   /* a game window moved onto the phone: no fullscreen backdrop, no own header, content scaled to the small screen */
   #phoneApp > .modal{position:absolute;inset:0;z-index:1;background:#2a1d10;backdrop-filter:none;}
   #phoneApp > .modal > .modal-head{display:none;}
-  #phoneApp > .modal .modal-body{zoom:.62;overflow:auto;}
+  #phoneApp > .modal .modal-body{zoom:.78;overflow:auto;}
   /* the flat pixel app icons: the tile is the icon itself (its own rounded edge), crisp at any size */
   .pa-px{background-size:100% 100%;border-radius:0;box-shadow:none;filter:drop-shadow(0 3px 3px rgba(0,0,0,.3));image-rendering:pixelated;}
   .pa-flags{display:flex;align-items:center;justify-content:center;background:#f6e7c8;}
@@ -991,7 +1059,7 @@
   .pa-ico{width:60%;aspect-ratio:1;background-position:center;background-repeat:no-repeat;background-size:auto 100%;
     border-radius:22%;box-shadow:0 4px 10px rgba(0,0,0,.35);image-rendering:pixelated;transition:transform .12s;}
   .phone-app:active .pa-ico{transform:scale(.9);}
-  .pa-lbl{font-size:min(2.2vh,12px);font-weight:bold;color:#4a3320;white-space:nowrap;
+  .pa-lbl{font-size:min(2.6vh,18px);font-weight:bold;color:#4a3320;white-space:nowrap;
     text-shadow:0 1px 0 rgba(255,255,255,.5);}
   .stock-row{background:linear-gradient(#fff6e2,#f0ddb6);border:3px solid #6b4a1f;border-radius:16px;
     padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
@@ -1240,10 +1308,12 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
       <div class="spellSlot" data-slot="2"><span class="sIco"></span><span class="sKey">3</span><div class="sCd"></div></div>
       <div class="spellSlot" data-slot="3"><span class="sIco"></span><span class="sKey">4</span><div class="sCd"></div></div>
       <div class="barGap"></div>
+      <div class="spellSlot buddySlot" id="buddySlot" title="Agent Snout: Closed for Survey (C)" style="display:none;"><div class="bFill"></div><span class="sIco bIco">!</span><span class="sKey">C</span></div>
       <div class="spellSlot potSlot" data-pot="heal" title="Healing potion (Q)"><span class="sIco"></span><span class="sKey">Q</span><span class="pCnt"></span></div>
       <div class="spellSlot potSlot" data-pot="mana" title="Mana potion (Z)"><span class="sIco"></span><span class="sKey">Z</span><span class="pCnt"></span></div>
     </div>
     <div id="buffRow"></div>
+    <div id="trainPanel"></div>
 
     <div id="interactPrompt">Press E to talk to a friend</div>
     <button id="fightBtn"> Fight <small>(F)</small></button>
@@ -1258,24 +1328,20 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
 
   <!-- ============ FAST-TRAVEL MAP ============ -->
   <div id="mapModal">
-    <div class="map-img-wrap">
-      <img id="mapImg" src="maps/worldmap.png" alt="Puiutu Land">
-      <button class="hot" data-go="ocean1" style="left:1.3%;top:3.9%;width:11.7%;height:18.6%;"></button>
-      <button class="hot" data-go="library" style="left:28.6%;top:2.0%;width:10.4%;height:12.7%;"></button>
-      <button class="hot" data-go="beach" style="left:3.9%;top:33.2%;width:15.0%;height:10.7%;"></button>
-      <button class="hot" data-go="ocean2" style="left:2.6%;top:45.9%;width:19.5%;height:17.6%;"></button>
-      <button class="hot" data-go="abyssboss" style="left:2.6%;top:63.5%;width:22.8%;height:25.4%;"></button>
-      <button class="hot" data-go="cave" style="left:21.5%;top:37.1%;width:11.7%;height:13.7%;"></button>
-      <button class="hot" data-go="garden" style="left:34.5%;top:41.0%;width:26.7%;height:27.3%;"></button>
-      <button class="hot" data-go="street" style="left:52.1%;top:30.4%;width:27.3%;height:24.9%;"></button>
-      <button class="hot" data-go="bank" style="left:58.6%;top:24.4%;width:12.4%;height:13.7%;"></button>
-      <button class="hot" data-go="castleentrance" style="left:77.5%;top:9.8%;width:16.3%;height:17.6%;"></button>
-      <button class="hot" data-go="slum" style="left:63.8%;top:60.5%;width:20.8%;height:21.5%;"></button>
-      <button class="hot" data-go="slum2" style="left:84.0%;top:38.1%;width:13.7%;height:19.5%;"></button>
-      <button class="hot" data-go="ratking" style="left:87.2%;top:57.6%;width:10.4%;height:16.6%;"></button>
-      <button class="hot" data-go="sewerentrance" style="left:85.3%;top:76.2%;width:7.8%;height:11.7%;"></button>
-      <button class="map-close" id="mapClose"></button>
+    <div id="wmView">
+      <div id="wmWorld">
+        <img id="wmImg" src="maps/worldmap_world.png" alt="Puiutu Land" draggable="false">
+        <canvas id="wmFog" width="768" height="512"></canvas>
+        <div id="wmRegions"></div>
+        <div id="wmIcons"></div>
+      </div>
+      <div id="wmVignette"></div>
     </div>
+    <div id="wmTop" style="display:none"><div id="wmObj"><i></i><span id="wmObjText"></span></div></div>
+    <div id="wmCard"><div id="wmCardReg"></div><div id="wmCardName"></div><div id="wmCardDesc"></div>
+      <div id="wmCardObj">◆ Current objective</div><div id="wmCardQuests"></div><button id="wmTravel">Fast travel</button></div>
+    <div id="wmLegend"><span><b></b>You</span><span><b class="o"></b>Objective</span><span><b class="k"></b>Discovered</span><span><b class="q">!</b>Quest</span></div>
+    <button id="mapClose" aria-label="Close">×</button>
   </div>
 
   <!-- ============ NAME (multiplayer) ============ -->
@@ -1656,6 +1722,8 @@ const DEFAULT={
   fossils:{}, museum:[], museumSets:[], shells:{}, notes:[],   // the beach: dug fossils, Shelly's museum, beachcombing
   companion:false,                 // Rocky the dog joined as a fighting companion
   rockyStay:false,                 // Rocky told to wait instead of following
+  snout:null,                      // Agent Snout: null · 'declined' · 'with' (following) · 'left' (went back up after the cave)
+  snoutSeen:{},                    // rooms he has already said his first thing in
   // 💹 financial system (Meow Stock Exchange + Whisker Savings Bank)
   bank:0,                          // fish parked in the bank (earns interest)
   bankSince:0,                     // ms timestamp interest was last applied
@@ -2606,8 +2674,8 @@ function birdFrames(type,variant){
 // army units (cats vs rats) — each: 4 walk frames + 1 attack frame, art faces LEFT
 const ARMY_SPR={};
 // how many walk frames each unit actually has — a longer cycle reads far less stiff
-const ARMY_FRAMES={ cat_commander:5, cat_emissary:6, pig_agent:6, rat_emissary:6 };
-['cat_soldier','rat_soldier','cat_commander','rat_commander','cat_emissary','pig_agent','rat_emissary'].forEach(n=>{
+const ARMY_FRAMES={ cat_commander:5, cat_emissary:6, pig_agent:6, snout:6, rat_emissary:6 };   // snout = Agent Snout: the agent's sheet in a brown field coat, so he never looks like just another banker
+['cat_soldier','rat_soldier','cat_commander','rat_commander','cat_emissary','pig_agent','snout','rat_emissary'].forEach(n=>{
   const walk=[], N=ARMY_FRAMES[n]||4;
   // ?v= busts the cache: the pig and rat emissary frames were re-exported onto a shared canvas,
   // and anyone holding the old tight-cropped ones would still see the sprite jump every frame
@@ -2971,6 +3039,7 @@ const SHOP=[
   {id:'speed', emoji:'', name:'Fast Paws',desc:'Run faster (ability)',price:120,type:'ability'},
   // trophy — not sold; only dropped by Seby the Ancient One (hidden from the shop list)
   {id:'purplecrystal',emoji:'',img:'ui/purple_crystal.png',name:'Purple Crystal',desc:'Cut from the cave Queen Seby was guarding. The runes want one of these.',price:99999,type:'key',trophy:true},
+  {id:'snoutbadge',emoji:'',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges"><path d="M6 3h20v14l-10 12L6 17z" fill="#3a2410"/><path d="M8 5h16v11l-8 10-8-10z" fill="#d8a93a"/><path d="M10 7h12v8l-6 8-6-8z" fill="#f2cf63"/><rect x="12" y="11" width="8" height="5" fill="#e6a0b6"/><rect x="14" y="13" width="1" height="2" fill="#7a3a50"/><rect x="17" y="13" width="1" height="2" fill="#7a3a50"/></svg>'),name:'Survey Badge',desc:'Agent Snout\'s badge. He said he would not be needing it on the way back up.',price:99999,type:'key',trophy:true},
 ];
 
 //──────────────────────────────────────────────────────────────── AREAS
@@ -3007,15 +3076,15 @@ function buildAreas(){
             'Union Soldier: Road east is closed for now. Nothing personal.',
             'Union Soldier: Orders. I do not write them, I just stand in front of them.',
             'Union Soldier: Try the west road. Nobody guards the west road.']},
-          {unit:'pig_agent', xf:0.108, yf:0.836, facing:1, idle:true, patrol:0.006, scale:0.92,
-           name:'Agent Snout', hideIf:'caveOpen', lines:[
+          {unit:'snout', xf:0.108, yf:0.836, facing:1, idle:true, patrol:0.006, scale:0.92,
+           name:'Agent Snout', showFn:'snoutAtCave', talkFn:'snout', lines:[
             'Agent Snout: Closed for excavation, I\'m afraid. Survey work.',
             'Agent Snout: Nothing down there but rock. Rock, and a great deal of paperwork.',
             'Agent Snout: Come back later. Much later. Oink.']},
         ],
         cave:{xf:0.074, yf:0.804, r:120, to:'cave', label:'Crystal Cave',
               requires:'caveOpen',
-              lockedMsg:'Agent Snout: Closed for excavation, sorry. Survey work. Come back later.', speaker:'pig_agent'},  // interact to enter
+              lockedMsg:'Agent Snout: Closed for excavation, sorry. Survey work. Come back later.', speaker:'snout'},  // interact to enter
         merge:{xf:0.742, yf:0.674, r:95, label:'Fruit Merge'},   // fruit barrel by the orange tree
         // ── The Glow: the big painted mushroom in the clearing. Walk up to its mound to talk. ──
         shroom:{xf:0.472, yf:0.725, r:120, glowXf:0.472, glowYf:0.620, glowR:118, baseYf:0.70},   // baseYf: foot of the stem (the Glow rises there in its cutscene)
@@ -3243,8 +3312,9 @@ function buildAreas(){
     cave:{
       name:'Crystal Cave', theme:'cave', mode:'topdown',
       hub:{
-        img:'maps/crystalcave_sealed.png', mask:'maps/crystalcavemask.png',   // red tunnel shut behind the conduit gate
-        openIf:'sebyGateOpen', imgOpen:'maps/crystalcave.png',                 // gate powered: the tunnel stands open (same cave, swapped in place)
+        // the red tunnel stays shut behind the conduit gate in the art: the puzzle has to be powered every
+        // time you go in, so the gate never stands open (maps/crystalcave.png is the old open-tunnel version)
+        img:'maps/crystalcave_sealed.png', mask:'maps/crystalcavemask.png',
         maskWalk:'orange', mob:'clobster',
         walkTop:0.44, walkBot:0.97,
         scaleFar:0.70, scaleNear:1.05,
@@ -3673,6 +3743,191 @@ const QUESTS={
 // keyed on the English source covers the lot without touching hundreds of string literals.
 // Anything with no entry falls through in English, so a partial dictionary is never broken.
 const RO = {
+  "To swipe: press F, or click with the RIGHT mouse button. (The left button is for walking.)":"Ca să zgârii: apasă F sau dă click cu butonul DREPT al mouse-ului. (Butonul stâng e pentru mers.)",
+  "Get right up close first — claws only reach a little way, too far and you hit air.":"Apropie-te bine întâi — ghearele ajung doar puțin, prea departe și lovești aerul.",
+  "or right mouse click":"sau click dreapta pe mouse",
+  "Woof! You came through the gate. Good.":"Ham! Ai intrat pe poartă. Bun.",
+  "Those birds are coming back any moment. Before they do, I am going to teach you everything. Properly.":"Păsările alea se întorc din clipă în clipă. Până atunci te învăț tot. Cum trebuie.",
+  "First: come over here to me. Walk.":"Întâi: vino aici la mine. Mergi.",
+  "Nice walking. Now jump.":"Frumos mers. Acum sari.",
+  "A jump gets you out of the way of a claw — and over things in the garden.":"O săritură te scoate din calea unei gheare — și te trece peste lucruri prin grădină.",
+  "See the straw dummy? That is your pigeon.":"Vezi manechinul de paie? Ăla e porumbelul tău.",
+  "Get right up close and swipe. Claws only reach a little way — too far and you hit air.":"Apropie-te bine și zgârie. Ghearele ajung doar puțin — prea departe și lovești aerul.",
+  "Three good hits.":"Trei lovituri bune.",
+  "Now magic. Your spells live in the bar at the bottom, one per key.":"Acum magie. Vrăjile tale stau în bara de jos, câte una pe tastă.",
+  "Press 1. Hairball Volley flies the way you are facing — turn toward the dummy first.":"Apasă 1. Hairball Volley zboară în direcția în care te uiți — întoarce-te întâi spre manechin.",
+  "See the blue orb? That is mana. Every spell eats some, and it fills back up slowly — do not waste it.":"Vezi globul albastru? Aia e mana. Fiecare vrajă mănâncă din ea și se umple încet la loc — n-o risipi.",
+  "The red one is your health. It does NOT come back by itself in a fight.":"Cel roșu e viața ta. În luptă NU revine singură.",
+  "So… *nip*. Sorry! That is what a hit feels like. Here, fish broth — drink it. Press Q.":"Deci… *ham*. Scuze! Așa se simte o lovitură. Poftim, supă de pește — bea-o. Apasă Q.",
+  "Last one. When there is someone to talk to, or a door, or a thing worth touching, press E.":"Ultima. Când e cineva cu care să vorbești, o ușă sau ceva de atins, apasă E.",
+  "Come talk to me.":"Vino să vorbești cu mine.",
+  "That is everything. Walk, jump, claws up close, spells from the bar, drink before you are empty, E to talk.":"Asta e tot. Mergi, sari, gheare de aproape, vrăji din bară, bea înainte să rămâi gol, E ca să vorbești.",
+  "And keep moving between swings — a cat that stands still gets pecked.":"Și mișcă-te între lovituri — o pisică ce stă pe loc e ciugulită.",
+  "…Here they come!":"…Uite-i că vin!",
+  "or left-click the ground":"sau click stânga pe jos",
+  "the joystick":"joystick-ul",
+  "or tap the ground":"sau atinge solul",
+  "the ⤒ button":"butonul ⤒",
+  "or right-click":"sau click dreapta",
+  "the F button":"butonul F",
+  "2  3  4 for the other slots":"2  3  4 pentru celelalte sloturi",
+  "tap the first spell":"atinge prima vrajă",
+  "in the bar at the bottom":"din bara de jos",
+  "Z for mana potions":"Z pentru poțiuni de mană",
+  "tap the red potion":"atinge poțiunea roșie",
+  "next to your spells":"de lângă vrăji",
+  "the E button":"butonul E",
+  "Quest":"Misiune",
+  "The Wizard's Keep":"Fortăreața Vrăjitorului",
+  "World Map":"Harta lumii",
+  "You":"Tu",
+  "Objective":"Obiectiv",
+  "Discovered":"Descoperit",
+  "Undiscovered":"Nedescoperit",
+  "You have not been here yet.":"N-ai fost încă aici.",
+  "You are here":"Ești aici",
+  "Fast travel":"Călătorie rapidă",
+  "Not discovered":"Nedescoperit",
+  "◆ Current objective":"◆ Obiectivul curent",
+  "Click a place to travel · Esc to close":"Apasă pe un loc ca să călătorești · Esc ca să închizi",
+  "The Green Forest":"Pădurea Verde",
+  "Wizard's Hill":"Dealul Vrăjitorului",
+  "The Salt Coast":"Coasta Sărată",
+  "The Deep":"Adâncul",
+  "Whisker City":"Orașul Mustăților",
+  "The Royal Heights":"Înălțimile Regale",
+  "Rattania":"Rattania",
+  "Where Puiutu wakes up. Something old lives under the clearing.":"Aici se trezește Puiutu. Sub poiană trăiește ceva foarte vechi.",
+  "Closed for survey work, they said. There is a gate at the bottom, and something guarding it.":"Închisă pentru măsurători, ziceau. Jos e o poartă, și ceva care o păzește.",
+  "The old wizard's tower. The prophecy he keeps there is not very specific.":"Turnul bătrânului vrăjitor. Profeția pe care o ține acolo nu e foarte precisă.",
+  "Sand, a pier, a fort, and a pig who will talk for five fish.":"Nisip, un ponton, un fort și un porc care vorbește pentru cinci pești.",
+  "The shallows. Nobody breathes down there without a suit.":"Apele mici. Nimeni nu respiră acolo jos fără costum.",
+  "Drowned ruins around a sealed portal. The runes want something violet.":"Ruine înecate în jurul unui portal sigilat. Runele vor ceva violet.",
+  "Below the sanctum, something is asleep. Mostly.":"Sub sanctuar doarme ceva. În mare parte.",
+  "The square. Union soldiers, a fountain, and the most elegant cat in town.":"Piața. Soldați ai Uniunii, o fântână și cea mai elegantă pisică din oraș.",
+  "Every little fish counts. Neutral, they say. Very neutral.":"Fiecare peștișor contează. Neutri, zic ei. Foarte neutri.",
+  "The Cat King's castle. Lions on every wall.":"Castelul Regelui Pisicilor. Lei pe fiecare perete.",
+  "Shacks on stilts. NomNom's forge, and an alley everyone avoids.":"Barăci pe piloni. Forja lui NomNom și o alee pe care toți o ocolesc.",
+  "Wooden shanties climbing toward a fortress of scavenged junk.":"Barăci de lemn care urcă spre o fortăreață din vechituri.",
+  "The throne cavern of Rattus Magnus.":"Caverna tronului lui Rattus Magnus.",
+  "Where both armies go down, and keep going down.":"Pe unde coboară ambele armate, și tot coboară.",
+  "Agent Snout waits for you at the cave mouth.":"Agentul Râtan te așteaptă la intrarea în peșteră.",
+  "And Bristle — make sure the rats hear about the lion. Lions are very good for business.":"Și Țepoș — ai grijă să afle șobolanii de leu. Leii sunt foarte buni pentru afaceri.",
+  "You smell of cave, darling. Wet stone and something violet.":"Miroși a peșteră, dragă. Piatră udă și ceva violet.",
+  "Stand downwind of me. Elegantly.":"Stai în bătaia vântului, departe de mine. Elegant.",
+  "They all left. Every soldier, every banner. Up the hill, for the crown.":"Au plecat toți. Fiecare soldat, fiecare steag. Sus pe deal, pentru coroană.",
+  "I am not a soldier. Nobody ever asked me to be anything but pretty.":"Eu nu sunt soldat. Nimeni nu mi-a cerut vreodată să fiu altceva decât frumos.",
+  "…It is very quiet. I keep grooming the same paw.":"…E foarte liniște. Îmi tot ling aceeași labă.",
+  "They say the King is asleep in his big chair. That you did it.":"Se zice că Regele doarme în scaunul lui mare. Că tu ai făcut asta.",
+  "My whole life I was told he was a lion.":"Toată viața mi s-a spus că e un leu.",
+  "Is he… small? Close up?":"E… mic? De aproape?",
+  "The same mark on both sides' weapons. The whole square is whispering it.":"Același semn pe armele ambelor tabere. Toată piața șoptește asta.",
+  "I always thought elegance was not caring. It turns out it was not looking.":"Am crezut mereu că eleganța înseamnă să nu-ți pese. De fapt însemna să nu te uiți.",
+  "I am looking now. It is hideous. Mrrow.":"Acum mă uit. E hidos. Mrrr.",
+  "You did not win, you know. The flags are all still up.":"N-ai câștigat, să știi. Steagurile sunt toate tot acolo.",
+  "But I took the ribbon off my collar. The Union's colours. I do not want to wear anyone's colours any more.":"Dar mi-am scos panglica de la zgardă. Culorile Uniunii. Nu mai vreau să port culorile nimănui.",
+  "Elegant, no?":"Elegant, nu?",
+  "The road east is open, is it? Mind the bank.":"Drumul spre est e deschis, nu? Ai grijă cu banca.",
+  "Banks are older than prophecies, and right far more often.":"Băncile sunt mai vechi decât profețiile și au dreptate mult mai des.",
+  "You went to the bottom of the cave. It is on your whiskers.":"Ai fost pe fundul peșterii. Se vede pe mustățile tale.",
+  "The prophecy says the one who mends this land will \"break a thing that should not be broken\".":"Profeția spune că cel care repară țara asta va „sparge ceva ce n-ar trebui spart”.",
+  "I always thought it meant a curse. I hope it did not mean her.":"Am crezut mereu că e vorba de un blestem. Sper că nu era vorba de ea.",
+  "The crown has sent for you. Crowns send for people when they have run out of their own.":"Coroana a trimis după tine. Coroanele trimit după oameni când nu mai au ai lor.",
+  "Go, if you like. Then come back and tell me what is in the throne room. I have always wanted to know.":"Du-te, dacă vrei. Apoi vino să-mi spui ce e în sala tronului. Mereu am vrut să știu.",
+  "Both kings. Neither dead. That is not in the prophecy at all.":"Amândoi regii. Niciunul mort. Asta nu e deloc în profeție.",
+  "Good. I was getting tired of it.":"Bine. Începusem să mă satur de ea.",
+  "Paper! Every wizard in history looking for the magic word, and it was a receipt.":"Hârtie! Toți vrăjitorii din istorie au căutat cuvântul magic, și era o chitanță.",
+  "The prophecy said you would put the land back together.":"Profeția zicea că vei pune țara la loc.",
+  "It is not together. But it has stopped pretending, and that is a start.":"Nu e la loc. Dar a încetat să se prefacă, și ăsta e un început.",
+  "I am writing a new prophecy. A shorter one. \"Somebody turned up.\"":"Scriu o profeție nouă. Una mai scurtă. „A venit cineva.”",
+  "Oink~ A splendid quarter, little customer! Splendid!":"Oink~ Un trimestru splendid, micuțule client! Splendid!",
+  "Our mining division has had something of a breakthrough. I cannot say more. I will not say more. Oink.":"Divizia noastră minieră a avut o mică descoperire. Nu pot spune mai mult. Nu voi spune mai mult. Oink.",
+  "The crown is spending again! Wars are so good for savings.":"Coroana cheltuie iar! Războaiele sunt atât de bune pentru economii.",
+  "Deposit, deposit. A fish in the bank is a fish nobody can blame you for.":"Depune, depune. Un pește la bancă e un pește pentru care nu te poate învinui nimeni.",
+  "A king asleep is still a king who owes us money. Oink~":"Un rege adormit e tot un rege care ne datorează bani. Oink~",
+  "Kings come and go, Puiutu. Interest is forever.":"Regii vin și pleacă, Puiutu. Dobânda e veșnică.",
+  "Crystal futures are up three hundred percent. Mmm. Lovely numbers.":"Contractele pe cristale au crescut cu trei sute la sută. Mmm. Cifre minunate.",
+  "Nobody asks where numbers come from. That is what makes them lovely.":"Nimeni nu întreabă de unde vin cifrele. De asta sunt minunate.",
+  "Two columns. Union, Federation. Both in the black. Numbers never lie, young Puiutu.":"Două coloane. Uniunea, Federația. Amândouă pe plus. Cifrele nu mint niciodată, tinere Puiutu.",
+  "They simply do not volunteer anything.":"Doar că nu spun nimic din proprie inițiativă.",
+  "Everyone upstairs is SO happy this week! There was cake!":"Toată lumea de sus e ATÂT de fericită săptămâna asta! A fost și tort!",
+  "Nobody will tell me what the cake was for.":"Nimeni nu vrea să-mi spună pentru ce a fost tortul.",
+  "Agent Snout came back from the cave and sat at his desk for two whole days without saying anything.":"Agentul Râtan s-a întors din peșteră și a stat la birou două zile întregi fără să zică nimic.",
+  "He is usually ever so chatty. He used to tell me about the lobsters.":"De obicei e foarte vorbăreț. Îmi povestea despre homari.",
+  "Today he asked me if I ever wondered what the vault is for. I said fish! He did not laugh.":"Azi m-a întrebat dacă m-am gândit vreodată la ce folosește seiful. Am zis pești! N-a râs.",
+  "Is it true you met a real king? Was he shiny? I bet he was shiny.":"E adevărat că ai cunoscut un rege adevărat? Strălucea? Pun pariu că strălucea.",
+  "The pig from the cave came and sat by my stream last night.":"Porcul din peșteră a venit și a stat lângă pârâul meu azi-noapte.",
+  "He had a notebook open on his knee. He did not write anything in it.":"Avea un carnețel deschis pe genunchi. N-a scris nimic în el.",
+  "I think he was waiting for somebody to tell him what he is now.":"Cred că aștepta să-i spună cineva ce e el acum.",
+  "Two thrones, two sleepers. Nobody died. They will not know what to do with that.":"Două tronuri, doi adormiți. N-a murit nimeni. Nu vor ști ce să facă cu asta.",
+  "While they wake up, look at what their soldiers were holding.":"Cât se trezesc ei, uită-te la ce țineau soldații lor în labe.",
+  "Look at whose name is on it.":"Uită-te al cui nume e pe ele.",
+  "Agent Snout went back up to write his report. He left you his Survey Badge.":"Agentul Râtan a urcat înapoi să-și scrie raportul. Ți-a lăsat insigna lui de topograf.",
+  "Agent Bristle":"Agentul Țepoș",
+  "And Snout went down with it. Good man. He always did know where the floor was.":"Și Râtan a coborât cu ea. Bravo lui. Mereu a știut unde e podeaua.",
+  "Right. Lead on. I shall be directly behind you.":"Bun. Ia-o înainte. Voi fi chiar în spatele tău.",
+  "Directly.":"Chiar în spatele tău.",
+  "Mind the left wall. It bites.":"Atenție la peretele din stânga. Mușcă.",
+  "No — the lobster by the left wall bites. The wall is fine.":"Nu — homarul de lângă peretele din stânga mușcă. Peretele e în regulă.",
+  "That is her. Queen Seby. The Ancient One.":"Ea e. Regina Seby. Cea Străveche.",
+  "She has been down here longer than the bank has been up there.":"E aici jos de mai mult timp decât e banca acolo sus.",
+  "She has never once come up to the garden, you know. She just… guards.":"N-a urcat niciodată în grădină, să știi. Doar… păzește.",
+  "I counted the crystals once. Then I was told not to count them. Then to count them again, quietly.":"Am numărat cristalele o dată. Apoi mi s-a spus să nu le număr. Apoi să le număr iar, în liniște.",
+  "You fight very well for someone who refuses to join an army.":"Te bați foarte bine pentru cineva care refuză să intre într-o armată.",
+  "My mother wanted me in banking. I said no, Mother, I want to work outdoors. And here I am. Underground.":"Mama mă voia bancher. I-am zis nu, mamă, vreau să lucrez afară. Și iată-mă. Sub pământ.",
+  "I do not fight. I am management. But paperwork can stop anything for a moment. Fill the meter and press C.":"Eu nu mă bat. Eu sunt conducerea. Dar hârțogăraia poate opri orice pentru o clipă. Umple bara și apasă C.",
+  "Do you ever get the feeling you are being helpful to someone you have never met?":"Ai vreodată senzația că ajuți pe cineva pe care nu l-ai întâlnit niciodată?",
+  "Lovely glow, isn't it. Head office calls it \"output\".":"Frumoasă lumină, nu? Sediul central îi spune „producție”.",
+  "Fresh air. Dreadful. Give me a good damp tunnel.":"Aer curat. Groaznic. Dă-mi un tunel umed și bun.",
+  "That mushroom keeps looking at me. Can mushrooms look?":"Ciuperca aia se tot uită la mine. Ciupercile pot să se uite?",
+  "I am not lost. I am surveying.":"Nu m-am rătăcit. Fac măsurători.",
+  "If anybody asks, I was never here. That is just good practice.":"Dacă întreabă cineva, n-am fost niciodată aici. Așa se face treaba.",
+  "Break the crystals first! She hides behind them!":"Sparge întâi cristalele! Se ascunde după ele!",
+  "Left! LEFT! Your other left!":"Stânga! STÂNGA! Cealaltă stânga!",
+  "She is slower after a charge. Now — now!":"E mai lentă după ce se repede. Acum — acum!",
+  "I am filing this under \"extremely dangerous\"!":"Trec asta la dosarul „extrem de periculos”!",
+  "CLOSED FOR SURVEY!":"ÎNCHIS PENTRU MĂSURĂTORI!",
+  "Everyone stop. Form 27-B. Thank you.":"Toată lumea stop. Formularul 27-B. Mulțumesc.",
+  "Halt! This area is under assessment!":"Stai! Zona e în curs de evaluare!",
+  "You are bleeding on my survey site. Please do not die on my survey site.":"Sângerezi pe șantierul meu. Te rog nu muri pe șantierul meu.",
+  "Drink something! Q! The red one!":"Bea ceva! Q! Pe cea roșie!",
+  "Oh, well done. Well — sorry, little fellow.":"Oh, bravo. Adică — îmi pare rău, micuțule.",
+  "Splendid. I shall note that down.":"Splendid. Notez.",
+  "Not yet. Paperwork takes time. Keep fighting.":"Încă nu. Hârtiile durează. Luptă în continuare.",
+  "CLOSED FOR":"ÎNCHIS PENTRU",
+  "SURVEY":"MĂSURĂTORI",
+  "Ah. You again. With that look. The runes, is it?":"Ah. Tot tu. Cu privirea aia. Runele, nu?",
+  "Well. The survey is… concluded, as it happens. Officially.":"Ei bine. Măsurătorile s-au… încheiat, de fapt. Oficial.",
+  "Unofficially, there are lobsters down there the size of filing cabinets. And something older, at the bottom.":"Neoficial, sunt homari acolo jos cât un fișet. Și ceva mai vechi, la fund.",
+  "I have walked that cave every day for a year. I know where the floor is. You do not.":"Am umblat prin peștera aia în fiecare zi, un an. Știu unde e podeaua. Tu nu.",
+  "Changed your mind? I have not. The offer stands.":"Te-ai răzgândit? Eu nu. Oferta rămâne.",
+  "I could come along. Purely as a consultant. No fee.":"Aș putea să vin cu tine. Strict ca și consultant. Gratis.",
+  "Come with me":"Vino cu mine",
+  "one friend at a time":"un singur prieten odată",
+  "I will go alone":"Merg singur",
+  "Of course. Of course.":"Desigur. Desigur.",
+  "I shall be right here. Should you need a consultant.":"Rămân chiar aici. Dacă ai nevoie de un consultant.",
+  "Agent Snout joined you.":"Agentul Râtan s-a alăturat.",
+  "Rocky gives the pig a long look, then trots back to the fountain.":"Rocky se uită lung la porc, apoi se întoarce la fântână.",
+  "Oh, marvellous. Marvellous! Is she gone? She is gone!":"Oh, minunat. Minunat! S-a dus? S-a dus!",
+  "And Agent Snout! Look at you! Head office said you would find someone soft enough to do it, and you DID.":"Și Agentul Râtan! Ia uite la tine! Sediul central a zis că o să găsești pe cineva destul de naiv s-o facă, și CHIAR AI GĂSIT.",
+  "…Find someone.":"…Să găsesc pe cineva.",
+  "Years we have waited on this seam. Nobody would go near her.":"Ani de zile am așteptat zăcământul ăsta. Nimeni nu se apropia de ea.",
+  "And you walked a cat right down to her. Splendid fieldwork. There will be a bonus in it.":"Iar tu ai adus o pisică direct la ea. Splendidă muncă de teren. O să iasă și un bonus.",
+  "They said it was a survey.":"Mi-au zis că sunt măsurători.",
+  "It WAS a survey! We surveyed whether she would fall over. She did!":"CHIAR AU FOST măsurători! Am măsurat dacă o să cadă. A căzut!",
+  "Here, cat — take one. Go on. We have crates of them, and you did the hard part.":"Poftim, pisică — ia unul. Hai. Avem lăzi întregi, și tu ai făcut partea grea.",
+  "Puiutu. I did not know. I want you to know that I did not know.":"Puiutu. Nu știam. Vreau să știi că nu știam.",
+  "…That is not true. I knew they wanted the crystals. I was very careful not to ask what for.":"…Nu e adevărat. Știam că vor cristalele. Am avut mare grijă să nu întreb pentru ce.",
+  "I think I should go back up. Write my report. That is what agents do.":"Cred că ar trebui să urc înapoi. Să-mi scriu raportul. Asta fac agenții.",
+  "Here. Hold onto this for me.":"Poftim. Păstrează asta pentru mine.",
+  "Agent Snout gave you his Survey Badge.":"Agentul Râtan ți-a dat insigna lui de topograf.",
+  "If anybody at the bank asks for it, tell them it is lost.":"Dacă o cere cineva de la bancă, spune-le că s-a pierdut.",
+  "And — thank you. For letting me come. It was the best survey I ever did.":"Și — mulțumesc. Că m-ai lăsat să vin. Au fost cele mai bune măsurători din viața mea.",
+  "Rocky comes bounding back to your side.":"Rocky vine țopăind înapoi lângă tine.",
+  "Survey Badge":"Insigna de topograf",
+  "Agent Snout's badge. He said he would not be needing it on the way back up.":"Insigna Agentului Râtan. A zis că nu-i mai trebuie la drumul înapoi.",
+  "Agent Snout: Closed for Survey (C)":"Agentul Râtan: Închis pentru măsurători (C)",
   "Something in the garden wants to talk to you.":"Ceva din grădină vrea să vorbească cu tine.",
   "Find the old wizard’s castle, west of the garden.":"Găsește castelul bătrânului vrăjitor, la vest de grădină.",
   "The flock is down. The library door is clear.":"Stolul e la pământ. Ușa bibliotecii e liberă.",
@@ -4878,11 +5133,12 @@ function spawnCompanion(){ COMP.x=P.x-P.facing*46; COMP.y=P.groundY; COMP.stayin
 // stay, he is only in the room you left him in. Before that, he waits in his own room (a hub with `rocky`).
 function rockyInHub(){
   const H=A&&A.hub; if(!H || H.underwater) return false;
+  if(S.companion && snoutWith()) return !!H.rocky;   // one friend at a time: he waits at the fountain
   if(S.companion){ if(!COMP.staying) return true; return S.rockyStayArea ? S.rockyStayArea===curArea : !!H.rocky; }
   return !!H.rocky;
 }
 // in a side-on (platformer) area: is he here?
-function rockyHereSide(){ return S.companion && !(COMP.staying && S.rockyStayArea && S.rockyStayArea!==curArea); }
+function rockyHereSide(){ return S.companion && !snoutWith() && !(COMP.staying && S.rockyStayArea && S.rockyStayArea!==curArea); }
 function playerMaxHp(){ return Math.round((40+S.level*10+10*((S.perm&&S.perm.yellowherb)||0))*(1+(charmOn('heart')?0.3:0)+(charmOn('goldbanana')?0.15:0))); }
 // ── Level scaling ─────────────────────────────────────────────────────────────────────────
 // Every fight was tuned for the level you would usually have when you reach it, and then never
@@ -5031,6 +5287,9 @@ function sewerClimbOut(){
 }
 function doInteract(){
   if(!inGame || loreActive || LIGHTS.active || CIRC.active || LOCK.active) return;
+  // Rocky's last lesson: press E next to him
+  if(TRAIN.on && TRAIN_STEPS[TRAIN.step] && TRAIN_STEPS[TRAIN.step].id==='talk' && !TRAIN.waiting && rockyInHub()
+     && Math.hypot(HUB.cat.x-HUB.rocky.x,HUB.cat.y-HUB.rocky.y)<110){ TRAIN.talked=true; return; }
   const t=interactTarget();
   if(t==='sewerexit'){ sewerClimbOut(); return; }
   if(t==='rocky') openDialogue(HUB_ROCKY_NPC);
@@ -5063,8 +5322,8 @@ function doInteract(){
       else if((HUB.garrison||[]).some(u=>u.key==='rat_emissary'))
         npcSay('Rat Emissary: Away from the stand. That suit is not for cats who cannot pay for it.','rat_emissary');
       else { toast('Something is missing here… you need a diving suit. Ask Sir Oink at the bank.'); SFX&&SFX.tone&&SFX.tone(200,0.12,'sine',0.05); } }
-  else if(t==='bankdesk'){ const bd=A.hub.bankdesk; sayLines(T(bd.name||'Sir Oink'), bd.lines||[], {img:PIG_IMG[bd.img], bg:'#1b2433', tone:300, then:()=>openMarket('bank')}); }
-  else if(t==='staff'){ const s=HUB.nearStaff; if(s) sayLines(T(s.name||'Pig'), s.lines||[], {img:PIG_IMG[s.img], bg:'#1b2433', tone:340}); }
+  else if(t==='bankdesk'){ const bd=A.hub.bankdesk; sayLines(T(bd.name||'Sir Oink'), storyTalk('oink', OINK_LATER, bd.lines||[]), {img:PIG_IMG[bd.img], bg:'#1b2433', tone:300, then:()=>openMarket('bank')}); }
+  else if(t==='staff'){ const s=HUB.nearStaff; if(s) sayLines(T(s.name||'Pig'), STAFF_LATER[s.name] ? storyTalk('staff_'+s.name, STAFF_LATER[s.name], s.lines||[]) : (s.lines||[]), {img:PIG_IMG[s.img], bg:'#1b2433', tone:340}); }
   else if(t==='merge') mgOpen();
   else if(t==='door'){ const dr=HUB.nearDoor; if(dr){
       if(dr.minigame==='minecart'){ mcOpen(); return; }   // the Rat Warren mine ride
@@ -5076,16 +5335,17 @@ function doInteract(){
       // defensive: a closed road is no longer offered as a door at all, so this should be
       // unreachable — but if it ever is, it stays quiet unless somebody is there to speak
       if(dr.requires && !gateOpen(dr.requires)){ npcSay(dr.lockedMsg, dr.speaker); return; }
-      // the Lair's tunnel is sealed by a conduit gate, and it has to be powered EVERY time you go in.
-      // The first time it also opens for good in the art (the cave swaps in place); after that the
-      // puzzle still stands between you and Seby, and solving it walks you straight through.
+      // the Lair's tunnel is sealed by a conduit gate, and it has to be powered EVERY time you go in —
+      // so the gate is always drawn shut, and solving the puzzle walks you straight through.
       if(dr.to==='sebyboss'){ circOpen(()=>{ if(!S.sebyGateOpen){ S.sebyGateOpen=true; save(); toast('The gate grinds open — the way to the Lair is clear.'); } go(); }); }
       // a door with a sigil plate stays shut until its crest is formed. Unlike the conduit this
       // is solved ONCE — a door you have opened is a door you have opened.
       else if(dr.sigil && !(S.locks&&S.locks[dr.sigil])){ lockOpen(dr.sigil, go); }
       else go();
     } }
-  else if(t==='cave'){ const cv2=A.hub.cave; enterArea(cv2.to,false); }
+  else if(t==='cave'){ const cv2=A.hub.cave;
+      if(!S.snout && GARRISON_SHOW.snoutAtCave() && cv2.to==='cave'){ snoutJoinScene(()=>enterArea(cv2.to,false)); return; }
+      enterArea(cv2.to,false); }
   else if(t==='portal') enterPortal(nearPortal);
   else if(t==='hubnpc') openDialogue(A.hub.npc);
   else if(t==='npc') openDialogue(nearNpc);
@@ -5904,6 +6164,7 @@ function hubMobKilled(d,now){
   const nm=d.sea?d.kind.name:(d.type==='rat'?unitName('rat','soldier')
     :(d.type==='pigeon'?'Pigeon':d.type==='clobster'?'Crystal Lobster':'Duck')+' Lv.'+((d.level||1)+((HUB.lvMob&&HUB.lvMob.bonus)||0)));   // the same level its name tag shows
   toast(nm+' defeated!  +'+moneyText(d.kind.coins)+'  +'+d.kind.xp+' XP');
+  snoutOnKill();
   questProgress('defeat'); checkAchievements(); syncHUD(); save();
 }
 // Queen Seby falls (hub version — the side-scroll boss path lives in killEnemy)
@@ -5915,7 +6176,8 @@ function sebyDefeated(b,now){
   S.sebyDefeated=true; storySet('seby');
   SEBY_MUSIC.finale();                                     // the bells come down; then the cave is quiet
   setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.sebyMusic) MUSIC.start(); }, 4200);
-  setTimeout(refreshGarrison, 900);   // he does not wait for you to leave — he turns up over her body
+  HUB.pigletIn={phase:'wait', motes:[]};   // on his way already — so the parked cart is not drawn before he arrives
+  setTimeout(pigletEntrance, 300);   // he does not wait for you to leave — he wheels his cart in over her body
   // the crystal is NOT loot. The piglet by the portal hands you one, and that is the point.
   grantSpell('crystalspikes','Queen Seby\'s power is yours — Crystal Spikes learned!');
   SFX.win();
@@ -6269,6 +6531,7 @@ function castSpell(slot){
   }
   P.mana-=sp.mana; SPELL_CD[id]=now+sp.cd; P.atkAnim=now; P.castAnim=now;   // castAnim: the cast pose, not the swipe
   sp.cast(casterAim());
+  TRAIN.cast=true;
   syncHUD();
 }
 // refresh the 4 hotbar slots (icon / empty / mana-gated / cooldown sweep). Called every
@@ -7063,6 +7326,8 @@ function merlinTalk(){
       ()=>grantSpell('purrward','Purr Ward learned!'));
     return;
   }
+  const later=storyTalk('merlin', MERLIN_LATER, null);
+  if(later){ merlinSay(later); return; }
   merlinSay([MERLIN_LINES[_merlinLine % MERLIN_LINES.length]]); _merlinLine++;
 }
 function hubMerlin(){ const H=A.hub; return H.merlin?{x:H.merlin.xf*HUB.worldW, y:H.merlin.yf*VH}:null; }
@@ -7383,7 +7648,7 @@ const ARMY_STATS={
 };
 // each sprite sheet's native facing (which way the art looks): +1 = right, -1 = left
 const ARMY_NATIVE={ cat_soldier:1, cat_commander:1, rat_soldier:-1, rat_commander:1, cat_emissary:1,
-                    pig_agent:1, rat_emissary:-1 };
+                    pig_agent:1, snout:1, rat_emissary:-1 };
 
 //──────── GARRISON — troops stationed in a faction's own territory ────────────
 // Not the battle system: these never fight and can't be hurt. They stand, patrol and have
@@ -7396,7 +7661,9 @@ function refreshGarrison(){ if(A&&A.hub) initGarrison(); }
 // The piglet only turns up over Seby's body — and in Free Play, where she gets back up, he has
 // to leave again. `sebyDefeated` alone would keep him standing next to a living boss.
 const GARRISON_SHOW={
-  sebyGone(){ return !!(HUB.boss && HUB.boss.defeated); },
+  sebyGone(){ return !!(HUB.boss && HUB.boss.defeated) && !(HUB.pigletIn && HUB.pigletIn.phase!=='done'); },   // (while he is still wheeling in, he is the scene's)
+  // Agent Snout keeps his post until he comes with you, or until Seby is down and it no longer matters
+  snoutAtCave(){ return S.snout!=='with' && S.snout!=='left' && !(S.sebyDefeated && !freeMode()); },
 };
 function initGarrison(){
   HUB.garrison=[];
@@ -7469,11 +7736,17 @@ function npcSay(msg, speakerKey){
 }
 // Some of them have a scene rather than a set of idle lines.
 const GARRISON_TALK={
+  // closed for survey — until the runes open the cave. Then he asks to come.
+  snout(u,spr){
+    if(!gateOpen('caveOpen')){ sayLines(garrisonName(u), u.lines.map(l=>l.replace(/^Agent Snout: /,'')), SNOUT_DLG()); return; }
+    snoutJoinScene(null);
+  },
   // He hands you one off the top of the pile without being asked, the way you would hand someone
   // a biscuit. He has crates of them. The one crystal the whole ocean is waiting for is, to him,
   // a rounding error — and the player will not understand what they have helped with until the
   // same violet glow turns up wired into the back of a machine.
   piglet(u,spr){
+    if(snoutWith() && !S.snoutScene){ snoutPigletScene(); return; }
     const say=(lines,then)=>sayLines(garrisonName(u), lines, {img:spr&&spr.walk[0], bg:'#2a1b33', tone:520, then});
     if(hasPurpleCrystal() || S.pigletGave){
       say(['Mind the cart, mind the cart.',
@@ -7749,14 +8022,16 @@ function enterHub(fromRight){
   // Rocky: follows the cat if recruited, else waits as an NPC on the path
   if(rockyInHub()){ const r=HUB.rocky;
     if(S.companion && COMP.staying && S.rockyStayArea===curArea && S.rockyStayX!=null){ r.x=S.rockyStayX*HUB.worldW; r.y=S.rockyStayY*VH; }
-    else if(S.companion){ r.x=c.x-c.facing*46; r.y=c.y; }
+    else if(S.companion && !snoutWith()){ r.x=c.x-c.facing*46; r.y=c.y; }
     else { r.x=H.rocky.xf*HUB.worldW; r.y=H.rocky.yf*VH; if(maskReady()){const p=nearestWalk(r.x,r.y); if(p){r.x=p.x;r.y=p.y;}} }
     r.facing=1; r.moving=false; r.phase=0;
   }
+  snoutEnterHub();
   HUB._needSolvedMobs=false;
   HUB.lvMob=lvlScale(false); HUB.lvBoss=lvlScale(true);
   HUB.dmgScale=(AREA_BOSS[curArea] ? HUB.lvBoss : HUB.lvMob).dmg;   // every hit you take in this room
   spawnHubMobs();
+  if(H.tutorial==='combat') setTimeout(()=>{ if(curArea==='towergarden') trainStart(); }, 400); else if(TRAIN.on){ TRAIN.on=false; TRAIN.dummy=null; trainPanel(); }
   armyInit();   // Feline Union vs Rat Federation (zones with hub.battle)
   initGarrison();   // stationed troops (no combat) — see the City
   HUB.fish=[];                          // fish removed → coins now spawn on walkable ground
@@ -7764,7 +8039,7 @@ function enterHub(fromRight){
   // Queen Seby — the top-down boss (only the sebyboss arena defines hub.boss)
   HUB.shards=[]; HUB.crystals=[];   // clear every hub so her crystal barrier never bleeds onto other maps
   HUB.spirit=null; HUB.spores=[]; HUB.carry=false; HUB.ride=null; HUB.hangar=null; HUB.cut=null; HUB.flashAt=0; HUB.nearSewerExit=false;
-  HUB.crowd=null; HUB.square=false;
+  HUB.crowd=null; HUB.square=false; HUB.pigletIn=null;
   if(H.boss){
     let bx=H.boss.xf*HUB.worldW, by=H.boss.yf*VH;
     if(maskReady()){ const p=nearestWalk(bx,by); if(p){bx=p.x;by=p.y;} }
@@ -8978,6 +9253,7 @@ function updateCine(now){
         then:()=>{ if(HUB.cine===C) cineNext(Date.now()); }}); }
     return;
   }
+  if(st.until){ if(st.until(now)) cineNext(now); return; }   // something in the room has to finish first
   if(now-C.t0 >= (st.ms||0)) cineNext(now);
 }
 function drawCine(){
@@ -9036,14 +9312,14 @@ function drawCut(cut){
 }
 // who is speaking, and the faces in the dialogue box
 const CINE_FACE={
-  snout:()=>ARMY_SPR.pig_agent.walk[0], oink:()=>PIG_IMG.siroink, seby:()=>SEBYI.walk0,
+  snout:()=>ARMY_SPR.snout.walk[0], bristle:()=>ARMY_SPR.pig_agent.walk[0], oink:()=>PIG_IMG.siroink, seby:()=>SEBYI.walk0,
   coon:()=>BOSSI.walk0, ratking:()=>RKINGI.sit, catking:()=>CKINGI.sit,
 };
 // the bank, as the pigs keep it: Sir Oink behind his desk, Agent Snout at his elbow
 function bankCut(caption){
   return {img:'maps/bankinterior.png', fx:0.47, fy:0.80, zoom:1.15, caption, tint:'rgba(20,14,8,.18)',
     actors:[{img:CINE_FACE.oink, xf:0.505, yf:0.678, h:0.17, cut:0.76},
-            {img:CINE_FACE.snout, xf:0.400, yf:0.845, h:0.14, bob:true}]};
+            {img:CINE_FACE.bristle, xf:0.400, yf:0.845, h:0.14, bob:true}]};
 }
 function startBossOpening(){
   HUB.cine=null;
@@ -9057,9 +9333,17 @@ function startBossOpening(){
         "These stones sang before your kind had names. I have kept them asleep for a thousand years.",
         "Every crystal you take wakes something you cannot put back to sleep.",
         "Turn around. Or be buried with them."]}},
+      // Snout is down here with you, so somebody else keeps the watch up top — another agent, in the
+      // bank's black, who knows exactly why Snout came along. The player hears it; Snout never does.
       {cut:{img:'maps/Garden_Final.jpeg', fx:0.10, fy:0.76, zoom:1.35, caption:'Meanwhile, at the mouth of the cave…', tint:'rgba(12,16,34,.3)',
-            actors:[{img:CINE_FACE.snout, xf:0.118, yf:0.865, h:0.13, bob:true}]}, ms:900},
-      {say:{name:'Agent Snout', img:CINE_FACE.snout, tone:260, lines:[
+            actors:[{img:snoutWith()?CINE_FACE.bristle:CINE_FACE.snout, xf:0.118, yf:0.865, h:0.13, bob:true}]}, ms:900},
+      snoutWith()
+      ? {say:{name:'Agent Bristle', img:CINE_FACE.bristle, tone:220, lines:[
+        "Is the cat in? Splendid.",
+        "And Snout went down with it. Good man. He always did know where the floor was.",
+        "She has guarded those crystals for a thousand years. We tried everything. Lawyers. Dynamite. Lawyers with dynamite.",
+        "Let the little one do the digging. We will collect afterwards. Oink."]}}
+      : {say:{name:'Agent Snout', img:CINE_FACE.snout, tone:260, lines:[
         "Is the cat in? Splendid.",
         "She has guarded those crystals for a thousand years. We tried everything. Lawyers. Dynamite. Lawyers with dynamite.",
         "Let the little one do the digging. We will collect afterwards. Oink."]}},
@@ -9114,15 +9398,15 @@ function startBossOpening(){
       {say:{name:'Sir Oink', img:CINE_FACE.oink, bg:'#20301f', tone:420, lines:[
         "The King wants a lion. A big one. Made of light, he says — cheaper than an army.",
         "Approve it. Bill the interest to his grandchildren.",
-        "And Snout — make sure the rats hear about the lion. Lions are very good for business."]}},
-      {say:{name:'Agent Snout', img:CINE_FACE.snout, tone:260, lines:["Yes, Sir Oink. Oink."]}},
+        "And Bristle — make sure the rats hear about the lion. Lions are very good for business."]}},
+      {say:{name:'Agent Bristle', img:CINE_FACE.bristle, tone:220, lines:["Yes, Sir Oink. Oink."]}},
       {endcut:true, cam:null, ms:700},
     ]);
   }
 }
 // ── The Hangar's opening ───────────────────────────────────────────────────────────────────
-// Played once. Agent Snout — the pig who closed the cave "for survey work", and whose colleague
-// was so delighted in Seby's lair — is waiting at the bottom of the lift. He explains, politely,
+// Played once. Agent Bristle — the bank's other agent, the one who kept watch at the cave mouth
+// while Snout went down with you — is waiting at the bottom of the lift. He explains, politely,
 // and gives the order. Then the scene cuts to the garden: the mushroom feels it wake, and stops
 // being a mushroom. It arrives in a flash between the cat and the machine.
 const SNOUT_SPEECH=[
@@ -9152,9 +9436,9 @@ function updateHangarIntro(b,now){
     ag.facing = c.x<ag.x ? -1 : 1;
     if(Math.hypot(c.x-ag.x,c.y-ag.y)<430 || now-H.t0>5000){
       H.phase='speech'; H.pin={x:c.x,y:c.y};
-      sayLines('Agent Snout', SNOUT_SPEECH, {img:ARMY_SPR.pig_agent.walk[0], bg:'#1b2433', tone:260, then:()=>{
+      sayLines('Agent Bristle', SNOUT_SPEECH, {img:ARMY_SPR.pig_agent.walk[0], bg:'#1b2433', tone:260, then:()=>{
         const t=Date.now(); H.phase='order'; H.t0=t; ag.facing = b.x<ag.x ? -1 : 1;
-        npcBark('Agent Snout','Wake it.',{img:ARMY_SPR.pig_agent.walk[0], bg:'#1b2433', tone:260});
+        npcBark('Agent Bristle','Wake it.',{img:ARMY_SPR.pig_agent.walk[0], bg:'#1b2433', tone:260});
         b.stage='wake'; b.stageUntil=Infinity;       // it stays waking until the Glow arrives
         b.facing = c.x<b.x ? -1 : 1;                 // and the first thing it looks at is you
         SFX.seq&&SFX.seq([55,65,82,110],'sawtooth',0.10);
@@ -9204,7 +9488,7 @@ function drawSnout(g,ag){
   g.restore();
   if(HUB.hangar && HUB.hangar.phase==='await'){
     g.save(); g.textAlign='center'; g.font='bold 12px Trebuchet MS'; g.fillStyle='rgba(255,231,176,.95)';
-    g.fillText('Agent Snout', sx, ag.y-h-8); g.restore();
+    g.fillText(T('Agent Bristle'), sx, ag.y-h-8); g.restore();
   }
 }
 // black bars while the hangar's opening plays, the garden cut, and the flash it ends in
@@ -9856,6 +10140,7 @@ function updateHubBoss(now){
     }
     return;
   }
+  if(b.stunUntil>now){ b.moving=false; return; }   // the survey sign holds even her, briefly
   const ddx=c.x-b.x, ddy=c.y-b.y, dist=Math.hypot(ddx,ddy);
   // she only turns when you are clearly on her other side, and the turn itself is eased (faceS)
   if(Math.abs(ddx)>46 && b.state!=='dash') b.facing=ddx<0?-1:1;
@@ -9931,7 +10216,7 @@ function updateHub(){
   if(input.jumpQueued){ if(c.z<=0){
     const H=A.hub||{};
     c.vz = H.jumpVf ? H.jumpVf*VH : (H.jumpV||7.2);
-    SFX.jump&&SFX.jump(); } input.jumpQueued=false; }
+    SFX.jump&&SFX.jump(); TRAIN.jumped=true; } input.jumpQueued=false; }
   if(c.z>0 || c.vz>0){ c.z+=c.vz; c.vz-=0.55; if(c.z<=0){ c.z=0; c.vz=0; landHub(); } }
   const airborne = c.z>0.5;
   // a leap between ledges should carry you FORWARD, not just up
@@ -10091,7 +10376,7 @@ function updateHub(){
     // FOLLOWING and FIGHTING are separate. Rocky joins the scripted fight at the wizard's gate
     // without being recruited — he just wades into the birds from where he already stands. He
     // does not tag along afterwards; only the quest makes him a companion.
-    const follows = S.companion && !COMP.staying;
+    const follows = S.companion && !COMP.staying && !snoutWith();
     const fights  = follows || !!A.hub.rockyFights;
     if(follows){
       // follow the cat (target a spot just behind it), constrained to the path
@@ -10130,6 +10415,9 @@ function updateHub(){
         break; } } }
     HUB.nearRocky = !S.companion && Math.hypot(c.x-r.x,c.y-r.y)<64;
   }
+  updateSnout(now);
+  updatePigletIn(now);
+  updateTraining(now);
   // ducks (kept on the yellow path when a mask exists)
   // school centres drift around the reef; their members steer to follow (see below)
   if(HUB.schools && maskReady()) for(const sc of HUB.schools){
@@ -10147,6 +10435,7 @@ function updateHub(){
       if(d.sea){ d.hp=d.maxHp; if(d.schoolRef){ d.x=d.schoolRef.x+d.ox; d.y=d.schoolRef.y+d.oy; } else { d.x=d.homeX; d.y=d.homeY; } d.respawnAt=0; }
       else { const lvl=rollPigeonLevel(),k=enemyKind(d.type,lvl); d.level=lvl;d.kind=k;scaleMob(d);d.sprite=(d.type==='pigeon'&&PIGEON_VARIANTS[lvl-1])?PIGEON_VARIANTS[lvl-1].sprite:null;d.speed=0.55+Math.random()*0.35+lvl*0.03;d.x=d.homeX;d.y=d.homeY;d.respawnAt=0; }
     } continue; }
+    if(d.stunUntil>now){ d.moving=false; continue; }   // frozen by Agent Snout's survey sign: no moving, no biting
     if(d.kx){ // knockback, but never shoved off the path
       const nx=d.x+d.kx;
       if(!maskReady() || maskClassify(nx,d.y)==='walk') d.x=nx; else d.kx=0;
@@ -10287,7 +10576,8 @@ function hubAttack(){
   // everything damageable in the hub — mobs, army, crystals, bosses — goes through the
   // one shared helper, so melee and spells can never diverge on what they can hit
   const hit=damageAtPoint(c.x,c.y,74,playerAtkDmg(),{knock:4})>0;
-  if(hit) SFX.hit();
+  if(hit){ SFX.hit(); buddyCharge(9); }
+  trainHitDummy(c);
 }
 function drawHub(){
   const IM=hubImg();
@@ -10302,6 +10592,9 @@ function drawHub(){
   const items=[];
   if(!HUB.square) for(const d of HUB.ducks){ if(!d.dead) items.push({z:d.y, t:'mob', d}); }
   if(rockyInHub()) items.push({z:HUB.rocky.y, t:'rocky'});
+  if(HUB.snout.on) items.push({z:HUB.snout.y, t:'buddysnout'});
+  if(TRAIN.dummy && curArea==='towergarden') items.push({z:TRAIN.dummy.y, t:'traindummy'});
+  if(HUB.pigletIn && (HUB.pigletIn.phase==='walk'||HUB.pigletIn.phase==='fill')) items.push({z:HUB.pigletIn.y, t:'pigletin'});
   const mgPos=hubMerge(); if(mgPos) items.push({z:mgPos.y, t:'barrel', p:mgPos});
   const mlPos=hubMerlin(); if(mlPos) items.push({z:mlPos.y, t:'merlin', p:mlPos});
   const poPos=hubPotions(); if(poPos) items.push({z:poPos.y+30, t:'potions', p:poPos});
@@ -10648,6 +10941,9 @@ function drawHub(){
     } else if(it.t==='crystal'){ const k=it.k, sc=hubScale(k.y), sx=k.x-HUB.camx, now=Date.now();
       drawSebyCrystal(g, sx, k.y, k.h*sc, now-(k.hitFlash||0)<90, 1-k.hp/k.maxHp);
       // damage shows through the crack sprite / flash — no floating HP bar
+    } else if(it.t==='buddysnout'){ drawBuddySnout(g);
+    } else if(it.t==='traindummy'){ drawTrainDummy(g);
+    } else if(it.t==='pigletin'){ drawPigletIn(g);
     } else if(it.t==='rocky'){ const r=HUB.rocky, sc=hubScale(r.y)*0.92, sx=r.x-HUB.camx, now=Date.now();
       const key=rockyPose(r, now, S.companion?'idle':'sit');
       drawDogSprite(g,sx,r.y,r.facing,86*sc,key);
@@ -10678,6 +10974,8 @@ function drawHub(){
     if(!CINE.hideCat && !CINE.hideLabels && !(HUB.cine && HUB.cine.catHidden)) g.fillText(myName, sx, y-86*sc);
     if(NET.myBubble && Date.now()-NET.myBubble.t<4000) drawChatBubble(sx, y-98*sc, NET.myBubble.text);
   }
+  if(HUB.pigletIn) drawPigletMotes(g);
+  if(HUB.snout.on || BUDDY.sign) drawBuddyOverlay(g);   // Agent Snout's sign, the things it froze, and what he is saying
   // Queen Seby's glowing crystal shards (drawn above everything on the floor)
   if(HUB.shards) for(const s of HUB.shards){
     const sx=s.x-HUB.camx; if(sx<-30||sx>VW+30) continue;
@@ -11460,12 +11758,12 @@ function drawPlayer(){
 //──────── Rocky the companion
 function updateRockyBtn(){
   const b=document.getElementById('btnRocky'); if(!b) return;
-  b.style.display = S.companion ? 'block' : 'none';
+  b.style.display = (S.companion && !snoutWith()) ? 'block' : 'none';
   b.textContent = COMP.staying ? 'Follow' : 'Stay';
   b.classList.toggle('staying', COMP.staying);
 }
 function toggleRocky(){
-  if(!S.companion) return;
+  if(!S.companion || snoutWith()) return;
   COMP.staying = !COMP.staying;
   S.rockyStay = COMP.staying; save();
   if(COMP.staying){ toast('Rocky will wait here.');
@@ -11516,6 +11814,438 @@ function drawCompanion(){
   drawDogSprite(g,sx,COMP.y-FOOT_LIFT,COMP.facing,64,key);
   g.font='bold 10px Trebuchet MS';g.textAlign='center';g.fillStyle='rgba(255,231,176,.9)';
   g.fillText(COMP.staying?'Rocky':'Rocky',sx,COMP.y-FOOT_LIFT-66);
+}
+// ── the piglet's entrance: Seby is barely down when he comes out of the tunnel behind you,
+//    pushing an empty cart, all the way across her lair to the portal. Her crystals — the barrier
+//    you just broke — lift off the floor and fill it while he watches. Nobody has to say what the
+//    player has just helped with; the cart says it. ──
+// A route across a top-down room that stays on the painted walk mask: breadth-first over a coarse
+// grid (kept `clear` cells away from the edges where it can be), then pulled straight wherever
+// the floor allows. Returns world-space points from (x0,y0) to (x1,y1), or null.
+function hubPathFind(x0,y0,x1,y1,clear){
+  if(!maskReady()) return [{x:x0,y:y0},{x:x1,y:y1}];
+  const C=14, W=HUB.worldW, GW=Math.ceil(W/C), GH=Math.ceil(VH/C);
+  const base=new Uint8Array(GW*GH);
+  for(let gy=0;gy<GH;gy++) for(let gx=0;gx<GW;gx++) base[gy*GW+gx]= maskClassify(gx*C+C/2, gy*C+C/2)==='walk' ? 1 : 0;
+  const lineOK=(ax,ay,bx,by)=>{ const n=Math.ceil(Math.hypot(bx-ax,by-ay)/6);
+    for(let i=1;i<n;i++){ const t=i/n; if(maskClassify(ax+(bx-ax)*t, ay+(by-ay)*t)!=='walk') return false; } return true; };
+  const attempt=(r)=>{
+    let ok=base;
+    if(r>0){ ok=new Uint8Array(GW*GH);
+      for(let gy=0;gy<GH;gy++) for(let gx=0;gx<GW;gx++){ let all=1;
+        for(let dy=-r;dy<=r&&all;dy++) for(let dx=-r;dx<=r;dx++){ const xx=gx+dx, yy=gy+dy;
+          if(xx<0||yy<0||xx>=GW||yy>=GH||!base[yy*GW+xx]){ all=0; break; } }
+        ok[gy*GW+gx]=all; } }
+    const cellOf=(x,y)=>{ let gx=Math.max(0,Math.min(GW-1,Math.floor(x/C))), gy=Math.max(0,Math.min(GH-1,Math.floor(y/C)));
+      if(ok[gy*GW+gx]) return gy*GW+gx;
+      let best=-1,bd=1e9;                                            // nearest usable cell
+      for(let i=0;i<ok.length;i++) if(ok[i]){ const d=Math.hypot(i%GW-gx, Math.floor(i/GW)-gy); if(d<bd){bd=d;best=i;} }
+      return best; };
+    const s=cellOf(x0,y0), e=cellOf(x1,y1); if(s<0||e<0) return null;
+    const prev=new Int32Array(GW*GH).fill(-1); prev[s]=s; const q=[s];
+    for(let h=0; h<q.length; h++){ const c=q[h]; if(c===e) break; const cx=c%GW, cy=(c-cx)/GW;
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){
+        const nx=cx+dx, ny=cy+dy; if(nx<0||ny<0||nx>=GW||ny>=GH) continue;
+        const n=ny*GW+nx; if(prev[n]>=0 || !ok[n]) continue;
+        if(dx&&dy && (!ok[cy*GW+nx] || !ok[ny*GW+cx])) continue;    // no cutting corners
+        prev[n]=c; q.push(n); } }
+    if(prev[e]<0) return null;
+    const cells=[]; for(let c=e; ; c=prev[c]){ cells.push(c); if(c===s) break; }
+    cells.reverse();
+    const pts=[{x:x0,y:y0}].concat(cells.map(c=>({x:(c%GW)*C+C/2, y:Math.floor(c/GW)*C+C/2})), [{x:x1,y:y1}]);
+    // string-pull: keep only the corners you cannot see past
+    const out=[pts[0]]; let i=0;
+    while(i<pts.length-1){ let j=pts.length-1; while(j>i+1 && !lineOK(pts[i].x,pts[i].y,pts[j].x,pts[j].y)) j--; out.push(pts[j]); i=j; }
+    return out;
+  };
+  return attempt(clear||0) || (clear ? attempt(0) : null);
+}
+// a point a given distance along a path (paths carry their running lengths in .len)
+function pathMeasure(pts){ let L=0; pts[0].len=0; for(let i=1;i<pts.length;i++){ L+=Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y); pts[i].len=L; } return L; }
+function pathAt(pts,d){
+  if(d<=0) return {x:pts[0].x, y:pts[0].y, dx:pts[1]?pts[1].x-pts[0].x:0};
+  for(let i=1;i<pts.length;i++) if(pts[i].len>=d){ const a=pts[i-1], b=pts[i], t=(d-a.len)/((b.len-a.len)||1);
+    return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, dx:b.x-a.x}; }
+  const z=pts[pts.length-1], y=pts[pts.length-2]||z; return {x:z.x, y:z.y, dx:z.x-y.x};
+}
+const PIG_CART_ROLL=[0,1,2,3,4,5].map(i=>'props/cart/roll_empty'+i+'.png');
+function pigletEntrance(){
+  const H=A.hub, gp=(H.garrison||[]).find(g=>g.talkFn==='piglet'), cd=(H.decor||[]).find(d=>d.showFn==='sebyGone');
+  const dr=(H.doors||[])[0];
+  if(!gp || !cd || !dr){ HUB.pigletIn=null; refreshGarrison(); return; }
+  const W=HUB.worldW;
+  // the cart leads and the piglet follows it like a carriage, both on the painted floor: the route
+  // runs from the tunnel to where the cart is parked, and he walks GAP behind it along the same line
+  const sx0=dr.xf*W, sy0=dr.yf*VH, cx1=cd.xf*W, cy1=cd.yf*VH;
+  const route=hubPathFind(sx0,sy0,cx1,cy1,2) || [{x:sx0,y:sy0},{x:cx1,y:cy1}];
+  const GAP=Math.hypot((gp.xf-cd.xf)*W,(gp.yf-cd.yf)*VH);
+  HUB.pigletIn={phase:'wait', route, len:pathMeasure(route), gap:GAP, s:GAP, x:sx0, y:sy0, cx:sx0, cy:sy0, fc:-1, fp:-1,
+    tx:gp.xf*W, ty:gp.yf*VH, cartH:cd.h||118, scale:gp.scale||1,
+    ph:0, alpha:0, fill:0, t0:0, motes:[], nextMote:0, hop:0,
+    // where the crystals come from: the shards of her barrier, and the magic circle she stood in
+    src:(H.crystals||[]).map(k=>({x:k.xf*W, y:k.yf*VH-40})).concat(H.boss?[{x:H.boss.xf*W, y:H.boss.yf*VH-50}]:[])};
+  const P0=HUB.pigletIn;
+  let walkTo={x:(gp.xf+0.14)*W, y:(gp.yf-0.03)*VH};
+  if(maskReady()){ const q=nearestWalk(walkTo.x,walkTo.y); if(q) walkTo=q; }
+  // and Puiutu goes the long way round too, never across the crystals
+  const catRoute=(hubPathFind(HUB.cat.x,HUB.cat.y,walkTo.x,walkTo.y,1)||[walkTo]).slice(1).map(q=>[q.x/W, q.y/VH]);
+  const ok=cineStart('piglet', [
+    {ms:1200},                                                     // the bells, then quiet
+    {cam:()=>dr.xf*W, ms:600, do:()=>{ P0.phase='walk'; P0.t0=Date.now(); SFX.tone&&SFX.tone(150,0.25,'sine',0.04); }},
+    {until:()=>P0.phase==='fill' || P0.phase==='done'},             // he rolls the cart across (the camera goes with him)
+    {until:()=>P0.phase==='done'},                                   // the cart fills
+    {ms:700},
+    {walk:catRoute.length?catRoute:[[walkTo.x/W, walkTo.y/VH]]},                              // Puiutu goes over to see — so whoever talks next is in frame
+    {cam:null, ms:10},
+  ]);
+  if(!ok){ HUB.pigletIn=null; refreshGarrison(); pigletArrived(); }  // already seen (story mode): he is simply there
+}
+function pigletArrived(){
+  if(snoutWith() && !S.snoutScene) setTimeout(snoutPigletScene, 500);   // Snout is here to see who turned up
+}
+function updatePigletIn(now){
+  const p=HUB.pigletIn; if(!p || p.phase==='wait' || p.phase==='done') return;
+  if(p.phase==='walk'){
+    p.alpha=Math.min(1,(now-p.t0)/700);                            // out of the dark of the tunnel
+    p.s=Math.min(p.len, p.s+2.3); p.ph+=0.1;
+    const c=pathAt(p.route,p.s), pg=pathAt(p.route,p.s-p.gap);
+    p.cx=c.x; p.cy=c.y; p.x=pg.x; p.y=pg.y;
+    if(Math.abs(c.dx)>0.5) p.fc=c.dx<0?-1:1;                         // which way the cart is rolling
+    if(Math.abs(pg.dx)>0.5) p.fp=pg.dx<0?-1:1;
+    if(now>(p.creak||0)){ p.creak=now+520; SFX.tone&&SFX.tone(95+Math.random()*20,0.07,'triangle',0.025); }
+    if(p.s>=p.len){ p.phase='fill'; p.t0=now; p.nextMote=now+250; }
+    if(HUB.cine) HUB.cine.camX=(p.x+p.cx)/2;
+    return;
+  }
+  // fill: shards arc out of the floor and into the cart, faster and faster, until it is heaped
+  { const dx=p.tx-p.x, dy=p.ty-p.y, d=Math.hypot(dx,dy);           // the last step round to the side of his cart
+    if(d>1.5){ p.x+=dx/d*Math.min(d,1.6); p.y+=dy/d*Math.min(d,1.6); p.ph+=0.1; p.stepping=true; if(Math.abs(dx)>0.5) p.fp=dx<0?-1:1; }
+    else { p.stepping=false; p.fp=-1; } }
+  const el=now-p.t0, cx=p.cx, cy=p.cy-p.cartH*hubScale(p.cy)*0.55;
+  if(el<2000 && now>p.nextMote && p.src.length){
+    const s=p.src[Math.floor(Math.random()*p.src.length)];
+    p.motes.push({x0:s.x+(Math.random()-.5)*40, y0:s.y+(Math.random()-.5)*30, t0:now, dur:650+Math.random()*250,
+                  arc:70+Math.random()*70, ox:(Math.random()-.5)*30, rot:Math.random()*6});
+    p.nextMote=now+Math.max(45, 170-el*0.07);
+  }
+  for(const m of p.motes){ if(!m.landed && now-m.t0>=m.dur){ m.landed=true;
+    p.fill=Math.min(1,p.fill+0.045);
+    SFX.tone&&SFX.tone(780+Math.random()*500,0.05,'sine',0.025); } }
+  p.motes=p.motes.filter(m=>!m.landed);
+  p.hop = Math.max(0, Math.sin(el*0.012))*6;                       // he bounces on his toes
+  if(el>2000 && !p.motes.length){ p.fill=1;
+    if(!p.chimed){ p.chimed=true; SFX.seq&&SFX.seq([659,784,988],'triangle',0.05);
+      for(let i=0;i<10;i++) floatText(cx+(Math.random()-.5)*90, cy-Math.random()*40, '✦', i%2?'#e2b8ff':'#b07cf0'); }
+    if(el>2600){ p.phase='done'; refreshGarrison(); pigletArrived(); }
+  }
+}
+function drawPigletIn(g){
+  const p=HUB.pigletIn, now=Date.now(), spr=ARMY_SPR.pig_agent;
+  // the cart, in front of him — rolling while he walks, then crossfading empty to heaped
+  const cxW=p.cx, cyW=p.cy, csc=hubScale(cyW), ch=p.cartH*csc, sx=cxW-HUB.camx;
+  const walking=p.phase==='walk';
+  const im=decorImg(walking ? PIG_CART_ROLL[Math.floor(now/1000*10)%6] : 'props/cart/empty.png'), full=decorImg('props/cart/full.png');
+  g.save(); g.globalAlpha=p.alpha;
+  g.save(); g.globalAlpha*=0.3; g.fillStyle='#000'; g.beginPath(); g.ellipse(sx,cyW-4*csc,ch*0.42,ch*0.1,0,0,7); g.fill(); g.restore();
+  if(im.complete&&im.naturalWidth){ const cw=im.naturalWidth/im.naturalHeight*ch;
+    g.save(); g.translate(sx,cyW);
+    if(walking && p.fc<0) g.scale(-1,1);                           // the roll frames are drawn going right
+    g.drawImage(im,-cw/2,-ch,cw,ch);
+    if(!walking && p.fill>0 && full.complete){ g.globalAlpha*=p.fill; g.drawImage(full,-cw/2,-ch,cw,ch); }
+    g.restore(); }
+  // the piglet, pushing
+  const sc=hubScale(p.y), h=78*sc*1.32*p.scale;
+  const img=(walking||p.stepping) ? spr.walk[Math.floor(p.ph)%spr.walk.length] : spr.walk[0];
+  if(img&&img.complete&&img.naturalWidth){ const iw=img.naturalWidth/img.naturalHeight*h, px=p.x-HUB.camx;
+    g.save(); g.globalAlpha*=0.2; g.fillStyle='#000'; g.beginPath(); g.ellipse(px,p.y,h*0.32,h*0.09,0,0,7); g.fill(); g.restore();
+    g.save(); g.translate(px, p.y-(walking?Math.abs(Math.sin(p.ph*Math.PI))*3*sc:p.hop*sc));
+    if(p.fp<0) g.scale(-1,1);                                      // the sheet faces right
+    g.drawImage(img,-iw/2,-h,iw,h); g.restore(); }
+  g.restore();
+}
+function drawPigletMotes(g){
+  const p=HUB.pigletIn; if(!p || !p.motes.length) return;
+  const now=Date.now(), cx=p.cx, cy=p.cy-p.cartH*hubScale(p.cy)*0.55;
+  g.save(); g.globalCompositeOperation='lighter';
+  for(const m of p.motes){ const k=Math.min(1,(now-m.t0)/m.dur), e=k*k*(3-2*k);
+    const x=m.x0+(cx+m.ox-m.x0)*e-HUB.camx, y=m.y0+(cy-m.y0)*e-Math.sin(k*Math.PI)*m.arc;
+    const gr=g.createRadialGradient(x,y,0,x,y,14); gr.addColorStop(0,'rgba(226,184,255,.9)'); gr.addColorStop(1,'rgba(150,70,240,0)');
+    g.fillStyle=gr; g.beginPath(); g.arc(x,y,14,0,7); g.fill();
+    g.save(); g.translate(x,y); g.rotate(m.rot+k*5); g.fillStyle='#d9a8ff';
+    g.beginPath(); g.moveTo(0,-8); g.lineTo(4,0); g.lineTo(0,8); g.lineTo(-4,0); g.closePath(); g.fill(); g.restore(); }
+  g.restore();
+}
+
+//──────── COMPANIONS — one friend at a time ────────────────────────────────────────────────────
+// A companion is not a quest giver who stands still. They walk with you, talk while you walk,
+// have one move that is entirely theirs, and want something of their own. Rocky is the first;
+// Agent Snout is the second, and the cave is his story.
+//
+// Agent Snout spends the early game in front of the cave saying it is closed for survey work.
+// When the runes send you down there, he invites himself along: he knows the floor, he does not
+// fight ("I am management"), and he can make anything stop for a moment with a survey sign.
+// Over Seby's body the piglet with the cart thanks him for finding someone soft enough to do it.
+// He did not know what the crystals were for. He had been careful not to ask.
+// S.snout: null (never asked) · 'declined' · 'with' (following you) · 'left' (went back up)
+function snoutWith(){ return S.snout==='with'; }
+function snoutHere(){ return !!(HUB.snout && HUB.snout.on && !HUB.snout.leaving); }
+const SNOUT_SPR=()=>ARMY_SPR.snout;
+const SNOUT_DLG=()=>({img:ARMY_SPR.snout.walk[0], bg:'#1b2433', tone:260});
+const PIGLET_DLG=()=>({img:ARMY_SPR.pig_agent.walk[0], bg:'#2a1b33', tone:520});
+HUB.snout={on:false, x:0, y:0, facing:1, phase:0, moving:false, alpha:1, leaving:false, atkUntil:0};
+// the special meter and the speech bubble. Charge comes from fighting next to him.
+const BUDDY={charge:0, sign:null, bubble:null, queue:[], nextIdle:0, lowHpAt:0, quipAt:0, slotShown:null};
+
+const SNOUT_TALK={
+  // the first time he walks into a room with you
+  enter:{
+    garden:['Right. Lead on. I shall be directly behind you.', 'Directly.'],
+    cave:['Mind the left wall. It bites.', 'No — the lobster by the left wall bites. The wall is fine.'],
+    sebyboss:['That is her. Queen Seby. The Ancient One.',
+              'She has been down here longer than the bank has been up there.',
+              'She has never once come up to the garden, you know. She just… guards.'],
+  },
+  // walking about, now and then
+  idle:{
+    cave:['I counted the crystals once. Then I was told not to count them. Then to count them again, quietly.',
+          'You fight very well for someone who refuses to join an army.',
+          'My mother wanted me in banking. I said no, Mother, I want to work outdoors. And here I am. Underground.',
+          'I do not fight. I am management. But paperwork can stop anything for a moment. Fill the meter and press C.',
+          'Do you ever get the feeling you are being helpful to someone you have never met?',
+          'Lovely glow, isn\'t it. Head office calls it "output".'],
+    garden:['Fresh air. Dreadful. Give me a good damp tunnel.',
+            'That mushroom keeps looking at me. Can mushrooms look?'],
+    any:['I am not lost. I am surveying.',
+         'If anybody asks, I was never here. That is just good practice.'],
+  },
+  fight:['Break the crystals first! She hides behind them!',
+         'Left! LEFT! Your other left!',
+         'She is slower after a charge. Now — now!',
+         'I am filing this under "extremely dangerous"!'],
+  special:['CLOSED FOR SURVEY!','Everyone stop. Form 27-B. Thank you.','Halt! This area is under assessment!'],
+  lowhp:['You are bleeding on my survey site. Please do not die on my survey site.',
+         'Drink something! Q! The red one!'],
+  kill:['Oh, well done. Well — sorry, little fellow.','Splendid. I shall note that down.'],
+};
+
+// ── the speech bubble over his head — talking while you walk never stops the game ──
+function snoutSay(line){ if(!snoutHere()||!line) return;
+  BUDDY.bubble={text:line, until:Date.now()+2600+line.length*45}; }
+function snoutSayQueue(lines){ if(!lines||!lines.length) return; BUDDY.queue=lines.slice(1); snoutSay(lines[0]); }
+function snoutPick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+function snoutEnterHub(){
+  const s=HUB.snout, H=A&&A.hub, c=HUB.cat;
+  // his part ends with Seby. If the lair scene never got to play (you walked out, a reload, an old
+  // save), he still goes: once she is down, he is back at the bank writing his report.
+  if(S.snout==='with' && S.sebyDefeated && (S.snoutScene || curArea!=='sebyboss')){
+    S.snout='left'; S.snoutScene=true;
+    if(!S.items.includes('snoutbadge')) S.items.push('snoutbadge');
+    save(); updateRockyBtn();
+    setTimeout(()=>toast('Agent Snout went back up to write his report. He left you his Survey Badge.'), 1200);
+  }
+  const route=['garden','cave','sebyboss'].includes(curArea);
+  if(snoutWith() && !route && !S.snoutWaitTold){ S.snoutWaitTold=true; save();
+    setTimeout(()=>toast('Agent Snout waits for you at the cave mouth.'), 900); }
+  if(route) S.snoutWaitTold=false;
+  s.on = snoutWith() && route && !!H && !H.underwater && !HUB.square;
+  BUDDY.bubble=null; BUDDY.queue=[]; BUDDY.sign=null; BUDDY.pending=null;
+  if(s.on){
+    s.x=c.x-c.facing*58; s.y=c.y; if(maskReady() && !hubStand(s.x,s.y,false)){ s.x=c.x; s.y=c.y; }
+    s.alpha=1; s.leaving=false; s.facing=c.facing; s.phase=0; s.moving=false;
+    BUDDY.nextIdle=Date.now()+16000;
+    S.snoutSeen=S.snoutSeen||{};
+    const first=SNOUT_TALK.enter[curArea];
+    // held until any opening scene is over — Seby's lair opens with one, and he waits for it
+    if(first && !S.snoutSeen[curArea]){ S.snoutSeen[curArea]=true; save(); BUDDY.pending=first; BUDDY.pendingAt=Date.now()+1400; }
+  }
+  updateBuddySlot();
+}
+function updateSnout(now){
+  const s=HUB.snout; if(!s.on) return;
+  const c=HUB.cat;
+  if(s.leaving){                                   // walks off toward the tunnel and is gone
+    const dx=s.leaveX-s.x, dy=s.leaveY-s.y, d=Math.hypot(dx,dy);
+    if(d>4){ s.x+=dx/d*1.6; s.y+=dy/d*1.6; s.facing=dx<0?-1:1; s.moving=true; s.phase+=0.09; }
+    s.alpha-=0.006; if(s.alpha<=0){ s.on=false; updateBuddySlot(); }
+    return;
+  }
+  // follows a little further back than Rocky: he likes you between him and whatever is out there
+  const tx=c.x-c.facing*58, ty=c.y-6;
+  const ndx=(tx-s.x)*0.09, ndy=(ty-s.y)*0.09, nx=s.x+ndx, ny=s.y+ndy;
+  if(!maskReady() || hubStand(nx,s.y,false)) s.x=nx;
+  if(!maskReady() || hubStand(s.x,ny,false)) s.y=ny;
+  if(Math.hypot(c.x-s.x,c.y-s.y)>420 || (maskReady() && !hubStand(s.x,s.y,false) && Math.hypot(c.x-s.x,c.y-s.y)>80)){ s.x=c.x; s.y=c.y; }   // left behind or stuck: catches up
+  s.moving=Math.hypot(ndx,ndy)>0.35; if(s.moving) s.phase+=0.11;
+  if(Math.abs(ndx)>0.3) s.facing=ndx<0?-1:1;
+  // the bubble, and whatever he wanted to say after it
+  if(BUDDY.bubble && (dialogueActive||HUB.cine)) BUDDY.bubble.until+=16;   // hidden behind a scene: keep it for after
+  if(BUDDY.bubble && now>BUDDY.bubble.until){ BUDDY.bubble=null;
+    if(BUDDY.queue.length){ const nx2=BUDDY.queue.shift(); setTimeout(()=>snoutSay(nx2), 350); } }
+  if(dialogueActive || HUB.cine) { BUDDY.nextIdle=Math.max(BUDDY.nextIdle, now+6000); BUDDY.pendingAt=Math.max(BUDDY.pendingAt||0, now+1200); return; }
+  if(BUDDY.pending && now>BUDDY.pendingAt){ snoutSayQueue(BUDDY.pending); BUDDY.pending=null; BUDDY.nextIdle=now+16000; }
+  // chatter: fight calls while Seby stands, otherwise whatever is on his mind in this room
+  const sebyUp = HUB.boss && !HUB.boss.defeated && !HUB.boss.ck && !HUB.boss.rk && !HUB.boss.mb && HUB.boss.introShown;
+  if(!BUDDY.bubble && now>BUDDY.nextIdle){
+    const pool = sebyUp ? SNOUT_TALK.fight : (SNOUT_TALK.idle[curArea]||SNOUT_TALK.idle.any);
+    snoutSay(snoutPick(pool));
+    BUDDY.nextIdle = now + (sebyUp ? 9000+Math.random()*5000 : 24000+Math.random()*12000);
+  }
+  if(P.hp/P.maxHp<0.3 && now>BUDDY.lowHpAt){ BUDDY.lowHpAt=now+20000; snoutSay(snoutPick(SNOUT_TALK.lowhp)); }
+}
+// a kill near him: sometimes he says something about it
+function snoutOnKill(){ if(!snoutHere()) return; const now=Date.now();
+  buddyCharge(14);
+  if(now>BUDDY.quipAt && Math.random()<0.35 && !BUDDY.bubble){ BUDDY.quipAt=now+9000; snoutSay(snoutPick(SNOUT_TALK.kill)); } }
+function buddyCharge(n){ if(!snoutHere()) return; BUDDY.charge=Math.min(100,BUDDY.charge+n); updateBuddySlot(); }
+
+// ── CLOSED FOR SURVEY: he plants a sign, and for three seconds nothing in reach is allowed to move ──
+function buddySpecial(){
+  if(!snoutHere() || !topdownMode() || dialogueActive || HUB.cine) return;
+  if(BUDDY.charge<100){ snoutSay('Not yet. Paperwork takes time. Keep fighting.'); return; }
+  const now=Date.now(), c=HUB.cat, s=HUB.snout, R=220;
+  BUDDY.charge=0; s.atkUntil=now+650;
+  BUDDY.sign={x:c.x+c.facing*30, y:c.y+4, t0:now};
+  for(const d of HUB.ducks){ if(!d.dead && Math.hypot(d.x-c.x,d.y-c.y)<R){ d.stunUntil=now+3200; d.moving=false; } }
+  const b=HUB.boss;
+  if(b && !b.defeated && !b.ck && !b.rk && !b.mb && Math.hypot(b.x-c.x,b.y-c.y)<R+90){
+    b.stunUntil=now+2400; b.state='walk'; b.moving=false; }          // cuts a charge off mid-dash
+  damageAtPoint(c.x,c.y,R,Math.round(playerAtkDmg()*1.4),{knock:0,color:'#ffd86b'});
+  BUDDY.bubble=null; BUDDY.queue=[]; snoutSay(snoutPick(SNOUT_TALK.special));
+  SFX.tone&&SFX.tone(330,0.08,'square',0.05); SFX.tone&&SFX.tone(220,0.22,'square',0.05,0.08);
+  updateBuddySlot();
+}
+function updateBuddySlot(){
+  const el=document.getElementById('buddySlot'); if(!el) return;
+  const show=snoutHere();
+  if(show!==BUDDY.slotShown){ el.style.display=show?'flex':'none'; BUDDY.slotShown=show; }
+  if(!show) return;
+  const f=el.querySelector('.bFill'); if(f) f.style.height=BUDDY.charge+'%';
+  el.classList.toggle('ready', BUDDY.charge>=100);
+}
+function drawBuddySnout(g){
+  const s=HUB.snout, spr=SNOUT_SPR(), sc=hubScale(s.y), sx=s.x-HUB.camx, now=Date.now();
+  const h=92*sc, img=spr ? (now<s.atkUntil ? spr.atk : s.moving ? spr.walk[Math.floor(s.phase)%spr.walk.length] : spr.walk[0]) : null;
+  const bob=s.moving ? Math.abs(Math.sin(s.phase*Math.PI))*3*sc : Math.sin(now*0.003)*1.4*sc;
+  g.save(); g.globalAlpha=Math.max(0,s.alpha);
+  g.save(); g.globalAlpha*=0.2; g.fillStyle='#000'; g.beginPath(); g.ellipse(sx,s.y,h*0.3,h*0.085,0,0,7); g.fill(); g.restore();
+  if(img&&img.complete&&img.naturalWidth){ const iw=img.naturalWidth/img.naturalHeight*h;
+    g.save(); g.translate(sx,s.y-bob); if(s.facing!==ARMY_NATIVE.snout) g.scale(-1,1);
+    g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(img,-iw/2,-h,iw,h); g.restore(); }
+  if(!CINE.hideLabels){ g.textAlign='center'; g.font='bold 11px Trebuchet MS';
+    g.fillStyle='rgba(0,0,0,.6)'; g.fillText(T('Agent Snout'),sx+1,s.y-h-7);
+    g.fillStyle='rgba(255,214,226,.95)'; g.fillText(T('Agent Snout'),sx,s.y-h-8); }
+  g.restore();
+  s.bubbleAt={x:sx, y:s.y-h-22};   // the bubble itself is drawn in the overlay, above everything
+}
+// a small pixel-ish speech bubble, wrapped to a few words a line, kept on screen
+function drawBuddyBubble(g, x, y, text){
+  g.save(); g.font='bold 12px Trebuchet MS'; g.textAlign='center'; g.textBaseline='alphabetic';
+  const maxW=210, words=text.split(' '), lines=[]; let cur='';
+  for(const w of words){ const t=cur?cur+' '+w:w; if(g.measureText(t).width>maxW && cur){ lines.push(cur); cur=w; } else cur=t; }
+  if(cur) lines.push(cur);
+  const lh=15, w=Math.min(maxW, Math.max(...lines.map(l=>g.measureText(l).width)))+18, hgt=lines.length*lh+10;
+  const bx=Math.max(6, Math.min(VW-w-6, x-w/2)), by=Math.max(6, y-hgt);
+  g.fillStyle='#3a2410'; g.beginPath(); g.roundRect(bx-2,by-2,w+4,hgt+4,7); g.fill();
+  g.fillStyle='#f6e6be'; g.beginPath(); g.roundRect(bx,by,w,hgt,6); g.fill();
+  const tx=Math.max(bx+10, Math.min(bx+w-10, x));                   // the tail points at him
+  g.fillStyle='#3a2410'; g.beginPath(); g.moveTo(tx-7,by+hgt+1); g.lineTo(tx+7,by+hgt+1); g.lineTo(tx,by+hgt+9); g.fill();
+  g.fillStyle='#f6e6be'; g.beginPath(); g.moveTo(tx-5,by+hgt-1); g.lineTo(tx+5,by+hgt-1); g.lineTo(tx,by+hgt+5); g.fill();
+  g.fillStyle='#3a2410'; lines.forEach((l,i)=>g.fillText(l, bx+w/2, by+16+i*lh));
+  g.restore();
+}
+// drawn over everything: the survey sign, and the little "?" over whatever it froze
+function drawBuddyOverlay(g){
+  const now=Date.now(), sg=BUDDY.sign;
+  if(sg){ const el=now-sg.t0; if(el>3200) BUDDY.sign=null; else {
+    const sc=hubScale(sg.y), sx=sg.x-HUB.camx, drop=Math.max(0,1-el/180), a=el>2800?1-(el-2800)/400:1;
+    g.save(); g.globalAlpha=a;
+    if(el<600){ g.strokeStyle='rgba(255,216,107,'+(1-el/600)+')'; g.lineWidth=4; g.beginPath(); g.ellipse(sx,sg.y,220*el/600,220*el/600*0.38,0,0,7); g.stroke(); }
+    const py=sg.y-drop*60;
+    g.fillStyle='#6b4a1f'; g.fillRect(sx-3*sc, py-70*sc, 6*sc, 70*sc);
+    g.fillStyle='#ffd24a'; g.strokeStyle='#3a2410'; g.lineWidth=2.5;
+    g.beginPath(); g.roundRect(sx-48*sc, py-104*sc, 96*sc, 40*sc, 4); g.fill(); g.stroke();
+    g.fillStyle='#3a2410'; g.textAlign='center'; g.font='bold '+Math.round(12*sc)+'px Trebuchet MS';
+    g.fillText(T('CLOSED FOR'), sx, py-87*sc); g.fillText(T('SURVEY'), sx, py-72*sc);
+    g.restore(); } }
+  const mark=(x,y)=>{ const sx=x-HUB.camx; g.save(); g.globalAlpha=0.6+0.4*Math.sin(now*0.012);
+    g.fillStyle='#ffd86b'; g.font='bold 16px Trebuchet MS'; g.textAlign='center'; g.fillText('?', sx, y); g.restore(); };
+  for(const d of HUB.ducks){ if(!d.dead && d.stunUntil>now) mark(d.x, d.y-48); }
+  const b=HUB.boss; if(b && !b.defeated && b.stunUntil>now) mark(b.x, b.y-150);
+  const sn=HUB.snout; if(BUDDY.bubble && !dialogueActive && !HUB.cine && sn.on && sn.alpha>0.5 && sn.bubbleAt) drawBuddyBubble(g, sn.bubbleAt.x, sn.bubbleAt.y, T(BUDDY.bubble.text));
+}
+
+// ── at the cave mouth: he asks to come. It is the player's choice, and he can be asked again ──
+function snoutJoinScene(then){
+  const first=!S.snout;
+  const intro = first ? [
+    'Ah. You again. With that look. The runes, is it?',
+    'Well. The survey is… concluded, as it happens. Officially.',
+    'Unofficially, there are lobsters down there the size of filing cabinets. And something older, at the bottom.',
+    'I have walked that cave every day for a year. I know where the floor is. You do not.',
+  ] : ['Changed your mind? I have not. The offer stands.'];
+  sayLines('Agent Snout', intro, Object.assign(SNOUT_DLG(), {then:()=>askChoice({
+    name:'Agent Snout', img:ARMY_SPR.snout.walk[0], bg:'#1b2433',
+    text:'I could come along. Purely as a consultant. No fee.',
+    choices:[
+      {label:'Come with me', hint:'one friend at a time', onPick:()=>snoutJoin(then)},
+      {label:'I will go alone', onPick:()=>{ S.snout='declined'; save();
+        setTimeout(()=>sayLines('Agent Snout',['Of course. Of course.','I shall be right here. Should you need a consultant.'],
+          Object.assign(SNOUT_DLG(),{then})),60); }},
+    ]})}));
+}
+function snoutJoin(then){
+  S.snout='with'; save();
+  setTimeout(()=>{
+    toast('Agent Snout joined you.');
+    if(S.companion) setTimeout(()=>toast('Rocky gives the pig a long look, then trots back to the fountain.'), 1800);
+    updateRockyBtn(); refreshGarrison(); snoutEnterHub();
+    SFX.seq&&SFX.seq([392,494,587],'triangle',0.05);
+    if(then) then();
+  }, 60);
+}
+
+// ── over Seby's body ──
+function runScene(steps, done){
+  let i=0;
+  const next=()=>{ if(i>=steps.length){ if(done) done(); return; }
+    const st=steps[i++];
+    if(typeof st==='function'){ st(); next(); return; }
+    sayLines(st[0], st[2], Object.assign({}, st[1], {then:()=>setTimeout(next,40)})); };
+  next();
+}
+function snoutPigletScene(){
+  if(S.snoutScene || !snoutWith()) return;
+  if(dialogueActive || HUB.cine){ setTimeout(snoutPigletScene, 700); return; }
+  S.snoutScene=true; save();
+  BUDDY.bubble=null; BUDDY.queue=[];
+  const SN=SNOUT_DLG(), PG=PIGLET_DLG();
+  runScene([
+    ['Delighted Piglet', PG, ['Oh, marvellous. Marvellous! Is she gone? She is gone!',
+                              'And Agent Snout! Look at you! Head office said you would find someone soft enough to do it, and you DID.']],
+    ['Agent Snout', SN, ['…Find someone.']],
+    ['Delighted Piglet', PG, ['Years we have waited on this seam. Nobody would go near her.',
+                              'And you walked a cat right down to her. Splendid fieldwork. There will be a bonus in it.']],
+    ['Agent Snout', SN, ['They said it was a survey.']],
+    ['Delighted Piglet', PG, ['It WAS a survey! We surveyed whether she would fall over. She did!',
+                              'Here, cat — take one. Go on. We have crates of them, and you did the hard part.']],
+    ()=>{ if(!S.items.includes('purplecrystal')) S.items.push('purplecrystal'); S.pigletGave=true; save(); syncHUD();
+          toast('The piglet handed you a Purple Crystal.'); },
+    ['Agent Snout', SN, ['Puiutu. I did not know. I want you to know that I did not know.',
+                         '…That is not true. I knew they wanted the crystals. I was very careful not to ask what for.',
+                         'I think I should go back up. Write my report. That is what agents do.',
+                         'Here. Hold onto this for me.']],
+    ()=>{ if(!S.items.includes('snoutbadge')) S.items.push('snoutbadge'); save();
+          toast('Agent Snout gave you his Survey Badge.'); SFX.seq&&SFX.seq([523,440,392],'sine',0.05); },
+    ['Agent Snout', SN, ['If anybody at the bank asks for it, tell them it is lost.',
+                         'And — thank you. For letting me come. It was the best survey I ever did.']],
+  ], ()=>{
+    S.snout='left'; save();
+    const s=HUB.snout, dr=(A.hub.doors||[])[0];
+    s.leaving=true; s.leaveX=(dr?dr.xf:0.9)*HUB.worldW; s.leaveY=(dr?dr.yf:0.7)*VH;
+    BUDDY.bubble=null; updateBuddySlot(); updateRockyBtn();
+    if(S.companion) setTimeout(()=>toast('Rocky comes bounding back to your side.'), 2600);
+  });
 }
 //──────── player HP bar (top-left, on canvas)
 function drawPlayerHP(){
@@ -11629,10 +12359,10 @@ function openDialogue(npc,opt){
   const st=S.quests[npc.id];
   let lines;
   if(!st)                       lines=q.offer;        // first meeting -> offer quest
-  else if(st.state==='done')    lines=q.done;         // finished
+  else if(st.state==='done')    lines=(npc.id==='lucian' ? storyTalk('lucian', LUCIAN_LATER, q.done) : q.done);   // finished (Lucian keeps up with the news)
   else if(questDone(npc.id))    lines=q.complete;     // active & complete -> turn in
   else                          lines=q.progress;     // active & still working
-  dlgLines=lines; dlgIdx=0;
+  dlgLines=lines; dlgIdx=0; setVoice(q.name);
   document.getElementById('dlgName').textContent=q.name;
   drawPortrait(npc.dog?'__dog':npc.cat);
   showLine();
@@ -11640,6 +12370,135 @@ function openDialogue(npc,opt){
   SFX.tone(620,0.08,'sine',0.04);
   if(npc.cat && !S.catsMet[npc.cat]){S.catsMet[npc.cat]=true;checkAchievements();save();}
 }
+//──────── THE WORLD NOTICES ──────────────────────────────────────────────────────────────────
+// People in this world talk about what has happened in it. Each table below is a list of
+// [when, lines]: `when` is a story step (or a function), and the furthest one reached is what is
+// on that character's mind now. The first time you talk to them after it happened they tell you
+// all of it; after that they only mention it — one line, so nobody repeats a speech at you.
+function storyStage(table){
+  let at=null;
+  table.forEach((e,i)=>{ const w=e[0]; if(typeof w==='function' ? w() : storyAt(w)) at={i, id:(typeof w==='string'?w:(e[2]||'c'+i)), lines:e[1]}; });
+  return at;
+}
+function storyTalk(key, table, fallback){
+  const at=storyStage(table); if(!at) return fallback;
+  S.heard=S.heard||{};
+  if(S.heard[key]!==at.id){ S.heard[key]=at.id; save(); return at.lines; }
+  return [at.lines[Math.floor(Math.random()*at.lines.length)]];
+}
+const snoutBack=()=>S.snout==='left';
+
+// Lucian — the most elegant cat in the city, and the only one who stays when the soldiers go.
+const LUCIAN_LATER=[
+  ['seby',   ['You smell of cave, darling. Wet stone and something violet.',
+              'Stand downwind of me. Elegantly.']],
+  ['nomnom', ['They all left. Every soldier, every banner. Up the hill, for the crown.',
+              'I am not a soldier. Nobody ever asked me to be anything but pretty.',
+              '…It is very quiet. I keep grooming the same paw.']],
+  ['catking',['They say the King is asleep in his big chair. That you did it.',
+              'My whole life I was told he was a lion.',
+              'Is he… small? Close up?']],
+  ['evidence',['The same mark on both sides\' weapons. The whole square is whispering it.',
+              'I always thought elegance was not caring. It turns out it was not looking.',
+              'I am looking now. It is hideous. Mrrow.']],
+  ['organization',['You did not win, you know. The flags are all still up.',
+              'But I took the ribbon off my collar. The Union\'s colours. I do not want to wear anyone\'s colours any more.',
+              'Elegant, no?']],
+];
+// Merlin — the prophecy was never very specific, and the land keeps not matching it.
+const MERLIN_LATER=[
+  ['fivefish',['The road east is open, is it? Mind the bank.',
+              'Banks are older than prophecies, and right far more often.']],
+  ['seby',   ['You went to the bottom of the cave. It is on your whiskers.',
+              'The prophecy says the one who mends this land will "break a thing that should not be broken".',
+              'I always thought it meant a curse. I hope it did not mean her.']],
+  ['nomnom', ['The crown has sent for you. Crowns send for people when they have run out of their own.',
+              'Go, if you like. Then come back and tell me what is in the throne room. I have always wanted to know.']],
+  ['ratking',['Both kings. Neither dead. That is not in the prophecy at all.',
+              'Good. I was getting tired of it.']],
+  ['evidence',['Paper! Every wizard in history looking for the magic word, and it was a receipt.']],
+  ['organization',['The prophecy said you would put the land back together.',
+              'It is not together. But it has stopped pretending, and that is a start.',
+              'I am writing a new prophecy. A shorter one. "Somebody turned up."']],
+];
+// Sir Oink — always delighted, because whatever happens, the bank was on both sides of it.
+const OINK_LATER=[
+  ['seby',   ['Oink~ A splendid quarter, little customer! Splendid!',
+              'Our mining division has had something of a breakthrough. I cannot say more. I will not say more. Oink.']],
+  ['nomnom', ['The crown is spending again! Wars are so good for savings.',
+              'Deposit, deposit. A fish in the bank is a fish nobody can blame you for.']],
+  ['catking',['A king asleep is still a king who owes us money. Oink~']],
+  ['ratking',['Kings come and go, Puiutu. Interest is forever.']],
+];
+const STAFF_LATER={
+  'Mister Pig':[
+    ['seby',   ['Crystal futures are up three hundred percent. Mmm. Lovely numbers.',
+                'Nobody asks where numbers come from. That is what makes them lovely.']],
+    ['catking',['Two columns. Union, Federation. Both in the black. Numbers never lie, young Puiutu.',
+                'They simply do not volunteer anything.']],
+  ],
+  'Piggy Junior':[
+    ['seby',   ['Everyone upstairs is SO happy this week! There was cake!',
+                'Nobody will tell me what the cake was for.']],
+    [snoutBack,['Agent Snout came back from the cave and sat at his desk for two whole days without saying anything.',
+                'He is usually ever so chatty. He used to tell me about the lobsters.',
+                'Today he asked me if I ever wondered what the vault is for. I said fish! He did not laugh.'], 'snoutBack'],
+    ['catking',['Is it true you met a real king? Was he shiny? I bet he was shiny.']],
+  ],
+};
+// NomNom, at the forge in the slums — told once, the first time you come in after it happened
+const NOMNOM_NEWS=[
+  ['nomnom', [['The alley is quiet now. I walked down it yesterday. All the way to the end. Just to see if I could.',
+               'Aleea e liniștită acum. Am mers pe ea ieri. Până la capăt. Doar să văd dacă pot.']]],
+  ['catking',[['Soldiers came in for potions this morning. None of them knew what they were fighting for any more. They paid anyway.',
+               'Au venit soldați după poțiuni azi-dimineață. Niciunul nu mai știa pentru ce se bate. Au plătit oricum.']]],
+  ['evidence',[['That bank mark on the crates? I have melted a dozen buckles with it on. Both sides. I never once looked.',
+               'Semnul ăla de bancă de pe lăzi? Am topit o duzină de catarame cu el. De la ambele tabere. N-am fost atentă niciodată.']]],
+  ['organization',[['People keep coming in just to talk. Not to buy. To talk. I do not mind. Bring fish next time, though.',
+               'Oamenii tot intră doar să vorbească. Nu să cumpere. Să vorbească. Nu mă deranjează. Dar data viitoare adu pește.']]],
+];
+
+//──────── VOICES ──────────────────────────────────────────────────────────────────────────────
+// You should be able to tell who is talking with your eyes shut. Every speaker types with their own
+// little blip: a wave, a pitch, how much it wobbles, and how often it sounds (every Nth letter).
+const VOICES={
+  'The Glow':        {w:'sine',     f:520, v:0.04, n:3, vol:0.022},
+  'Agent Snout':     {w:'triangle', f:175, v:0.07, n:2, vol:0.035},
+  'Agent Bristle':   {w:'triangle', f:140, v:0.05, n:2, vol:0.035},
+  'Agent Trotter':   {w:'triangle', f:205, v:0.06, n:2, vol:0.033},
+  'Delighted Piglet':{w:'square',   f:610, v:0.22, n:2, vol:0.018},
+  'Sir Oink':        {w:'triangle', f:120, v:0.05, n:2, vol:0.04},
+  'Mister Pig':      {w:'triangle', f:160, v:0.03, n:3, vol:0.035},
+  'Piggy Junior':    {w:'square',   f:520, v:0.18, n:2, vol:0.017},
+  'NomNom':          {w:'sine',     f:720, v:0.25, n:2, vol:0.028},
+  'Lucian':          {w:'sine',     f:430, v:0.03, n:3, vol:0.028},
+  'Tomy':            {w:'sine',     f:640, v:0.06, n:3, vol:0.02},
+  'Rocky':           {w:'square',   f:300, v:0.3,  n:4, vol:0.02},
+  'Merlin':          {w:'triangle', f:260, v:0.12, n:2, vol:0.032},
+  'Old Shelly':      {w:'sine',     f:300, v:0.05, n:4, vol:0.03},
+  'Queen Seby':      {w:'sawtooth', f:85,  v:0.04, n:4, vol:0.03},
+  'Rattus Magnus':   {w:'sawtooth', f:105, v:0.05, n:3, vol:0.028},
+  'The Cat King':    {w:'triangle', f:225, v:0.04, n:3, vol:0.035},
+  'Rat Emissary':    {w:'triangle', f:330, v:0.1,  n:2, vol:0.03},
+};
+const VOICE_KIN=[                       // nobody listed by name: their side decides how they sound
+  [/Federation|Rat/, {w:'square',   f:400, v:0.15, n:2, vol:0.016}],
+  [/Union|Royal|Gate|Guard|Commander|Veteran/, {w:'square', f:250, v:0.03, n:2, vol:0.016}],
+  [/Agent|Pig/,      {w:'triangle', f:190, v:0.06, n:2, vol:0.033}],
+];
+let DLG_VOICE=null, _voiceCount=0;
+function setVoice(name){
+  _voiceCount=0; DLG_VOICE=null; if(!name) return;
+  for(const k in VOICES) if(k===name || T(k)===name){ DLG_VOICE=VOICES[k]; return; }
+  for(const [re,v] of VOICE_KIN) if(re.test(name)){ DLG_VOICE=v; return; }
+  DLG_VOICE={w:'sine', f:480, v:0.08, n:3, vol:0.022};
+}
+function voiceBlip(ch){
+  const v=DLG_VOICE; if(!v || !/[A-Za-zĂÂÎȘȚăâîșț0-9]/.test(ch)) return;
+  if((_voiceCount++)%v.n) return;
+  SFX.tone&&SFX.tone(v.f*(1+(Math.random()*2-1)*v.v), 0.045, v.w, v.vol);
+}
+
 // Every line in the dialogue box types itself out left to right, and a tap does nothing until the
 // whole line is written AND it has been up for a second — so nobody taps through what an NPC says.
 // The untyped tail is laid out invisibly, so the box never reflows as the words come in.
@@ -11657,7 +12516,7 @@ function typeDlg(text,nextLabel){
   paint();
   DLG_TYPE.timer=setInterval(()=>{
     if(tok!==DLG_TYPE.tok){ clearInterval(DLG_TYPE.timer); return; }
-    i=Math.min(full.length,i+1); paint();
+    i=Math.min(full.length,i+1); paint(); voiceBlip(full[i-1]||'');
     if(i>=full.length){ clearInterval(DLG_TYPE.timer); DLG_TYPE.typing=false;
       setTimeout(()=>{ if(tok===DLG_TYPE.tok) nx.style.visibility=''; }, Math.max(0,DLG_TYPE.readyAt-Date.now())); }
   }, DLG_CHAR_MS);
@@ -11691,6 +12550,7 @@ function sayLines(name,lines,opt){
   clearBark();
   sayActive=true; dialogueActive=true;
   sayArr=lines.slice(); sayIdx=0; sayThen=opt.then||null; sayPortrait=opt.portrait||null;
+  setVoice(name);
   document.getElementById('dlgName').textContent=name;
   if(opt.img) showPortrait(opt.img, opt.bg);
   else if(opt.portrait) drawPortrait(opt.portrait);
@@ -11759,6 +12619,17 @@ function glowLines(){
     "Three papers. That is enough to say it out loud.",
     "They will call you a liar. Both of them, in the same words.",
     "Say it anyway.",
+  ];
+  // once: he sat by the stream after the cave
+  if(S.snout==='left' && !(S.heard&&S.heard.glowSnout) && ev===0){ S.heard=S.heard||{}; S.heard.glowSnout=true; save(); return [
+    "The pig from the cave came and sat by my stream last night.",
+    "He had a notebook open on his knee. He did not write anything in it.",
+    "I think he was waiting for somebody to tell him what he is now.",
+  ]; }
+  if(ev===0 && storyAt('ratking')) return [
+    "Two thrones, two sleepers. Nobody died. They will not know what to do with that.",
+    "While they wake up, look at what their soldiers were holding.",
+    "Look at whose name is on it.",
   ];
   if(ev>0) return [
     "You're carrying paper now.",
@@ -11857,10 +12728,110 @@ function tutorialFire(id){
   const sp=tutSpeaker(beat.who);
   sayLines(sp.name, beat.lines, sp.opt);
 }
+//──────── ROCKY'S TRAINING — the first fight, taught one key at a time ─────────────────────────
+// The first time you step into the Tower Garden, the pigeons are not there yet. Rocky is. He walks you
+// through every control, and each step waits until you have actually done it — walked, jumped, clawed
+// the straw dummy, cast, drunk — before the next one. Only when you come and talk to him do the birds
+// arrive, and the fight is the exam. A panel at the top always shows the step and its keys.
+const TRAIN={on:false, step:-1, hits:0, jumped:false, cast:false, drank:false, talked:false, dummy:null, wob:0, waiting:false};
+function trainTouch(){ return matchMedia('(pointer:coarse)').matches; }
+const TRAIN_STEPS=[
+  {id:'walk',   key:['WASD / ← ↑ → ↓','or left-click the ground'], touchKey:['the joystick','or tap the ground'],
+   say:['Woof! You came through the gate. Good.','Those birds are coming back any moment. Before they do, I am going to teach you everything. Properly.','First: come over here to me. Walk.'],
+   task:()=>LT('Walk over to Rocky','Mergi până la Rocky'), done:()=>{ const r=HUB.rocky,c=HUB.cat; return Math.hypot(c.x-r.x,c.y-r.y)<100; }},
+  {id:'jump',   key:['Space'], touchKey:['the ⤒ button'],
+   say:['Nice walking. Now jump.','A jump gets you out of the way of a claw — and over things in the garden.'],
+   task:()=>LT('Jump once','Sari o dată'), done:()=>TRAIN.jumped},
+  {id:'claws',  key:['F','or right mouse click'], touchKey:['the F button'],
+   say:['See the straw dummy? That is your pigeon.','To swipe: press F, or click with the RIGHT mouse button. (The left button is for walking.)','Get right up close first — claws only reach a little way, too far and you hit air.','Three good hits.'],
+   task:()=>LT('Claw the dummy','Zgârie manechinul')+' ('+Math.min(3,TRAIN.hits)+'/3)', done:()=>TRAIN.hits>=3},
+  {id:'spell',  key:['1','2  3  4 for the other slots'], touchKey:['tap the first spell','in the bar at the bottom'],
+   say:['Now magic. Your spells live in the bar at the bottom, one per key.','Press 1. Hairball Volley flies the way you are facing — turn toward the dummy first.'],
+   task:()=>LT('Cast Hairball Volley','Aruncă Hairball Volley'), done:()=>TRAIN.cast},
+  {id:'potion', key:['Q','Z for mana potions'], touchKey:['tap the red potion','next to your spells'],
+   say:['See the blue orb? That is mana. Every spell eats some, and it fills back up slowly — do not waste it.','The red one is your health. It does NOT come back by itself in a fight.','So… *nip*. Sorry! That is what a hit feels like. Here, fish broth — drink it. Press Q.'],
+   start:()=>{ bagAdd('broth',1); P.hp=Math.max(1,Math.round(P.maxHp*0.55)); P.lastHit=Date.now(); save(); syncHUD&&syncHUD(); },
+   task:()=>LT('Drink a potion','Bea o poțiune'), done:()=>TRAIN.drank},
+  {id:'talk',   key:['E'], touchKey:['the E button'],
+   say:['Last one. When there is someone to talk to, or a door, or a thing worth touching, press E.','Come talk to me.'],
+   task:()=>LT('Talk to Rocky','Vorbește cu Rocky'), done:()=>TRAIN.talked},
+];
+function trainSay(lines, then){ sayLines('Rocky', lines, Object.assign({}, tutSpeaker('rocky').opt, {then})); }
+function trainStart(){
+  if(testMode() || TRAIN.on || (S.tut&&S.tut.training) || storyAt('pigeons')) return;
+  Object.assign(TRAIN,{on:true, step:-1, hits:0, jumped:false, cast:false, drank:false, talked:false, wob:0, waiting:false});
+  let d={x:0.67*HUB.worldW, y:0.87*VH};   // on the open cobbles beside Rocky, well clear of the rat emissary by the arch if(maskReady()){ const p=nearestWalk(d.x,d.y); if(p) d=p; }
+  TRAIN.dummy=d;
+  for(const b of HUB.ducks){ b.dead=true; b.respawnAt=0; }   // gone before his first word, not after it
+  S.tut=S.tut||{}; S.tut.open=true;      // the old one-line fight hint is folded into this
+  trainNext();
+}
+function trainNext(){
+  TRAIN.step++; trainPanel();
+  const st=TRAIN_STEPS[TRAIN.step];
+  if(!st){ trainFinish(); return; }
+  TRAIN.waiting=true;
+  const go=()=>{ if(dialogueActive){ setTimeout(go,300); return; }
+    trainSay(st.say, ()=>{ if(st.start) st.start(); TRAIN.waiting=false; trainPanel(); }); };
+  setTimeout(go, TRAIN.step ? 500 : 900);
+}
+function trainFinish(){
+  trainSay(['That is everything. Walk, jump, claws up close, spells from the bar, drink before you are empty, E to talk.',
+            'And keep moving between swings — a cat that stands still gets pecked.','…Here they come!'], ()=>{
+    TRAIN.on=false; TRAIN.dummy=null; S.tut.training=true; save(); trainPanel();
+    for(const d of HUB.ducks){ d.dead=false; d.respawnAt=0; d.hp=d.maxHp||d.hp; d.x=d.homeX; d.y=d.homeY-120; d.aggro=true; }
+    SFX.tone&&SFX.tone(700,0.08,'square',0.04);
+  });
+}
+function updateTraining(now){
+  if(!TRAIN.on) return;
+  for(const d of HUB.ducks){ if(!d.dead){ d.dead=true; d.respawnAt=0; } }      // the birds wait outside until class is over
+  if(TRAIN.wob>0) TRAIN.wob*=0.9;
+  if(TRAIN.waiting || dialogueActive) return;
+  const st=TRAIN_STEPS[TRAIN.step]; if(!st) return;
+  if(st.done()){ TRAIN.waiting=true; SFX.seq&&SFX.seq([523,659,784],'triangle',0.05); trainPanel(true); setTimeout(trainNext, 700); }
+  else if(now-(TRAIN.lastPanel||0)>250){ TRAIN.lastPanel=now; trainPanel(); }
+}
+// the claws hit the dummy (called from hubAttack)
+function trainHitDummy(c){
+  const d=TRAIN.dummy; if(!TRAIN.on || !d) return false;
+  if(Math.hypot(c.x-d.x,(c.y-d.y)*1.4)>86) return false;
+  if(TRAIN_STEPS[TRAIN.step] && TRAIN_STEPS[TRAIN.step].id==='claws') TRAIN.hits++;
+  TRAIN.wob=1; floatText(d.x,d.y-70,'thwack!','#ffe7b0'); SFX.hit&&SFX.hit();
+  return true;
+}
+function drawTrainDummy(g){
+  const d=TRAIN.dummy; if(!d) return;
+  const sc=hubScale(d.y), sx=d.x-HUB.camx, h=96*sc, w=Math.sin(Date.now()*0.04)*TRAIN.wob*0.25;
+  g.save(); g.globalAlpha=0.25; g.fillStyle='#000'; g.beginPath(); g.ellipse(sx,d.y,22*sc,7*sc,0,0,7); g.fill(); g.restore();
+  g.save(); g.translate(sx,d.y); g.rotate(w);
+  g.fillStyle='#5a3a1c'; g.fillRect(-3*sc,-h,6*sc,h);                                   // the post
+  g.fillRect(-24*sc,-h*0.72,48*sc,5*sc);                                                // the arms
+  g.fillStyle='#c9a96a'; g.strokeStyle='#4a3320'; g.lineWidth=2;
+  g.beginPath(); g.ellipse(0,-h*0.62,17*sc,24*sc,0,0,7); g.fill(); g.stroke();          // the straw sack
+  g.beginPath(); g.arc(0,-h*0.93,11*sc,0,7); g.fill(); g.stroke();                      // the head
+  g.fillStyle='#b5453a'; g.beginPath(); g.arc(0,-h*0.62,9*sc,0,7); g.fill();            // the target
+  g.fillStyle='#f6ead0'; g.beginPath(); g.arc(0,-h*0.62,5*sc,0,7); g.fill();
+  g.fillStyle='#b5453a'; g.beginPath(); g.arc(0,-h*0.62,2*sc,0,7); g.fill();
+  g.strokeStyle='#e8cf8a'; g.lineWidth=1.5; for(const a of [-0.7,-0.2,0.3,0.8]){ g.beginPath(); g.moveTo(Math.sin(a)*15*sc,-h*0.42); g.lineTo(Math.sin(a)*19*sc,-h*0.36); g.stroke(); }
+  g.restore();
+}
+function trainPanel(flash){
+  const el=document.getElementById('trainPanel'); if(!el) return;
+  const st=TRAIN_STEPS[TRAIN.step];
+  if(!TRAIN.on || !st){ el.classList.remove('on'); return; }
+  const keys=(trainTouch()?st.touchKey:st.key)||[];
+  el.innerHTML='<div class="tp-step">'+LT('Rocky\'s training','Antrenamentul lui Rocky')+' · '+(TRAIN.step+1)+'/'+TRAIN_STEPS.length+'</div>'
+    +'<div class="tp-task">'+dlgEsc(st.task())+'</div>'
+    +'<div class="tp-keys">'+keys.map((k,i)=>i===0?'<kbd>'+dlgEsc(T(k))+'</kbd>':'<span>'+dlgEsc(T(k))+'</span>').join(' ')+'</div>'
+    +'<div class="tp-dots">'+TRAIN_STEPS.map((s,i)=>'<i class="'+(i<TRAIN.step?'done':i===TRAIN.step?'cur':'')+'"></i>').join('')+'</div>';
+  el.classList.toggle('on', !TRAIN.waiting || !!flash);
+  el.classList.toggle('flash', !!flash);
+}
 // checked on a slow tick: every beat with a `when` fires itself the first time it is true
 let _tutTick=0;
 function tutorialWatch(now){
-  if(testMode() || !inGame) return;
+  if(testMode() || !inGame || HUB.cine || TRAIN.on) return;   // never over a scene, nor over Rocky's lesson
   if(now-_tutTick < 900) return; _tutTick=now;
   S.tut=S.tut||{};
   for(const b of TUT_BEATS){ if(b.when && !S.tut[b.id] && b.when()){ tutorialFire(b.id); return; } }
@@ -11885,7 +12856,7 @@ function askChoice(o){
   if(choiceActive || dialogueActive) return;
   clearBark();
   choiceActive=true; dialogueActive=true;   // reuse the existing "input is blocked" checks
-  choicePending=o;
+  choicePending=o; setVoice(o.name);
   document.getElementById('dlgName').textContent=o.name||'';
   // the portrait must ALWAYS be repainted — leaving it alone shows whoever spoke last
   if(o.img) showPortrait(o.img, o.bg);
@@ -12013,6 +12984,7 @@ const PORTRAITS={
   'army/frames/rat_soldier_walk0.png':{ex:0.258,ey:0.359,vw:0.55},
   'army/frames/rat_commander_walk0.png':{ex:0.836,ey:0.3012,vw:0.55},
   'army/frames/pig_agent_walk0.png':{ex:0.826,ey:0.329,vw:0.65},
+  'army/frames/snout_walk0.png':{ex:0.826,ey:0.329,vw:0.65},   // Agent Snout: the same sheet, recoloured
   'army/frames/rat_emissary_walk0.png':{ex:0.215,ey:0.25,vw:0.55},
   // the bosses and the pigs: head-and-shoulders, the crown kept inside the circle
   'mobs/catking/sit.png':{ex:0.73,ey:0.30,vw:0.95},
@@ -12329,8 +13301,12 @@ function circFindPath(n,start,end,blocked){
     visited[cell]=true; path.push(cell);
     if(cell===end) return true;
     const r=Math.floor(cell/n),c=cell%n;
-    const nb=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
-    for(let i=nb.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nb[i],nb[j]]=[nb[j],nb[i]]; }
+    // still winding, but leaning toward the goal: a purely random walk wandered over most of the
+    // board and left no room for the branches to the other sockets (~97% of boards failed)
+    const er=Math.floor(end/n), ec=end%n;
+    const nb=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]]
+      .map(p=>({p, k:Math.abs(p[0]-er)+Math.abs(p[1]-ec)+Math.random()*2.6}))
+      .sort((a,b)=>a.k-b.k).map(o=>o.p);
     for(const [nr,nc] of nb){ if(nr<0||nr>=n||nc<0||nc>=n) continue; const k=nr*n+nc;
       if(!visited[k] && dfs(k)) return true; }
     path.pop(); return false;
@@ -12340,7 +13316,7 @@ function circFindPath(n,start,end,blocked){
 function circBuild(){
   const n=CIRC.n; CIRC.won=false;
   let g;
-  for(let attempt=0;attempt<200;attempt++){
+  for(let attempt=0;attempt<2000;attempt++){
     g=[]; for(let i=0;i<n*n;i++) g.push({type:'empty',rot:0,fixed:false});
     // source on left edge, 3 targets on right edge at different rows
     const sr=1+Math.floor(Math.random()*(n-2));
@@ -12421,12 +13397,21 @@ function circBuild(){
     CIRC.cells=g;
     return;
   }
-  // fallback: shouldn't happen but build a simple board if generation fails
-  g=[]; for(let i=0;i<n*n;i++) g.push({type:'straight',rot:Math.floor(Math.random()*4),fixed:false});
-  g[0]={type:'source',rot:0,fixed:true};
-  g[n-1]={type:'target',rot:0,fixed:true};
-  g[n*n-n]={type:'target',rot:0,fixed:true};
-  g[n*n-1]={type:'target',rot:0,fixed:true};
+  // fallback (should never be needed): a hand-laid board that is always solvable — the old one put a
+  // socket in a corner that only straight pipes could never reach. Source left of row 1, sockets on
+  // the right of rows 1, 3 and 5; the trunk runs down column 3 with T-junctions at each socket row.
+  const L=[['empty','empty','empty','empty','empty','empty'],
+           ['source','straight','straight','corner','straight','target'],
+           ['empty','empty','empty','straight','empty','empty'],
+           ['empty','empty','empty','t','straight','target'],
+           ['empty','empty','empty','straight','empty','empty'],
+           ['empty','empty','empty','corner','straight','target']];
+  g=[]; L.flat().forEach(t=>g.push({type:t, rot:0, fixed:t==='source'||t==='target'}));
+  // the trunk: (1,3) W→S corner · (3,3) T N/E/S · (5,3) N→E corner
+  g[1*n+3].type='t'; g[3*n+3].type='t';
+  const decoy=['straight','straight','corner','corner','t','cross'];
+  for(const cell of g){ if(cell.type==='empty') cell.type=decoy[Math.floor(Math.random()*decoy.length)]; }
+  for(const cell of g){ if(!cell.fixed) cell.rot=Math.floor(Math.random()*4); }
   CIRC.cells=g;
 }
 function circConn(i){ const c=CIRC.cells[i]; return (CIRC.BASE[c.type]||[]).map(d=>(d+c.rot)%4); }
@@ -14157,7 +15142,7 @@ function drinkPotion(id){
   if(p.id==='phoenix'){ toast(LT('The feather works by itself — keep it on you.','Pana lucrează singură — ține-o la tine.')); return false; }
   if(p.buff){ S.buffs=S.buffs||{}; S.buffs[p.buff]=Math.max(Date.now(),S.buffs[p.buff]||0)+p.dur; }
   else { const no=p.use(); if(no){ toast(no); return false; } }
-  bagTake(id); save(); syncHUD&&syncHUD();
+  bagTake(id); save(); syncHUD&&syncHUD(); TRAIN.drank=true;
   SFX.seq&&SFX.seq([660,880,990],'sine',0.05);
   try{ const a=casterAim(); for(let i=0;i<10;i++) particles.push({x:a.x+(Math.random()-.5)*30,y:a.y,vx:(Math.random()-.5)*2,vy:-(Math.random()*3+1),life:1,c:p.color});
     floatText(a.x,a.y-30,potName(p),p.color); }catch(_){}
@@ -14303,12 +15288,16 @@ function forgeSay(html){ const el=document.getElementById('forgeSay'); if(el) el
 function forgeOpen(npc){
   if(npc) forgeNpc=npc;
   const h=FORGE_HELLO[Math.floor(Math.random()*FORGE_HELLO.length)];
+  // something happened since you were last in: she tells you that first, once
+  const news=(()=>{ const at=storyStage(NOMNOM_NEWS); if(!at) return null; S.heard=S.heard||{};
+    if(S.heard.nomnom===at.id) return null; S.heard.nomnom=at.id; save(); return at.lines[0]; })();
   if(!S.catsMet.nomnom){ S.catsMet.nomnom=true; checkAchievements(); save(); }
   forgeSel=null;
   switchForgeTab(forgeTab==='talk'?'goods':forgeTab, true);
   openModal('forge');
   const cheapest=Math.min(...POTIONS.map(p=>p.price));
-  if(S.coins<cheapest){ forgeSay(LT('Empty pockets again? I can hear them not jingling from here.','Iar cu buzunarele goale? Le aud cum nu zornăie de aici.')); forgeMood('angry',6000); }
+  if(news){ forgeSay(LT(news[0],news[1])); forgeMood('happy'); }
+  else if(S.coins<cheapest){ forgeSay(LT('Empty pockets again? I can hear them not jingling from here.','Iar cu buzunarele goale? Le aud cum nu zornăie de aici.')); forgeMood('angry',6000); }
   else { forgeSay(LT(h[0],h[1])); forgeMood('happy'); }
   SFX.seq&&SFX.seq([220,330],'square',0.04);
 }
@@ -15482,6 +16471,7 @@ document.addEventListener('keydown',e=>{
     castSpell(+e.code.slice(5)-1); e.preventDefault();
   }
   if(e.code==='KeyR'){ if(inGame) toggleRocky(); }
+  if(e.code==='KeyC'){ if(inGame) buddySpecial(); }
   if(e.code==='KeyQ'){ drinkSlot('heal'); }
   if(e.code==='KeyZ'){ drinkSlot('mana'); }
   if(e.code==='Escape'){
@@ -15546,6 +16536,7 @@ document.getElementById('jumpBtn').addEventListener('mousedown',e=>{e.preventDef
 document.getElementById('actBtn').addEventListener('click',()=>{ if(inGame){ topdownMode()?hubAttack():playerAttack(); } });
 document.getElementById('interactBtn').addEventListener('click',()=>{ doInteract(); });
 // spell hotbar taps (touchstart so it fires without waiting on the click delay)
+{ const bs=document.getElementById('buddySlot'); if(bs) bs.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); buddySpecial(); }); }
 document.querySelectorAll('#spellBar .potSlot').forEach(el=>{
   const fire=e=>{ e.preventDefault(); drinkSlot(el.dataset.pot); };
   el.addEventListener('touchstart',fire,{passive:false});
@@ -15673,6 +16664,14 @@ function sendChat(){
 // in-chat cheat commands (start with !) — handled locally, not broadcast
 function chatCommand(t){
   const c=t.toLowerCase();
+  // dev: !snout — put the world back to the moment the cave opened, so Agent Snout's arc can be played again
+  if(c==='!snout'){
+    S.snout=null; S.snoutSeen={}; S.snoutScene=false; S.sebyDefeated=false; S.pigletGave=false;
+    S.items=S.items.filter(i=>i!=='purplecrystal'&&i!=='snoutbadge');
+    if((S.story||0)<STORY_IX.runes) storySet('runes');            // the runes are what open the cave
+    else if(S.story>STORY_IX.runes) S.story=STORY_IX.runes;
+    S.caveOpen=true; save(); updateRockyBtn();
+    toast('Agent Snout is back at the cave mouth.'); enterArea('garden',false); return true; }
   if(c==='!money'){ S.coins+=100*10000; save(); syncHUD(); SFX.coin&&SFX.coin(); toast('+100 gold!'); return true; }
   // dev: !ending third | union | federation | unproven — watch an ending without replaying the game
   if(c.indexOf('!ending')===0){ const id=c.slice(7).trim()||'third';
@@ -15859,34 +16858,192 @@ function askName(after){
 }
 
 //═══════════════════════════════════════════════════════════════ FAST-TRAVEL MAP
-// every place on the world map you can travel to once you have been there
+//═══════════════════════════════════════════════════════════════ WORLD MAP
+// Built the way the big open-world maps are (Witcher 3, Skyrim, Origins): the painted land itself,
+// mist over everything you have not found, region names in wide capitals, one clear icon per place,
+// a marker for you and one for what you are meant to be doing, and a card that tells you about a
+// place when you look at it. The whole world is on screen at once: no zooming, no dragging.
+// x/y: the place on maps/worldmap.png, in percent. ico: its glyph. reg: the region it belongs to.
 const MAP_LOCS=[
-  {id:'garden', name:'Garden'}, {id:'cave', name:'Crystal Cave'},
-  {id:'library', name:'Library', dest:'towergarden'},          // you arrive at its door, in the tower garden
-  {id:'beach', name:'Beach'}, {id:'ocean1', name:'Ocean Depths'},
-  {id:'ocean2', name:'Sunken Sanctum'}, {id:'abyssboss', name:'The Dreamer in the Deep'},
-  {id:'street', name:'City'}, {id:'bank', name:'Whisker Savings Bank'}, {id:'castleentrance', name:'Castle Gate'},
-  {id:'slum', name:'The Slums'}, {id:'slum2', name:'The Rat Warren'}, {id:'ratking', name:'Rat King’s Lair'},
-  {id:'sewerentrance', name:'Sewer Tunnel'},
+  {id:'garden',  name:'Garden',          x:52.6, y:68.0, ico:'tree',   reg:'forest', desc:'Where Puiutu wakes up. Something old lives under the clearing.'},
+  {id:'cave',    name:'Crystal Cave',    x:31.1, y:51.0, ico:'cave',   reg:'forest', desc:'Closed for survey work, they said. There is a gate at the bottom, and something guarding it.'},
+  {id:'library', name:'Library', dest:'towergarden', x:18.5, y:17.5, ico:'tower', reg:'hill', desc:'The old wizard\'s tower. The prophecy he keeps there is not very specific.'},
+  {id:'beach',   name:'Beach',           x:8.5, y:44.5, ico:'anchor', reg:'coast', desc:'Sand, a pier, a fort, and a pig who will talk for five fish.'},
+  {id:'ocean1',  name:'Ocean Depths',    x:3.8,  y:24.0, ico:'wave',   reg:'coast', desc:'The shallows. Nobody breathes down there without a suit.'},
+  {id:'ocean2',  name:'Sunken Sanctum',  x:12.0, y:69.1, ico:'pillar', reg:'deep',  desc:'Drowned ruins around a sealed portal. The runes want something violet.'},
+  {id:'street',  name:'City',            x:66.4, y:50.5, ico:'town',   reg:'city',  desc:'The square. Union soldiers, a fountain, and the most elegant cat in town.'},
+  {id:'bank',    name:'Whisker Savings Bank', x:67.9, y:39.3, ico:'coin', reg:'city', desc:'Every little fish counts. Neutral, they say. Very neutral.'},
+  {id:'castleentrance', name:'Castle Gate', x:86.0, y:19.5, ico:'castle', reg:'heights', desc:'The Cat King\'s castle. Lions on every wall.'},
+  {id:'slum',    name:'The Slums',       x:80.1, y:77.0, ico:'hut',    reg:'slums', desc:'Shacks on stilts. NomNom\'s forge, and an alley everyone avoids.'},
+  {id:'slum2',   name:'The Rat Warren',  x:93.0, y:50.0, ico:'pick',   reg:'warren', desc:'Wooden shanties climbing toward a fortress of scavenged junk.'},
+  {id:'sewerentrance', name:'Sewer Tunnel', x:90.6, y:89.3, ico:'drop', reg:'slums', desc:'Where both armies go down, and keep going down.'},
 ];
+// region names, laid on the land in wide capitals once you have set foot there.
+// The Rat King's lair and the Dreamer's trench are not on the map at all: places you find, not
+// places you are shown.
+const MAP_REGIONS={
+  forest: {name:'The Green Forest', x:50, y:86},
+  hill:   {name:'The Wizard\'s Keep', x:24, y:12},
+  coast:  {name:'The Salt Coast',   x:14, y:53},
+  deep:   {name:'The Deep',         x:12, y:82},
+  city:   {name:'Whisker City',     x:55, y:30},
+  heights:{name:'The Royal Heights',x:83, y:32},
+  warren: {name:'Rattania',         x:92, y:64},
+  slums:  {name:'The Slums',        x:76, y:93},
+};
+// what the story wants from you next, and where that is
+const MAP_OBJECTIVE={ awake:'garden', seek_wizard:'library', pigeons:'library', prophecy:'library', zoomies:'beach',
+  fivefish:'street', gold:'bank', suit:'ocean1', runes:'cave', seby:'ocean2', dreamer:'slum', coon:'slum',
+  nomnom:'castleentrance', catking:null, ratking:'bank', evidence:'bank' };
+// one glyph per kind of place: simple white shapes on a 24×24 grid
+const MAP_ICO={
+  tree:  '<path d="M12 3c-3.6 0-6 2.7-6 5.6 0 1.4.5 2.4 1.3 3.2C6 12.7 5 14 5 15.6 5 18 7.2 19.5 10 19.5h1v2h2v-2h1c2.8 0 5-1.5 5-3.9 0-1.6-1-2.9-2.3-3.8.8-.8 1.3-1.8 1.3-3.2C18 5.7 15.6 3 12 3z"/>',
+  cave:  '<path d="M3 20c0-6 3.5-12 9-12s9 6 9 12h-5c0-3-1.5-6-4-6s-4 3-4 6H3z"/><path d="M8 7l1.5-3 1.5 2.5L12 3l1 3.5L14.5 4 16 7" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+  tower: '<path d="M9 21V9H7.5l4.5-6 4.5 6H15v12z"/><rect x="11" y="12" width="2" height="3" fill="#15110c"/>',
+  anchor:'<path d="M12 2.5a2.5 2.5 0 0 1 1 4.8V9h3v2h-3v7.8c2.4-.4 4.3-2 5-4.3l-2 .5 3-4 1.5 4.8-1.6-.8C18 18.6 15.3 21 12 21s-6-2.4-6.9-6l-1.6.8L5 11l3 4-2-.5c.7 2.3 2.6 3.9 5 4.3V11H8V9h3V7.3a2.5 2.5 0 0 1 1-4.8zm0 1.6a.9.9 0 1 0 0 1.8.9.9 0 0 0 0-1.8z"/>',
+  wave:  '<path d="M2 15c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2v3c-2 0-2 2-4 2s-2-2-4-2-2 2-4 2-2-2-4-2-2 2-4 2zM6 11l6-8 2 3h-2l1 2h3l-4-6 6 9z"/>',
+  pillar:'<path d="M5 4h14v2H5zM6.5 7h2v10h-2zM11 7h2v10h-2zM15.5 7h2v10h-2zM4 18h16v2.5H4z"/>',
+  eye:   '<path d="M12 5C6.5 5 2.7 9.4 2 12c.7 2.6 4.5 7 10 7s9.3-4.4 10-7c-.7-2.6-4.5-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/><circle cx="12" cy="12" r="1.8"/>',
+  town:  '<path d="M3 21v-7l4-4 4 4v7zM12 21V9l4.5-5L21 9v12zM15.5 12h2v2h-2zM6 16h2v2H6z"/>',
+  coin:  '<circle cx="12" cy="12" r="9"/><path d="M8 13.5c0-2 1.8-3.5 4.2-3.5 1.2 0 2.2.3 3 .9l1.3-.9v2.3c.3.4.5.9.5 1.4 0 1.9-2 3.3-4.6 3.3S8 15.5 8 13.5z" fill="#15110c"/>',
+  castle:'<path d="M3 21V8h2V6h2v2h1V6h2v2h1V3l3 1.5L11 6v2h1V6h2v2h1V6h2v2h2v13h-6v-4a2 2 0 0 0-4 0v4z"/>',
+  hut:   '<path d="M2 12l6-6 6 6h-1.5v6h-9v-6zM14 9l4-4 4 4h-1v9h-5v-4zM3 20h18v1.5H3z"/>',
+  pick:  '<path d="M4 7c4-4 10-4 14 0-3-1.5-6-1.6-8.5-.5L20 17l-2 2L7.6 8.6C6.3 9.4 5 10.6 4 12c.4-1.9.4-3.4 0-5z"/>',
+  crown: '<path d="M3 18L2 7l5 4 5-7 5 7 5-4-1 11zM3 19.5h18V21H3z"/>',
+  drop:  '<path d="M12 3s6 6.7 6 11a6 6 0 0 1-12 0c0-4.3 6-11 6-11z"/>',
+};
+// active quests, and where on the map to go for them: the giver's place, or (for the sharks) the water
+const QUEST_LOC={ tomy:'garden', lucian:'street', nomnom:'slum', rocky:'street' };
+function mapQuests(){
+  const out=[];
+  for(const k in (S.quests||{})){ const st=S.quests[k], q=QUESTS[k];
+    if(!q || st.state!=='active' || !QUEST_LOC[k]) continue;
+    const n=q.goal.n, have=Math.min(n, questCount(k)), ready=have>=n;
+    const what = q.goal.type==='fish' ? LT('Bring '+n+' fish','Adu '+n+' pești') : LT('Defeat '+n+' enemies','Învinge '+n+' inamici');
+    out.push({loc:QUEST_LOC[k], ready, text:T(q.name)+': '+what+' ('+have+'/'+n+')'+(ready?LT(' — go back',' — întoarce-te'):'')});
+  }
+  if(S.sharkQuest==='on'){ const have=Math.min(2,S.sharkKills||0);
+    out.push({loc:'ocean1', ready:false, text:LT('Rat Emissary: two sharks in the deep water','Emisarul șobolanilor: doi rechini în apele adânci')+' ('+have+'/2)'}); }
+  return out;
+}
+const WM={ s:1, x:0, y:0, fit:1, drag:null, ptrs:new Map(), hover:null, raf:0, fog:null, fogTex:null, built:false, t0:0 };
+function mapLocDest(L){ return L.dest||L.id; }
+function mapKnown(L){ return !!S.visited[mapLocDest(L)] || (L.id==='bank' && !!S.visited.street); }
+function mapHere(L){ return curArea===L.id || curArea===mapLocDest(L); }
+function mapObjective(){ const st=STORY[Math.min(S.story||0, STORY.length-1)]; return st ? MAP_OBJECTIVE[st.id] : null; }
+function wmBuild(){
+  if(WM.built) return; WM.built=true;
+  const world=document.getElementById('wmWorld');
+  const icons=document.getElementById('wmIcons'), regs=document.getElementById('wmRegions');
+  for(const id in MAP_REGIONS){ const r=MAP_REGIONS[id];
+    const d=document.createElement('div'); d.className='wm-region'; d.dataset.reg=id; d.textContent=T(r.name);
+    d.style.left=r.x+'%'; d.style.top=r.y+'%'; regs.appendChild(d); }
+  for(const L of MAP_LOCS){
+    const b=document.createElement('button'); b.className='wm-pin'; b.dataset.id=L.id;
+    b.style.left=L.x+'%'; b.style.top=L.y+'%';
+    b.innerHTML='<span class="wm-badge"><svg viewBox="0 0 24 24" fill="currentColor">'+MAP_ICO[L.ico]+'</svg></span><span class="wm-name"></span>';
+    b.addEventListener('pointerenter',()=>wmHover(L.id));
+    b.addEventListener('pointerleave',()=>{ if(WM.hover===L.id && !WM.touchSel) wmHover(null); });
+    b.addEventListener('click',e=>{ e.stopPropagation();
+      if(WM.lastPtr==='touch' && WM.hover!==L.id){ WM.touchSel=true; wmHover(L.id); return; }
+      if(mapKnown(L) && !mapHere(L)) travelTo(L.id); });
+    icons.appendChild(b);
+  }
+  document.getElementById('wmTravel').addEventListener('click',()=>{ const L=MAP_LOCS.find(l=>l.id===WM.hover); if(L && mapKnown(L) && !mapHere(L)) travelTo(L.id); });
+  // a tap on empty land puts away the card a touch selection opened
+  document.getElementById('wmView').addEventListener('pointerdown',e=>{ WM.lastPtr=e.pointerType; });
+  document.getElementById('wmView').addEventListener('click',()=>{ if(WM.touchSel){ WM.touchSel=false; wmHover(null); } });
+  window.addEventListener('resize',()=>{ if(mapOpen) wmFit(); });
+}
+// the whole map fills the screen edge to edge (a sliver of the long side is trimmed rather than showing black bands)
+function wmFit(){
+  const view=document.getElementById('wmView'), img=document.getElementById('wmImg');
+  const iw=img.naturalWidth||1536, ih=img.naturalHeight||1024, vw=view.clientWidth, vh=view.clientHeight;
+  const cover=Math.max(vw/iw, vh/ih), contain=Math.min(vw/iw, vh/ih);
+  // fill the screen when that only trims a sliver (a wide monitor); on a much narrower or taller screen show it
+  // all, or the castles at the far edges would fall off
+  WM.iw=iw; WM.ih=ih; WM.fit=WM.s=(cover/contain<1.12 ? cover : contain);
+  const world=document.getElementById('wmWorld'); world.style.width=iw+'px'; world.style.height=ih+'px';
+  WM.x=(vw-iw*WM.s)/2; WM.y=(vh-ih*WM.s)/2;
+  wmApply();
+}
+function wmApply(){
+  const world=document.getElementById('wmWorld');
+  world.style.transform='translate('+WM.x+'px,'+WM.y+'px) scale('+WM.s+')';
+  world.style.setProperty('--inv', (1/WM.s).toFixed(4));        // icons and names keep their size on screen
+  world.style.setProperty('--zoom', (WM.s/WM.fit).toFixed(3));
+}
+function wmRender(){
+  const obj=mapObjective();
+  document.querySelectorAll('#wmIcons .wm-pin').forEach(b=>{ const L=MAP_LOCS.find(l=>l.id===b.dataset.id);
+    const known=mapKnown(L), here=mapHere(L), qs=mapQuests().filter(q=>q.loc===L.id);
+    b.classList.toggle('known', known||here||qs.length>0); b.classList.toggle('here', here); b.classList.toggle('obj', obj===L.id && !here);
+    b.classList.toggle('quest', qs.length>0); b.classList.toggle('qready', qs.some(q=>q.ready));
+    b.querySelector('.wm-name').textContent = (known||here) ? T(L.name) : ''; });
+  const seenRegs=new Set(MAP_LOCS.filter(L=>mapKnown(L)||mapHere(L)).map(L=>L.reg));
+  document.querySelectorAll('#wmRegions .wm-region').forEach(r=>r.classList.toggle('on', seenRegs.has(r.dataset.reg)));
+  document.getElementById('wmObjText').textContent=T(storyHint()||'');
+  wmHover(null);
+}
+function wmHover(id){
+  WM.hover=id;
+  document.querySelectorAll('#wmIcons .wm-pin').forEach(b=>b.classList.toggle('hot', b.dataset.id===id));
+  const card=document.getElementById('wmCard'); if(!id){ card.classList.remove('on'); return; }
+  const L=MAP_LOCS.find(l=>l.id===id), known=mapKnown(L), here=mapHere(L), obj=mapObjective()===id;
+  document.getElementById('wmCardReg').textContent = (known||here) ? T(MAP_REGIONS[L.reg].name) : '';
+  document.getElementById('wmCardName').textContent = (known||here) ? T(L.name) : T('Undiscovered');
+  document.getElementById('wmCardDesc').textContent = (known||here) ? T(L.desc) : T('You have not been here yet.');
+  document.getElementById('wmCardObj').style.display = obj ? '' : 'none';
+  const qs=mapQuests().filter(q=>q.loc===id), ql=document.getElementById('wmCardQuests');
+  ql.innerHTML=qs.map(q=>'<div class="'+(q.ready?'rdy':'')+'"><b>'+(q.ready?'✔':'!')+'</b> '+dlgEsc(q.text)+'</div>').join('');
+  ql.style.display=qs.length?'':'none';
+  const tr=document.getElementById('wmTravel');
+  tr.textContent = here ? T('You are here') : known ? T('Fast travel') : T('Not discovered');
+  tr.disabled = here || !known;
+  card.classList.add('on');
+  SFX.tone&&SFX.tone(here?520:known?640:300,0.04,'sine',0.025);
+}
+// ── the mist over everything you have not found: soft blobs drifting slowly, with clearings
+//    around every place you have been ──
+function wmFogTexture(){
+  if(WM.fogTex) return WM.fogTex;
+  const c=document.createElement('canvas'); c.width=768; c.height=512; const g2=c.getContext('2d');
+  let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
+  for(let i=0;i<260;i++){ const x=rnd()*c.width, y=rnd()*c.height, r=30+rnd()*90, a=0.05+rnd()*0.09;
+    const gr=g2.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(150,146,140,'+a+')'); gr.addColorStop(1,'rgba(150,146,140,0)');
+    g2.fillStyle=gr;
+    // drawn wrapped across every edge, so the texture tiles with no seam as it drifts
+    for(const ox of [-c.width,0,c.width]) for(const oy of [-c.height,0,c.height]){
+      if(x+ox+r<0||x+ox-r>c.width||y+oy+r<0||y+oy-r>c.height) continue;
+      g2.save(); g2.translate(ox,oy); g2.beginPath(); g2.arc(x,y,r,0,7); g2.fill(); g2.restore(); } }
+  return WM.fogTex=c;
+}
+function wmFogTick(t){
+  if(!mapOpen) return;
+  const cv=document.getElementById('wmFog'), g2=cv.getContext('2d'), W=cv.width, H=cv.height, tex=wmFogTexture();
+  g2.globalCompositeOperation='source-over'; g2.clearRect(0,0,W,H);
+  g2.fillStyle='rgba(30,28,26,.9)'; g2.fillRect(0,0,W,H);                     // the base veil: thick — only the outline of the land shows through
+  const dx=(t*0.006)%W, dx2=(t*0.0035)%W;
+  for(const [ox,oy] of [[dx,0],[dx-W,0]]) g2.drawImage(tex,ox,oy,W,H);         // two layers drifting at different speeds
+  for(const [ox,oy] of [[-dx2,18],[W-dx2,18],[-dx2,18-H],[W-dx2,18-H]]) g2.drawImage(tex,ox,oy,W,H);   // wrapped, so no clear strip along the top
+  // clear around what you know
+  g2.globalCompositeOperation='destination-out';
+  for(const L of MAP_LOCS){ if(!(mapKnown(L)||mapHere(L))) continue;
+    const x=L.x/100*W, y=L.y/100*H, r=W*0.15;
+    const gr=g2.createRadialGradient(x,y,r*0.25,x,y,r); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(1,'rgba(0,0,0,0)');
+    g2.fillStyle=gr; g2.beginPath(); g2.arc(x,y,r,0,7); g2.fill(); }
+  WM.raf=requestAnimationFrame(wmFogTick);
+}
 function openMap(){
   if(!inGame) return;
-  mapOpen=true; renderMap();
-  document.getElementById('mapModal').classList.add('show');
-  SFX.click();
+  mapOpen=true; wmBuild();
+  const m=document.getElementById('mapModal'); m.classList.add('show');
+  const img=document.getElementById('wmImg');
+  const go=()=>{ wmFit(); wmRender(); cancelAnimationFrame(WM.raf); WM.raf=requestAnimationFrame(wmFogTick); };
+  if(img.complete && img.naturalWidth) go(); else img.onload=go;
+  SFX.tone&&SFX.tone(220,0.18,'sine',0.04); SFX.tone&&SFX.tone(330,0.22,'sine',0.03,0.06);
 }
-function closeMap(){ mapOpen=false; document.getElementById('mapModal').classList.remove('show'); }
-function renderMap(){
-  document.querySelectorAll('#mapModal .hot').forEach(h=>{
-    const id=h.dataset.go; const L=MAP_LOCS.find(l=>l.id===id); if(!L) return;
-    // the bank is the town hall: find the city and you have found it
-    const dest=L.dest||id, here=curArea===id||curArea===dest, visited=!!S.visited[dest] || (id==='bank' && !!S.visited.street);
-    h.classList.toggle('here', here);
-    h.classList.toggle('locked', !visited && !here);
-    h.setAttribute('data-label', here ? L.name+' · Here' : visited ? L.name : '???');   // no spoilers before you find it
-    h.onclick=()=>travelTo(id);
-  });
-}
+function closeMap(){ mapOpen=false; cancelAnimationFrame(WM.raf); document.getElementById('mapModal').classList.remove('show'); }
 function travelTo(id){
   const L0=MAP_LOCS.find(l=>l.id===id); id=(L0&&L0.dest)||id;           // some places are reached at their door
   if((!S.visited[id] && !(id==='bank' && S.visited.street)) || id===curArea){ closeMap(); return; }
