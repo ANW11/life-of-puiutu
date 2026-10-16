@@ -324,6 +324,8 @@
     box-shadow:0 10px 30px rgba(0,0,0,.6);color:#e8dcc0;font-family:Georgia,serif;
     opacity:0;transform:translateX(12px);transition:opacity .18s, transform .18s;pointer-events:none;}
   #wmCard.on{opacity:1;transform:none;pointer-events:auto;}
+  #wmCard.flip{right:auto;left:22px;transform:translateX(-12px);}   /* the place is under the card's usual corner */
+  #wmCard.flip.on{transform:none;}
   #wmCardReg{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#b89a5e;margin-bottom:4px;}
   #wmCardName{font-size:21px;color:#fff3d6;margin-bottom:8px;}
   #wmCardDesc{font-size:13.5px;line-height:1.45;color:#d8ccb0;margin-bottom:10px;}
@@ -347,7 +349,7 @@
   #wmHint{position:absolute;right:22px;bottom:18px;font:12px Georgia,serif;color:#a89a7c;pointer-events:none;text-shadow:0 1px 2px #000;}
   #mapClose{position:absolute;top:12px;right:16px;width:36px;height:36px;border-radius:50%;padding:0;cursor:pointer;z-index:3;
     background:rgba(20,15,10,.8);border:1.5px solid #b89a5e;color:#f3e2b4;font-size:20px;line-height:1;}
-  @media (max-width:640px){ #wmCard{top:auto;bottom:52px;right:12px;left:12px;width:auto;} #wmHint{display:none;} #wmTitle{font-size:15px;} }
+  @media (max-width:640px){ #wmCard{top:auto;bottom:52px;right:12px;left:12px;width:auto;} #wmCard.flip{top:72px;bottom:auto;left:12px;right:12px;} #wmHint{display:none;} #wmTitle{font-size:15px;} }
 
   /* ---------- NAME modal ---------- */
   #nameModal{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
@@ -2478,6 +2480,8 @@ const SWIM_IDLE=new Image(); SWIM_IDLE.src='puiutu/swim_idle.png';   // sitting 
 const SKIN_FRAMES={};
 // Some breeds are physically bigger than an average cat — scale their sprites up a touch.
 const SKIN_SCALE={ skin_mainecoon:1.28, skin_angora:1.15 };
+// in the diving suit everyone is cut to Puiutu's size; the big breeds still fill it out a little
+const SWIM_SCALE={ skin_mainecoon:1.15 };
 function loadSkinFrames(id){
   if(!id || SKIN_FRAMES[id]) return SKIN_FRAMES[id];
   const base='skins/frames/'+id+'/';
@@ -2486,7 +2490,9 @@ function loadSkinFrames(id){
   // the same 3-frame swipe and 3-frame cast Puiutu has, drawn for this skin
   const ld=n=>{ const im=new Image(); im.src=base+n+'.png'; return im; };
   const melee=[0,1,2].map(i=>ld('melee'+i)), cast=[0,1,2].map(i=>ld('cast'+i)), duck=ld('duck');
-  return (SKIN_FRAMES[id]={run,idle,melee,cast,duck});
+  // underwater every skin wears the same diving suit Puiutu does: three kick frames and a floating sit
+  const swim=[0,1,2].map(i=>ld('swim_'+i)), swimIdle=ld('swim_idle');
+  return (SKIN_FRAMES[id]={run,idle,melee,cast,duck,swim,swimIdle});
 }
 // Rocky the dog (NPC + companion) frames
 // Rocky, redrawn: every pose cut from the same sheets at one shared scale (npcs/rocky_new/), so a pose keeps its
@@ -2855,15 +2861,19 @@ function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
   // underwater: Puiutu wears the diving suit. Instead of a constant mechanical paddle, he
   // does a quick flipper KICK (fast frames + a forward lunge) and then GLIDES/coasts — a more
   // natural swim rhythm. The cycle advances on `phase`, which only ticks while he's moving.
-  if(!_useSkin && key==='puiutu' && opt.swim && SWIM[0] && SWIM[0].complete && SWIM[0].naturalWidth){
+  // a skin swims in its own suit frames; until they have loaded it borrows Puiutu's suit, never its land pose
+  const _ok=im=>im&&im.complete&&im.naturalWidth;
+  const SW = (_useSkin && _skf.swim && _skf.swim.every(_ok)) ? _skf.swim : SWIM,
+        SWI = SW===SWIM ? SWIM_IDLE : (_ok(_skf.swimIdle) ? _skf.swimIdle : SWIM_IDLE);
+  if(key==='puiutu' && opt.swim && _ok(SW[0])){
     swimming=true;
     if(moving){
       swimCp = ((phase||0)*0.10) % 1;                 // 0..1 over one kick→glide cycle (~1s)
       if(swimCp<0.42){ const k=swimCp/0.42;           // KICK: rip through the paddle frames
-        img = SWIM[Math.min(SWIM.length-1, Math.floor(k*SWIM.length))]; }
-      else { img = SWIM[0]; }                         // GLIDE: hold the streamlined frame
+        img = SW[Math.min(SW.length-1, Math.floor(k*SW.length))]; }
+      else { img = SW[0]; }                           // GLIDE: hold the streamlined frame
     }
-    else { swimIdle=true; img = (SWIM_IDLE.complete&&SWIM_IDLE.naturalWidth)?SWIM_IDLE:SWIM[0]; }
+    else { swimIdle=true; img = _ok(SWI)?SWI:SW[0]; }
   } else if(!_useSkin && key==='puiutu' && moving && RUN[0] && RUN[0].complete && RUN[0].naturalWidth){
     running=true;
     img = RUN[Math.floor((phase||0)*1.25)%RUN.length];   // ~12fps gallop
@@ -2906,7 +2916,8 @@ function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
     sq  = 1 + br*0.015;
   }
   const wsq=1/sq;                                   // preserve volume
-  const drawH = posing ? h*1.2 : swimIdle ? h*1.05 : (swimming ? h*1.12 : (running ? h*0.92 : h));   // underwater poses a touch bigger than land; attack frames span crouch→standing, so they're drawn taller
+  const hs = swimming ? h/((_skId&&SKIN_SCALE[_skId])||1)*((_skId&&SWIM_SCALE[_skId])||1) : h;   // suit frames are cut to Puiutu's size; SWIM_SCALE lets a big breed stay big
+  const drawH = posing ? h*1.2 : swimIdle ? hs*1.05 : (swimming ? hs*1.12 : (running ? h*0.92 : h));   // underwater poses a touch bigger than land; attack frames span crouch→standing, so they're drawn taller
 
   // subtle light halo behind the hero so it pops off busy backgrounds
   if(opt.highlight){
@@ -3170,11 +3181,11 @@ function buildAreas(){
         scaleFar:0.80, scaleNear:1.02,
         spawn:{xf:0.8136, yf:0.4812},               // arrive on the right platform, in front of the big door
         merlin:{xf:0.13, yf:0.57},              // Merlin the wizard-dog, on the raised corner by the armchair
-        potions:{xf:0.505, yf:0.630, r:82},       // the alchemy table of potions -> Color Sort minigame
+        potions:{xf:0.4997, yf:0.6212, r:322},       // the alchemy table of potions -> Color Sort minigame
         doors:[// the big castle gate (right): back to the Tower Garden courtyard
-               {xf:0.8138, yf:0.4683, r:60, glowXf:0.8108, glowYf:0.3069, glowR:128, to:'towergarden', label:'Back to Tower Garden', icon:'', toSpawn:{xf:0.45, yf:0.92}},
+               {xf:0.8138, yf:0.4683, r:60, glowXf:0.8129, glowYf:0.3322, glowR:134, to:'towergarden', label:'Back to Tower Garden', icon:'', toSpawn:{xf:0.45, yf:0.92}},
                // the stairwell's blue arch: down to the archive under the library
-               {xf:0.310, yf:0.925, r:70, glowXf:0.305, glowYf:0.790, glowR:62, glowRGB:'120,120,255', to:'librarylower', label:'Lower Archive', icon:''}],
+               {xf:0.310, yf:0.925, r:70, glowXf:0.3055, glowYf:0.8024, glowR:87, glowRGB:'120,120,255', to:'librarylower', label:'Lower Archive', icon:''}],
       },
       platforms:[], npcs:[],
     },
@@ -3272,7 +3283,7 @@ function buildAreas(){
         walkTop:0.40, walkBot:0.96,
         scaleFar:0.64, scaleNear:1.06,
         spawn:{xf:0.0822, yf:0.6298},                 // arrive from the cave passage on the left
-        seal:{xf:0.5709, yf:0.5988, r:311, portalXf:0.5695, portalYf:0.6511},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
+        seal:{xf:0.5709, yf:0.5988, r:311, portalXf:0.5707, portalYf:0.6001},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
         // the left ruins archway -> back up to Ocean Depths
         doors:[{xf:0.061, yf:0.562, r:112, glowXf:0.060, glowYf:0.503, glowR:56, glowRGB:'90,180,255', to:'ocean1', label:'Back to Ocean Depths', icon:'', toSpawn:{xf:0.13, yf:0.66}}],
       },
@@ -3626,7 +3637,7 @@ function buildAreas(){
         // deck so it reads as moored beyond the platform rather than parked on top of it.
         // Placed by hand with the airship tool (I). h is multiplied by this area's depth scale, so it
         // is NOT the street's 569: 640 here draws the ship at the same on-screen size as in the square.
-        decor:[{img:'props/aeronava.png', xf:0.1116, yf:0.7545, zf:0.500, h:640, bob:9},
+        decor:[{img:'props/aeronava.png', xf:0.1116, yf:0.7545, zf:0.500, h:749, bob:9},
                {img:'ui/tailor/stall.png?v=3', xf:0.47, yf:0.86, h:200, crisp:true},   // ~100 art px tall, hard pixels: the map's own pixel size                  // his stall, against the battlement
                {img:'ui/tailor/merchant.png', xf:0.551, yf:0.8658, h:147, breathe:true}],   // the Merchant — the commander's height, drawn smooth like the other characters
         // the Merchant: a hooded stranger who sells looks (skins) for coin, in the open courtyard
@@ -5289,7 +5300,7 @@ const IS_TOUCH=(window.matchMedia&&matchMedia('(pointer: coarse)').matches) || (
 function topdownMode(){ return inGame && A && A.mode==='topdown'; }
 // what (if anything) the player can interact with right now
 function interactTarget(){
-  if(topdownMode()){ if(HUB.nearSewerExit && SEWER.on && SEWER.mode==='cleared') return 'sewerexit'; if(HUB.nearRocky) return 'rocky'; if(HUB.nearTomy) return 'tomy'; if(HUB.nearHubNpc) return 'hubnpc'; if(HUB.nearMerlin) return 'merlin'; if(HUB.nearPotions) return 'potions'; if(HUB.nearFishbarrel) return 'fishbarrel'; if(HUB.nearDivesuit) return 'divesuit'; if(HUB.nearBankdesk) return 'bankdesk'; if(HUB.nearStaff) return 'staff'; if(HUB.nearSpot) return 'spot'; if(HUB.nearSeal) return 'seal'; if(HUB.nearGarrison) return 'garrison'; if(HUB.nearShroom) return 'shroom'; if(HUB.nearMerge) return 'merge'; if(HUB.nearDoor) return 'door'; if(HUB.nearCave) return 'cave'; return null; }
+  if(topdownMode()){ if(HUB.nearSewerExit && SEWER.on && SEWER.mode==='cleared') return 'sewerexit'; if(HUB.nearRocky) return 'rocky'; if(HUB.nearTomy) return 'tomy'; if(HUB.nearHubNpc) return 'hubnpc'; if(HUB.nearMerlin) return 'merlin'; if(HUB.nearPotions) return 'potions'; if(HUB.nearFishbarrel) return 'fishbarrel'; if(HUB.nearDivesuit) return 'divesuit'; if(HUB.nearBankdesk) return 'bankdesk'; if(HUB.nearStaff) return 'staff'; if(HUB.nearSpot) return 'spot'; if(HUB.nearSeal) return 'seal'; if(HUB.nearGarrison && !doorBeatsGuard()) return 'garrison'; if(HUB.nearShroom) return 'shroom'; if(HUB.nearMerge) return 'merge'; if(HUB.nearDoor) return 'door'; if(HUB.nearCave) return 'cave'; return null; }
   if(nearPortal) return 'portal'; if(nearNpc) return 'npc'; return null;
 }
 // the sewers' way up, once the Coon is beaten
@@ -7725,6 +7736,12 @@ function updateGarrison(now){
   }
 }
 // the nearest garrison member you could talk to
+// guards often stand right beside the door they keep (the Gate Commanders by the Great Door):
+// when you are inside a door's reach and closer to the door than to the guard, E opens the door
+function doorBeatsGuard(){
+  const dr=HUB.nearDoor, g=HUB.nearGarrison, c=HUB.cat; if(!dr || !g) return false;
+  return Math.hypot(c.x-dr.xf*HUB.worldW, c.y-dr.yf*VH) <= Math.hypot(c.x-g.x, c.y-g.y);
+}
 function nearestGarrison(){
   const c=HUB.cat; let best=null,bd=86;
   for(const u of HUB.garrison){
@@ -9156,26 +9173,74 @@ function drawCrowdActor(g,a){
   g.scale(1, breathe);
   g.drawImage(im,-w/2,-h,w,h); g.restore();
 }
-// an evidence paper, held up large: parchment, a wax seal, its name and what it shows
+// an evidence paper, held up large: the document itself (ui/evidence/<id>.png), then the wax
+// seals of whoever put their name to it are pressed onto the paper one by one — the Union, the
+// Federation, the Corps, the wizards — and last, bigger, the pigs' snout in gold.
+// Every paper ends on the same seal. That is the whole point.
+const EVIDENCE_TILT={archive:-0.035, contracts:0.03, ledger:-0.02};
+// where each seal sits ON the paper: x/y as fractions of the document image, s = size as a fraction
+// of its width. sy flattens a seal on a sheet seen at an angle (the contracts lie in perspective).
+const EVIDENCE_SEALS={
+  archive:  {sy:1,    rot:0,     at:[{k:'wizards',x:0.13,y:0.63,s:0.12},{k:'union',x:0.445,y:0.78,s:0.12},{k:'rats',x:0.665,y:0.80,s:0.12},
+                                   {k:'pigs',x:0.855,y:0.66,s:0.18}]},
+  contracts:{sy:0.74, rot:-0.10, at:[{k:'union',x:0.21,y:0.37,s:0.13},{k:'elite',x:0.255,y:0.57,s:0.13},{k:'rats',x:0.71,y:0.30,s:0.13},
+                                   {k:'pigs',x:0.775,y:0.63,s:0.19}]},
+  ledger:   {sy:0.9,  rot:0,     at:[{k:'elite',x:0.21,y:0.26,s:0.12},{k:'rats',x:0.38,y:0.63,s:0.12},
+                                   {k:'pigs',x:0.72,y:0.63,s:0.17}]},
+};
+const SEAL_GAP=430, SEAL_T0=600;
 function drawEvidenceCard(id,t0){
-  const e=EVIDENCE[id]; if(!e) return; const now=Date.now(), a=Math.min(1,(now-t0)/450);
-  const w=Math.min(VW*0.62,540), h=176, x=VW/2-w/2, y=VH*0.30-h/2+(1-a)*14;
+  const e=EVIDENCE[id]; if(!e) return;
+  const now=Date.now(), dt=now-t0, a=Math.min(1,dt/450), ease=1-Math.pow(1-a,3);
+  const doc=decorImg('ui/evidence/'+id+'.png');
+  const ok=im=>im&&im.complete&&im.naturalWidth;
+  const cx=VW/2, cy=VH*0.29+(1-ease)*22;
+  const dw=Math.min(VW*0.5, VH*0.52*1.6, 460), dh=ok(doc) ? dw*doc.naturalHeight/doc.naturalWidth : dw*0.62;
   g.save(); g.globalAlpha=a;
-  g.shadowColor='rgba(0,0,0,.6)'; g.shadowBlur=24; g.fillStyle='#e9dcb8'; roundRectPath(x,y,w,h,6); g.fill(); g.shadowBlur=0;
-  g.strokeStyle='#8a7350'; g.lineWidth=2; roundRectPath(x+8,y+8,w-16,h-16,4); g.stroke();
-  g.fillStyle='#8b1a1a'; g.beginPath(); g.arc(x+w-46,y+h-44,22,0,7); g.fill();                         // wax seal
-  g.fillStyle='rgba(255,210,190,.35)'; g.beginPath(); g.arc(x+w-50,y+h-48,7,0,7); g.fill();
-  g.textAlign='center'; g.fillStyle='#6a5638'; g.font='bold 12px Trebuchet MS'; g.fillText('EVIDENCE', VW/2, y+34);
-  g.fillStyle='#2a2116'; g.font='bold 25px Trebuchet MS'; g.fillText(e.name, VW/2, y+76);
-  g.fillStyle='#3e3222'; g.font='italic 17px Trebuchet MS'; g.fillText('“'+e.note+'”', VW/2, y+118);
+  const vg=g.createRadialGradient(cx,cy,dw*0.3,cx,cy,Math.max(VW,VH)*0.7);                   // the square dims behind the paper
+  vg.addColorStop(0,'rgba(0,0,0,.38)'); vg.addColorStop(1,'rgba(0,0,0,.12)'); g.fillStyle=vg; g.fillRect(0,0,VW,VH);
+  g.save(); g.translate(cx,cy); g.rotate((EVIDENCE_TILT[id]||0)*(0.4+0.6*ease)); g.scale(0.92+0.08*ease, 0.92+0.08*ease);
+  g.shadowColor='rgba(0,0,0,.65)'; g.shadowBlur=28; g.shadowOffsetY=8;
+  if(ok(doc)) g.drawImage(doc,-dw/2,-dh/2,dw,dh);
+  g.shadowBlur=0; g.shadowOffsetY=0;
+  // the seals, pressed onto the paper in order; the pigs' always last
+  const L=EVIDENCE_SEALS[id]||{at:[]};
+  L.at.forEach((sp,i)=>drawWaxSeal({k:sp.k, x:(sp.x-0.5)*dw, y:(sp.y-0.5)*dh, s:sp.s*dw, sy:L.sy||1,
+    rot:(L.rot||0)+((i*37)%7-3)*0.04, last:sp.k==='pigs'}, dt-SEAL_T0-i*SEAL_GAP, t0+':'+i, a));
+  g.restore();
+  // caption band
+  const by=cy+dh/2+18, bw=Math.min(VW*0.7,600), bh=74;
+  g.fillStyle='rgba(14,10,6,.72)'; roundRectPath(cx-bw/2,by,bw,bh,10); g.fill();
+  g.strokeStyle='rgba(217,174,82,.45)'; g.lineWidth=1; roundRectPath(cx-bw/2+4,by+4,bw-8,bh-8,7); g.stroke();
+  g.textAlign='center';
+  g.fillStyle='#d9ae52'; g.font='bold 22px Georgia, serif'; g.fillText(e.name, cx, by+31);
+  g.fillStyle='#e8e0cc'; g.font='italic 15px Georgia, serif'; g.fillText('“'+e.note+'”', cx, by+56);
   g.restore();
 }
+// one seal: drops in big, thumps down, a ring of dust where it hit. The pigs' lands heavier.
+function drawWaxSeal(sp, sd, key, a){
+  const im=decorImg('ui/evidence/seal_'+sp.k+'.png');
+  if(sd<=0 || !(im&&im.complete&&im.naturalWidth)) return;
+  const p=Math.min(1,sd/(sp.last?260:200)), sc=1+(sp.last?1.6:1.1)*Math.pow(1-p,2), ss=sp.s*sc;
+  if(!C_SEAL_THUMP[key]){ C_SEAL_THUMP[key]=1;
+    SFX.tone&&SFX.tone(sp.last?82:130+Math.random()*30, sp.last?0.2:0.1, 'sine', sp.last?0.08:0.045); }
+  if(p>=1 && sd<(sp.last?620:480)){ const r=(sd-200)/(sp.last?420:280);
+    g.globalAlpha=a*Math.max(0,1-r)*0.5; g.strokeStyle='#f3d28a'; g.lineWidth=sp.last?3:2;
+    g.beginPath(); g.ellipse(sp.x,sp.y,ss*(0.55+r*0.5),ss*(0.55+r*0.5)*(sp.sy||1),0,0,7); g.stroke(); }
+  g.save(); g.globalAlpha=a*Math.min(1,p*1.6); g.translate(sp.x,sp.y); g.scale(1,sp.sy||1); g.rotate(sp.rot);
+  // in the air it casts a soft shadow; once down it is pressed into the paper — a tight dark edge
+  const lift=sc-1; g.shadowColor='rgba(30,15,5,'+(0.45+lift*0.1)+')'; g.shadowBlur=2+9*lift; g.shadowOffsetY=1.5+5*lift;
+  const h=ss*im.naturalHeight/im.naturalWidth; g.drawImage(im,-ss/2,-h/2,ss,h);
+  g.restore(); g.globalAlpha=a;
+}
+const C_SEAL_THUMP={};
 // entering the city rebuilds it (and clears any scene), so the scene starts once it is built
 let SQUARE_PENDING=false;
 function startSquareEnding(){ SQUARE_PENDING=true; enterArea('street',false); }
 function runSquareScene(){
   [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
   HUB.square=true; HUB.outro='third';
+  ['archive','contracts','ledger','seal_union','seal_elite','seal_rats','seal_wizards','seal_pigs'].forEach(k=>decorImg('ui/evidence/'+k+'.png'));   // the papers, ready before they are shown
   const C=()=>HUB.cine, sub=(t)=>{ C().sub = t ? {text:t, t0:Date.now(), col:'#ece6d8'} : null; },
         card=(id)=>{ C().card = id ? {id, t0:Date.now()} : null; if(id) C().murmurAt=Date.now()+250;   // a ripple through both crowds
                      SFX.tone&&SFX.tone(id?880:0.01,0.06,'triangle',0.03); },
@@ -17012,6 +17077,12 @@ function wmHover(id){
   const tr=document.getElementById('wmTravel');
   tr.textContent = here ? T('You are here') : known ? T('Fast travel') : T('Not discovered');
   tr.disabled = here || !known;
+  // the card must never land on the pin it describes: it would take the pointer, the pin would
+  // lose its hover, the card would vanish, the pin would get it back — a flicker loop
+  card.classList.remove('flip');
+  const pin=document.querySelector('#wmIcons .wm-pin[data-id="'+id+'"]');
+  if(pin){ const a=pin.getBoundingClientRect(), c=card.getBoundingClientRect(), m=12;
+    if(a.right>c.left-m && a.left<c.right+m && a.bottom>c.top-m && a.top<c.bottom+m) card.classList.add('flip'); }
   card.classList.add('on');
   SFX.tone&&SFX.tone(here?520:known?640:300,0.04,'sine',0.025);
 }
