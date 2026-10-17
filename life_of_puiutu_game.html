@@ -3732,6 +3732,12 @@ const RO = {
   'The Cat King':'Regele Pisica',
   'The Crown’s Lion':'Leul Coroanei',
   'The Dreamer in the Deep':'Visatorul din Adanc',
+  'the ancient one · keeper of the crystals':'cea stravechi · pazitoarea cristalelor',
+  'thief · stalker · hoarder of the dark':'hot · pandaritor · strangator al intunericului',
+  'king of the Rat Federation':'regele Federatiei Sobolanilor',
+  'last of the lion line':'ultimul din neamul leilor',
+  'built by the bank · fed by the crystals':'construit de banca · hranit de cristale',
+  'The circle cracks open. Queen Seby rises out of the stone.':'Cercul se crapa. Regina Seby se ridica din piatra.',
   'Queen Seby, the Ancient One':'Regina Seby, Cea Straveche',
   'The Glow':'Licarul',
   'The tiles seat themselves. Something heavy turns behind the door.':'Placutele se aseaza la locul lor. Ceva greu se roteste in spatele usii.',
@@ -4820,7 +4826,7 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
     }
     return hits;
   }
-  if(b && !b.defeated && near(b.x,b.y,22)){
+  if(b && !b.defeated && !b.appear && near(b.x,b.y,22)){
     if(crystalsRemain()){
       b.hitFlash=now; hits++; floatText(b.x,b.y-110,'SHIELDED','#bda8ff');
       SFX.tone&&SFX.tone(180,0.1,'sine',0.05);
@@ -6649,6 +6655,7 @@ function enterHub(fromRight){
   groundCoins=[]; coinSpawnAt=0;
   // Queen Seby — the top-down boss (only the sebyboss arena defines hub.boss)
   HUB.shards=[]; HUB.crystals=[];   // clear every hub so her crystal barrier never bleeds onto other maps
+  HUB.bossTitle=null; HUB.restartFightAt=0;
   HUB.spirit=null; HUB.spores=[]; HUB.carry=false; HUB.ride=null; HUB.hangar=null; HUB.cut=null; HUB.flashAt=0; HUB.nearSewerExit=false;
   if(H.boss){
     let bx=H.boss.xf*HUB.worldW, by=H.boss.yf*VH;
@@ -6697,7 +6704,7 @@ function enterHub(fromRight){
       // walking back into her lair after she has fallen must not put her back on her feet —
       // the piglet is standing right there telling you she is gone
       if(S.sebyDefeated && !freeMode()){ HUB.boss.defeated=true; HUB.boss.hp=0; HUB.boss.respawnAt=0; }
-      else spawnSebyCrystals();
+      else { spawnSebyCrystals(); HUB.boss.appear={stage:'hidden', t0:0}; }   // she rises out of her circle
     }
   } else HUB.boss=null;
   refreshGarrison();   // the garrison is built before the boss exists; anyone waiting on the
@@ -6872,7 +6879,10 @@ function updateSewer(now){
   if(!boss) for(const l of SEWER.loot){ if(l.got)continue; if(Math.hypot(c.x-l.x,c.y-l.y)<40){ l.got=true; SEWER.got++; SFX.coin&&SFX.coin();
     for(let i=0;i<10;i++)particles.push({x:l.x,y:l.y-10,vx:(Math.random()-.5)*4,vy:-(Math.random()*4),life:1,c:'#ffd86b'});
     toast('Recovered'+(l.name||'stolen treasure')+'!  ('+SEWER.got+'/'+SEWER.loot.length+')');
-    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=Math.round(260*((HUB.lvBoss&&HUB.lvBoss.hp)||1));   /* 150+10·L at its level 11; scales like every boss */ SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); toast('“MY treasure!” — the Evil Coon turns to FIGHT!'); } } }
+    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=Math.round(260*((HUB.lvBoss&&HUB.lvBoss.hp)||1));   /* 150+10·L at its level 11; scales like every boss */ SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); toast('“MY treasure!” — the Evil Coon turns to FIGHT!');
+      co.x=H.coonStart.xf*HUB.worldW; co.y=H.coonStart.yf*VH;                         // it melts into the dark…
+      if(maskReady()){ const p=nearestWalk(co.x,co.y); if(p){co.x=p.x;co.y=p.y;} }
+      SEWER.coonEmergeAt=now; bossTitle('coon'); } } }
   const chasing = boss || now>SEWER.chaseStart;
   if(chasing && !SEWER.warned){ SEWER.warned=true; SFX.lose&&SFX.lose(); toast('It’s coming — RUN!'); }
   // periodic FRENZY bursts (faster + growl + red flash)
@@ -6959,8 +6969,11 @@ function drawSewer(){
   if(SEWER.mode!=='cleared' && !HUB.cine){              // during its opening it is heard, not seen
   const csx=co.x-HUB.camx, D=Math.hypot(c.x-co.x,c.y-co.y), eg=0.7+0.3*Math.sin(now*0.02);
   const bodyVisible = COON_STALK.complete&&COON_STALK.naturalWidth && (D<lr*1.3 || !!L);
-  if(HUB.cine && HUB.cine.flare && now-HUB.cine.flare<1400){   // the eyes snap open
-    const k=1-(now-HUB.cine.flare)/1400, ex=csx+co.facing*10, ey=co.y-86, rr=70*k+20;
+  // the eyes snap open: in its opening, and again when it comes back out of the dark to fight
+  if(SEWER.coonEmergeAt && !HUB.bossTitle){ SEWER.coonEmergeAt=0; SEWER.flareAt=now; }
+  const flareAt=(HUB.cine&&HUB.cine.flare) || SEWER.flareAt;
+  if(flareAt && now-flareAt<1400){
+    const k=1-(now-flareAt)/1400, ex=csx+co.facing*10, ey=co.y-86, rr=70*k+20;
     const fg=g.createRadialGradient(ex,ey,2,ex,ey,rr); fg.addColorStop(0,'rgba(255,60,40,'+(0.9*k)+')'); fg.addColorStop(1,'rgba(255,30,20,0)');
     g.save(); g.globalCompositeOperation='lighter'; g.fillStyle=fg; g.beginPath(); g.arc(ex,ey,rr,0,7); g.fill(); g.restore(); }
   g.save();
@@ -7101,6 +7114,7 @@ function hubHurtPlayer(now,dmg,col,fx,fy,kb){
     const sp=A.hub.spawn; c.x=sp.xf*HUB.worldW; c.y=Math.max(0,Math.min(VH,sp.yf*VH));
     if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
     c.safeX=c.x; c.safeY=c.y; HUB.target=null;
+    if(bossFightLive()) HUB.restartFightAt=now+400;   // under the faint screen, the fight starts over
   }
 }
 // Queen Seby's top-down AI — claw pinch up close, crystal shards at range, tail dash from afar
@@ -7156,7 +7170,7 @@ function updateCatKing(b,now){
     b.facing=-1;
     if(dist<520){
       b.stage='summon'; b.spawnT0=now; b.stageUntil=now+1500;
-      toast('“You were invited. That is not the same as being welcome.”');
+      toast('“You were invited. That is not the same as being welcome.”'); bossTitle('catking');
       SFX.seq&&SFX.seq([196,262,330,392],'triangle',0.09);
     }
     return;
@@ -7346,7 +7360,7 @@ function updateRatKing(b,now){
     if(dist<520){
       b.stage='low'; b.state='walk';
       b.throwCD=now+2200; b.meleeCD=now+1100; b.dashCD=now+3000;
-      toast('“They told you I was a monster. Good. That was the point.”');
+      toast('“They told you I was a monster. Good. That was the point.”'); bossTitle('ratking');
       SFX.seq&&SFX.seq([110,98,87,73],'sawtooth',0.08);
     }
     return;
@@ -7659,6 +7673,91 @@ function bankCut(caption){
     actors:[{img:CINE_FACE.oink, xf:0.505, yf:0.700, h:0.17, cut:0.80},
             {img:CINE_FACE.snout, xf:0.400, yf:0.845, h:0.14, bob:true}]};
 }
+// Queen Seby's entrance: the circle glows while she sleeps under it; when you come close, a
+// column of light opens and she rises up through the floor, the stone shaking around her.
+const SEBY_RISE_MS=2600;
+function drawSebyRise(sx, sy, bsz, b){
+  const now=Date.now(), ap=b.appear, rising=ap.stage==='rise';
+  const k=rising ? Math.min(1,(now-ap.t0)/SEBY_RISE_MS) : 0, e=1-Math.pow(1-k,3);
+  const pulse=0.5+0.5*Math.sin(now*(rising?0.02:0.004));
+  g.save(); g.globalCompositeOperation='lighter';
+  const rr=bsz*(0.55+0.15*e), gr=g.createRadialGradient(sx,sy,4,sx,sy,rr);     // the circle, breathing
+  gr.addColorStop(0,'rgba(176,124,240,'+((rising?0.55:0.18)+0.15*pulse)+')'); gr.addColorStop(1,'rgba(150,80,230,0)');
+  g.fillStyle=gr; g.beginPath(); g.ellipse(sx,sy,rr,rr*0.32,0,0,7); g.fill();
+  if(rising){                                                                  // the column of light
+    const cw=bsz*0.42*(1-0.5*k), cg=g.createLinearGradient(0,sy-bsz*1.6,0,sy);
+    cg.addColorStop(0,'rgba(190,150,255,0)'); cg.addColorStop(1,'rgba(190,150,255,'+(0.45*(1-k*0.6))+')');
+    g.fillStyle=cg; g.fillRect(sx-cw/2, sy-bsz*1.6, cw, bsz*1.6);
+  }
+  g.restore();
+  if(!rising) return;
+  g.save(); g.beginPath(); g.rect(sx-bsz*2, sy-bsz*3, bsz*4, bsz*3+2); g.clip();   // nothing below the floor line
+  g.globalAlpha=Math.min(1,k*1.6);
+  drawBossSprite(g, sx, sy+bsz*(1-e), b.facing, bsz, 'rear', false, 0, SEBYI, '150,80,230', 0.15);
+  g.restore();
+}
+// ── Boss title cards ───────────────────────────────────────────────────────────────────────
+// Every boss gets the Dreamer's treatment: the screen dims, an epithet, the name, a line drawn
+// under it. The card waits until no scene or dialogue is on screen, and the fight holds still
+// while it plays (the Dreamer draws its own, inside its 12-second waking).
+const BOSS_TITLE={
+  seby:    {name:'QUEEN SEBY',    epi:'the ancient one · keeper of the crystals',  col:'#ead6ff', bar:'#b07cf0', low:[110,147,175,220]},
+  coon:    {name:'THE EVIL COON', epi:'thief · stalker · hoarder of the dark',     col:'#ffd6c8', bar:'#ff3a3a', low:[58,52,46,41]},
+  ratking: {name:'RATTUS MAGNUS', epi:'king of the Rat Federation',                col:'#ffdcb4', bar:'#d0502a', low:[73,87,98,73]},
+  catking: {name:'THE CAT KING',  epi:'last of the lion line',                     col:'#fff0c8', bar:'#e8b53a', low:[196,262,330,262]},
+  mechboar:{name:'THE MECH BOAR', epi:'built by the bank · fed by the crystals',   col:'#d8e8ff', bar:'#9fe6ff', low:[55,65,82,55]},
+};
+const BOSS_TITLE_MS=3600;
+function bossTitle(key){ HUB.bossTitle={key, t0:0}; }
+function bossTitleHolding(){ return !!HUB.bossTitle; }
+function updateBossTitle(now){
+  const bt=HUB.bossTitle; if(!bt) return;
+  if(!bt.t0){
+    if(HUB.cine || sayActive || choiceActive) return;
+    bt.t0=now; const d=BOSS_TITLE[bt.key];
+    SFX.seq&&SFX.seq(d.low,'sawtooth',0.08); SFX.tone&&SFX.tone(d.low[0]*0.5,1.6,'sine',0.10);
+    P.iframe=Math.max(P.iframe||0, now+BOSS_TITLE_MS);          // nothing lands on you while you read it
+  }
+  if(now-bt.t0>BOSS_TITLE_MS) HUB.bossTitle=null;
+}
+function drawBossTitle(){
+  const bt=HUB.bossTitle; if(!bt||!bt.t0) return;
+  const d=BOSS_TITLE[bt.key], el=Date.now()-bt.t0;
+  const t=Math.min(1,el/500)*Math.min(1,Math.max(0,(BOSS_TITLE_MS-el)/500));
+  g.save();
+  const gr=g.createLinearGradient(0,VH*0.52,0,VH);
+  gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(0.45,'rgba(0,0,0,'+(0.72*t)+')'); gr.addColorStop(1,'rgba(0,0,0,'+(0.85*t)+')');
+  g.fillStyle=gr; g.fillRect(0,VH*0.52,VW,VH*0.48);
+  g.globalAlpha=t; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=18;
+  g.font='italic 16px Georgia'; g.fillStyle='#c9d6e8'; g.fillText(T(d.epi), VW/2, VH*0.70);
+  g.font='bold 46px Georgia'; g.fillStyle=d.col; g.fillText(d.name, VW/2, VH*0.78);
+  const w=Math.min(1,el/900);
+  g.shadowBlur=0; g.fillStyle=d.bar; g.fillRect(VW/2-170*w, VH*0.80, 340*w, 2);
+  g.restore();
+}
+// Is a boss fight under way in this room? Fainting in one sends you back to its start.
+function bossFightLive(){
+  const ab=HUB.abyss; if(ab) return ab.state!=='dead' && ab.state!=='sinking';
+  if(SEWER.on) return SEWER.mode==='boss';
+  const b=HUB.boss; if(!b || b.defeated) return false;
+  if(b.ck||b.rk||b.mb) return b.stage!=='idle';
+  return !(b.appear && b.appear.stage==='hidden');
+}
+// Run the fight again from the top: the room is rebuilt, so the boss is whole and makes its
+// entrance again. The story scenes do not replay (they are once each), the entrance and the
+// title do. The Coon's fight restarts on its own: the treasures you carried stay carried.
+function restartBossFight(){
+  HUB.bossTitle=null; HUB.cine=null;
+  if(SEWER.on && SEWER.mode==='boss'){
+    const H=A.hub, co=SEWER.coon;
+    co.x=H.coonStart.xf*HUB.worldW; co.y=H.coonStart.yf*VH;
+    if(maskReady()){ const p=nearestWalk(co.x,co.y); if(p){co.x=p.x;co.y=p.y;} }
+    SEWER.bossHp=SEWER.bossMax; SEWER.coonEmergeAt=Date.now();
+    bossTitle('coon');
+    return;
+  }
+  enterHub(false);
+}
 function startBossOpening(){
   HUB.cine=null;
   const b=HUB.boss, H=A.hub, W=()=>HUB.worldW;
@@ -7937,7 +8036,7 @@ function updateMechBoar(b,now){
   }
   if(b.stage==='wake'){
     if(now>b.stageUntil){
-      b.stage='fight'; b.state='walk';
+      b.stage='fight'; b.state='walk'; bossTitle('mechboar');
       b.fireCD=now+900; b.stompCD=now+700; b.specialCD=now+6500; b.volleys=0;
     }
     return;
@@ -8472,6 +8571,26 @@ function updateHubBoss(now){
   const ddx=c.x-b.x, ddy=c.y-b.y, dist=Math.hypot(ddx,ddy);
   if(Math.abs(ddx)>20) b.facing=ddx<0?-1:1;
   b.phase2 = b.hp<=b.maxHp*0.45;                  // enrage at 45% HP
+  if(b.appear){                                   // she is not standing there: she comes up out of her circle
+    const ap=b.appear;
+    if(ap.stage==='hidden'){
+      if(!b.introShown && dist>=560) return;
+      ap.stage='rise'; ap.t0=now; b.introShown=true;
+      SFX.seq&&SFX.seq([220,175,147,110],'sawtooth',0.07); SFX.tone&&SFX.tone(55,2.4,'sine',0.10);
+      toast('The circle cracks open. Queen Seby rises out of the stone.');
+      return;
+    }
+    const k=(now-ap.t0)/SEBY_RISE_MS;
+    if(k<1){                                      // the floor shakes and spits stone as she comes up
+      HUB.camx += (Math.random()-0.5)*5*(1-k);
+      if(Math.random()<0.5) particles.push({x:b.x+(Math.random()-.5)*160, y:b.y-Math.random()*10,
+        vx:(Math.random()-.5)*3, vy:-(1+Math.random()*3), life:1, c:Math.random()<.5?'#b07cf0':'#9fe6ff'});
+      return;
+    }
+    b.appear=null; b.throwCD=0; b.meleeCD=0; b.dashCD=0;   // her cooldowns start once her card is gone
+    bossTitle('seby');
+    return;
+  }
   if(!b.throwCD)b.throwCD=now+2000; if(!b.meleeCD)b.meleeCD=now+1300; if(!b.dashCD)b.dashCD=now+3800;
   if(!b.introShown && dist<560){ b.introShown=true;
     toast('Queen Seby, the Ancient One stirs… the crystals tremble.');
@@ -8522,6 +8641,7 @@ function updateHubBoss(now){
 function updateHub(){
   const _im=hubImg(); if(!_im.complete||!_im.naturalWidth) return;
   if(!HUB.inited) enterHub();
+  if(HUB.restartFightAt && Date.now()>HUB.restartFightAt){ HUB.restartFightAt=0; restartBossFight(); }
   buildMaskData();
   // after a seal morph, wait for the opened mask to load, then move the deep-sea creatures in
   if(HUB._needSolvedMobs && maskReady()){ HUB._needSolvedMobs=false; spawnHubMobs(); }
@@ -8806,10 +8926,11 @@ function updateHub(){
   tutorialWatch(now);
   // Queen Seby (boss arena only)
   if(HUB.cine) updateCine(now);
-  if(HUB.boss && !HUB.cine) updateHubBoss(now);
+  updateBossTitle(now);
+  if(HUB.boss && !HUB.cine && !bossTitleHolding()) updateHubBoss(now);
   if(HUB.abyss) updateAbyssBoss(now);
   if(ARMY.inited) updateArmy(now);
-  if(SEWER.on && !HUB.cine) updateSewer(now);
+  if(SEWER.on && !HUB.cine && !bossTitleHolding()) updateSewer(now);
   // her crystal shard projectiles
   if(HUB.shards) for(let i=HUB.shards.length-1;i>=0;i--){
     const s=HUB.shards[i]; s.x+=s.vx; s.y+=s.vy; s.spin+=0.25; s.life--;
@@ -9144,6 +9265,7 @@ function drawHub(){
                 : b.state==='dash' ? 'dash'
                 : (Math.floor(b.phase*1.4)%2?'walk1':'walk0');
       const bob=b.moving?Math.abs(Math.sin(b.phase*Math.PI))*4:0;
+      if(b.appear){ drawSebyRise(sx, b.y, bsz, b); continue; }
       drawBossSprite(g, sx, b.y, b.facing, bsz, key, b.phase2&&!b.defeated, bob, SEBYI, '150,80,230', 0.15);
       // crystal-barrier shield bubble — shimmers while any shard still stands
       if(crystalsRemain()){ const pulse=0.5+0.5*Math.sin(now*0.006);
@@ -9335,6 +9457,7 @@ function drawHub(){
   drawFloats();
   if(HUB.cut || HUB.hangar || HUB.flashAt) drawHangarCinema();
   if(HUB.cine) drawCine();
+  drawBossTitle();
 }
 // The Dreamer in the Deep — tentacle adds, exposed core, telegraphs and the boss HP bar
 function drawAbyssBoss(){
