@@ -8159,7 +8159,7 @@ function enterHub(fromRight){
     if(H.imgCalm) H.img=H.imgCalm;                 // always enter on the calm temple
     const now=Date.now();
     const ahp=Math.round(600*HUB.lvBoss.hp);
-    HUB.abyss={ phase:0, state:'intro', introT0:now, introUntil:now+(RETRY_AREA===curArea?1500:12000), tentacles:[], headHp:ahp, headMax:ahp,
+    HUB.abyss={ phase:0, state:'intro', introT0:now, introUntil:now+12000, tentacles:[], headHp:ahp, headMax:ahp,
                 beamCD:now+2400, hitFlash:0, exposedUntil:0, shakeT:now };
     document.body.classList.add('cinema');          // its waking is a scene: touch controls out of the shot
   } else { if(HUB.abyss) document.body.classList.remove('cinema'); HUB.abyss=null; }
@@ -8546,20 +8546,6 @@ function landHub(){
   else if(cl==='walk'){ c.onPlat=false; c.safeX=c.x; c.safeY=c.y; }
   else { c.x=c.safeX; c.y=c.safeY; }   // landed somewhere illegal -> snap back
 }
-// Is a boss fight on right now? (a boss that is up and not beaten, or the Dreamer awake)
-function bossFightLive(){
-  const ab=HUB.abyss; if(ab && ab.state!=='dead' && ab.state!=='sinking') return true;
-  const b=HUB.boss; return !!(b && !b.defeated);
-}
-// Fainting in a boss fight doesn't drop you at the door with the boss half-dead: the arena is
-// rebuilt and the whole fight starts over, boss at full health, you at full health.
-let RETRY_AREA=null;
-function restartBossFight(now){
-  if(HUB.restarting) return; HUB.restarting=true;
-  P.hp=P.maxHp; P.iframe=now+4000; HUB.target=null;
-  setTimeout(()=>{ RETRY_AREA=curArea; P.hp=P.maxHp; enterArea(curArea,false); RETRY_AREA=null; HUB.restarting=false;
-                   toast('Back on your feet. The fight starts over.'); }, 1400);
-}
 // hurt the cat in top-down mode: damage + knockback away from (fx,fy); faint -> back to the area spawn
 function hubHurtPlayer(now,dmg,col,fx,fy,kb){
   if(now<=(P.iframe||0)) return;
@@ -8571,7 +8557,6 @@ function hubHurtPlayer(now,dmg,col,fx,fy,kb){
   if(!maskReady() || maskClassify(nx,ny)==='walk'){ c.x=nx; c.y=ny; c.safeX=nx; c.safeY=ny; }
   if(P.hp<=0){
     SFX.lose(); showFaintScreen();
-    if(bossFightLive()){ restartBossFight(now); return; }
     P.hp=P.maxHp; P.iframe=now+1800;
     const sp=A.hub.spawn; c.x=sp.xf*HUB.worldW; c.y=Math.max(0,Math.min(VH,sp.yf*VH));
     if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
