@@ -1257,6 +1257,34 @@
 //  LIFE OF PUIUTU — 2D platformer
 //═══════════════════════════════════════════════════════════════════════════
 
+// Retry sprites that fail to load. The game asks for ~250 files at once on startup, and a
+// Cloudflare quick tunnel (start_online.sh) refuses anything past ~200 in flight with a 429.
+// A sprite that lost that race never loaded, so over the public link the pig agent and the
+// Union soldiers showed only their name labels. Images with their own onerror (fallback chains,
+// icons that remove themselves) are left alone: they already decide what a failure means.
+(function(){
+  const d=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
+  if(!d||!d.set) return;
+  Object.defineProperty(HTMLImageElement.prototype,'src',{
+    configurable:true, enumerable:d.enumerable, get:d.get,
+    set(v){
+      this._want=String(v); this._tries=0;
+      if(!this._retryHooked){
+        this._retryHooked=true;
+        this.addEventListener('error',()=>{
+          if(this.onerror||this._tries>=6||!this._want||this._want.startsWith('data:')) return;
+          const want=this._want, n=++this._tries;
+          setTimeout(()=>{
+            if(this._want!==want) return;                    // src changed meanwhile
+            d.set.call(this, want+(want.includes('?')?'&':'?')+'retry='+n);
+          }, 400*2**n + Math.random()*400);
+        });
+      }
+      d.set.call(this,v);
+    }
+  });
+})();
+
 // polyfill roundRect
 if(!CanvasRenderingContext2D.prototype.roundRect){
   CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
