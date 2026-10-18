@@ -2730,10 +2730,10 @@ const LOOT_IMG={}; ['sack','piggy','crown','chest'].forEach(k=>{ const im=new Im
 const PIGEON_SPRITES={};
 for(let i=1;i<=9;i++){ const im=new Image(); im.src='mobs/pigeon_v'+i+'.png'; PIGEON_SPRITES['v'+i]=im; }
 // walk (4) + attack (wind-up, peck) frames, all on one ground line and one height (mobs/birds/).
-// The duck and the four most common pigeons have them; the other pigeon colours keep their
-// single sprite and the old bob.
+// The duck and every pigeon colour have them (v3, v4, v6, v7 and v8 are the grey pigeon's frames
+// recoloured from each colour's own sprite by gen_pigeon_frames.py).
 const BIRD_FRAMES={};
-['duck','pigeon_v5','pigeon_v1','pigeon_v2','pigeon_v9'].forEach(k=>{
+['duck','pigeon_v5','pigeon_v1','pigeon_v2','pigeon_v9','pigeon_v3','pigeon_v4','pigeon_v6','pigeon_v7','pigeon_v8'].forEach(k=>{
   const ld=n=>{ const im=new Image(); im.src='mobs/birds/'+k+'_'+n+'.png'; return im; };
   BIRD_FRAMES[k]={walk:[0,1,2,3].map(i=>ld('walk'+i)), atk:[0,1].map(i=>ld('atk'+i))};
 });
@@ -3887,7 +3887,6 @@ const RO = {
   "The Deep":"Adâncul",
   "Whisker City":"Orașul Mustăților",
   "The Royal Heights":"Înălțimile Regale",
-  "Rattania":"Rattania",
   "Where Puiutu wakes up. Something old lives under the clearing.":"Aici se trezește Puiutu. Sub poiană trăiește ceva foarte vechi.",
   "Closed for survey work, they said. There is a gate at the bottom, and something guarding it.":"Închisă pentru măsurători, ziceau. Jos e o poartă, și ceva care o păzește.",
   "The old wizard's tower. The prophecy he keeps there is not very specific.":"Turnul bătrânului vrăjitor. Profeția pe care o ține acolo nu e foarte precisă.",
@@ -4778,7 +4777,7 @@ const RO = {
   "Rattus Magnus read them. Then he had them burned.":"Rattus Magnus le-a citit. Apoi a pus să fie arse.",
   "The Cat King read them twice, and asked who else had seen them.":"Regele Pisică le-a citit de două ori și a întrebat cine le mai văzuse.",
   "The bank opened on Monday, as it always does.":"Banca s-a deschis luni, ca întotdeauna.",
-  "Rattus Magnus still rules Rattania.":"Rattus Magnus încă domnește peste Rattania.",
+  "Rattus Magnus still rules the Rat Federation.":"Rattus Magnus încă domnește peste Federația Șobolanilor.",
   "The Cat King still issues resolutions.":"Regele Pisică încă emite rezoluții.",
   "The Organization still finances both sides.":"Organizația încă finanțează ambele tabere.",
   "But seven rats refused their orders.":"Dar șapte șobolani și-au refuzat ordinele.",
@@ -4858,7 +4857,7 @@ const RO = {
   "Yes, Sir Oink. Oink.":"Da, Sir Oink. Oinc.",
   "Ah. Puiutu. Do come in — mind the step, it is a long way down.":"Ah. Puiutu. Intră, te rog — atenție la treaptă, e mult până jos.",
   "You will have questions. Everyone does, at the bottom of the lift.":"O să ai întrebări. Toată lumea are, la capătul liftului.",
-  "The bank never sold fish. It sold wars. Rattania borrows to build an army, the Accord borrows to answer it, and we hold both notes.":"Banca n-a vândut niciodată pește. A vândut războaie. Rattania se împrumută ca să-și facă o armată, Acordul se împrumută ca să-i răspundă, iar noi deținem ambele datorii.",
+  "The bank never sold fish. It sold wars. The Rat Federation borrows to build an army, the Accord borrows to answer it, and we hold both notes.":"Banca n-a vândut niciodată pește. A vândut războaie. Federația Șobolanilor se împrumută ca să-și facă o armată, Acordul se împrumută ca să-i răspundă, iar noi deținem ambele datorii.",
   "And the crystals — you cleared that cave for us. Every one of them is in here now. Honestly, you were our best employee.":"Iar cristalele — tu ne-ai curățat peștera aia. Fiecare dintre ele e acum aici. Sincer, ai fost cel mai bun angajat al nostru.",
   "Animals that fight each other never look up. You looked up.":"Animalele care se bat între ele nu se uită niciodată în sus. Tu te-ai uitat.",
   "That makes you a liability. And liabilities… get written off.":"Asta te face o pasivă. Iar pasivele… se trec pe pierderi.",
@@ -5200,7 +5199,7 @@ function storySet(id){
   if((S.story||0)>=i){ let got=false; (STORY[i].grants||[]).forEach(f=>{ if(!S[f]){ S[f]=true; got=true; } });
     if(got){ save(); if(STORY[i].hint) toast(''+STORY[i].hint); } return got; }
   for(let k=0;k<=i;k++) (STORY[k].grants||[]).forEach(f=>{ S[f]=true; });
-  S.story=i; save();
+  S.story=i; save(); updateQuestHUD();
   const nx=STORY[i+1];
   if(STORY[i].hint) toast(''+STORY[i].hint);
   if(nx) setTimeout(()=>{ if(nx.hint) toast(''+nx.hint); }, 2600);
@@ -6231,6 +6230,7 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
 const TROTTER_TOLL=5;
 function trotterReady(){ return (S.totalFish||0)>=TROTTER_TOLL; }
 function checkFiveFish(){
+  updateQuestHUD();                                  // the pig's count on the plaques
   if(trotterReady() && !S.fishNudged && !storyAt('fivefish')){
     S.fishNudged=true; save();
     toast('That is five. Go back to the pig on the pier — he wanted five.');
@@ -6243,7 +6243,7 @@ function hubMobKilled(d,now){
     if(S.sharkKills>=2){ S.sharkQuest='done'; S.coins+=120+20000; addXP(90); shiftAllegiance(-2);   // + 2 gold, like every quest
       setTimeout(()=>toast(T('Two sharks. The rat on the beach owes you.')+' +'+moneyText(20120)), 1800); }   // after the kill's own toast, not under it
     else toast('One shark down. One to go.');
-    save();
+    save(); updateQuestHUD();
   }
   d.dead=true; d.respawnAt=now+DUCK_RESPAWN;
   // the Rat King's guards are summoned, not resident: they do not come back, and each one is a
@@ -7931,7 +7931,7 @@ const GARRISON_TALK={
       text:'So you did buy the suit. Then you can be useful. Two sharks in the deep water. Kill them and the Federation will remember it.',
       choices:[
         {label:'I will do it', hint:'the Federation will remember', lean:'rat',
-         onPick:()=>{ S.sharkQuest='on'; S.sharkKills=S.sharkKills||0; save();
+         onPick:()=>{ S.sharkQuest='on'; S.sharkKills=S.sharkKills||0; save(); updateQuestHUD();
                       toast('The rat wants two sharks dead.'); }},
         {label:'I do not work for you', hint:'costs you nothing', lean:'none',
          onPick:()=>{ S.sharkQuest='no'; save(); }},
@@ -9146,7 +9146,7 @@ const OUTROS={
       {img:'maps/bankinterioropen.png', fx:0.50, fy:0.75, zoom:1.15, lines:['The bank opened on Monday, as it always does.']},
       OUTRO_GARDEN,
     ],
-    final:['Rattus Magnus still rules Rattania.','The Cat King still issues resolutions.','The Organization still finances both sides.','',
+    final:['Rattus Magnus still rules the Rat Federation.','The Cat King still issues resolutions.','The Organization still finances both sides.','',
            'But seven rats refused their orders.','Three cats resigned from the Council.','Twelve animals from the Grey Zone began to speak.','',
            'Puiutu did not save the world.','He showed that it can be saved.','*What will you do with that?'],
   },
@@ -9160,7 +9160,7 @@ const OUTROS={
       {bank:true, lines:['The Organization signed the reconstruction contracts.','Both of them.']},
       OUTRO_GARDEN,
     ],
-    final:['The Feline Union won the war under the bank.','Rattus Magnus still rules Rattania.','The Organization still finances both sides.','',
+    final:['The Feline Union won the war under the bank.','Rattus Magnus still rules the Rat Federation.','The Organization still finances both sides.','',
            'Somewhere, a young rat is being told what a cat did today.','The war needed a hero. It found one.','',
            "Puiutu fought someone else's war.",'*There was another way. You walked past it.'],
   },
@@ -9186,7 +9186,7 @@ const OUTROS={
       {bank:true, lines:['The Organization sent flowers to both sides.','Same florist.']},
       OUTRO_GARDEN,
     ],
-    final:['Rattus Magnus still rules Rattania.','The Cat King still issues resolutions.','The Organization still finances both sides.','',
+    final:['Rattus Magnus still rules the Rat Federation.','The Cat King still issues resolutions.','The Organization still finances both sides.','',
            'Refusing to choose was the right start.','It was not enough on its own.','',
            '*The proof was out there. You were close.'],
   },
@@ -9835,7 +9835,7 @@ function startBossOpening(){
 const SNOUT_SPEECH=[
   "Ah. Puiutu. Do come in — mind the step, it is a long way down.",
   "You will have questions. Everyone does, at the bottom of the lift.",
-  "The bank never sold fish. It sold wars. Rattania borrows to build an army, the Accord borrows to answer it, and we hold both notes.",
+  "The bank never sold fish. It sold wars. The Rat Federation borrows to build an army, the Accord borrows to answer it, and we hold both notes.",
   "And the crystals — you cleared that cave for us. Every one of them is in here now. Honestly, you were our best employee.",
   "Animals that fight each other never look up. You looked up.",
   "That makes you a liability. And liabilities… get written off.",
@@ -12742,9 +12742,20 @@ function questCount(key){
 function questDone(key){ return S.quests[key] && questCount(key)>=QUESTS[key].goal.n; }
 function activeQuestKey(){ for(const k in S.quests){ if(S.quests[k].state==='active') return k; } return null; }
 function questProgress(type){ updateQuestHUD(); }
+// Everything you are working on, for the plaques top-left: the cat quests (QUESTS) and the
+// errands that live in the story instead — the pig's five fish, the rat emissary's two sharks.
+function hudQuests(){
+  const out=Object.keys(S.quests||{}).filter(k=>S.quests[k].state==='active' && QUESTS[k]).map(k=>{ const q=QUESTS[k];
+    return {key:k, name:q.name, img:()=>q.img?q.img():q.dog?ROCKY.idle:SPRITES[q.cat], have:questCount(k), n:q.goal.n, talk:true}; });
+  if(S.beachOpen && storyAt('zoomies') && !storyAt('fivefish'))
+    out.push({key:'trotter', name:'Agent Trotter', img:()=>ARMY_SPR.pig_agent.walk[0], have:Math.min(TROTTER_TOLL,S.totalFish||0), n:TROTTER_TOLL, talk:true});
+  if(S.sharkQuest==='on')
+    out.push({key:'shark', name:'Rat Emissary', img:()=>ARMY_SPR.rat_emissary.walk[0], have:Math.min(2,S.sharkKills||0), n:2});
+  return out;
+}
 function updateQuestHUD(){
   const el=document.getElementById('questHUD'); if(!el) return;
-  const keys=Object.keys(S.quests||{}).filter(k=>S.quests[k].state==='active' && QUESTS[k]);
+  const list=hudQuests(), keys=list.map(x=>x.key);
   if(!keys.length){ el.style.display='none'; el._keys=''; return; }
   el.style.display='flex';
   // rebuild the stack only when the set of active quests changes (each plaque keeps its own face)
@@ -12752,11 +12763,11 @@ function updateQuestHUD(){
   if(el._keys!==sig){ el._keys=sig;
     el.innerHTML=keys.map(k=>'<div class="qPlaque" data-q="'+k+'"><canvas class="qFace" width="84" height="84"></canvas><span class="qTxt"></span></div>').join(''); }
   for(const pl of el.children){
-    const key=pl.dataset.q, q=QUESTS[key], c=questCount(key);
+    const e=list.find(x=>x.key===pl.dataset.q); if(!e) continue;
     // the quest-giver's face in the socket, painted once its sprite has loaded
-    if(!pl._face){ const img=q.img?q.img():q.dog?ROCKY.idle:SPRITES[q.cat];
+    if(!pl._face){ const img=e.img();
       if(img && img.complete && img.naturalWidth){ paintPortrait(pl.firstChild.getContext('2d'),84,img,'#cfe6a8'); pl._face=true; } }
-    pl.lastChild.innerHTML=T(q.name)+':<b>'+c+'/'+q.goal.n+'</b>'+(c>=q.goal.n?'<span class="qDone">'+T('talk!')+'</span>':'');
+    pl.lastChild.innerHTML=T(e.name)+':<b>'+e.have+'/'+e.n+'</b>'+(e.talk && e.have>=e.n?'<span class="qDone">'+T('talk!')+'</span>':'');
   }
 }
 
@@ -17371,7 +17382,7 @@ const MAP_REGIONS={
   deep:   {name:'The Deep',         x:14, y:90},
   city:   {name:'Whisker City',     x:52, y:68},
   heights:{name:'The Royal Heights',x:80, y:30},
-  warren: {name:'Rattania',         x:90, y:42},
+  warren: {name:'Rat Federation',         x:90, y:42},
   slums:  {name:'The Slums',        x:64, y:96},
 };
 // what the story wants from you next, and where that is
@@ -17407,6 +17418,8 @@ function mapQuests(){
                : LT('Defeat '+n+' enemies','Învinge '+n+' inamici');
     out.push({loc:QUEST_LOC[k], ready, text:T(q.name)+': '+what+' ('+have+'/'+n+')'+(ready?LT(' — go back',' — întoarce-te'):'')});
   }
+  if(S.beachOpen && storyAt('zoomies') && !storyAt('fivefish')){ const have=Math.min(TROTTER_TOLL,S.totalFish||0);
+    out.push({loc:'beach', ready:have>=TROTTER_TOLL, text:LT('Agent Trotter: five fish','Agentul Copită: cinci pești')+' ('+have+'/'+TROTTER_TOLL+')'}); }
   if(S.sharkQuest==='on'){ const have=Math.min(2,S.sharkKills||0);
     out.push({loc:'ocean1', ready:false, text:LT('Rat Emissary: two sharks in the deep water','Emisarul șobolanilor: doi rechini în apele adânci')+' ('+have+'/2)'}); }
   return out;
