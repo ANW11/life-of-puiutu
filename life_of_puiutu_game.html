@@ -5322,9 +5322,9 @@ function storySet(id){
     if(got){ save(); if(STORY[i].hint) toast(''+STORY[i].hint); } return got; }
   for(let k=0;k<=i;k++) (STORY[k].grants||[]).forEach(f=>{ S[f]=true; });
   S.story=i; save(); updateQuestHUD();
-  const nx=STORY[i+1];
+  // the hint of the step you just reached is what to do next. (The following step's hint is
+  // written as if you had already done it — "You have the crystal" — so it is never shown early.)
   if(STORY[i].hint) toast(''+STORY[i].hint);
-  if(nx) setTimeout(()=>{ if(nx.hint) toast(''+nx.hint); }, 2600);
   return true;
 }
 function storyHint(){
@@ -6062,6 +6062,8 @@ function iconsMigrate(){
   if(S.hasMap==null)   S.hasMap=storyAt('prophecy');
   if(S.hasGacha==null) S.hasGacha=!!S.metShelly;
   if(S.hasWar==null)   S.hasWar=!!S.warrenOpen;
+  // saves made before the Rat King's fall opened the bank's lift were stuck at 'ratking' for good
+  if(S.ratKingDown && (S.story||0)===STORY_IX.ratking){ S.story=STORY_IX.evidence; S.orgAccess=true; }
 }
 function iconOn(k){ return freeMode() || !!S[TOP_ICONS[k].flag]; }
 function syncTopIcons(){
@@ -9192,6 +9194,9 @@ function ratKingDown(b,now){
   b.stage='stagger'; b.defeated=true; b.respawnAt=0; b.hp=0; b.moving=false; b.state='walk';
   ratKingDismissGuards();                            // with him stopped, nobody stays to finish it
   S.ratKingDown=true; storySet('ratking'); S.totalDefeats=(S.totalDefeats||0)+1;
+  // and in his hall, on his guards' weapons: the bank's mark, the same one the Union carries.
+  // That is what opens the lift behind the vault — without it the campaign stops here.
+  setTimeout(()=>storySet('evidence'), 4600);
   S.coins+=b.kind.coins; addXP(b.kind.xp);
   SFX.win&&SFX.win(); syncHUD(); save(); RAT_MUSIC.finale();
   setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.ratking) MUSIC.start(); }, 4400);
@@ -10838,6 +10843,8 @@ function updateHub(){
   // after a seal morph, wait for the opened mask to load, then move the deep-sea creatures in
   if(HUB._needSolvedMobs && maskReady()){ HUB._needSolvedMobs=false; spawnHubMobs(); }
   const c=HUB.cat, now=Date.now(); let sp=3.6*charmSpeed();
+  // nothing lands on you while you are reading or a scene is playing, nor in the moment after
+  if(dialogueActive || HUB.cine) P.iframe=Math.max(P.iframe||0, now+900);
   // safety net: if the cat is off the walkable area (e.g. it spawned before the mask
   // finished loading), pull it onto the nearest walkable tile so it never gets stuck
   if(maskReady() && c.z<=0 && !hubStand(c.x,c.y,c.onPlat)){ const np=nearestWalk(c.x,c.y); if(np){ c.x=np.x; c.y=np.y; c.safeX=c.x; c.safeY=c.y; } }
@@ -13572,6 +13579,8 @@ function closeDialogue(){
     else toast('+'+moneyText(pay)+'  +'+r.xp+' XP'+(r.item?'  +1 item!':''));
     SFX.win(); checkAchievements(); updateQuestHUD();
     syncHUD(); renderStatbars(); save();
+    // Lucian's gold is what buys the suit: the story moves on, and its hint points at the bank
+    if(key==='lucian' && storyAt('fivefish') && !storyAt('gold')) setTimeout(()=>storySet('gold'), 1800);
   }
   if(key==='nomnom' && forgeAfterDlg){ forgeAfterDlg=false; setTimeout(()=>forgeOpen(),300); }
 }
@@ -17607,7 +17616,7 @@ const MAP_REGIONS={
 // what the story wants from you next, and where that is
 const MAP_OBJECTIVE={ awake:'garden', seek_wizard:'library', pigeons:'library', prophecy:'library', zoomies:'beach',
   fivefish:'street', gold:'bank', suit:'ocean1', runes:'cave', seby:'ocean2', dreamer:'slum', coon:'slum',
-  nomnom:'castleentrance', catking:null, ratking:'bank', evidence:'bank' };
+  nomnom:'castleentrance', catking:'slum2', ratking:'bank', evidence:'bank' };
 // one glyph per kind of place: simple white shapes on a 24×24 grid
 const MAP_ICO={
   tree:  '<path d="M12 3c-3.6 0-6 2.7-6 5.6 0 1.4.5 2.4 1.3 3.2C6 12.7 5 14 5 15.6 5 18 7.2 19.5 10 19.5h1v2h2v-2h1c2.8 0 5-1.5 5-3.9 0-1.6-1-2.9-2.3-3.8.8-.8 1.3-1.8 1.3-3.2C18 5.7 15.6 3 12 3z"/>',
