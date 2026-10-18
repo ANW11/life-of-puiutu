@@ -10,7 +10,7 @@ const AI = {
     this.home = G.map.starts[p]; this.enemyHome = G.map.starts[1 - p];
     const tc = G.map.toCenter, sgn = p === 1 ? -1 : 1;   // a little way out from home, towards the middle
     this.rally = { x: this.home.x + tc.x * 7 * sgn, y: this.home.y + tc.y * 7 * sgn };
-    this.army = new Set(); this.attackForce = null; this.creepTarget = null;
+    this.army = new Set(); this.attackForce = null; this.creepTarget = null; this.strike = null; this.fwdT = -999;
   },
   fac() { return G.players[this.p].faction; },
   mine(f) { return G.ents.filter(e => !e.dead && e.owner === this.p && (!f || f(e))); },
@@ -24,7 +24,7 @@ const AI = {
     this.t -= dt; if (this.t > 0) return; this.t = this.lv.think * (0.8 + Math.random() * 0.4);
     const pl = G.players[this.p];
     this.reserve = { f: 0, w: 0 };        // what the next big purchase needs; the army waits for it
-    this.economy(pl); this.supply(pl); this.heroBuy(pl); this.buildings(pl); this.production(pl); this.research(pl);
+    this.economy(pl); this.supply(pl); this.nests(pl); this.heroBuy(pl); this.buildings(pl); this.production(pl); this.research(pl);
     this.heroLogic(pl); this.military(pl); this.mercs(pl);
   },
 
@@ -62,7 +62,40 @@ const AI = {
     const fac = this.fac(), house = BUILD_MENU[fac][1];
     const building = this.mine(e => e.isUnit && e.order && e.order.type === 'build' && e.order.kind === house).length + this.mine(e => e.isBuilding && e.kind === house && !e.built).length;
     const prod = this.mine(e => e.isBuilding && e.built && e.def.prod).length;
-    if (pl.supCap < SUPPLY_MAX && pl.supCap - pl.supUsed < 3 + prod * 2 && building < (pl.supUsed > 30 ? 2 : 1)) this.build(house);
+    if (pl.supCap < SUPPLY_MAX && pl.supCap - pl.supUsed < 3 + prod * 2 && building < (pl.supUsed > 30 ? 2 : 1)) this.build(house, false, this.nestless());
+  },
+  // ── rats: the tunnels only help if there is a Nest at both ends ──
+  // a base of ours with no Nest by it (built or going up), so the next one goes there
+  nestless() {
+    if (this.fac() !== 'rats') return null;
+    const nests = this.mine(e => e.kind === 'nest'), sites = this.mine(e => e.isUnit && e.order && e.order.type === 'build' && e.order.kind === 'nest');
+    return playerHalls(this.p).find(h => !nests.some(n => dist(n, h) < 11) && !sites.some(w => Math.hypot(w.order.tx - h.x, w.order.ty - h.y) < 11)) || null;
+  },
+  // one Nest out towards the enemy: the army goes down at home and comes up there
+  forwardNest() {
+    const far = dist(this.home, this.enemyHome);
+    return this.mine(e => e.kind === 'nest' && e.built).find(n => dist(n, this.enemyHome) < far * 0.72) || null;
+  },
+  nests(pl) {
+    if (this.fac() !== 'rats' || G.time < 210 || !hasBuilt(this.p, BUILD_MENU.rats[2])) return;
+    if (this.mine(e => e.kind === 'nest').some(n => dist(n, this.enemyHome) < dist(this.home, this.enemyHome) * 0.72)) return;   // there, or going up
+    if (this.mine(e => e.isUnit && e.order && e.order.type === 'build' && e.order.kind === 'nest' && e.order.fwd).length) return;
+    if (G.time - this.fwdT < 60 || pl.fish < 120) return;
+    this.fwdT = G.time;
+    const k = 0.45, at = { x: this.home.x + (this.enemyHome.x - this.home.x) * k, y: this.home.y + (this.enemyHome.y - this.home.y) * k };
+    const d = BUILDINGS.nest, foes = G.ents.filter(e => !e.dead && e.isUnit && e.owner !== this.p);
+    for (let r = 0; r <= 9; r++) for (let a = 0; a < (r ? 16 : 1); a++) {
+      const ang = a / 16 * Math.PI * 2, x = Math.round(at.x + Math.cos(ang) * r - d.size / 2), y = Math.round(at.y + Math.sin(ang) * r - d.size / 2);
+      if (!placeOk('nest', x, y, foes)) continue;
+      const b = this.builder({ x, y }); if (b && orderBuild(b, 'nest', x, y)) { b.order.fwd = true; return; }
+      return;
+    }
+  },
+  // everyone still underground comes up at the Nest closest to where they're needed
+  surface(near) {
+    if (this.fac() !== 'rats' || !netUnits(this.p).length) return;
+    const nests = this.mine(e => e.kind === 'nest' && e.built); if (!nests.length) return;
+    unloadNest(nests.sort((a, b) => dist(a, near) - dist(b, near))[0]);
   },
   // the build order: what to raise next, depending on personality and how far into the game we are
   buildings(pl) {
@@ -112,10 +145,10 @@ const AI = {
   // can the army spend this without eating into what we're saving for?
   spare(cost) { const pl = G.players[this.p]; return pl.fish - (cost.f || 0) >= this.reserve.f && pl.wood - (cost.w || 0) >= this.reserve.w; },
   // find a place for a building near home, leaving a lane open between the hall and its fish
-  build(kind, forward) {
+  build(kind, forward, anchor) {
     const d = BUILDINGS[kind]; if (!canAfford(this.p, d.cost) || !reqMet(this.p, d)) return false;
     const halls = playerHalls(this.p); if (!halls.length) return false;
-    const hall = halls[0], fish = G.ents.filter(e => !e.dead && e.isRes && dist(e, hall) < 10);
+    const hall = anchor || halls[0], fish = G.ents.filter(e => !e.dead && e.isRes && dist(e, hall) < 10);
     const toward = forward ? { x: this.enemyHome.x - hall.x, y: this.enemyHome.y - hall.y } : null;
     const spots = [];
     for (let r = 4; r <= 13; r++) for (let a = 0; a < 24; a++) {
@@ -189,13 +222,21 @@ const AI = {
     const ours = this.mine(e => e.isBuilding);
     let threat = null; for (const e of G.ents) { if (e.dead || !e.isUnit || e.owner === this.p || e.owner === P_NEUTRAL || e.owner === P_CREEP) continue;
       if (ours.some(b => dist(b, e) < 13)) { threat = e; break; } }
-    if (threat) { this.state = 'defend'; for (const u of army) if (!(u.order && u.order.type === 'attack' && !u.order.auto) && !(u.order && u.order.flee)) orderAMove(u, threat.x, threat.y); return; }
+    if (threat) { this.strike = null; this.surface(threat); this.state = 'defend'; for (const u of army) if (!(u.order && u.order.type === 'attack' && !u.order.auto) && !(u.order && u.order.flee)) orderAMove(u, threat.x, threat.y); return; }
     if (this.state === 'defend') { this.state = 'build'; for (const u of army) if (!u.order || u.order.type === 'amove') orderMove(u, this.rally.x, this.rally.y); }
     // 2. an attack in progress: push on, or fall back if it's going badly
     if (this.state === 'attack') {
       const force = army.filter(u => this.attackForce.has(u.id));
+      if (this.strike) {   // the army is going down at home: once everyone's in (or it's taking too long), up at the forward Nest
+        const F = G.byId.get(this.strike.to), walking = force.filter(u => u.order && u.order.type === 'enter').length;
+        if (walking && G.time - this.strike.t0 < 15 && F && !F.dead) return;
+        this.strike = null; const t = this.enemyTarget();
+        if (F && !F.dead) unloadNest(F); else this.surface(t || this.home);
+        if (t) for (const u of force) if (!u.tun) orderAMove(u, t.x, t.y);
+        return;
+      }
       const v = this.value(force);
-      if (v < this.attackStart * 0.35) { this.state = 'build'; for (const u of force) orderMove(u, this.rally.x, this.rally.y); this.lastAttack = G.time; return; }
+      if (v < this.attackStart * 0.35) { this.state = 'build'; this.surface(this.rally); for (const u of force) orderMove(u, this.rally.x, this.rally.y); this.lastAttack = G.time; return; }
       const target = this.enemyTarget(); if (!target) return;
       for (const u of force) if (!u.order || (u.order.type === 'move' && !u.order.flee)) orderAMove(u, target.x, target.y);
       // reinforcements walk out to join
@@ -216,13 +257,19 @@ const AI = {
       this.creepTarget = camp;
       if (camp && army.length >= 3 && hero.hp > hero.maxHp * 0.6) { for (const u of army) if (!u.order || u.order.type === 'move') orderAMove(u, camp.x + 0.5, camp.y + 0.5); return; }
     }
-    // idle troops wait at the rally point
+    // idle troops wait at the rally point (and nobody is left underground by accident)
+    if (!this.strike) this.surface(this.rally);
     for (const u of army) if (!u.order && Math.hypot(u.x - this.rally.x, u.y - this.rally.y) > 5) orderMove(u, this.rally.x + rnd(-2, 2), this.rally.y + rnd(-2, 2));
     // 5. time to attack?
     const v = this.value(army), T = G.time, mul = this.lv.attackMul;
     const ready = T > this.style.firstAttack * mul && (v > this.style.attackValue * mul * (1 + this.attackWave * 0.25) || pl.supUsed >= SUPPLY_MAX - 10) && T - this.lastAttack > 60;
     if (ready && army.length >= 4) { this.state = 'attack'; this.attackWave++; this.attackForce = new Set(army.map(u => u.id)); this.attackStart = v;
-      const t = this.enemyTarget(); if (t) for (const u of army) orderAMove(u, t.x, t.y); }
+      const t = this.enemyTarget(); if (!t) return;
+      const F = this.fac() === 'rats' && this.forwardNest(), H = F && this.mine(e => e.kind === 'nest' && e.built && e !== F).sort((a, b) => dist(a, this.rally) - dist(b, this.rally))[0];
+      if (F && H && dist(H, this.rally) < 14 && dist(F, t) < dist(this.rally, t) * 0.8) {
+        for (const u of army) if (!u.tun) setOrder(u, { type: 'enter', nest: H.id });
+        this.strike = { to: F.id, t0: G.time }; return; }
+      for (const u of army) orderAMove(u, t.x, t.y); }
   },
   pickCamp(hero, n) {
     const camps = [...new Set(G.ents.filter(e => !e.dead && e.owner === P_CREEP && e.camp).map(e => e.camp))];   // (the Coon has no camp)
