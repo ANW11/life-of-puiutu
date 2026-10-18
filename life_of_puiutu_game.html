@@ -3780,21 +3780,21 @@ const QUESTS={
   // Old Shelly's museum: 20 silver for any full shelf (paid by the shelf itself, see MUSEUM_SETS),
   // and 3 gold from Shelly once every shelf is full. She talks in her museum, not in the cat dialogue.
   shelly:{ name:'Old Shelly', img:()=>SHELLY_IMG, goal:{type:'museum', n:3}, reward:{coins:30000, xp:500} },
-  tomy:{ name:'Tomy', cat:'tomy', goal:{type:'fish', n:8}, reward:{coins:30, xp:40},
+  tomy:{ name:'Tomy', cat:'tomy', goal:{type:'fish', n:8}, reward:{coins:30, xp:40, gold:1},
     offer:['Meow~! Hi, Puiutu! I’m Tomy, the white cat.',
            'Oh no, my fish got scattered all over the garden...',
            'Bring me 8 fish and I’ll reward you! (quest accepted)'],
     progress:['I still need more fish, Puiutu! Follow the path and collect them.'],
     complete:['Yay! You collected all the fish!','Thank you so much — here’s your reward!'],
     done:['You’re the best, Puiutu! Meow~'] },
-  lucian:{ name:'Lucian', cat:'lucian', goal:{type:'defeat', n:2}, reward:{coins:45, xp:60},
+  lucian:{ name:'Lucian', cat:'lucian', goal:{type:'defeat', n:2}, reward:{coins:45, xp:60, gold:1},
     offer:['Mrrr... Hello. I’m Lucian, the most elegant cat in the city.',
            'These cheeky pigeons are ruining my image...',
            'Defeat 2 enemies for me and I’ll respect you (+ reward).'],
     progress:['You still have enemies to deal with. Get close and right-click (or press F) to attack.'],
     complete:['Magnifique! You beat them in style.','Here’s your reward, brave one.'],
     done:['Stay elegant, Puiutu. Mrrow~'] },
-  nomnom:{ name:'NomNom', cat:'nomnom', goal:{type:'fish', n:15}, reward:{coins:80, xp:100},
+  nomnom:{ name:'NomNom', cat:'nomnom', goal:{type:'fish', n:15}, reward:{coins:80, xp:100, gold:2},
     offer:['Psst! Puiutu! You shouldn’t be here in the slums…',
            'A masked thief rules this place — the Evil Coon. He robbed everyone and slunk into that dark alley to the east.',
            'They say his lair is piled with stolen treasure… and bananas. So many bananas.',
@@ -3806,7 +3806,7 @@ const QUESTS={
               'Listen… at night you can hear him laughing in that alley. Be careful.'],
     complete:['NOM NOM NOM! Bless you.','Take this crown — you’ll need to look the part when you dethrone the Evil Coon.'],
     done:['Go give that thieving raccoon what he deserves, Puiutu. I believe in you!'] },
-  rocky:{ name:'Rocky', dog:true, goal:{type:'defeat', n:3}, reward:{coins:40, xp:60, companion:true},
+  rocky:{ name:'Rocky', dog:true, goal:{type:'defeat', n:3}, reward:{coins:40, xp:60, gold:1, companion:true},
     offer:['Woof! Hey there, little cat! I’m Rocky the dog.',
            'You look brave! Prove it and I’ll join your team.',
            'Defeat 3 enemies and I’ll fight by your side! (quest accepted)'],
@@ -6240,8 +6240,8 @@ const SHARK_TYPES=['greatwhite','hammerhead'];
 function hubMobKilled(d,now){
   if(S.sharkQuest==='on' && SHARK_TYPES.includes(d.type)){
     S.sharkKills=(S.sharkKills||0)+1;
-    if(S.sharkKills>=2){ S.sharkQuest='done'; S.coins+=120; addXP(90); shiftAllegiance(-2);
-      toast('Two sharks. The rat on the beach owes you.'); }
+    if(S.sharkKills>=2){ S.sharkQuest='done'; S.coins+=120+20000; addXP(90); shiftAllegiance(-2);   // + 2 gold, like every quest
+      setTimeout(()=>toast(T('Two sharks. The rat on the beach owes you.')+' +'+moneyText(20120)), 1800); }   // after the kill's own toast, not under it
     else toast('One shark down. One to go.');
     save();
   }
@@ -13341,10 +13341,11 @@ function closeDialogue(){
   } else if(st.state==='active' && questDone(key)){
     // turn in -> reward
     st.state='done';
-    const r=q.reward; S.coins+=r.coins; addXP(r.xp);
+    // every quest also pays 1-2 gold (reward.gold) — one gold is one roll at the skin capsules
+    const r=q.reward, pay=r.coins+(r.gold||0)*10000; S.coins+=pay; addXP(r.xp);
     if(r.item && !S.items.includes(r.item)){ S.items.push(r.item); if(!S.equipped&&isHat(r.item)) S.equipped=r.item; }
-    if(r.companion){ S.companion=true; spawnCompanion(); toast('Rocky joined your team!'); }
-    else toast('+'+moneyText(r.coins)+'  +'+r.xp+' XP'+(r.item?'  +1 item!':''));
+    if(r.companion){ S.companion=true; spawnCompanion(); toast(T('Rocky joined your team!')+' +'+moneyText(pay)); }
+    else toast('+'+moneyText(pay)+'  +'+r.xp+' XP'+(r.item?'  +1 item!':''));
     SFX.win(); checkAchievements(); updateQuestHUD();
     syncHUD(); renderStatbars(); save();
   }
