@@ -2294,7 +2294,7 @@ const CAT_MUSIC=Object.assign(Object.create(SEBY_MUSIC),{
       const Th=this.theme[ci];
       const line=(mult,fn)=>Th.forEach((fr,k)=>{ if(!fr) return; let n=1; while(k+n<8 && !Th[k+n]) n++; fn(t0+k*e, fr*mult, e*n); });
       const ost=[root*2, root*3, root*4, root*3];                // the string figure
-      if(b.stage==='idle'){                                      // the hall, waiting: a drone, a choir, a far drum
+      if(b.stage==='idle' || b.stage==='talk'){                  // the hall, waiting: a drone, a choir, a far drum
         this.bass(c,t0,root,bl,0.05); this.choir(c,t0,ch,bl,0.03);
         this.timpani(c,t0,root*2,0.14); this.timpani(c,t0+this.B*2.5,root*2,0.1);
         this.step++; return;
@@ -2336,6 +2336,74 @@ const CAT_MUSIC=Object.assign(Object.create(SEBY_MUSIC),{
     const t=c.currentTime+0.05; this.out(c);
     [[587.33,0],[523.25,0.5],[440.00,1.0]].forEach(([f,dt])=>{ this.horn(c,t+dt,f,0.48,0.032); this.horn(c,t+dt,f/2,0.48,0.02); });
     this.timpani(c,t+1.0,73.42*2,0.26); this.choir(c,t+1.0,this.chords[0],3.4,0.035); this.bass(c,t+1.0,73.42,3.0,0.05);
+  }
+});
+
+// ── Rattus Magnus: the Cat King's orchestra turned inside out. C phrygian (Cm · Db · Bbm · G),
+// 152 bpm. On his throne: a drone and far drums. Once he is up: low brass, war drums, a crawling
+// chromatic tune on the horns. While he swells: a riser. Tall: frantic — strings doubled, snare on
+// every eighth, the tune an octave up. When he stops, the brass sinks.
+const RAT_MUSIC=Object.assign(Object.create(CAT_MUSIC),{
+  timer:null, step:0, bus:null, noise:null, curve:null, fuzz:null, gain:0.20,
+  B:60/152,
+  roots:[65.41, 69.30, 58.27, 49.00],                // C · Db · Bb · G
+  chords:[
+    [130.81,155.56,196.00],                          // Cm
+    [138.59,174.61,207.65],                          // Db
+    [116.54,138.59,174.61],                          // Bbm
+    [ 98.00,123.47,146.83],                          // G
+  ],
+  theme:[
+    [523.25,0,622.25,587.33, 523.25,0,392.00,0],
+    [554.37,0,698.46,622.25, 554.37,523.25,415.30,0],
+    [466.16,554.37,698.46,0, 622.25,554.37,466.16,0],
+    [493.88,0,587.33,0,      698.46,622.25,587.33,493.88],
+  ],
+  start(){
+    if(this.timer||!S.musicOn) return;
+    const bar=()=>{
+      const b=HUB.boss;
+      if(!S.musicOn || !A || !A.hub || !A.hub.ratking || !b || !b.rk || b.defeated){ this.stop(); return; }
+      const c=SFX.ac(); if(!c) return;
+      this.out(c);
+      const t0=c.currentTime+0.05, e=this.B/2, x=this.B/4, bl=this.B*4, ci=this.step%4, root=this.roots[ci], ch=this.chords[ci];
+      const Th=this.theme[ci];
+      const line=(mult,fn)=>Th.forEach((fr,k)=>{ if(!fr) return; let n=1; while(k+n<8 && !Th[k+n]) n++; fn(t0+k*e, fr*mult, e*n); });
+      if(b.stage==='idle' || b.stage==='talk'){                  // the throne room, waiting
+        this.bass(c,t0,root,bl,0.05); this.choir(c,t0,ch,bl,0.025);
+        this.timpani(c,t0,root*2,0.15); this.timpani(c,t0+this.B*2,root*2,0.08); this.timpani(c,t0+this.B*3.5,root*2,0.1);
+        this.step++; return;
+      }
+      if(b.stage==='rising'){                                    // he swells
+        this.riser(c,t0,bl,0.08); this.choir(c,t0,ch,bl,0.045); this.bass(c,t0,root,bl,0.06);
+        for(let k=0;k<16;k++) this.timpani(c,t0+k*x,root*2,0.06+k*0.013);
+        this.step++; return;
+      }
+      const frantic = b.stage==='tall';
+      const ost=[root*2, root*2*1.0595, root*3, root*2*1.0595];  // a crawling half-step figure
+      for(let k=0;k<16;k++){ this.strings(c,t0+k*x, ost[k%4], x*0.55, frantic?0.022:0.016);
+        if(frantic) this.strings(c,t0+k*x, ost[k%4]*2, x*0.5, 0.012); }
+      // war drums: a heavy one-and-three, toms that stagger, a snare that answers
+      [0,2,3,6,8,10,11,14].forEach(k=>this.timpani(c,t0+k*x,root*2,k%8===0?0.28:0.15));
+      for(let k=0;k<4;k++) this.kick(c,t0+k*this.B,0.24);
+      if(frantic) for(let k=0;k<8;k++) this.snare(c,t0+k*e,k%2?0.05:0.1);
+      else { this.snare(c,t0+this.B,0.11); this.snare(c,t0+this.B*3,0.11); this.snare(c,t0+this.B*3.5,0.06); }
+      if(ci===0) this.crash(c,t0,0.08);
+      this.bass(c,t0,root,bl*0.95,0.065);
+      this.stab(c,t0,ch.map(f=>f/2),0.06); this.stab(c,t0+e*3,ch.map(f=>f/2),0.045); this.stab(c,t0+e*6,ch.map(f=>f/2),0.04);
+      if(!frantic) this.choir(c,t0,ch,bl,0.035);
+      if(frantic) line(2,(t,f,d)=>this.lead2(c,t,f,d*0.9,0.022));
+      else line(1,(t,f,d)=>{ this.horn(c,t,f/2,d*0.95,0.034); this.horn(c,t,f/4,d*0.95,0.024); });   // low and heavy
+      this.step++;
+    };
+    bar(); this.timer=setInterval(bar, this.B*4*1000);
+  },
+  // he stops, standing: the brass sinks a half step at a time, one drum, a held low chord
+  finale(){
+    this.stop(); if(!S.musicOn) return; const c=SFX.ac(); if(!c) return;
+    const t=c.currentTime+0.05; this.out(c);
+    [[392.00,0],[369.99,0.55],[349.23,1.1],[329.63,1.65]].forEach(([f,dt])=>{ this.horn(c,t+dt,f/2,0.5,0.032); this.horn(c,t+dt,f/4,0.5,0.022); });
+    this.timpani(c,t+1.65,65.41*2,0.28); this.choir(c,t+1.65,this.chords[0],3.6,0.035); this.bass(c,t+1.65,65.41,3.2,0.055);
   }
 });
 
@@ -5623,7 +5691,7 @@ function enterArea(id,fromRight,toX){
   if(id==='sewerentrance' && !S.sewerSeen) S.sewerSeen=true;   // The Glow asks about this later
   save();
   // platformer areas (e.g. House) get the calm theme; hub music is handled in enterHub
-  if(A && A.mode!=='topdown'){ OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); if(S.musicOn) MUSIC.start(); }
+  if(A && A.mode!=='topdown'){ OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); RAT_MUSIC.stop(); if(S.musicOn) MUSIC.start(); }
   // coins now spawn over time on the walkable platforms (see updateGroundCoins)
   groundCoins=[]; coinSpawnAt=0;
   // build enemies for this area
@@ -6199,7 +6267,7 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
     return hits;
   }
   if(b && (b.ck||b.rk||b.mb)){
-    const busy = b.stage==='summon' || b.stage==='crack' || b.stage==='rising' || b.stage==='idle' || b.stage==='wake';
+    const busy = b.stage==='summon' || b.stage==='crack' || b.stage==='rising' || b.stage==='idle' || b.stage==='wake' || b.stage==='talk';
     if(!b.defeated && !busy && near(b.x,b.y,b.mb?64:22)){       // the machine is a much bigger target
       b.hp-=dmg; b.hitFlash=now; hits++; floatText(b.x,b.y-110,'-'+dmg,col);
       if(b.hp<=0){
@@ -8222,11 +8290,12 @@ function enterHub(fromRight){
   // music per zone: octopus arena / sewer horror / underwater ambient / calm elsewhere
   const mechOn = H.mechboar && HUB.boss && !HUB.boss.defeated;
   // every theme but the one this zone wants goes quiet first
-  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC].forEach(m=>m.stop());
   if(H.abyssBoss) BOSS_MUSIC.start();
   else if(mechOn) MECH_MUSIC.start();
   else if(H.sebyMusic && HUB.boss && !HUB.boss.defeated) SEBY_MUSIC.start();
   else if(H.catMusic && HUB.boss && !HUB.boss.defeated) CAT_MUSIC.start();
+  else if(H.ratking && HUB.boss && !HUB.boss.defeated) RAT_MUSIC.start();
   else if(H.slumMusic) SLUM_MUSIC.start();          // the slums, rat territory and the sewers under it
   else if(H.sewerChase) SEWER_MUSIC.start();
   else if(H.underwater) OCEAN_MUSIC.start();
@@ -8722,12 +8791,15 @@ function updateCatKing(b,now){
 
   if(b.stage==='down') return;                       // asleep. Nothing left to fight.
 
+  if(b.stage==='talk') return;                       // he is speaking; the fight waits
   if(b.stage==='idle'){                              // seated, waiting. Walk in and he stands.
     b.facing=-1;
     if(dist<520){
-      b.stage='summon'; b.spawnT0=now; b.stageUntil=now+1500;
-      npcBark('The Cat King','You were invited. That is not the same as being welcome.',{img:CINE_FACE.catking, bg:'#3a2a10', tone:360}); bossTitle('catking');
-      SFX.seq&&SFX.seq([196,262,330,392],'triangle',0.09);
+      // he speaks first (the fight waits on the dialogue), and only then does his card come up
+      b.stage='talk';
+      sayLines('The Cat King',['You were invited. That is not the same as being welcome.'],{img:CINE_FACE.catking(), bg:'#3a2a10', tone:360, then:()=>{
+        const t=Date.now(); b.stage='summon'; b.spawnT0=t; b.stageUntil=t+1500; bossTitle('catking');
+        SFX.seq&&SFX.seq([196,262,330,392],'triangle',0.09); }});
     }
     return;
   }
@@ -8823,7 +8895,7 @@ function drawCatKing(g,b){
   if(!b.placed) return;                              // nothing to draw until the hall has a size
   const now=Date.now(), camx=HUB.camx;
   const stage=b.stage;
-  const kingOnThrone = (stage==='idle'||stage==='summon'||stage==='lion'||stage==='crack'||stage==='down');
+  const kingOnThrone = (stage==='idle'||stage==='talk'||stage==='summon'||stage==='lion'||stage==='crack'||stage==='down');
   // ── the King ──
   {
     const sc=hubScale(b.throneY), sx=b.throneX-camx, ksz=118*sc;
@@ -8911,13 +8983,16 @@ function updateRatKing(b,now){
   if(Math.abs(ddx)>20) b.facing=ddx<0?-1:1;
 
   if(b.stage==='stagger') return;                    // beaten, upright, still there.
+  if(b.stage==='talk') return;                       // he is speaking; the fight waits
 
   if(b.stage==='idle'){
     if(dist<520){
-      b.stage='low'; b.state='walk';
-      b.throwCD=now+2200; b.meleeCD=now+1100; b.dashCD=now+3000;
-      npcBark('Rattus Magnus','They told you I was a monster. Good. That was the point.',{img:()=>RKINGI.sit, bg:'#2a1210', tone:150}); bossTitle('ratking');
-      SFX.seq&&SFX.seq([110,98,87,73],'sawtooth',0.08);
+      // his line first (the fight waits on it), then his card; his cooldowns start after both
+      b.stage='talk';
+      sayLines('Rattus Magnus',['They told you I was a monster. Good. That was the point.'],{img:RKINGI.sit, bg:'#2a1210', tone:150, then:()=>{
+        const t=Date.now()+BOSS_TITLE_MS; b.stage='low'; b.state='walk';
+        b.throwCD=t+2200; b.meleeCD=t+1100; b.dashCD=t+3000; bossTitle('ratking');
+        SFX.seq&&SFX.seq([110,98,87,73],'sawtooth',0.08); }});
     }
     return;
   }
@@ -9013,7 +9088,8 @@ function ratKingDown(b,now){
   ratKingDismissGuards();                            // with him stopped, nobody stays to finish it
   S.ratKingDown=true; storySet('ratking'); S.totalDefeats=(S.totalDefeats||0)+1;
   S.coins+=b.kind.coins; addXP(b.kind.xp);
-  SFX.win&&SFX.win(); syncHUD(); save();
+  SFX.win&&SFX.win(); syncHUD(); save(); RAT_MUSIC.finale();
+  setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.ratking) MUSIC.start(); }, 4400);
   toast('He stops. He does not fall. He stays standing, and that is the problem.');
 }
 function drawRatKing(g,b){
@@ -9021,7 +9097,7 @@ function drawRatKing(g,b){
   const now=Date.now(), sc=hubScale(b.y), sx=b.x-HUB.camx;
   const tall=(b.stage==='tall'||b.stage==='stagger');
   let key, base;
-  if(b.stage==='idle')        { key='sit';   base=125; }
+  if(b.stage==='idle'||b.stage==='talk') { key='sit';   base=125; }
   else if(b.stage==='rising') { const t=Math.min(1,1-(b.stageUntil-now)/1200);
                                 key = t<0.4?'low' : t<0.75?'point' : 'risen';
                                 base = 125 + t*60; }                 // he inflates through the beat
@@ -9052,7 +9128,7 @@ function drawRatKing(g,b){
   }
   if(now-(b.hitFlash||0)<110){ g.save();g.globalAlpha=.45;g.globalCompositeOperation='lighter';g.fillStyle='#fff';
     g.beginPath();g.ellipse(sx,b.y-bsz*0.5,bsz*0.35,bsz*0.47,0,0,7);g.fill();g.restore(); }
-  if(b.stage!=='idle' && b.stage!=='stagger'){
+  if(b.stage!=='idle' && b.stage!=='talk' && b.stage!=='stagger'){
     const topY=b.y-bsz-14;
     g.save(); g.textAlign='center'; g.font='bold 13px Trebuchet MS';
     const bw=170, bh=9, bx=sx-bw/2, by=topY+4;
@@ -9196,7 +9272,7 @@ const OUTROS={
 function startOutro(force){
   const path=force||'third', O=OUTROS[path];
   if(path==='third'){ startSquareEnding(); return; }       // the true ending is played out, not shown
-  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC].forEach(m=>m.stop());
   HUB.outro=path;
   const steps=[{ms:1200}];
   for(const v of O.vign){
@@ -9212,7 +9288,7 @@ function startOutro(force){
 }
 // the last screen: white on black, no music, one line at a time
 function showOutroScreen(lines){
-  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC].forEach(m=>m.stop());
   const el=document.getElementById('outroScreen'), box=document.getElementById('outroLines'),
         cr=document.getElementById('outroCredits'), btn=document.getElementById('outroBtn');
   box.innerHTML=''; cr.classList.remove('in'); btn.classList.remove('in');
@@ -9368,7 +9444,7 @@ const C_SEAL_THUMP={};
 let SQUARE_PENDING=false;
 function startSquareEnding(){ SQUARE_PENDING=true; enterArea('street',false); }
 function runSquareScene(){
-  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC].forEach(m=>m.stop());
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC].forEach(m=>m.stop());
   HUB.square=true; HUB.outro='third';
   ['archive','contracts','ledger','seal_union','seal_elite','seal_rats','seal_wizards','seal_pigs'].forEach(k=>decorImg('ui/evidence/'+k+'.png'));   // the papers, ready before they are shown
   const C=()=>HUB.cine, sub=(t)=>{ C().sub = t ? {text:t, t0:Date.now(), col:'#ece6d8'} : null; },
@@ -13527,7 +13603,7 @@ function showScreen(id){
 }
 // Start whichever theme belongs on screen now (and silence the rest): the menu's, or the room's.
 function zoneMusic(){
-  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,MENU_MUSIC].forEach(m=>m.stop());
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC,MENU_MUSIC].forEach(m=>m.stop());
   if(!S.musicOn) return;
   const menu=document.getElementById('menu'); if(menu && menu.classList.contains('active')){ MENU_MUSIC.start(); return; }
   const H=A&&A.mode==='topdown'&&A.hub, live=HUB.boss&&!HUB.boss.defeated;
@@ -13535,6 +13611,7 @@ function zoneMusic(){
   else if(H&&H.mechboar&&live) MECH_MUSIC.start();
   else if(H&&H.sebyMusic&&live) SEBY_MUSIC.start();
   else if(H&&H.catMusic&&live) CAT_MUSIC.start();
+  else if(H&&H.ratking&&live) RAT_MUSIC.start();
   else if(H&&H.slumMusic) SLUM_MUSIC.start();
   else if(H&&H.sewerChase) SEWER_MUSIC.start();
   else if(H&&H.underwater) OCEAN_MUSIC.start();
@@ -16580,14 +16657,6 @@ function mcDraw(mg){
           strip(band(lx-Wd,zz+D, lx+Wd,zz-D), [lx-Wd,zz+D], [lx+Wd,zz-D]);
           strip(band(lx+Wd,zz+D, lx-Wd,zz-D), [lx+Wd,zz+D], [lx-Wd,zz-D]);
         }
-        // 2) and the same shout the rats get, once it is close enough to act on
-        if(zz<3.2 && zz>0.5){
-          mg.save(); mg.globalAlpha=Math.min(1,(3.2-zz)/1.2);
-          mg.fillStyle='#ffc46b'; mg.textAlign='center';
-          mg.font='bold '+Math.round(11*sc2+5)+'px Trebuchet MS';
-          mg.fillText(T('CHANGE RAIL!'), pb.x, mcProj(lx,zz+1.0).y-8);   // just past the far end of the X
-          mg.restore();
-        }
       }
     }
     mg.imageSmoothingEnabled=true;
@@ -16689,8 +16758,7 @@ function mcDrawObs(mg,o,zz){
     const a=mcProj((0.16-0.5)*AW,zz), b=mcProj((0.84-0.5)*AW,zz), w=b.x-a.x;   // its ends sit over the middle of each post
     const h=mcImgOk(im)?w*im.naturalHeight/im.naturalWidth:w*0.11, by=mcProjH(0,zz,MC_BEAM_H).y-h;
     if(mcImgOk(im)) mg.drawImage(im,a.x,by,w,h);
-    else { mg.fillStyle='#5a4630'; mg.fillRect(a.x,by,w,24*sc); }
-    if(zz<2.2 && zz>0.4){ mg.fillStyle='#ffd86b'; mg.font='bold '+Math.round(20*MC_U*sc+6)+'px Trebuchet MS'; mg.textAlign='center'; mg.fillText('DUCK',p.x,by-8); } }
+    else { mg.fillStyle='#5a4630'; mg.fillRect(a.x,by,w,24*sc); } }   // no "DUCK" over it: the beam says it
   else if(o.k==='coin'){ const im=MC.img.coinspin, r=MC_H*0.052*sc, cy=p.y-MC_H*0.10*sc-Math.sin(MC.st.t*0.12+o.z*3)*MC_H*0.008*sc;   // small enough that a row reads as a row, with a gentle bob
     const fl=0.6+0.4*Math.sin(MC.st.t*0.2+o.z);
     const gr=mg.createRadialGradient(p.x,cy,2,p.x,cy,r*2.1); gr.addColorStop(0,'rgba(255,200,90,'+(0.5*fl)+')'); gr.addColorStop(1,'rgba(255,200,90,0)');
@@ -17698,10 +17766,10 @@ function warOpen(){
   document.body.appendChild(f); paused=true; try{ f.focus(); }catch(e){}
   if(typeof SFX!=='undefined'&&SFX.click) SFX.click();
 }
-function stopAllMusic(){ MUSIC.stop(); OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEWER_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); }
+function stopAllMusic(){ MUSIC.stop(); OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEWER_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); RAT_MUSIC.stop(); }
 function resumeAreaMusic(){ if(!S.musicOn) return; SFX.ac(); const H=A&&A.hub;
   if(H&&H.abyssBoss)BOSS_MUSIC.start(); else if(H&&H.mechboar&&HUB.boss&&!HUB.boss.defeated)MECH_MUSIC.start(); else if(H&&H.sebyMusic&&HUB.boss&&!HUB.boss.defeated)SEBY_MUSIC.start();
-  else if(H&&H.catMusic&&HUB.boss&&!HUB.boss.defeated)CAT_MUSIC.start(); else if(H&&H.slumMusic)SLUM_MUSIC.start(); else if(H&&H.sewerChase)SEWER_MUSIC.start();
+  else if(H&&H.catMusic&&HUB.boss&&!HUB.boss.defeated)CAT_MUSIC.start(); else if(H&&H.ratking&&HUB.boss&&!HUB.boss.defeated)RAT_MUSIC.start(); else if(H&&H.slumMusic)SLUM_MUSIC.start(); else if(H&&H.sewerChase)SEWER_MUSIC.start();
   else if(H&&H.underwater)OCEAN_MUSIC.start(); else MUSIC.start(); }
 function warClose(){ const f=document.getElementById('warFrame'); if(f) f.remove(); paused=false; WAR_OPEN=false; resumeAreaMusic(); }
 window.addEventListener('message',e=>{
