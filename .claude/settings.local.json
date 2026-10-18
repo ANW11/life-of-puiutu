@@ -79,7 +79,11 @@
       "Bash(cp -f /Users/andreicraciun/Desktop/claude/*.png \"/Users/andreicraciun/Desktop/claude/\"*.jpg /tmp/pgame/)",
       "Bash(python3 -c \"import re;open\\('/tmp/g.js','w'\\).write\\('\\\\n'.join\\(re.findall\\(r'<script>\\(.*?\\)</script>',open\\('life_of_puiutu_game.html'\\).read\\(\\),re.S\\)\\)\\)\")",
       "Bash(cp -f life_of_puiutu_game.html /tmp/pgame/)",
-      "Bash(cp -f *.png *.jpg /tmp/pgame/)"
+      "Bash(cp -f *.png *.jpg /tmp/pgame/)",
+      "Bash(cd /Users/andreicraciun/Desktop/trading-lab && ls; ls journal results/paper 2>/dev/null; cat lab/config.py | head -40; date)",
+      "Read(//Users/andreicraciun/Desktop/trading-lab/**)",
+      "Bash(.venv/bin/python -c ' *)",
+      "WebSearch"
     ]
   }
 }
