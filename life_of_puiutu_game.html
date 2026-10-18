@@ -701,6 +701,14 @@
   #gachaCard.skin-reveal::after{content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;z-index:1;
     background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.38) 20%, rgba(0,0,0,0) 40%);}
   #gachaCard.skin-reveal.charging::after{display:none;}
+  /* potions, charms and coins are not cat cards: a square card, the picture in its upper part, name below */
+  #gachaCard.skin-reveal.item-art{width:min(80vw,300px);height:min(80vw,300px);}
+  #gachaCard.skin-reveal.spell-art.item-art #gcArtCanvas{top:9%;height:52%;}
+  /* coins: exactly as many coin sprites as dropped, in rows — the amount (in coin icons) underneath */
+  #gachaCard.skin-reveal.coin-art #gcIcon{position:absolute;left:8%;right:8%;top:9%;height:56%;display:flex;flex-wrap:wrap;align-content:center;
+    align-items:center;justify-content:center;gap:4px;font-size:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));}
+  #gachaCard.skin-reveal.coin-art:not(.charging) #gcIcon{animation:gArtPop .95s cubic-bezier(.16,1.7,.34,1);}
+  #gachaCard.charging #gcIcon{visibility:hidden;}
   @keyframes gPop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
   #gachaCard.r-common{box-shadow:0 0 30px 6px rgba(180,190,200,.6);}
   #gachaCard.r-rare{box-shadow:0 0 34px 8px rgba(90,170,255,.7);}
@@ -914,6 +922,8 @@
   .fs-tag.on{display:block;animation:fsTagIn .18s ease-out;}
   @keyframes fsTagIn{from{opacity:0;transform:translateY(-.6em);}to{opacity:1;transform:none;}}
   .fs-tag .nm{font-weight:600;font-size:1.3em;color:#5a2a0a;}
+  .fs-tag .rar{display:inline-block;margin:.25em 0 .1em;padding:.15em .55em;font-weight:700;font-size:.85em;letter-spacing:.12em;
+    color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.55);box-shadow:0 0 0 2px #3a2410;}
   .fs-tag .ds{margin:.4em 0 .7em;line-height:1.35;}
   .fs-tag .row{display:flex;gap:.6em;flex-wrap:wrap;align-items:center;}
   .fs-tag .buy-btn{font-size:1em;padding:.5em .9em;}
@@ -4671,6 +4681,7 @@ const RO = {
   "Settings":"Setări",
   "Language":"Limbă",
   "Game mode":"Mod de joc",
+  "COMMON":"COMUN", "RARE":"RAR", "EPIC":"EPIC", "LEGENDARY":"LEGENDAR",
   "Screen":"Ecran", "FULLSCREEN":"ECRAN COMPLET", "Sound effects":"Efecte sonore", "ON":"PORNIT", "OFF":"OPRIT",
   "Best":"Record",
   "Make: Apple":"Fă: Măr",
@@ -14545,7 +14556,8 @@ function renderTailorTag(stock){
   else row=`<button class="buy-btn" data-tlbuy="1" ${S.coins<w.price?'disabled':''}>${LT('Buy ','Cumpără ')+moneyHTML(w.price)}</button>`;
   if(w.kind==='potion' && w.n) row+=`<button class="buy-btn drink" data-tldrink="1">${LT('Use','Folosește')}</button>`;
   const extra=w.kind==='perm'?`<div class="ds">${permCount(w.id)}/${w.m.max}</div>`:'';
-  tag.innerHTML=`<div class="nm">${w.name}</div><div class="ds">${w.desc}</div>${extra}<div class="row">${row}</div>`;
+  const rar=w.kind==='potion'?w.p.rarity:w.kind==='charm'?w.c.rarity:null;
+  tag.innerHTML=`<div class="nm">${w.name}</div>${rar?rarityHTML(rar):''}<div class="ds">${w.desc}</div>${extra}<div class="row">${row}</div>`;
   tag.classList.add('on');
   const el=document.querySelector(`#tailorWares [data-tl="${CSS.escape(w.id)}"]`), st=tag.parentElement;
   if(el && st){ const er=el.getBoundingClientRect(), sr=st.getBoundingClientRect(), mr=tag.closest('.modal').getBoundingClientRect(), tw=tag.offsetWidth;
@@ -14586,18 +14598,18 @@ const CAT_SKINS=[
   {id:'skin_sphynx',     name:'Sphynx',             rarity:'legendary', art:'skins/sphinx_art.png',         skin:'skins/sphinx.png'},
 ];
 if(typeof S!=='undefined' && S.equippedSkin) loadSkinFrames(S.equippedSkin);   // resume the equipped skin
-const GACHA_RPOOL={
-  // no hats: the capsule gives coins, cat skins and spells only
-  common:[{coins:120},
-    ...CAT_SKINS.filter(c=>c.rarity==='common').map(c=>({skin:c.id}))],
-  rare:[{coins:400},
-    ...CAT_SKINS.filter(c=>c.rarity==='rare').map(c=>({skin:c.id}))],
-  epic:[{coins:1200},{spell:'fishstorm'},
-    ...CAT_SKINS.filter(c=>c.rarity==='epic').map(c=>({skin:c.id}))],
-  legendary:[{coins:5000},{spell:'ninelives'},
-    ...CAT_SKINS.filter(c=>c.rarity==='legendary').map(c=>({skin:c.id}))],
-};
-function gachaDrawArt(artSrc){
+// no hats: the capsule gives coins, cat skins, spells, potions (a small stack) and charms of the rolled rarity.
+// A charm the story has not unlocked yet (the Golden Banana) stays out until it has.
+const GACHA_COINS={common:200,rare:500,epic:1200,legendary:20000};   // round amounts: 2s, 5s, 12s, 2g — one coin sprite each on the card
+const GACHA_SPELL={epic:'fishstorm',legendary:'ninelives'};
+const GACHA_STACK={common:3,rare:2,epic:1,legendary:1};
+function gachaPool(rar){
+  return [{coins:GACHA_COINS[rar]}, ...(GACHA_SPELL[rar]?[{spell:GACHA_SPELL[rar]}]:[]),
+    ...CAT_SKINS.filter(c=>c.rarity===rar).map(c=>({skin:c.id})),
+    ...POTIONS.filter(p=>p.rarity===rar).map(p=>({potion:p.id, n:GACHA_STACK[rar]})),
+    ...CHARMS.filter(c=>c.rarity===rar && (!c.need || S[c.need] || charmOwned(c.id))).map(c=>({charm:c.id}))];
+}
+function gachaDrawArt(artSrc,noKey){
   const cv=document.getElementById('gcArtCanvas');
   const ctx2=cv.getContext('2d');
   const img=new Image();
@@ -14611,7 +14623,7 @@ function gachaDrawArt(artSrc){
       const id=oc.getImageData(0,0,W,H), d=id.data;
       for(let i=0;i<d.length;i+=4){
         const r=d[i],g=d[i+1],b=d[i+2];
-        if(g>160 && r<120 && b<120){ d[i+3]=0; }      // kill lime green
+        if(!noKey && g>160 && r<120 && b<120){ d[i+3]=0; }      // kill lime green (skin art only)
         if(d[i+3]>16){ const p=i/4, px=p%W, py=(p/W)|0;  // track content bounds
           if(px<x0)x0=px; if(px>x1)x1=px; if(py<y0)y0=py; if(py>y1)y1=py; }
       }
@@ -14747,7 +14759,7 @@ function gachaOpenLegendary(){ if(GACHA.busy || (S.legendaryCapsules||0)<=0) ret
   SFX.seq&&SFX.seq([523,659,784,1046],'triangle',0.06); save(); syncHUD(); gachaSyncUI();
   setTimeout(()=>{ gachaReveal('legendary', gachaPick('legendary'), false); GACHA.busy=false; }, 1100);
 }
-function gachaPick(rar){ const p=GACHA_RPOOL[rar]; return p[Math.floor(Math.random()*p.length)]; }
+function gachaPick(rar){ const p=gachaPool(rar); return p[Math.floor(Math.random()*p.length)]; }
 // burst of sparks flung radially out of the detonation point (CSS-animated, auto-cleaned)
 function gachaSparks(rar){
   const card=document.getElementById('gachaCard'); if(!card) return;
@@ -14770,12 +14782,15 @@ function gachaReveal(rar,pick,gotCap){
   const card=document.getElementById('gachaCard');
   const artCv=document.getElementById('gcArtCanvas');
   card.className='';                       // clear all state classes
+  document.getElementById('gcIcon').innerHTML='';
   artCv.classList.remove('show');
   document.getElementById('gcIcon').style.display='';
 
-  let emoji,label,msg,skinArt=null,squareArt=false;
+  let emoji,label,msg,skinArt=null,squareArt=false,itemArt=false,coinArt=null;
   if(pick.coins){
     emoji=''; label=moneyText(pick.coins); S.coins+=pick.coins; msg='Won '+moneyText(pick.coins)+'!';
+    const mp=moneyParts(pick.coins);
+    coinArt=[...Array(mp.g).fill('ui/goldcoin.png'),...Array(mp.s).fill('ui/silvercoin.png'),...Array(mp.b).fill('ui/bronzecoin.png')];
   } else if(pick.skin){
     const cs=CAT_SKINS.find(c=>c.id===pick.skin);
     emoji=''; label=cs?cs.name:pick.skin;
@@ -14783,6 +14798,22 @@ function gachaReveal(rar,pick,gotCap){
     if(already){ const ref=RAR_REFUND[rar]||50; S.coins+=ref; msg='Duplicate — '+moneyText(ref)+' refunded.'; }
     else { S.catSkins=S.catSkins||[]; S.catSkins.push(pick.skin); msg='NEW cat skin unlocked!'; }
     if(cs) skinArt=cs.art||('skins/frames/'+cs.id+'/avatar.png');   // fall back to the sprite if no art illustration
+  } else if(pick.potion){
+    const p=potById(pick.potion), room=Math.max(0,(p.max||10)-bagCount(p.id)), got=Math.min(room,pick.n||1);
+    emoji=''; label=(pick.n>1?pick.n+'× ':'')+potName(p);
+    if(got) bagAdd(p.id,got);
+    if(got<(pick.n||1)){ const ref=Math.round((RAR_REFUND[rar]||50)*((pick.n||1)-got)/(pick.n||1)); S.coins+=ref;
+      msg=got?LT('Bag full — '+got+' kept, ','Geanta e plină — ai păstrat '+got+', ')+moneyText(ref)+LT(' refunded.',' înapoi.')
+             :LT('Bag full — ','Geanta e plină — ')+moneyText(ref)+LT(' refunded.',' înapoi.'); }
+    else msg=LT('Potions for the road!','Poțiuni pentru drum!');
+    skinArt='ui/forge/px/'+p.id+'.png'; squareArt=true; itemArt=true;
+  } else if(pick.charm){
+    const c=charmById(pick.charm);
+    emoji=''; label=LT(c.name[0],c.name[1]);
+    if(charmOwned(c.id)){ const ref=RAR_REFUND[rar]||50; S.coins+=ref; msg='Duplicate — '+moneyText(ref)+' refunded.'; }
+    else { S.charmsOwned=S.charmsOwned||[]; S.charmsOwned.push(c.id); if((S.charmsOn||[]).length<charmSlots()) wearCharm(c.id);
+      msg=LT('NEW charm!','AMULETĂ NOUĂ!'); }
+    skinArt='ui/forge/px/charm_'+c.id+'.png'; squareArt=true; itemArt=true;
   } else if(pick.spell){
     const sp=spellById(pick.spell);
     emoji=sp?sp.emoji:''; label=sp?sp.name:pick.spell;
@@ -14796,20 +14827,32 @@ function gachaReveal(rar,pick,gotCap){
   }
   if(gotCap) msg+='+1 Legendary Capsule!';
   document.getElementById('gcIcon').textContent=emoji;
-  document.getElementById('gcName').textContent=label;
+  if(coinArt) document.getElementById('gcName').innerHTML=moneyHTML(pick.coins,2);
+  else document.getElementById('gcName').textContent=label;
   const ra=document.getElementById('gcRarity'); ra.textContent=rar.toUpperCase(); ra.style.color=RAR_COL[rar];
   gachaShowStars(rar);
   document.getElementById('gachaMsg').textContent=msg;
   save(); syncHUD(); gachaSyncUI();
 
-  if(skinArt){
+  if(coinArt){
+    // coins get the same rays and burst as the items, with the coin sprite as the art
+    const n=coinArt.length, box=n<=2?110:n<=4?76:n<=6?62:n<=12?46:30;
+    document.getElementById('gcIcon').innerHTML=coinArt.map(src=>`<span style="${coinFaceStyle(src,box)}"></span>`).join('');
+    card.style.setProperty('--ray', RAR_COL[rar]);
+    card.classList.add('skin-reveal','item-art','coin-art','r-'+rar,'show','charging');
+    SFX.tone&&SFX.tone(140,1.15,'sawtooth',0.04);
+    setTimeout(()=>{ if(!GACHA.open) return; card.classList.remove('charging'); card.classList.add('burst'); gachaSparks(rar);
+      SFX.coin&&SFX.coin(); SFX.seq&&SFX.seq([659,784,988],'triangle',0.06);
+      setTimeout(()=>{ if(GACHA.open) card.classList.remove('burst'); }, 1100); }, 1150);
+  } else if(skinArt){
     // ── cinematic cat reveal, Genshin "falling star" style:
     //    a star streaks in (suspense) → DETONATES (flash + shockwaves + sparks + shake) → art explodes in ──
     document.getElementById('gcIcon').style.display='none';
     card.style.setProperty('--ray', RAR_COL[rar]);
-    gachaDrawArt(skinArt);
+    gachaDrawArt(skinArt,itemArt);
     card.classList.add('skin-reveal','r-'+rar,'show','charging');  // suspense buildup
     if(squareArt) card.classList.add('spell-art');                 // square icon → contain, not cover
+    if(itemArt) card.classList.add('item-art');
     SFX.tone&&SFX.tone(140,1.15,'sawtooth',0.04);                  // rising charge hum
     SFX.tone&&SFX.tone(210,1.15,'sawtooth',0.03,0.12);
     SFX.tone&&SFX.tone(300,1.15,'sine',0.02,0.24);
@@ -15754,29 +15797,29 @@ const FORGE_ICON={
 };
 // consumables: kept in S.bag as {id:count}
 const POTIONS=[
-  {id:'broth',  slot:'heal', name:['Fish Broth','Supă de pește'], color:'#ff8a5a', price:30,
+  {id:'broth',  slot:'heal', name:['Fish Broth','Supă de pește'], color:'#ff8a5a', price:50,
    desc:['Restores 40% of your health.','Reface 40% din viață.'],
    use(){ if(P.hp>=P.maxHp) return LT('You are already at full health.','Ai deja viața plină.');
      P.hp=Math.min(P.maxHp,P.hp+Math.round(P.maxHp*0.4)); }},
-  {id:'tonic',  slot:'heal', name:['Tuna Tonic','Tonic de ton'], color:'#e0344a', price:90, art:'rts/art/item_potion.png',
+  {id:'tonic',  slot:'heal', name:['Tuna Tonic','Tonic de ton'], color:'#e0344a', price:200, art:'rts/art/item_potion.png',
    desc:['Restores all of your health.','Reface toată viața.'],
    use(){ if(P.hp>=P.maxHp) return LT('You are already at full health.','Ai deja viața plină.'); P.hp=P.maxHp; }},
-  {id:'moonmilk',slot:'mana', name:['Moon Milk','Lapte de lună'], color:'#5aa8ff', price:45, art:'rts/art/item_mana.png',
+  {id:'moonmilk',slot:'mana', name:['Moon Milk','Lapte de lună'], color:'#5aa8ff', price:50, art:'rts/art/item_mana.png',
    desc:['Fills your mana orb.','Umple globul de mana.'],
    use(){ if(P.mana>=P.maxMana) return LT('Your mana is already full.','Mana e deja plină.'); P.mana=P.maxMana; }},
-  {id:'fury',   buff:'fury', name:['Fury Draught','Licoarea furiei'], color:'#ff5a1c', c2:'#ffd24a', price:120,
+  {id:'fury',   buff:'fury', name:['Fury Draught','Licoarea furiei'], color:'#ff5a1c', c2:'#ffd24a', price:200,
    desc:['+40% damage (claws and spells) for 90 seconds.','+40% daune (gheare și vrăji) timp de 90 de secunde.'], dur:90000},
-  {id:'ironfur',buff:'ironfur', name:['Iron Fur Elixir','Elixir blană de fier'], color:'#9aa3ad', c2:'#e8f4ff', price:120,
+  {id:'ironfur',buff:'ironfur', name:['Iron Fur Elixir','Elixir blană de fier'], color:'#9aa3ad', c2:'#e8f4ff', price:200,
    desc:['Take 35% less damage for 90 seconds.','Primești cu 35% mai puține daune timp de 90 de secunde.'], dur:90000},
-  {id:'lucky',  buff:'lucky', name:['Lucky Whisker','Mustața norocoasă'], color:'#7ed957', c2:'#fff6a0', price:200,
+  {id:'lucky',  buff:'lucky', name:['Lucky Whisker','Mustața norocoasă'], color:'#7ed957', c2:'#fff6a0', price:800,
    desc:['Double XP for 3 minutes.','XP dublu timp de 3 minute.'], dur:180000},
-  {id:'mixedherb', merchant:true, name:['Green + Red Herb','Iarbă verde + roșie'], color:'#4fb04a', price:300,
+  {id:'mixedherb', merchant:true, name:['Green + Red Herb','Iarbă verde + roșie'], color:'#4fb04a', price:800,
    desc:['Full health, and your fur stays tough (Iron Fur) for 60 seconds.','Viață plină, iar blana rămâne tare (Blană de fier) 60 de secunde.'],
    use(){ P.hp=P.maxHp; S.buffs=S.buffs||{}; S.buffs.ironfur=Math.max(Date.now(),S.buffs.ironfur||0)+60000; }},
-  {id:'goldegg', merchant:true, name:['Golden Egg','Oul de aur'], color:'#ffd24a', price:800,
+  {id:'goldegg', merchant:true, name:['Golden Egg','Oul de aur'], color:'#ffd24a', price:10000,
    desc:['Full health and mana, and every buff for 60 seconds.','Viață și mana plină, plus toate efectele timp de 60 de secunde.'],
    use(){ P.hp=P.maxHp; P.mana=P.maxMana; S.buffs=S.buffs||{}; const t=Date.now()+60000; for(const k of ['fury','ironfur','lucky']) S.buffs[k]=Math.max(t,S.buffs[k]||0); }},
-  {id:'phoenix',name:['Phoenix Feather','Pana de Phoenix'], color:'#ffd24a', c2:'#ff5a1c', price:450, max:3,
+  {id:'phoenix',name:['Phoenix Feather','Pana de Phoenix'], color:'#ffd24a', c2:'#ff5a1c', price:800, max:3,
    desc:['Carried, not drunk: the next time you faint, it burns and you get back up.','Nu se bea: data viitoare când leșini, arde și te ridici înapoi.']},
 ];
 function potById(id){ return POTIONS.find(p=>p.id===id); }
@@ -15850,26 +15893,33 @@ function forgeSpellMult(){ return 1+forgeTier('bell')*0.08; }
 // three at a time — the same three-slot bag a hero carries in the RTS.
 function charmSlots(){ return 3+((S.perm&&S.perm.case)||0); }   // the Merchant's attaché case adds slots
 const CHARMS=[
-  {id:'carrot', name:['Rope Carrot','Morcovul de sfoară'], price:700,  lv:1,
+  {id:'carrot', name:['Rope Carrot','Morcovul de sfoară'], price:1000,  lv:1,
    desc:['Something to chew on: you heal slowly even mid-fight, and faster out of it.','Ceva de ronțăit: te vindeci încet chiar și în luptă, și mai repede în afara ei.'],
    say:['Twine and stubbornness. Chew it when the pigeons get to you.','Sfoară și încăpățânare. Ronțăie-l când te enervează porumbeii.']},
-  {id:'bell',   name:['Swift Bell','Clopoțelul iute'], price:800,  lv:2,
+  {id:'bell',   name:['Swift Bell','Clopoțelul iute'], price:1000,  lv:2,
    desc:['Walk and run 12% faster.','Mergi și alergi cu 12% mai repede.'],
    say:['Everyone hears you coming. Nobody catches you.','Toată lumea te aude venind. Nimeni nu te prinde.']},
-  {id:'mouse',  name:['Yarn Mouse','Șoricelul de lână'], price:900,  lv:3,
+  {id:'mouse',  name:['Yarn Mouse','Șoricelul de lână'], price:3000,  lv:3,
    desc:['A toy to chase: your claws swing 20% faster.','O jucărie de vânat: ghearele lovesc cu 20% mai repede.'],
    say:['Do not look at it too long. You will lose the whole afternoon.','Nu te uita prea mult la el. Pierzi toată după-amiaza.']},
-  {id:'heart',  name:['Lion Heart','Inima de leu'], price:1500, lv:5,
+  {id:'heart',  name:['Lion Heart','Inima de leu'], price:20000, lv:5,
    desc:['+30% maximum health.','+30% viață maximă.'],
    say:['A lion wore it once. Or a very confident house cat.','A purtat-o un leu odată. Sau o pisică de casă foarte sigură pe ea.']},
-  {id:'keychain', name:['Lucky Keychain','Breloc norocos'], price:2500, lv:1, merchant:true,
+  {id:'keychain', name:['Lucky Keychain','Breloc norocos'], price:3000, lv:1, merchant:true,
    desc:['A little brass cat on a ring. +15% XP from everything.','O pisicuță de alamă pe un inel. +15% XP din orice.'],
    say:['Found it in a drawer full of keys. None of them open anything.','L-am găsit într-un sertar plin de chei. Niciuna nu deschide nimic.']},
-  {id:'goldbanana', name:['Golden Banana','Banana de aur'], price:6000, lv:8, need:'warrenOpen',
+  {id:'goldbanana', name:['Golden Banana','Banana de aur'], price:20000, lv:8, need:'warrenOpen',
    needTxt:['Only after the Coon\'s gold is melted.','Doar după ce aurul Ratonului e topit.'],
    desc:['The Coon\'s treasure: +4 claw damage, +15% health, +8% speed.','Comoara Ratonului: +4 daune cu ghearele, +15% viață, +8% viteză.'],
    say:['The one thing I did not melt. It felt rude.','Singurul lucru pe care nu l-am topit. Mi s-a părut nepoliticos.']},
 ];
+// Every potion and charm has a rarity: it colours its name in the shops, decides which capsule tier it drops from,
+// and sets its price — potions 50b / 2s / 8s / 1g, charms 10s / 30s / 2g from rare up — so the same rarity always costs the same
+const ITEM_RARITY={ broth:'common', moonmilk:'common', tonic:'rare', fury:'rare', ironfur:'rare',
+  lucky:'epic', mixedherb:'epic', phoenix:'epic', goldegg:'legendary',
+  carrot:'rare', bell:'rare', mouse:'epic', keychain:'epic', heart:'legendary', goldbanana:'legendary' };
+for(const it of [...POTIONS,...CHARMS]) it.rarity=ITEM_RARITY[it.id]||'common';
+function rarityHTML(r){ return `<div class="rar" style="background:${RAR_COL[r]}">${T(r.toUpperCase())}</div>`; }
 function charmById(id){ return CHARMS.find(c=>c.id===id); }
 function charmOwned(id){ return (S.charmsOwned||[]).includes(id); }
 function charmOn(id){ return (S.charmsOn||[]).includes(id); }
@@ -16044,7 +16094,7 @@ function renderForgeTag(wares){
   if(w.kind==='potion'){
     const p=w.p, full=w.n>=(p.max||10);
     ds=LT(p.desc[0],p.desc[1]);
-    row=`<button class="buy-btn" data-act="buy" ${S.coins<p.price||full?'disabled':''}>${full?LT('Bag full','Plin'):LT('Buy ','Cumpără ')+moneyHTML(p.price)}</button>`
+    row=`<button class="buy-btn" data-act="buy" ${full?'disabled':''}>${full?LT('Bag full','Plin'):LT('Buy ','Cumpără ')+moneyHTML(p.price)}</button>`
       +(w.n && p.id!=='phoenix'?`<button class="buy-btn drink" data-act="drink">${LT('Drink','Bea')}</button>`:'')
       +`<span class="own">${LT('You carry ','Ai la tine ')+w.n}</span>`;
   } else if(w.kind==='forge'){
@@ -16052,28 +16102,30 @@ function renderForgeTag(wares){
     ds=(t?f.desc(t):LT('Not forged yet.','Încă neforjat.'))+(w.maxed?'':`<br><b>→ ${f.desc(t+1)}</b>`)+`<div class="forge-tiers">${pips}</div>`;
     if(w.maxed) row=`<span class="own">${LT('Masterwork. Nothing left to hammer.','Capodoperă. Nu mai e nimic de bătut.')}</span>`;
     else if(S.level<FORGE_LV[t]) row=`<button class="buy-btn" disabled>${LT('Needs Lv ','Necesită Nv ')+FORGE_LV[t]}</button>`;
-    else row=`<button class="buy-btn" data-act="forge" ${S.coins<w.price?'disabled':''}>${LT('Forge ','Forjează ')+moneyHTML(w.price)}</button>`;
+    else row=`<button class="buy-btn" data-act="forge">${LT('Forge ','Forjează ')+moneyHTML(w.price)}</button>`;
   } else if(w.kind==='charm'){
     const c=w.c, worn=(S.charmsOn||[]).length;
     ds=LT(c.desc[0],c.desc[1]);
     if(w.owned) row=`<button class="buy-btn ${w.worn?'owned':'equipped'}" data-act="wear">${w.worn?LT('Take off','Scoate'):LT('Wear','Poartă')}</button>`
       +`<span class="own">${LT('Worn ','Purtate ')+worn+'/'+charmSlots()}</span>`;
     else if(S.level<c.lv) row=`<button class="buy-btn" disabled>${LT('Needs Lv ','Necesită Nv ')+c.lv}</button>`;
-    else row=`<button class="buy-btn" data-act="charm" ${S.coins<c.price?'disabled':''}>${LT('Buy ','Cumpără ')+moneyHTML(c.price)}</button>`;
+    else row=`<button class="buy-btn" data-act="charm">${LT('Buy ','Cumpără ')+moneyHTML(c.price)}</button>`;
   } else {
     const it=w.it, sp=it.type==='spell'?spellById(it.id):null;
     ds=it.desc+(sp?` <b style="color:#2a6ed3">${sp.mana} mana</b>`:'');
     row=w.owned?`<span class="own">${sp?LT('Already learned.','Deja învățat.'):LT('Already yours.','E deja al tău.')}</span>`
-      :`<button class="buy-btn" data-act="trick" ${S.coins<it.price?'disabled':''}>${LT('Buy ','Cumpără ')+moneyHTML(it.price)}</button>`;
+      :`<button class="buy-btn" data-act="trick">${LT('Buy ','Cumpără ')+moneyHTML(it.price)}</button>`;
   }
-  tag.innerHTML=`<div class="nm">${w.name}</div><div class="ds">${ds}</div><div class="row">${row}</div>`;
+  const rar=w.kind==='potion'?w.p.rarity:w.kind==='charm'?w.c.rarity:null;
+  tag.innerHTML=`<div class="nm">${w.name}</div>${rar?rarityHTML(rar):''}<div class="ds">${ds}</div><div class="row">${row}</div>`;
   tag.classList.add('on');
   const act=a=>tag.querySelector(`[data-act="${a}"]`);
-  if(act('buy')) act('buy').onclick=()=>buyPotion(w.id);
+  const afford=fn=>()=>{ if(S.coins<w.price){ forgeBroke(); return; } fn(); };   // short of coins: she lets you know
+  if(act('buy')) act('buy').onclick=afford(()=>buyPotion(w.id));
   if(act('drink')) act('drink').onclick=()=>{ drinkPotion(w.id); renderForge(); };
-  if(act('forge')) act('forge').onclick=()=>forgeUpgrade(w.id);
-  if(act('trick')) act('trick').onclick=()=>buy(w.id);
-  if(act('charm')) act('charm').onclick=()=>buyCharm(w.id);
+  if(act('forge')) act('forge').onclick=afford(()=>forgeUpgrade(w.id));
+  if(act('trick')) act('trick').onclick=afford(()=>buy(w.id));
+  if(act('charm')) act('charm').onclick=afford(()=>buyCharm(w.id));
   if(act('wear')) act('wear').onclick=()=>{ if(wearCharm(w.id)){ SFX.tone&&SFX.tone(880,0.06,'triangle',0.04); } renderForge(); };
 }
 const FORGE_THANKS=[['Pleasure doing business.','Plăcerea e de partea mea.'],['Coins on the anvil. Good cat.','Monedele pe nicovală. Pisică bună.'],
