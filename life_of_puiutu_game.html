@@ -3777,6 +3777,9 @@ let AREAS=buildAreas();
 //──────────────────────────────────────────────────────────────── NPC DIALOGUE
 // quest-giving NPCs
 const QUESTS={
+  // Old Shelly's museum: 20 silver for any full shelf (paid by the shelf itself, see MUSEUM_SETS),
+  // and 3 gold from Shelly once every shelf is full. She talks in her museum, not in the cat dialogue.
+  shelly:{ name:'Old Shelly', img:()=>SHELLY_IMG, goal:{type:'museum', n:3}, reward:{coins:30000, xp:500} },
   tomy:{ name:'Tomy', cat:'tomy', goal:{type:'fish', n:8}, reward:{coins:30, xp:40},
     offer:['Meow~! Hi, Puiutu! I’m Tomy, the white cat.',
            'Oh no, my fish got scattered all over the garden...',
@@ -4115,6 +4118,10 @@ const RO = {
   "Hmph. Fish first. Then we talk.":"Hmf. Întâi peștele. Apoi vorbim.",
   "Old Shelly's Museum":"Muzeul bătrânei Shelly","Herbs":"Ierburi","Rarities":"Rarități","Press E — The Merchant":"Apasă E — Negustorul","Shelves":"Rafturi","Trade":"Schimb","Notes":"Bilețele","Press E — Old Shelly":"Apasă E — Bătrâna Shelly",
   "Mm? Oh. A cat. You walk very loudly for something so small.":"Mm? A. O pisică. Calci foarte apăsat pentru ceva atât de mic.",
+  "Fill a whole shelf for me and I will pay you twenty silver. Any shelf — they are all worth the same to me.":"Umple-mi un raft întreg și îți dau douăzeci de argint. Orice raft — toate valorează la fel pentru mine.",
+  "Fill every shelf, and I will give you three gold. I have been saving them for a very long time.":"Umple-mi toate rafturile și îți dau trei aur. Le păstrez de foarte multă vreme.",
+  "Ah. The loud little cat. I forgot to tell you something last time.":"Ah. Pisicuța gălăgioasă. Am uitat să-ți spun ceva data trecută.",
+  "Old Shelly":"Bătrâna Shelly",
   "I am Shelly. I have been on this beach since before it was a beach. I keep a little museum.":"Eu sunt Shelly. Sunt pe plaja asta de dinainte să fie plajă. Țin un mic muzeu.",
   "Everything the sand gives back, I keep one of. Walk the beach and bring me what the tide turns up.":"Din tot ce dă nisipul înapoi, păstrez câte unul. Plimbă-te pe plajă și adu-mi ce scoate valul.",
   "And shells. I buy shells. Do not ask what for. Turtles are allowed one secret.":"Și scoici. Cumpăr scoici. Nu întreba pentru ce. Țestoasele au voie la un secret.",
@@ -8528,16 +8535,56 @@ function hubClick(px,py){
   if(maskReady() && !hubStand(t.x,t.y,HUB.cat&&HUB.cat.onPlat)){ const p=nearestWalk(t.x,t.y); if(p) t={x:p.x, y:p.y}; else return; }
   t.best=Infinity; t.since=Date.now(); HUB.target=t;
 }
-// move along the path: try the desired direction, then small rotations so you
-// "slide" around the path's bends instead of sticking on invisible walls
+// Move along the path, smoothly. The masks are hand-painted, so their edges are ragged pixel by
+// pixel; testing single points against them made the cat stop a few pixels short of walls, twitch
+// on every notch and zig-zag between the two sides of a bend. Instead:
+//  1. go as far as you can the way you pressed (up against the edge, not short of it);
+//  2. slide the rest along the wall: its direction comes from a ring of 16 samples around you, so
+//     one stray pixel does not turn it; the slide keeps the push's share along the wall, never
+//     below half speed, so holding a direction still carries you round the paths' bends;
+//  3. only in a really tight spot, the old turn search (narrow bends), keeping last frame's side.
+const SLIDE_RING=[...Array(16)].map((_,i)=>[Math.cos(i*Math.PI/8), Math.sin(i*Math.PI/8)]);
+function hubWallNormal(c,x,y,r){                // unit vector pointing INTO the wall near (x,y), or null
+  let nx=0, ny=0;
+  for(const [ux,uy] of SLIDE_RING) if(!hubStand(x+ux*r, y+uy*r*0.7, c.onPlat)){ nx+=ux; ny+=uy; }
+  const l=Math.hypot(nx,ny); return l>0.01 ? {x:nx/l, y:ny/l} : null;
+}
+function hubReach(c,dx,dy){                     // the furthest point along (dx,dy) still on the path
+  if(hubStand(c.x+dx,c.y+dy,c.onPlat)) return 1;
+  let lo=0, hi=1;
+  for(let i=0;i<4;i++){ const m=(lo+hi)/2; if(hubStand(c.x+dx*m,c.y+dy*m,c.onPlat)) lo=m; else hi=m; }
+  return lo;
+}
 function hubTryMove(c,dx,dy){
   const mag=Math.hypot(dx,dy); if(mag<0.01) return false;
-  const base=Math.atan2(dy,dx);
-  // smallest turn that stays on the path wins, so straight stretches go straight
-  // and sharp bends (even near-vertical) are followed by just holding a direction
-  for(const deg of [0,12,-12,24,-24,38,-38,52,-52,66,-66,80,-80,92,-92]){
-    const a=base+deg*Math.PI/180, nx=c.x+Math.cos(a)*mag, ny=c.y+Math.sin(a)*mag;
-    if(hubStand(nx,ny,c.onPlat)){ c.x=nx; c.y=ny; return true; }
+  const k=hubReach(c,dx,dy);
+  if(k>=1){ c.x+=dx; c.y+=dy; c._slideSide=0; return true; }
+  c.x+=dx*k; c.y+=dy*k;                                         // up against the edge
+  const left=mag*(1-k);                                          // what is left of the push
+  const n=hubWallNormal(c, c.x+dx/mag*4, c.y+dy/mag*4, 10);
+  if(n){
+    // along the wall: the side the push leans toward, or (head-on) the side we slid last time.
+    // Speed is the push's share along the wall, but never below half — the paths bend, and
+    // holding a direction should still carry you round them, just more gently than straight on.
+    let tx=-n.y, ty=n.x, along=(dx*tx+dy*ty)/mag;
+    if(Math.abs(along)<0.15) along=(c._slideSide||1)*0.15;
+    let dir=1; if(along<0){ tx=-tx; ty=-ty; along=-along; dir=-1; }
+    const sp=left*Math.max(0.5,along);
+    for(const turn of [0, 0.35, -0.35]){                         // a little give for concave corners
+      const cs=Math.cos(turn), sn=Math.sin(turn), ux=tx*cs-ty*sn, uy=tx*sn+ty*cs;
+      const k2=hubReach(c,ux*sp,uy*sp);
+      if(k2>0.1){ c.x+=ux*sp*k2; c.y+=uy*sp*k2; c._slideSide=dir; return true; }
+    }
+  }
+  if(k>0.05) return true;
+  // a really tight spot: turn toward the path, the same side as last time while it keeps working
+  const base=Math.atan2(dy,dx), side=c._slideSide||1;
+  for(const deg of [12,24,38,52,66,80,92]){
+    for(const sgn of [side,-side]){
+      const a=base+sgn*deg*Math.PI/180, m=mag*Math.max(0.5,Math.cos(deg*Math.PI/180));
+      const nx=c.x+Math.cos(a)*m, ny=c.y+Math.sin(a)*m;
+      if(hubStand(nx,ny,c.onPlat)){ c.x=nx; c.y=ny; c._slideSide=sgn; return true; }
+    }
   }
   return false;
 }
@@ -9384,6 +9431,7 @@ function cineNext(now){
     return;
   }
   if('cam' in st) C.camX = (typeof st.cam==='function') ? st.cam() : st.cam;
+  if('camEase' in st) C.camEase=st.camEase;          // how fast the camera drifts to it (default 0.05)
   if(st.cut) C.cut=Object.assign({t0:now}, st.cut);
   if(st.endcut){ C.cut=null; C.flashAt=now; }
   if(st.toast) toast(st.toast);
@@ -9608,7 +9656,10 @@ function drawSebyRise(sx, fy, bsz, b){
     if(st==='rise'){ g.beginPath(); g.rect(sx-bsz*2, sy-bsz*3, bsz*4, bsz*3+2); g.clip(); }   // nothing below the floor line while she climbs
     g.globalAlpha=Math.min(1,kr*1.6);
     const step=Math.max(0,Math.min(1,(kl-0.35)/0.65)), stepE=step*step*(3-2*step);   // out of the hole, down onto the floor
-    drawBossSprite(g, sx, sy+(fy-sy)*stepE+bsz*(1-er), b.facing, bsz, 'rear', false, 0, SEBYI, '150,80,230', 0.15);
+    // the fight's own frame at the fight's own scale, so she does not jump in size when it starts
+    const fa=SEBYA.walk0, useA=!!(fa && fa.complete && fa.naturalWidth);
+    drawBossSprite(g, sx, sy+(fy-sy)*stepE+bsz*(1-er), b.facing, useA?bsz/SEBY_ANIM_FILL:bsz*1.10, useA?'walk0':'rear',
+                   false, 0, useA?SEBYA:SEBYI, '150,80,230', useA?0:0.178);
     g.restore();
   }
   if(st==='land'){
@@ -9687,16 +9738,19 @@ function startBossOpening(){
   HUB.cine=null;
   const b=HUB.boss, H=A.hub, W=()=>HUB.worldW;
   // her portal, on its own: a rematch, a restart after fainting, or the story scene already seen
-  const sebyPortalCine=()=>cineStart('sebyportal', [
-    {cam:()=>H.boss.xf*W(), do:now=>sebyPortalOpen(b,now), until:now=>{ sebyAppearStep(b,now); return !b.appear; }},
-    {cam:null, ms:500}], true);
+  // Both start the same way: a breath at the door, then the camera drifts slowly across the cave
+  // to the vortex so you see where you are, and only then does it open.
+  const SEBY_LOOK=[{ms:1500}, {cam:()=>H.boss.xf*W(), camEase:0.02, ms:2600}];
+  const sebyPortalCine=()=>cineStart('sebyportal', [...SEBY_LOOK,
+    {camEase:0.05, do:now=>sebyPortalOpen(b,now), until:now=>{ sebyAppearStep(b,now); return !b.appear; }},
+    {cam:null, camEase:0.05, ms:500}], true);
   if(curArea==='sebyboss' && b && !b.defeated && (HUB.sebyRematch || (!freeMode() && (S.cineSeen||{}).seby))){
     sebyPortalCine();
   } else if(curArea==='sebyboss' && b && !b.defeated){
     cineStart('seby', [
-      // the moment you walk in, the circle tears open and she comes up out of it (the camera finds
-      // it on the way) — the scene waits until she is standing
-      {cam:()=>H.boss.xf*W(), do:now=>sebyPortalOpen(b,now), until:now=>{ sebyAppearStep(b,now); return !b.appear; }},
+      ...SEBY_LOOK,
+      // the vortex tears open and she comes up out of it — the scene waits until she is standing
+      {camEase:0.05, do:now=>sebyPortalOpen(b,now), until:now=>{ sebyAppearStep(b,now); return !b.appear; }},
       {ms:700},
       {say:{name:'Queen Seby', img:CINE_FACE.seby, bg:'#2a1430', tone:180, lines:[
         "Warm little thing. You smell of sunlight… and of the ones who dig.",
@@ -10653,7 +10707,7 @@ function updateHub(){
   if(CINE.dolly){ CINE.x=Math.max(0,Math.min(HUB.worldW-VW, CINE.x+CINE.speed)); HUB.camx=CINE.x; }
   else if(HUB.cine && HUB.cine.camX!=null){
     const want=Math.max(0,Math.min(HUB.worldW-VW, HUB.cine.camX-VW/2));
-    HUB.camx+=(want-HUB.camx)*0.05; CINE.x=HUB.camx; }
+    HUB.camx+=(want-HUB.camx)*(HUB.cine.camEase||0.05); CINE.x=HUB.camx; }
   else if(HUB.cine){ const want=Math.max(0,Math.min(HUB.worldW-VW, c.x-VW/2)); HUB.camx+=(want-HUB.camx)*0.08; CINE.x=HUB.camx; }
   else if(HUB.hangar && HUB.hangar.phase!=='await' && HUB.boss){
     // the Hangar's opening: frame the machine and whoever is talking to it, and ease there
@@ -12681,6 +12735,7 @@ function drawBubbles(){
 //═══════════════════════════════════════════════════════════════ QUESTS
 function questCount(key){
   const q=QUESTS[key], st=S.quests[key]; if(!q||!st) return 0;
+  if(q.goal.type==='museum') return Math.min(q.goal.n, (S.museumSets||[]).length);   // full shelves claimed
   const cur = q.goal.type==='fish' ? (S.totalFish||0) : (S.totalDefeats||0);
   return Math.min(q.goal.n, Math.max(0, cur - (st.base||0)));
 }
@@ -12699,7 +12754,7 @@ function updateQuestHUD(){
   for(const pl of el.children){
     const key=pl.dataset.q, q=QUESTS[key], c=questCount(key);
     // the quest-giver's face in the socket, painted once its sprite has loaded
-    if(!pl._face){ const img=q.dog?ROCKY.idle:SPRITES[q.cat];
+    if(!pl._face){ const img=q.img?q.img():q.dog?ROCKY.idle:SPRITES[q.cat];
       if(img && img.complete && img.naturalWidth){ paintPortrait(pl.firstChild.getContext('2d'),84,img,'#cfe6a8'); pl._face=true; } }
     pl.lastChild.innerHTML=T(q.name)+':<b>'+c+'/'+q.goal.n+'</b>'+(c>=q.goal.n?'<span class="qDone">'+T('talk!')+'</span>':'');
   }
@@ -13983,9 +14038,9 @@ const FOSSILS=[
   {id:'catskull',  rar:'legendary', w:5,  sell:600, name:['Ancient Cat Skull','Craniu de pisică străveche']},
 ];
 const MUSEUM_SETS=[
-  {id:'shore', name:['The Shore Shelf','Raftul țărmului'],       items:['ammonite','sharktooth','fishbones','crabclaw'], reward:{coins:400, xp:150}},
-  {id:'deep',  name:['The Deep Time Shelf','Raftul timpului adânc'], items:['trilobite','whalerib','serpent'],         reward:{coins:1200, xp:300}},
-  {id:'crown', name:['The Crown Case','Vitrina de coroană'],      items:['catskull'],                                  reward:{coins:3000, xp:600, skin:true}},
+  {id:'shore', name:['The Shore Shelf','Raftul țărmului'],       items:['ammonite','sharktooth','fishbones','crabclaw'], reward:{coins:2000, xp:150}},
+  {id:'deep',  name:['The Deep Time Shelf','Raftul timpului adânc'], items:['trilobite','whalerib','serpent'],         reward:{coins:2000, xp:300}},
+  {id:'crown', name:['The Crown Case','Vitrina de coroană'],      items:['catskull'],                                  reward:{coins:2000, xp:600, skin:true}},
 ];
 const SHELLS=[
   {id:'snail',    w:34, sell:4,   name:['Spiral Shell','Scoică spiralată']},
@@ -14013,14 +14068,37 @@ function rollFossil(){ return weightedPick(FOSSILS, f=>f.w*(f.rar==='common'?1:2
 // ── Old Shelly ──
 const SHELLY_IMG=new Image(); SHELLY_IMG.src='ui/beach/shelly_big.png?v=2';
 function shellySay(lines,then){ sayLines('Old Shelly', lines, {img:SHELLY_IMG, bg:'#2a4a52', tone:300, then}); }
+const SHELLY_PAY=[
+  'Fill a whole shelf for me and I will pay you twenty silver. Any shelf — they are all worth the same to me.',
+  'Fill every shelf, and I will give you three gold. I have been saving them for a very long time.'];
+function shellyQuestStart(){
+  if(S.quests.shelly) return;
+  S.quests.shelly={state:'active', base:0}; save(); updateQuestHUD();
+  toast(LT('New quest: Old Shelly\'s Museum','Quest nou: Muzeul bătrânei Shelly'));
+}
+// every shelf full: the three gold. Also catches a save that filled them before the quest existed.
+function shellyQuestCheck(){
+  const st=S.quests.shelly; if(!st || st.state!=='active' || !questDone('shelly')) return false;
+  const r=QUESTS.shelly.reward; st.state='done'; S.coins+=r.coins; addXP(r.xp); save(); syncHUD(); updateQuestHUD();
+  SFX.win&&SFX.win();
+  museumSay(LT('Every shelf. Every one. Here — three gold, as I promised. I have been saving them since before the war had a name.',
+               'Fiecare raft. Toate. Poftim — trei aur, cum am promis. I-am păstrat de dinainte ca războiul să aibă un nume.'));
+  toast(LT('Quest complete: Old Shelly\'s Museum! +','Quest terminat: Muzeul bătrânei Shelly! +')+moneyText(r.coins)+'  +'+r.xp+' XP');
+  return true;
+}
 function shellyTalk(){
   if(!S.metShelly){ S.metShelly=true; save();
     shellySay([
       'Mm? Oh. A cat. You walk very loudly for something so small.',
       'I am Shelly. I have been on this beach since before it was a beach. I keep a little museum.',
       'Everything the sand gives back, I keep one of. Walk the beach and bring me what the tide turns up.',
+      ...SHELLY_PAY,
       'And shells. I buy shells. Do not ask what for. Turtles are allowed one secret.'
-    ], ()=>museumOpen());
+    ], ()=>{ shellyQuestStart(); museumOpen(); });
+    return; }
+  if(!S.quests.shelly){                                  // met her before she said what the shelves pay
+    shellySay(['Ah. The loud little cat. I forgot to tell you something last time.', ...SHELLY_PAY],
+      ()=>{ shellyQuestStart(); museumOpen(); });
     return; }
   museumOpen();
 }
@@ -14041,6 +14119,7 @@ function museumOpen(){
     : done ? LT('Back again. '+done+' of '+tot+' on display. The sand is not done with us yet.','Iar aici. '+done+' din '+tot+' expuse. Nisipul n-a terminat cu noi.')
     : LT('Everything the sand gives back, I keep one of. Walk the beach — the tide brings things in.','Din tot ce dă nisipul înapoi, păstrez câte unul. Plimbă-te pe plajă — valul aduce lucruri.'));
   openModal('museum');
+  shellyQuestCheck();
 }
 function museumWares(){
   if(museumTab==='trade'){
@@ -14137,6 +14216,8 @@ function museumClaim(sid){
     const sk=pool.length?pool[Math.floor(Math.random()*pool.length)]:null;
     if(sk){ S.catSkins=S.catSkins||[]; S.catSkins.push(sk.id); extra='  + '+sk.name; } }
   save(); syncHUD(); SFX.win&&SFX.win(); toast(LT(set.name[0],set.name[1])+'! +'+moneyText(set.reward.coins)+'  +'+set.reward.xp+' XP'+extra); renderMuseum();
+  updateQuestHUD();
+  if(!shellyQuestCheck()) museumSay(LT('A full shelf. Twenty silver, as I said.','Un raft plin. Douăzeci de argint, cum am zis.'));
 }
 
 // ── beachcombing: things wash up on the walkable sand; walk over them. Crabs run. ──
@@ -17314,13 +17395,15 @@ const MAP_ICO={
   drop:  '<path d="M12 3s6 6.7 6 11a6 6 0 0 1-12 0c0-4.3 6-11 6-11z"/>',
 };
 // active quests, and where on the map to go for them: the giver's place, or (for the sharks) the water
-const QUEST_LOC={ tomy:'garden', lucian:'street', nomnom:'slum', rocky:'street' };
+const QUEST_LOC={ tomy:'garden', lucian:'street', nomnom:'slum', rocky:'street', shelly:'beach' };
 function mapQuests(){
   const out=[];
   for(const k in (S.quests||{})){ const st=S.quests[k], q=QUESTS[k];
     if(!q || st.state!=='active' || !QUEST_LOC[k]) continue;
     const n=q.goal.n, have=Math.min(n, questCount(k)), ready=have>=n;
-    const what = q.goal.type==='fish' ? LT('Bring '+n+' fish','Adu '+n+' pești') : LT('Defeat '+n+' enemies','Învinge '+n+' inamici');
+    const what = q.goal.type==='fish' ? LT('Bring '+n+' fish','Adu '+n+' pești')
+               : q.goal.type==='museum' ? LT('Fill her '+n+' shelves','Umple-i '+n+' rafturi')
+               : LT('Defeat '+n+' enemies','Învinge '+n+' inamici');
     out.push({loc:QUEST_LOC[k], ready, text:T(q.name)+': '+what+' ('+have+'/'+n+')'+(ready?LT(' — go back',' — întoarce-te'):'')});
   }
   if(S.sharkQuest==='on'){ const have=Math.min(2,S.sharkKills||0);
