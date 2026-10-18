@@ -59,8 +59,8 @@ out.alpha_composite(Image.fromarray(np.dstack([rgb.clip(0,255),a[...,3:]]).astyp
 def sepia(img, k=1.0):
     a=np.asarray(img.convert('RGBA')).astype(np.float32)
     l=(0.299*a[...,0]+0.587*a[...,1]+0.114*a[...,2])/255.0
-    l=np.clip((l-0.5)*1.25+0.55,0,1)[...,None]
-    dark=np.array([58,38,20],np.float32); light=np.array([238,214,168],np.float32)
+    l=np.clip((l-0.5)*1.45+0.55,0,1)[...,None]
+    dark=np.array([52,32,14],np.float32); light=np.array([244,222,176],np.float32)
     tone=dark+(light-dark)*l
     rgb=a[...,:3]*(1-k)+tone*k
     return Image.fromarray(np.dstack([rgb,a[...,3:]]).clip(0,255).astype(np.uint8))
@@ -75,16 +75,19 @@ CAT=ROOT+'/rts/menu/Royal Blue Paw Heraldic Banner.png'; RAT=ROOT+'/rts/menu/Tat
 banner(CAT,1290,128,132)      # over the royal castle's gate
 banner(CAT, 894,452, 92)      # on the town hall, under the clock
 banner(RAT,1466,388,170)      # on the rat fortress
-# take the old moon banner off the wizard castle: the wall around it flows in, then a little grain
+# the wizard's banner from the library, over the castle's moon banner: drawn crisp at its size, and
+# only the bit of the old banner it does not cover (the point of its swallowtail) is filled with wall
+from PIL import ImageDraw
+lb=sepia(Image.open(SP+'/mapgen/lib_banner_cut.png').convert('RGBA'))
+h=66; lb=lb.resize((round(lb.width*h/lb.height),h),Image.LANCZOS).filter(ImageFilter.UnsharpMask(1.0,140,1))
+LX,LY=303-lb.width//2,152
+old=Image.new('L',out.size,0); ImageDraw.Draw(old).polygon([(280,150),(327,150),(327,207),(303,223),(280,207)],fill=255)
+cover=Image.new('L',out.size,0); cover.paste(lb.getchannel('A'),(LX,LY))
+hole=(np.asarray(old)>0)&(np.asarray(cover)<200)
 arr=np.asarray(out.convert('RGB')).astype(np.float32)
-bx0,by0,bx1,by1=276,148,330,228                        # old moon banner (with its pole)
-hole=np.zeros(arr.shape[:2],bool); hole[by0:by1,bx0:bx1]=True
-fill=arr.copy(); fill[hole]=arr[by0-4:by0,bx0:bx1].mean((0,1))
-for _ in range(900):
+fill=arr.copy(); fill[hole]=arr[226:232,284:324].reshape(-1,3).mean(0)
+for _ in range(300):
     avg=(np.roll(fill,1,0)+np.roll(fill,-1,0)+np.roll(fill,1,1)+np.roll(fill,-1,1))/4; fill[hole]=avg[hole]
-rng=np.random.default_rng(5); fill[hole]+=rng.normal(0,5,(hole.sum(),1))
 out=Image.fromarray(fill.clip(0,255).astype(np.uint8)).convert('RGBA')
-# the wizard's banner from the library, over the castle's moon banner
-lb=sepia(Image.open(SP+'/mapgen/lib_banner_cut.png').convert('RGBA')); h=62; lb=lb.resize((round(lb.width*h/lb.height),h),Image.LANCZOS)
-out.alpha_composite(lb,(302-lb.width//2,150))
+out.alpha_composite(lb,(LX,LY))
 out.convert('RGB').save(SP+'/mapgen/parchment_final.png'); print('ok')

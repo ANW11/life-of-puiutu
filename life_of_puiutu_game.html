@@ -1345,7 +1345,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
   <div id="mapModal">
     <div id="wmView">
       <div id="wmWorld">
-        <img id="wmImg" src="maps/worldmap_parchment.png?v=1" alt="Puiutu Land" draggable="false">
+        <img id="wmImg" src="maps/worldmap_parchment.png?v=2" alt="Puiutu Land" draggable="false">
         <canvas id="wmFog" width="768" height="512"></canvas>
         <div id="wmRegions"></div>
         <div id="wmIcons"></div>
@@ -1448,7 +1448,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
     <div class="modal-body" id="settingsBody">
       <h3 class="set-h">Language</h3><div id="setLang"></div>
       <h3 class="set-h">Game mode</h3><div id="setMode"></div>
-      <h3 class="set-h" id="setFullH">Screen</h3><div class="set-pick" id="setFullRow"><button class="mode-btn" id="setFull">FULLSCREEN</button></div>
+      <h3 class="set-h" id="setFullH">Screen</h3><div class="set-pick" id="setFullRow"><button class="mode-btn" id="setFull">FULLSCREEN</button><button class="mode-btn" id="setWindowed">WINDOWED</button></div>
       <h3 class="set-h">Music</h3><div class="set-pick"><button class="mode-btn" id="setMusicOn">ON</button><button class="mode-btn" id="setMusicOff">OFF</button></div>
       <h3 class="set-h">Sound effects</h3><div class="set-pick"><button class="mode-btn" id="setSfxOn">ON</button><button class="mode-btn" id="setSfxOff">OFF</button></div>
       <button id="resetBtn" style="margin-top:8px;background:#b5453a;border:2px solid #7a2c24;color:#fff;padding:8px 14px;border-radius:12px;font-weight:bold;cursor:pointer;">↺ Reset game</button>
@@ -4684,7 +4684,7 @@ const RO = {
   "Language":"Limbă",
   "Game mode":"Mod de joc",
   "COMMON":"COMUN", "RARE":"RAR", "EPIC":"EPIC", "LEGENDARY":"LEGENDAR",
-  "Screen":"Ecran", "FULLSCREEN":"ECRAN COMPLET", "Sound effects":"Efecte sonore", "ON":"PORNIT", "OFF":"OPRIT",
+  "Screen":"Ecran", "FULLSCREEN":"ECRAN COMPLET", "WINDOWED":"FEREASTRĂ", "Sound effects":"Efecte sonore", "ON":"PORNIT", "OFF":"OPRIT",
   "Best":"Record",
   "Make: Apple":"Fă: Măr",
   "↺ Restart":"↺ Reîncepe",
@@ -17898,10 +17898,14 @@ document.getElementById('btnWar').addEventListener('click',warOpen);
   const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
   const canFs=!!(de.requestFullscreen||de.webkitRequestFullscreen);
   if(!canFs){ document.getElementById('setFullH').style.display='none'; document.getElementById('setFullRow').style.display='none'; }
-  fsBtn.addEventListener('click',()=>{ SFX&&SFX.click&&SFX.click();
-    if(fsEl()) (document.exitFullscreen||document.webkitExitFullscreen).call(document);
-    else { const r=(de.requestFullscreen||de.webkitRequestFullscreen).call(de,{navigationUI:'hide'}); if(r&&r.catch) r.catch(()=>{}); } });
-  const sync=()=>{ document.body.classList.toggle('isFull',!!fsEl()); fsBtn.classList.toggle('on',!!fsEl()); setTimeout(resize,60); };
+  // two buttons, like music on/off: the lit one is the screen you are in
+  const winBtn=document.getElementById('setWindowed');
+  fsBtn.addEventListener('click',()=>{ SFX&&SFX.click&&SFX.click(); if(fsEl()) return;
+    const r=(de.requestFullscreen||de.webkitRequestFullscreen).call(de,{navigationUI:'hide'}); if(r&&r.catch) r.catch(()=>{}); });
+  winBtn.addEventListener('click',()=>{ SFX&&SFX.click&&SFX.click(); if(!fsEl()) return;
+    const r=(document.exitFullscreen||document.webkitExitFullscreen).call(document); if(r&&r.catch) r.catch(()=>{}); });
+  const sync=()=>{ document.body.classList.toggle('isFull',!!fsEl()); fsBtn.classList.toggle('on',!!fsEl()); winBtn.classList.toggle('on',!fsEl()); setTimeout(resize,60); };
+  sync();
   document.addEventListener('fullscreenchange',sync); document.addEventListener('webkitfullscreenchange',sync); }
 document.getElementById('btnShopTop').addEventListener('click',()=>{ openModal('shop'); SFX&&SFX.click&&SFX.click(); });
 document.getElementById('gachaRoll').addEventListener('click',gachaRoll);
