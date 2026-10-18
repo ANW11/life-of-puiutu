@@ -2708,6 +2708,10 @@ const MBOARI={};
 ['idle','walk1','walk2','attack','down0','down1']
   .forEach(k=>{ const im=new Image(); im.src='mobs/mechboar_frames/'+k+'.png'; MBOARI[k]=im; });
 MBOARI.walk0=MBOARI.idle;                                   // bossFrameH measures every pose against walk0
+// the same poses with 1, 2 and 3 of the back crystals torn out and gone dead (brown-grey stone)
+const MBOARD=[null,1,2,3].map(n=>{ if(!n) return null; const o={};
+  ['idle','walk1','walk2','attack'].forEach(k=>{ const im=new Image(); im.src='mobs/mechboar_frames/'+k+'_dead'+n+'.png'; o[k]=im; });
+  o.down0=MBOARI.down0; o.down1=MBOARI.down1; o.walk0=o.idle; return o; });
 const MBOAR_EYE3={idle:[0.827,0.287], walk1:[0.853,0.288], walk2:[0.853,0.290], attack:[0.747,0.314]};   // forehead, as frame fractions
 const MBOAR_MUZZLE=[0.97,0.544];                            // tip of the painted bolt in `attack`
 const MBOAR_H=290;                                          // a war machine: about three cats tall
@@ -2719,7 +2723,26 @@ const SPIRITI={};
   .forEach(k=>{ const im=new Image(); im.src='mobs/forestspirit/'+k+'.png'; SPIRITI[k]=im; });
 const SPIRIT_H=320;                                         // a little taller than the machine
 // the sporelings: little mushroom folk the Glow sends up through the floor for the cat to carry
-const SPOREI=[0,1,2,3].map(i=>{ const im=new Image(); im.src='mobs/forestspirit/sporeling'+i+'.png'; return im; });
+// the Glow's ability: roots erupting under the machine, the binding vine, the punch landing
+const SPIRITFX={}; ['roots0','roots1','roots2','roots3','vine','impact0','impact1','impact2']
+  .forEach(k=>{ const im=new Image(); im.src='mobs/forestspirit/fx_'+k+'.png'; SPIRITFX[k]=im; });
+const fxReady=im=>im&&im.complete&&im.naturalWidth;
+// a sprite standing on (x,y), h tall, optionally mirrored
+function drawFxFoot(g,im,x,y,h,flip,alpha){
+  if(!fxReady(im)) return false; const w=im.naturalWidth/im.naturalHeight*h;
+  g.save(); if(alpha!=null) g.globalAlpha*=alpha; g.translate(x,y); if(flip) g.scale(-1,1);
+  g.drawImage(im,-w/2,-h,w,h); g.restore(); return true;
+}
+// the vine from (x0,y0) to (x1,y1): its grabbing tip leads, so it grows out of the hand
+function drawFxVine(g,x0,y0,x1,y1,thick,grow,wob){
+  const im=SPIRITFX.vine; if(!fxReady(im)) return false;
+  const d=Math.hypot(x1-x0,y1-y0); if(d<2) return true;
+  const L=d*grow, sw=im.naturalWidth*Math.min(1,grow+0.05);
+  g.save(); g.translate(x0,y0); g.rotate(Math.atan2(y1-y0,x1-x0)+(wob||0)); if(x1<x0) g.scale(1,-1);   // mushrooms stay on top
+  g.drawImage(im, im.naturalWidth-sw,0,sw,im.naturalHeight, 0,-thick/2,L,thick); g.restore(); return true;
+}
+const SPOREI={}; ['walk0','walk1','walk2','walk3','pop','jump','carried','sleep']
+  .forEach(k=>{ const im=new Image(); im.src='mobs/forestspirit/sporeling_'+k+'.png'; SPOREI[k]=im; });
 // the three big crystals on the machine's back, as fractions of the `idle` frame (498×401)
 const MBOAR_BACK=[[0.27,0.16],[0.38,0.10],[0.50,0.09]];
 // Seby's crystal barrier — shatter all of these before she can be harmed.
@@ -9830,15 +9853,15 @@ function drawSebyRise(sx, fy, bsz, b){
   }
 }
 // ── Boss title cards ───────────────────────────────────────────────────────────────────────
-// Every boss gets the Dreamer's treatment: the screen dims, an epithet, the name, a line drawn
+// Every boss gets the Dreamer's treatment: the screen dims, the name, a line drawn
 // under it. The card waits until no scene or dialogue is on screen, and the fight holds still
 // while it plays (the Dreamer draws its own, inside its 12-second waking).
 const BOSS_TITLE={
-  seby:    {name:'QUEEN SEBY',    epi:'the ancient one · keeper of the crystals',  col:'#ead6ff', bar:'#b07cf0', low:[110,147,175,220]},
-  coon:    {name:'THE EVIL COON', epi:'thief · stalker · hoarder of the dark',     col:'#ffd6c8', bar:'#ff3a3a', low:[58,52,46,41]},
-  ratking: {name:'RATTUS MAGNUS', epi:'king of the Rat Federation',                col:'#ffdcb4', bar:'#d0502a', low:[73,87,98,73]},
-  catking: {name:'THE CAT KING',  epi:'last of the lion line',                     col:'#fff0c8', bar:'#e8b53a', low:[196,262,330,262]},
-  mechboar:{name:'THE MECH BOAR', epi:'built by the bank · fed by the crystals',   col:'#d8e8ff', bar:'#9fe6ff', low:[55,65,82,55]},
+  seby:    {name:'QUEEN SEBY',    col:'#ead6ff', bar:'#b07cf0', low:[110,147,175,220]},
+  coon:    {name:'THE EVIL COON', col:'#ffd6c8', bar:'#ff3a3a', low:[58,52,46,41]},
+  ratking: {name:'RATTUS MAGNUS', col:'#ffdcb4', bar:'#d0502a', low:[73,87,98,73]},
+  catking: {name:'THE CAT KING',  col:'#fff0c8', bar:'#e8b53a', low:[196,262,330,262]},
+  mechboar:{name:'THE MECH BOAR', col:'#d8e8ff', bar:'#9fe6ff', low:[55,65,82,55]},
 };
 const BOSS_TITLE_MS=3600;
 function bossTitle(key){ HUB.bossTitle={key, t0:0}; }
@@ -9862,7 +9885,6 @@ function drawBossTitle(){
   gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(0.45,'rgba(0,0,0,'+(0.72*t)+')'); gr.addColorStop(1,'rgba(0,0,0,'+(0.85*t)+')');
   g.fillStyle=gr; g.fillRect(0,VH*0.52,VW,VH*0.48);
   g.globalAlpha=t; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=18;
-  g.font='italic 16px Georgia'; g.fillStyle='#c9d6e8'; g.fillText(T(d.epi), VW/2, VH*0.70);
   g.font='bold 46px Georgia'; g.fillStyle=d.col; g.fillText(d.name, VW/2, VH*0.78);
   const w=Math.min(1,el/900);
   g.shadowBlur=0; g.fillStyle=d.bar; g.fillRect(VW/2-170*w, VH*0.80, 340*w, 2);
@@ -10465,6 +10487,7 @@ function updateForestSpirit(sp,b,now){
     if(now<sp.hitAt && Math.abs(dx)>PUNCH) mechBoarStep(sp, Math.sign(dx)*7, dy/d*3);
     if(now>=sp.hitAt && !sp.hitDone){ sp.hitDone=true;
       if(Math.abs(dx)<PUNCH+60*sc && Math.abs(dy)<120){ mechBoarHurt(b, rnd(26,34), now);
+        b.punchFx={t0:now, x:b.x-sp.facing*90*sc, y:b.y-MBOAR_H*sc*0.45, flip:sp.facing<0};
         for(let p=0;p<10;p++) particles.push({x:b.x-sp.facing*60*sc, y:b.y-MBOAR_H*sc*0.4, vx:(Math.random()-.5)*5, vy:-(Math.random()*3), life:1, c:p%2?'#c98a52':'#9fffd8'});
         SFX.tone&&SFX.tone(110,0.16,'square',0.07); } }
     if(now>sp.stateUntil){ sp.state='walk'; sp.lungeCD=now+2200+Math.random()*900; sp.stationAt=0; }
@@ -10508,7 +10531,11 @@ function updateForestSpirit(sp,b,now){
 function drawSporeling(g,s){
   const now=Date.now(), c=HUB.cat;
   const carried=!s, x=carried?c.x:s.x, sc=hubScale(carried?c.y:s.y), kind=carried?HUB.carry.kind:s.kind;
-  const im=SPOREI[carried ? kind : (Math.floor(now/260+kind)%2 ? 2 : kind)], h=58*sc;
+  // it pops up out of the floor, hops clear, then waddles on the spot until the cat picks it up
+  const age=carried ? 1e9 : now-(s.t0||0);
+  const key=carried ? 'carried' : age<450 ? 'pop' : age<850 ? 'jump' : 'walk'+((Math.floor(now/200)+kind)%4);
+  const im=SPOREI[key], ref=SPOREI.walk0;
+  const h=58*sc*((im&&ref&&im.naturalHeight&&ref.naturalHeight) ? im.naturalHeight/ref.naturalHeight : 1);
   const lift=carried ? (c.z||0)+70*sc : Math.abs(Math.sin(now*0.006+kind))*3*sc;
   const y=(carried?c.y:s.y)-lift, sx=x-HUB.camx;
   g.save(); g.globalCompositeOperation='lighter';
@@ -10558,11 +10585,15 @@ function drawForestSpirit(g,sp){
   const b=HUB.boss;
   if(b && ((sp.stage==='sacrifice' && now-sp.t0<2600) || sp.state==='hold')){
     const t=sp.stage==='sacrifice' ? Math.min(1,(now-sp.t0)/900) : 1, bx=b.x-HUB.camx, by=b.y-MBOAR_H*hubScale(b.y)*0.35, hx=sx-sp.facing*0, hy=sp.y-base*0.45;
+    if(fxReady(SPIRITFX.vine)){                      // two vines out of its hands, gripping the machine
+      for(let i=0;i<2;i++){ const off=(i?16:-16)*sc, wob=Math.sin(now*0.008+i*2)*0.04;
+        drawFxVine(g, hx, hy+off, bx, by+off*2, (i?58:68)*sc, t, wob); }
+    } else {
     g.save(); g.globalCompositeOperation='lighter'; g.lineCap='round';
     for(let i=0;i<5;i++){ const off=(i-2)*14*sc, w=Math.sin(now*0.01+i)*30*sc;
       g.strokeStyle=i%2?'rgba(255,190,120,.55)':'rgba(140,255,210,.7)'; g.lineWidth=(6-Math.abs(i-2))*sc*1.4;
       g.beginPath(); g.moveTo(hx,hy+off); g.quadraticCurveTo((hx+bx)/2, (hy+by)/2-60*sc+w, hx+(bx-hx)*t, hy+off+(by+off-hy-off)*t); g.stroke(); }
-    g.restore();
+    g.restore(); }
   }
   if(sp.stage==='fight' || sp.stage==='rooted'){
     const topY=sp.y-base*grow-16, bw=150, bh=8, bx=sx-bw/2, by=topY+4;
@@ -10603,6 +10634,7 @@ function drawMechBoar(g,b){
   else if(b.stage==='bound') bob = (Math.random()-0.5)*4*sc;                   // straining against the roots
   else if(b.stage!=='down')  bob = (1+Math.sin(now*0.002))*1.2*sc;          // the engine idling
   const h=bossFrameH(MBOARI,key,bsz);
+  const spr=(b.torn && MBOARD[Math.min(3,b.torn)] && fxReady(MBOARD[Math.min(3,b.torn)][key])) ? MBOARD[Math.min(3,b.torn)] : MBOARI;
 
   // the special's aim line — the exact path the beam will take
   if(b.state==='special' && !b.beamOn){
@@ -10613,10 +10645,14 @@ function drawMechBoar(g,b){
     g.restore();
   }
 
-  drawBossSprite(g, sx, b.y, b.facing, h, key, !!b.phase2 && !b.defeated, bob, MBOARI, '190,80,255', 0);
+  drawBossSprite(g, sx, b.y, b.facing, h, key, !!b.phase2 && !b.defeated, bob, spr, '190,80,255', 0);
 
   // the Glow's cast: roots and spore-light bursting out of the floor under it
-  if(b.rootFx && now-b.rootFx<750){
+  if(b.rootFx && now-b.rootFx<750 && fxReady(SPIRITFX.roots2)){
+    const t=(now-b.rootFx)/750, fr=t<0.15?0:t<0.3?1:t<0.7?2:3;
+    drawFxFoot(g, SPIRITFX['roots'+fr], sx, b.y+10*sc, 200*sc, b.facing<0, t>0.85?(1-t)/0.15:1);
+  }
+  else if(b.rootFx && now-b.rootFx<750){
     const t=(now-b.rootFx)/750, up=Math.sin(Math.min(1,t*1.6)*Math.PI*0.5)*(1-Math.max(0,t-0.6)/0.4);
     g.save(); g.globalCompositeOperation='lighter'; g.lineCap='round';
     for(let i=0;i<9;i++){ const x=sx+(i-4)*24*sc, hh=(1-Math.abs(i-4)/5)*150*sc*up, bend=(i-4)*10*sc;
@@ -10625,23 +10661,32 @@ function drawMechBoar(g,b){
     g.restore();
   }
 
-  // the crystals already torn out: dark sockets where they were
-  if(key==='idle'||key==='walk1'||key==='attack') for(let i=0;i<(b.torn||0)&&i<3;i++){
-    const im=MBOARI.idle, w=im.naturalWidth?im.naturalWidth/im.naturalHeight*h:h, f=MBOAR_BACK[i];
-    const px=sx+b.facing*(f[0]-0.5)*w, py=b.y-bob-h+f[1]*h, r=h*0.1;
-    const dg=g.createRadialGradient(px,py,1,px,py,r);
-    dg.addColorStop(0,'rgba(18,12,22,.95)'); dg.addColorStop(0.7,'rgba(30,22,34,.85)'); dg.addColorStop(1,'rgba(30,22,34,0)');
-    g.save(); g.fillStyle=dg; g.beginPath(); g.ellipse(px,py,r,r*1.25,0,0,7); g.fill(); g.restore();
-    if(Math.random()<0.04) particles.push({x:px+HUB.camx, y:py, vx:(Math.random()-.5)*2, vy:-1.5, life:1, c:'#9fe6ff'});
+  // where the Glow's fist lands
+  if(b.punchFx && now-b.punchFx.t0<380){
+    const t=(now-b.punchFx.t0)/380, im=SPIRITFX['impact'+Math.min(2,Math.floor(t*3))];
+    if(fxReady(im)){ const hh=150*sc*(0.8+0.4*t), w=im.naturalWidth/im.naturalHeight*hh;
+      g.save(); g.globalAlpha=t>0.7?(1-t)/0.3:1; g.translate(b.punchFx.x-HUB.camx,b.punchFx.y); if(b.punchFx.flip) g.scale(-1,1);
+      g.drawImage(im,-w/2,-hh/2,w,hh); g.restore(); }
+  }
+  // the crystals already torn out are dead stone in the frames above; now and then grit falls off them
+  if((key==='idle'||key==='walk1'||key==='attack') && b.torn) for(let i=0;i<b.torn&&i<3;i++){
+    const f=MBOAR_BACK[i];
+    if(Math.random()<0.03) particles.push({x:b.x+b.facing*(f[0]-0.5)*h*1.24, y:b.y-bob-h+f[1]*h, vx:(Math.random()-.5)*1.5, vy:0.6, life:1, c:'#8a7a66'});
   }
   if(b.stage==='bound' && b.bindKind==='hold'){
     // roots wrapped round its legs, tightening and slipping as the hold runs out
     const left=Math.max(0,(b.boundUntil-now)/MBOAR_HOLD_MS);
+    if(fxReady(SPIRITFX.roots2)){                    // full while fresh, splintering as it runs out
+      const im=left>0.25?SPIRITFX.roots2:SPIRITFX.roots3, shake=Math.sin(now*0.03)*2*sc*(1-left);
+      const rh=78*sc*(0.7+0.3*left);                 // a knot of roots round each pair of legs
+      drawFxFoot(g, im, sx-b.facing*85*sc+shake, b.y+6*sc, rh, b.facing<0);
+      drawFxFoot(g, im, sx+b.facing*75*sc-shake, b.y+6*sc, rh*0.92, b.facing>0);
+    } else {
     g.save(); g.globalCompositeOperation='lighter'; g.lineCap='round';
     for(let i=0;i<7;i++){ const x=sx+(i-3)*30*sc, hh=(60+20*Math.sin(now*0.006+i))*sc*(0.5+0.5*left);
       g.strokeStyle=i%2?'rgba(255,190,120,.6)':'rgba(140,255,210,.7)'; g.lineWidth=(7-Math.abs(i-3))*sc*1.3;
       g.beginPath(); g.moveTo(x,b.y+4); g.quadraticCurveTo(x+(i-3)*14*sc,b.y-hh*0.7,x-(i-3)*8*sc,b.y-hh); g.stroke(); }
-    g.restore();
+    g.restore(); }
     // the crystal to tear out, and how long the roots will last
     const im=MBOARI.idle, w=im.naturalWidth?im.naturalWidth/im.naturalHeight*h:h, f=MBOAR_BACK[Math.min(2,b.torn||0)];
     const px=sx+b.facing*(f[0]-0.5)*w, py=b.y-bob-h+f[1]*h, pr=0.5+0.5*Math.sin(now*0.012);
@@ -11615,8 +11660,8 @@ function drawHub(){
       g.globalAlpha=1; }
     g.restore();
     drawCueMotes(g, gx, gy, glowR, rgb, near);
-    if(near){ const below=(gy-glowR-6 < 100), ly = below ? (gy+glowR+22) : (gy-glowR-6);   // below the glow if it'd hit the top bar
-      drawPressE(g, gx, ly, (dr.lockedLabel && dr.to==='sebyboss')?dr.lockedLabel:dr.label, rgb, below); }
+    if(near){ const ly=Math.max(gy-glowR-6, 104);    // above the glow; in a short window it stops just under the top bar instead of jumping below
+      drawPressE(g, gx, ly, (dr.lockedLabel && dr.to==='sebyboss')?dr.lockedLabel:dr.label, rgb, false); }
   }
   // the cave mouth: blue motes drift out of it whenever it is open (faint from afar, brighter up close)
   const cvM=hubCave();
@@ -17541,7 +17586,7 @@ const MAP_LOCS=[
   {id:'ocean2',  name:'Sunken Sanctum',  x:12.6, y:75.5, ico:'pillar', reg:'deep',  desc:'Drowned ruins around a sealed portal. The runes want something violet.'},
   {id:'street',  name:'City',            x:58.6, y:60.0, clear:[[47,50],[44,62],[50,70]], ico:'town',   reg:'city',  desc:'The square. Union soldiers, a fountain, and the most elegant cat in town.'},
   {id:'bank',    name:'Whisker Savings Bank', x:63.6, y:48.2, ico:'coin', reg:'city', desc:'Every little fish counts. Neutral, they say. Very neutral.'},
-  {id:'castleentrance', name:'Castle Gate', x:89.6, y:21.5, ico:'castle', reg:'heights', desc:'The Cat King\'s castle. Lions on every wall.'},
+  {id:'castleentrance', name:'Castle Gate', x:89.6, y:21.5, clear:[[68,14],[78,22]], ico:'castle', reg:'heights', desc:'The Cat King\'s castle. Lions on every wall.'},
   {id:'slum',    name:'The Slums',       x:62.2, y:79.7, ico:'hut',    reg:'slums', desc:'Shacks on stilts. NomNom\'s forge, and an alley everyone avoids.'},
   {id:'slum2',   name:'The Rat Warren',  x:89.7, y:65.9, ico:'pick',   reg:'warren', desc:'Wooden shanties climbing toward a fortress of scavenged junk.'},
   {id:'sewerentrance', name:'Sewer Tunnel', x:87.6, y:86.1, ico:'drop', reg:'slums', desc:'Where both armies go down, and keep going down.'},

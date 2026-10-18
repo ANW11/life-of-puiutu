@@ -102,6 +102,15 @@
         "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/8907b51c-6642-4be9-b39c-d0465497ccbb/scratchpad/www && exec python3 -m http.server 8802 --bind 127.0.0.1"
       ],
       "port": 8802
+    },
+    {
+      "name": "puiutu-glowfx",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/fd93eaa0-0be9-4863-8aa7-036eb5045444/scratchpad/www && exec python3 -m http.server 8803 --bind 127.0.0.1"
+      ],
+      "port": 8803
     }
   ]
 }
