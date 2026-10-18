@@ -8156,6 +8156,9 @@ function enterHub(fromRight){
       HUB.sebyRematch = !!S.sebyDefeated && (S.pigletGave || freeMode());
       if(S.sebyDefeated && !HUB.sebyRematch){ HUB.boss.defeated=true; HUB.boss.hp=0; HUB.boss.respawnAt=0; }
       else { spawnSebyCrystals(); HUB.boss.appear={stage:'hidden', t0:0}; }   // she rises out of her portal
+      // the portal sits on the painted vortex; she is placed on the nearest floor below it, so she
+      // climbs out at its heart and steps down onto the floor
+      HUB.boss.portalY=H.boss.yf*VH;
     }
   } else HUB.boss=null;
   refreshGarrison();   // the garrison is built before the boss exists; anyone waiting on the
@@ -9312,10 +9315,10 @@ function runSquareScene(){
 // (waits for it to close) · {cut:{…}} a still of somewhere else, until {endcut} · {do:fn} · {toast}.
 // Once each in the story; every time in Free Play.
 const CUT_IMG={};
-function cineStart(id, steps){
-  if(!freeMode() && (S.cineSeen||{})[id]) return false;
+function cineStart(id, steps, every){                     // every: plays each time, never marked as seen
+  if(!every && !freeMode() && (S.cineSeen||{})[id]) return false;
   document.body.classList.add('cinema');                   // touch controls out of the shot
-  HUB.cine={id, steps, i:-1, t0:0, camX:null, cut:null, pin:null, flashAt:0, said:false};
+  HUB.cine={id, steps, i:-1, t0:0, camX:null, cut:null, pin:null, flashAt:0, said:false, every:!!every};
   cineNext(Date.now()); return true;
 }
 function cineNext(now){
@@ -9324,7 +9327,7 @@ function cineNext(now){
   const st=C.steps[C.i];
   if(!st){                                           // the scene is over: hand the room back
     HUB.cine=null; HUB._camEase=true; document.body.classList.remove('cinema');
-    S.cineSeen=S.cineSeen||{}; S.cineSeen[C.id]=true; save();
+    if(!C.every){ S.cineSeen=S.cineSeen||{}; S.cineSeen[C.id]=true; save(); }
     return;
   }
   if('cam' in st) C.camX = (typeof st.cam==='function') ? st.cam() : st.cam;
@@ -9432,9 +9435,9 @@ function bankCut(caption){
 // Queen Seby's entrance: the circle glows while she sleeps under it. Then it tears open into a
 // portal — a ring of runes, a spiral of light, lightning off its rim — and she climbs up out of it
 // through a column of light. When she is through, the portal slams shut in a flash and a shockwave.
-// Stages: hidden → portal → rise → land → (fight). The scene drives it the first time; after that
-// (and after every faint) walking up to the circle does.
-const SEBY_PORTAL_MS=1900, SEBY_RISE_MS=2600, SEBY_LAND_MS=700;
+// Stages: hidden → portal → rise → land → (fight). It starts the moment you walk into her lair:
+// inside the opening scene the first time, on its own after that (and after every faint).
+const SEBY_PORTAL_MS=1900, SEBY_RISE_MS=2600, SEBY_LAND_MS=900;
 function sebyPortalOpen(b,now){
   b.appear={stage:'portal', t0:now, bolts:[]}; b.introShown=true;
   SFX.tone&&SFX.tone(41,2.2,'sawtooth',0.07); SFX.tone&&SFX.tone(55,SEBY_PORTAL_MS/1000+0.6,'sine',0.11);
@@ -9447,7 +9450,7 @@ function sebyAppearStep(b,now){
     const k=el/SEBY_PORTAL_MS;
     HUB.camx += (Math.random()-0.5)*3*k;
     for(let i=0;i<2;i++){ const a=Math.random()*6.283, r=150+Math.random()*90;            // the cave is pulled in
-      particles.push({x:b.x+Math.cos(a)*r, y:b.y+Math.sin(a)*r*0.32-6, vx:-Math.cos(a)*3.2, vy:-Math.sin(a)*1.1-0.4, life:0.8,
+      particles.push({x:b.x+Math.cos(a)*r, y:(b.portalY||b.y)+Math.sin(a)*r*0.32-6, vx:-Math.cos(a)*3.2, vy:-Math.sin(a)*1.1-0.4, life:0.8,
         c:Math.random()<.5?'#b07cf0':'#e6d4ff'}); }
     if(k>=1){ ap.stage='rise'; ap.t0=now;
       SFX.seq&&SFX.seq([220,175,147,110,82],'sawtooth',0.08); SFX.tone&&SFX.tone(55,2.8,'sine',0.12); }
@@ -9456,12 +9459,12 @@ function sebyAppearStep(b,now){
   if(ap.stage==='rise'){
     const k=el/SEBY_RISE_MS;
     HUB.camx += (Math.random()-0.5)*7*(1-k*0.5);
-    if(Math.random()<0.7) particles.push({x:b.x+(Math.random()-.5)*170, y:b.y-Math.random()*12,
+    if(Math.random()<0.7) particles.push({x:b.x+(Math.random()-.5)*170, y:(b.portalY||b.y)-Math.random()*12,
       vx:(Math.random()-.5)*3, vy:-(1.5+Math.random()*3.5), life:1, c:Math.random()<.5?'#b07cf0':'#9fe6ff'});
     if(k>=1){ ap.stage='land'; ap.t0=now;
       SFX.seq&&SFX.seq([1047,784,523,262,131],'square',0.07); SFX.tone&&SFX.tone(36,1.2,'sawtooth',0.14);
       for(let i=0;i<40;i++){ const a=Math.random()*6.283, v=3+Math.random()*6;
-        particles.push({x:b.x, y:b.y-20, vx:Math.cos(a)*v, vy:Math.sin(a)*v*0.5-1.5, life:1.2, c:i%3?'#d9c2ff':'#9fe6ff'}); } }
+        particles.push({x:b.x, y:(b.portalY||b.y)-20, vx:Math.cos(a)*v, vy:Math.sin(a)*v*0.5-1.5, life:1.2, c:i%3?'#d9c2ff':'#9fe6ff'}); } }
     return;
   }
   // land: the portal shuts behind her
@@ -9471,8 +9474,9 @@ function sebyAppearStep(b,now){
     bossTitle('seby');
   }
 }
-function drawSebyRise(sx, sy, bsz, b){
+function drawSebyRise(sx, fy, bsz, b){
   const now=Date.now(), ap=b.appear, st=ap.stage, el=now-(ap.t0||now);
+  const sy=b.portalY||fy;                                              // the portal's heart
   const kp = st==='portal' ? Math.min(1,el/SEBY_PORTAL_MS) : st==='hidden' ? 0 : 1;   // how open the portal is
   const kr = st==='rise' ? Math.min(1,el/SEBY_RISE_MS) : st==='land' ? 1 : 0;
   const kl = st==='land' ? Math.min(1,el/SEBY_LAND_MS) : 0;
@@ -9522,9 +9526,11 @@ function drawSebyRise(sx, sy, bsz, b){
       cg.addColorStop(0,'rgba(190,150,255,0)'); cg.addColorStop(1,'rgba(205,175,255,'+(al*(1-kr*0.4))+')');
       g.fillStyle=cg; g.beginPath(); g.ellipse(sx, sy, cw*wk/2, R*fl, 0, 0, Math.PI); g.lineTo(sx-cw*wk/2, top); g.lineTo(sx+cw*wk/2, top); g.closePath(); g.fill(); }
     g.restore();
-    g.save(); g.beginPath(); g.rect(sx-bsz*2, sy-bsz*3, bsz*4, bsz*3+2); g.clip();   // nothing below the floor line
+    g.save();
+    if(st==='rise'){ g.beginPath(); g.rect(sx-bsz*2, sy-bsz*3, bsz*4, bsz*3+2); g.clip(); }   // nothing below the floor line while she climbs
     g.globalAlpha=Math.min(1,kr*1.6);
-    drawBossSprite(g, sx, sy+bsz*(1-er), b.facing, bsz, 'rear', false, 0, SEBYI, '150,80,230', 0.15);
+    const step=Math.max(0,Math.min(1,(kl-0.35)/0.65)), stepE=step*step*(3-2*step);   // out of the hole, down onto the floor
+    drawBossSprite(g, sx, sy+(fy-sy)*stepE+bsz*(1-er), b.facing, bsz, 'rear', false, 0, SEBYI, '150,80,230', 0.15);
     g.restore();
   }
   if(st==='land'){
@@ -9601,12 +9607,17 @@ function restartBossFight(){
 function startBossOpening(){
   HUB.cine=null;
   const b=HUB.boss, H=A.hub, W=()=>HUB.worldW;
-  if(curArea==='sebyboss' && b && !b.defeated && !HUB.sebyRematch){
+  // her portal, on its own: a rematch, a restart after fainting, or the story scene already seen
+  const sebyPortalCine=()=>cineStart('sebyportal', [
+    {cam:()=>H.boss.xf*W(), do:now=>sebyPortalOpen(b,now), until:now=>{ sebyAppearStep(b,now); return !b.appear; }},
+    {cam:null, ms:500}], true);
+  if(curArea==='sebyboss' && b && !b.defeated && (HUB.sebyRematch || (!freeMode() && (S.cineSeen||{}).seby))){
+    sebyPortalCine();
+  } else if(curArea==='sebyboss' && b && !b.defeated){
     cineStart('seby', [
-      {ms:600},
-      {cam:()=>H.boss.xf*W(), ms:1500, do:()=>SFX.seq&&SFX.seq([110,98,87,73],'sawtooth',0.07)},
-      // the circle tears open and she comes up out of it — the scene waits until she is standing
-      {do:now=>sebyPortalOpen(b,now), until:now=>{ sebyAppearStep(b,now); return !b.appear; }},
+      // the moment you walk in, the circle tears open and she comes up out of it (the camera finds
+      // it on the way) — the scene waits until she is standing
+      {cam:()=>H.boss.xf*W(), do:now=>sebyPortalOpen(b,now), until:now=>{ sebyAppearStep(b,now); return !b.appear; }},
       {ms:700},
       {say:{name:'Queen Seby', img:CINE_FACE.seby, bg:'#2a1430', tone:180, lines:[
         "Warm little thing. You smell of sunlight… and of the ones who dig.",
@@ -10426,7 +10437,7 @@ function updateHubBoss(now){
   b.faceS = (b.faceS==null?b.facing:b.faceS) + (b.facing-(b.faceS==null?b.facing:b.faceS))*0.12;
   b.phase2 = b.hp<=b.maxHp*0.45;                  // enrage at 45% HP
   if(b.appear){                                   // she is not standing there: she comes up through her portal
-    if(b.appear.stage==='hidden'){ if(!b.introShown && dist>=560) return; sebyPortalOpen(b,now); }
+    if(b.appear.stage==='hidden') sebyPortalOpen(b,now);          // the moment you walk into her lair
     sebyAppearStep(b,now);
     return;
   }
