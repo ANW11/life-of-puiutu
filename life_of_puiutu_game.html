@@ -1114,6 +1114,11 @@
   #menu #btnPlay{width:clamp(180px,24%,380px);bottom:7%;}
   /* settings signboard: gear on top, the word on its plank (plank = bottom 27% of the art) */
   #btnMenuSettings{right:2.5%;bottom:5%;width:clamp(78px,9%,120px);}
+  #btnFullscreen{position:absolute;left:2.5%;bottom:5%;z-index:6;width:clamp(44px,4.6%,58px);aspect-ratio:1;padding:0;border-radius:12px;cursor:pointer;
+    background:rgba(16,12,8,.62);border:2px solid rgba(243,226,180,.55);box-shadow:0 3px 10px rgba(0,0,0,.45);transition:transform .12s,background .12s;}
+  #btnFullscreen:hover{transform:scale(1.08);background:rgba(36,28,18,.8);}
+  #btnFullscreen svg{width:62%;height:62%;fill:none;stroke:#f3e2b4;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+  #btnFullscreen .fsOff{display:none;} body.isFull #btnFullscreen .fsOn{display:none;} body.isFull #btnFullscreen .fsOff{display:inline;}
   #btnMenuSettings img{width:100%;display:block;}
   #btnMenuSettings span{position:absolute;left:8%;right:8%;bottom:7%;height:17%;display:flex;align-items:center;justify-content:center;
     font:bold clamp(10px,1.3vw,15px) 'Trebuchet MS',sans-serif;color:#fff1d0;text-shadow:0 1px 0 #3a1f0c,0 0 3px #3a1f0c;pointer-events:none;}
@@ -1141,6 +1146,10 @@
   /* the quest tracker is a carved plaque: the quest-giver's face in the round socket on the left
      (measured off the art: centre 14%/51%, 15.5% of the width across), the count centred on the brown panel */
   /* one plaque per active quest, stacked down the left edge */
+  /* an icon the story just handed you: it bounces and glows for a few seconds */
+  .icon-btn.newIcon{animation:newIcon 1s ease-in-out 6;}
+  @keyframes newIcon{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,215,110,0));}
+    50%{transform:scale(1.22);filter:drop-shadow(0 0 10px rgba(255,215,110,.95));}}
   #questHUD{position:absolute;left:10px;top:10px;z-index:6;display:none;flex-direction:column;gap:2px;pointer-events:none;}
   .qPlaque{position:relative;display:flex;align-items:center;
     width:210px;height:61px;background:url('ui/quest_plaque.png') center/100% 100% no-repeat;
@@ -1223,6 +1232,11 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
       <button class="img-btn" id="btnProfile" style="display:none;"><img src="ui/btn_profile2.png" alt="Profile"></button>
       <button class="img-btn" id="btnInv" style="display:none;"><img src="ui/btn_inventory.png" alt="Inventory"></button>
       <button class="img-btn play" id="btnPlay"><img src="ui/btn_play.png" alt="Play"></button>
+      <!-- full screen, like a video player's: the whole screen is the game until Esc -->
+      <button id="btnFullscreen" title="Full screen" aria-label="Full screen">
+        <svg class="fsOn" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
+        <svg class="fsOff" viewBox="0 0 24 24"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg>
+      </button>
       <button class="img-btn" id="btnMenuSettings" title="Settings"><img src="ui/btn_settings_sign.png" alt=""><span>Settings</span></button>
 
       <!-- language: drawn as inline SVG so it needs no art and stays crisp at any size -->
@@ -2681,7 +2695,7 @@ CKINGI.rear=CKINGI.pounce; CKINGI.throw=CKINGI.yell; CKINGI.dash=CKINGI.pounce; 
 // power; this one's lie is about purpose, so he never gets smaller — he gets bigger.
 const RKINGI={};
 ['walk0','walk1','walk2','walk3','walk4','walk5','point','lunge','sit','crawl','low','stagger','risen','creep']
-  .forEach(k=>{ const im=new Image(); im.src='mobs/ratking/'+k+'.png'; RKINGI[k]=im; });
+  .forEach(k=>{ const im=new Image(); im.src='mobs/ratking/'+k+'.png'+(k==='point'?'?v=2':''); RKINGI[k]=im; });   // point: recut whole from army/rat_king.png
 RKINGI.rear=RKINGI.risen; RKINGI.throw=RKINGI.point; RKINGI.dash=RKINGI.lunge; RKINGI.def=RKINGI.stagger;
 // ── The Mech Boar — what the Organization built with the crystals you cleared out of the cave ──
 // Frames are cut from mobs/MechBoar/ (the 2400px originals) to one shared scale, centred on the
@@ -2802,7 +2816,7 @@ for(let i=1;i<=9;i++){ const im=new Image(); im.src='mobs/pigeon_v'+i+'.png'; PI
 // recoloured from each colour's own sprite by gen_pigeon_frames.py).
 const BIRD_FRAMES={};
 ['duck','pigeon_v5','pigeon_v1','pigeon_v2','pigeon_v9','pigeon_v3','pigeon_v4','pigeon_v6','pigeon_v7','pigeon_v8'].forEach(k=>{
-  const ld=n=>{ const im=new Image(); im.src='mobs/birds/'+k+'_'+n+'.png'; return im; };
+  const ld=n=>{ const im=new Image(); im.src='mobs/birds/'+k+'_'+n+'.png?v=2'; return im; };   // v=2: stray beak streaks cleaned out
   BIRD_FRAMES[k]={walk:[0,1,2,3].map(i=>ld('walk'+i)), atk:[0,1].map(i=>ld('atk'+i))};
 });
 function birdFrames(type,variant){
@@ -2864,7 +2878,7 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
   }
   // hostile Rat Federation soldiers (slum2): reuse the army rat_soldier walk frames as a roaming mob
   if(type==='rat'){
-    const spr=ARMY_SPR.rat_soldier;
+    const cmd=opt.rank==='commander', spr=ARMY_SPR[cmd?'rat_commander':'rat_soldier'];
     const rimg = spr ? (opt.moving ? spr.walk[Math.floor((opt.phase||0)*1.2)%spr.walk.length] : spr.walk[0]) : null;
     const rbob=(opt.moving)?Math.abs(Math.sin((opt.phase||0)*Math.PI))*3:0;
     ctx.save();ctx.globalAlpha=0.2;ctx.fillStyle='#000';
@@ -2872,7 +2886,7 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     if(rimg&&rimg.complete&&rimg.naturalWidth){
       const iw=rimg.naturalWidth/rimg.naturalHeight*h;
       ctx.save(); ctx.translate(sx,sy-rbob);
-      if(facing!==-1) ctx.scale(-1,1);        // art faces LEFT; flip when facing right
+      if(cmd ? facing===-1 : facing!==-1) ctx.scale(-1,1);   // soldier art faces LEFT, the commander's RIGHT
       if(defeated) ctx.globalAlpha=opt.fade!=null?opt.fade:0.6;
       ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
       ctx.drawImage(rimg,-iw/2,-h,iw,h);
@@ -4747,6 +4761,18 @@ const RO = {
   "Federation Soldier":"Soldat al Federației",
   "Union Soldier":"Soldat al Uniunii",
   "Union Commander":"Comandant al Uniunii",
+  "Full screen":"Ecran complet", "Exit full screen":"Ieși din ecran complet",
+  "And take this. A map — mine, drawn badly, but the roads are where it says. You will be needing it.":"Și ia asta. O hartă — a mea, desenată prost, dar drumurile sunt unde scrie. O să-ți trebuiască.",
+  "Paws off the table, little one. Those are mine.":"Lăbuțele jos de pe masă, micuțule. Alea sunt ale mele.",
+  "Come and talk to me first.":"Vino întâi să vorbești cu mine.",
+  "The tide keeps bringing me these little capsules. People seal a wish in them and throw them in the sea.":"Valul îmi tot aduce capsulele astea mici. Oamenii închid o dorință în ele și le aruncă în mare.",
+  "Put a gold coin in and shake one. Sometimes a whole new coat falls out. Do not ask me how. The sea is strange.":"Pune un ban de aur și scutură una. Uneori cade o blană cu totul nouă. Nu mă întreba cum. Marea e ciudată.",
+  "Oh — before I forget.":"Ah — până nu uit.",
+  "Before you go up there, look at this. The war table.":"Înainte să urci acolo, uită-te la asta. Masa de război.",
+  "This is how we fight it, really. Pieces on a map. The ones up the hill are just the pieces that move.":"Așa îl ducem de fapt. Piese pe o hartă. Cei de pe deal sunt doar piesele care se mișcă.",
+  "Win me one battle on it. Then we will talk about whether you are any use down there.":"Câștigă-mi o bătălie pe ea. Apoi vorbim dacă ești bun de ceva acolo jos.",
+  "You won one. On a table, where nobody bleeds.":"Ai câștigat una. Pe o masă, unde nu sângerează nimeni.",
+  "That is what they pay me for too. Here — two gold. Do not spend it all on one coat.":"Și pe mine pentru asta mă plătesc. Poftim — doi aur. Nu-i cheltui pe toți pe o singură blană.",
   "Union Emissary":"Emisar al Uniunii",
   "Rat Emissary":"Emisar șobolan",
   "Agent Snout":"Agentul Râtan",
@@ -4913,11 +4939,11 @@ const RO = {
   "Come closer. I will not get up for you. Not yet.":"Vino mai aproape. Nu mă ridic pentru tine. Nu încă.",
   "Meanwhile, in a bank vault far above…":"Între timp, într-un seif de bancă, mult mai sus…",
   "Magnus wants more guards? Of course he does. Approve it.":"Magnus vrea mai multe gărzi? Bineînțeles că vrea. Aprobă.",
-  "And send the Accord a letter of concern about rat aggression. On our nicest paper.":"Și trimite-i Acordului o scrisoare de îngrijorare despre agresiunea șobolanilor. Pe cea mai frumoasă hârtie a noastră.",
+  "And send the Union a letter of concern about rat aggression. On our nicest paper.":"Și trimite-i Uniunii o scrisoare de îngrijorare despre agresiunea șobolanilor. Pe cea mai frumoasă hârtie a noastră.",
   "Two loans, one war. Oink~ I do love a balanced ledger.":"Două împrumuturi, un război. Oinc~ Ce-mi plac registrele echilibrate.",
   "Ah. The garden cat. You came because the crown sent for you.":"Ah. Pisica din grădină. Ai venit pentru că a trimis coroana după tine.",
   "Look at the walls. Lions, every one. My father, his father, his father's father. Lions.":"Uită-te la pereți. Lei, toți. Tatăl meu, tatăl lui, tatăl tatălui lui. Lei.",
-  "They will tell you the Feline Accord is old and proud and strong. It is. Mostly old.":"Îți vor spune că Acordul Felin e vechi, mândru și puternic. Este. Mai ales vechi.",
+  "They will tell you the Feline Union is old and proud and strong. It is. Mostly old.":"Îți vor spune că Uniunea Felină e veche, mândră și puternică. Este. Mai ales veche.",
   "Kneel, and you may serve it. Refuse, and you may meet it.":"Îngenunchează și îl poți servi. Refuză și îl vei cunoaște.",
   "The King wants a lion. A big one. Made of light, he says — cheaper than an army.":"Regele vrea un leu. Unul mare. Făcut din lumină, zice — mai ieftin decât o armată.",
   "Approve it. Bill the interest to his grandchildren.":"Aprobă. Trece dobânda în contul nepoților lui.",
@@ -4925,7 +4951,7 @@ const RO = {
   "Yes, Sir Oink. Oink.":"Da, Sir Oink. Oinc.",
   "Ah. Puiutu. Do come in — mind the step, it is a long way down.":"Ah. Puiutu. Intră, te rog — atenție la treaptă, e mult până jos.",
   "You will have questions. Everyone does, at the bottom of the lift.":"O să ai întrebări. Toată lumea are, la capătul liftului.",
-  "The bank never sold fish. It sold wars. The Rat Federation borrows to build an army, the Accord borrows to answer it, and we hold both notes.":"Banca n-a vândut niciodată pește. A vândut războaie. Federația Șobolanilor se împrumută ca să-și facă o armată, Acordul se împrumută ca să-i răspundă, iar noi deținem ambele datorii.",
+  "The bank never sold fish. It sold wars. The Rat Federation borrows to build an army, the Union borrows to answer it, and we hold both notes.":"Banca n-a vândut niciodată pește. A vândut războaie. Federația Șobolanilor se împrumută ca să-și facă o armată, Uniunea se împrumută ca să-i răspundă, iar noi deținem ambele datorii.",
   "And the crystals — you cleared that cave for us. Every one of them is in here now. Honestly, you were our best employee.":"Iar cristalele — tu ne-ai curățat peștera aia. Fiecare dintre ele e acum aici. Sincer, ai fost cel mai bun angajat al nostru.",
   "Animals that fight each other never look up. You looked up.":"Animalele care se bat între ele nu se uită niciodată în sus. Tu te-ai uitat.",
   "That makes you a liability. And liabilities… get written off.":"Asta te face o pasivă. Iar pasivele… se trec pe pierderi.",
@@ -5250,7 +5276,7 @@ const STORY_IX={}; STORY.forEach((s,i)=>STORY_IX[s.id]=i);
 function freeMode(){ return S.mode==='free' || S.mode==='test'; }
 function testMode(){ return freeMode(); }
 function setMode(m){
-  S.mode=(m==='free'||m==='test')?'free':'campaign'; save();
+  S.mode=(m==='free'||m==='test')?'free':'campaign'; save(); syncTopIcons();
   const a=document.getElementById('modeStory'), b=document.getElementById('modeFree');
   if(a) a.classList.toggle('on', !freeMode());
   if(b) b.classList.toggle('on', freeMode());
@@ -5459,7 +5485,10 @@ function doInteract(){
   else if(t==='merlin') merlinTalk();
   else if(t==='shroom') shroomTalk();
   else if(t==='garrison') garrisonTalk();
-  else if(t==='potions') sortOpen();
+  else if(t==='potions'){
+    // Merlin's table: not until he has asked you to
+    if(!storyAt('prophecy') && !freeMode()){ merlinSay(['Paws off the table, little one. Those are mine.','Come and talk to me first.']); return; }
+    sortOpen(); }
   else if(t==='seal'){
       if(S.ocean2Solved){ enterArea('abyssboss'); return; }
       // The runes are the only thing in the game that names the cave. Reading them is what sends
@@ -5759,6 +5788,7 @@ function enterPortal(pt){
 //──────── start game
 function startGame(){
   inGame=true;
+  iconsMigrate();
   showScreen('game');
   resize();
   if(!A) enterArea('garden',false);
@@ -5992,6 +6022,31 @@ function renderMarket(){
 function syncHUD(){
   updateRockyBtn();
   updateUIBar();
+  syncTopIcons();
+}
+// The top bar fills in as the story hands things to you. You start with the phone, the shop and
+// the settings; Merlin gives you the map, Old Shelly the Lucky Capsule, and the Union commander in
+// the slums the war table (Border War). Free Play has everything. Saves from before this pick up
+// whatever their progress had already earned.
+const TOP_ICONS={ map:{btn:'btnMap', flag:'hasMap', name:['Map','Harta']},
+                  gacha:{btn:'btnGacha', flag:'hasGacha', name:['Lucky Capsule','Capsula norocoasă']},
+                  war:{btn:'btnWar', flag:'hasWar', name:['Border War','Border War']} };
+function iconsMigrate(){
+  if(S.hasMap==null)   S.hasMap=storyAt('prophecy');
+  if(S.hasGacha==null) S.hasGacha=!!S.metShelly;
+  if(S.hasWar==null)   S.hasWar=!!S.warrenOpen;
+}
+function iconOn(k){ return freeMode() || !!S[TOP_ICONS[k].flag]; }
+function syncTopIcons(){
+  for(const k in TOP_ICONS){ const el=document.getElementById(TOP_ICONS[k].btn); if(el) el.style.display=iconOn(k)?'':'none'; }
+}
+function grantIcon(k){
+  const ic=TOP_ICONS[k]; if(S[ic.flag]) return;
+  S[ic.flag]=true; save(); syncTopIcons();
+  const el=document.getElementById(ic.btn);
+  if(el){ el.classList.remove('newIcon'); void el.offsetWidth; el.classList.add('newIcon'); setTimeout(()=>el.classList.remove('newIcon'),6000); }
+  SFX.ach&&SFX.ach();
+  toast(LT('New: '+ic.name[0]+' — up in the top bar','Nou: '+ic.name[1]+' — sus, în bară'));
 }
 // show the full-face coin frame in a HUD slot via pure CSS sprite-cropping.
 // (canvas.toDataURL() taints under file://, so we crop with background-position instead — works everywhere)
@@ -6320,12 +6375,13 @@ function hubMobKilled(d,now){
     d.respawnAt=0;
     shiftAllegiance(1);
     floatText(d.x, d.y-58, '+1', FACTIONS.cat.color);
+    if(d.rank==='commander') shiftAllegiance(1);          // a commander counts double
   }
   if(d.noRespawn) d.respawnAt=0;
   // the flock at the wizard's gate: down to the last bird is what opens the door
   if(A.hub && A.hub.clearStory && !HUB.ducks.some(x=>!x.dead)) { storySet(A.hub.clearStory); tutorialFire('last'); }
   S.coins+=d.kind.coins; addXP(d.kind.xp); S.totalDefeats=(S.totalDefeats||0)+1;
-  const nm=d.sea?d.kind.name:(d.type==='rat'?unitName('rat','soldier')
+  const nm=d.sea?d.kind.name:(d.type==='rat'?unitName('rat',d.rank||'soldier')
     :(d.type==='pigeon'?'Pigeon':d.type==='clobster'?'Crystal Lobster':'Duck')+' Lv.'+((d.level||1)+((HUB.lvMob&&HUB.lvMob.bonus)||0)));   // the same level its name tag shows
   toast(nm+' defeated!  +'+moneyText(d.kind.coins)+'  +'+d.kind.xp+' XP');
   snoutOnKill();
@@ -7462,8 +7518,9 @@ function merlinTalk(){
       'Ah. A curious cat enters my library.',
       'There is a prophecy about one who puts this land back together. It is not very specific.',
       'They never are. They leave the work to whoever turns up.',
-      'Sort three of my potions by colour. Then I will know whether the rest is worth telling you.'
-    ], ()=>storySet('prophecy'));
+      'Sort three of my potions by colour. Then I will know whether the rest is worth telling you.',
+      'And take this. A map — mine, drawn badly, but the roads are where it says. You will be needing it.'
+    ], ()=>{ storySet('prophecy'); grantIcon('map'); });
     return;
   }
   if(!storyAt('zoomies') && sortDone()<MERLIN_TOLL){
@@ -7946,6 +8003,22 @@ const GARRISON_TALK={
   // about what you are when you come out, not about where you are allowed to go.
   recruit(u,spr){
     const say=(lines,then)=>sayLines(garrisonName(u), lines, {img:spr&&spr.walk[0], bg:'#1b2433', tone:400, then});
+    // Before the Rat Warren: his war table. Border War is how the generals play this war —
+    // on a map, with pieces. He wants to see if you can, and pays 2 gold when you win one.
+    if(!S.warQuest){
+      say(['Before you go up there, look at this. The war table.',
+           'This is how we fight it, really. Pieces on a map. The ones up the hill are just the pieces that move.',
+           'Win me one battle on it. Then we will talk about whether you are any use down there.'],
+        ()=>{ S.warQuest='on'; save(); grantIcon('war'); updateQuestHUD(); });
+      return;
+    }
+    if(S.warQuest==='won'){
+      say(['You won one. On a table, where nobody bleeds.',
+           'That is what they pay me for too. Here — two gold. Do not spend it all on one coat.'],
+        ()=>{ S.warQuest='done'; S.coins+=20000; addXP(150); save(); syncHUD(); updateQuestHUD(); SFX.win&&SFX.win();
+              toast('+'+moneyText(20000)+'  +150 XP'); if(!S.pledge) setTimeout(()=>GARRISON_TALK.recruit(u,spr),400); });
+      return;
+    }
     if(S.pledge==='cat'){
       say(['Good to have you, soldier. Down you go.',
            'They keep coming up out of there. So we keep going down.']);
@@ -9008,8 +9081,8 @@ function updateRatKing(b,now){
   }
 
   const tall=(b.stage==='tall');
-  // on all fours he keeps calling guards; upright he never does again
-  if(!tall && now>(b.guardCD||0) && ratKingGuardsAlive()<3){
+  // on all fours he keeps calling guards — a commander and his soldiers; upright he never does again
+  if(!tall && now>(b.guardCD||0) && ratKingGuardsAlive()<4){
     ratKingSummonGuards(b,now); b.guardCD=now+7000;
     if(!b.guardsSeen){ b.guardsSeen=true; npcBark('Rattus Magnus','Do not make me get up.',{img:()=>RKINGI.sit, bg:'#2a1210', tone:150}); }
   }
@@ -9062,16 +9135,21 @@ function updateRatKing(b,now){
 // is a Rat Federation soldier dead, which is help for the cats — the war keeps the score even
 // here, so a player heading for the third path fights the king and leaves his guards alone.
 function ratKingGuardsAlive(){ let n=0; for(const d of HUB.ducks){ if(d.rkGuard && !d.dead) n++; } return n; }
+// a Federation commander: bigger, tougher, hits harder, worth more
+const RAT_COMMANDER_KIND={hp:120, cdmg:[10,16], xp:60, coins:40, name:FACTIONS.rat.adj+' Commander'};
 function ratKingSummonGuards(b,now){
   const k=enemyKind('rat'), band=hubBand();
+  const cmds=HUB.ducks.filter(d=>d.rkGuard && !d.dead && d.rank==='commander').length;
   for(let i=0;i<2;i++){
+    const cmd = i===0 && cmds<2;                       // the first of each call is a commander, while fewer than two stand
+    const kk = cmd ? Object.assign({},RAT_COMMANDER_KIND) : k;
     let x=b.x+(i?-1:1)*(70+Math.random()*60), y=b.y+(Math.random()-0.5)*70;
     y=Math.max(band.top,Math.min(band.bot,y));
     if(maskReady()){ const p=nearestWalk(x,y); if(p){x=p.x;y=p.y;} }
     HUB.ducks.push({type:'rat', rkGuard:true, x, x0:x-90, x1:x+90, y, homeX:x, homeY:y, range:150,
       heading:(Math.random()<.5?0:Math.PI), dir:Math.random()<.5?-1:1, phase:Math.random()*6,
-      speed:0.75+Math.random()*0.35, level:1, kind:k, sprite:null,
-      hp:k.hp, maxHp:k.hp, kx:0, hitFlash:0, dead:false, respawnAt:0});
+      speed:(cmd?0.6:0.75)+Math.random()*0.35, level:1, kind:kk, sprite:null, rank:cmd?'commander':undefined,
+      hp:kk.hp, maxHp:kk.hp, kx:0, hitFlash:0, dead:false, respawnAt:0});
     scaleMob(HUB.ducks[HUB.ducks.length-1]);
     for(let p2=0;p2<8;p2++) particles.push({x, y:y-16, vx:(Math.random()-.5)*3, vy:-(Math.random()*2.4), life:1, c:'#6a5a4a'});
   }
@@ -9880,7 +9958,7 @@ function startBossOpening(){
       {cut:Object.assign(bankCut('Meanwhile, in a bank vault far above…')), ms:900},
       {say:{name:'Sir Oink', img:CINE_FACE.oink, bg:'#20301f', tone:420, lines:[
         "Magnus wants more guards? Of course he does. Approve it.",
-        "And send the Accord a letter of concern about rat aggression. On our nicest paper.",
+        "And send the Union a letter of concern about rat aggression. On our nicest paper.",
         "Two loans, one war. Oink~ I do love a balanced ledger."]}},
       {endcut:true, cam:null, ms:700},
     ]);
@@ -9891,7 +9969,7 @@ function startBossOpening(){
       {say:{name:'The Cat King', img:CINE_FACE.catking, bg:'#3a2a10', tone:360, lines:[
         "Ah. The garden cat. You came because the crown sent for you.",
         "Look at the walls. Lions, every one. My father, his father, his father's father. Lions.",
-        "They will tell you the Feline Accord is old and proud and strong. It is. Mostly old.",
+        "They will tell you the Feline Union is old and proud and strong. It is. Mostly old.",
         "Kneel, and you may serve it. Refuse, and you may meet it."]}},
       {cut:Object.assign(bankCut('Meanwhile, in a bank vault far above…')), ms:900},
       {say:{name:'Sir Oink', img:CINE_FACE.oink, bg:'#20301f', tone:420, lines:[
@@ -9911,7 +9989,7 @@ function startBossOpening(){
 const SNOUT_SPEECH=[
   "Ah. Puiutu. Do come in — mind the step, it is a long way down.",
   "You will have questions. Everyone does, at the bottom of the lift.",
-  "The bank never sold fish. It sold wars. The Rat Federation borrows to build an army, the Accord borrows to answer it, and we hold both notes.",
+  "The bank never sold fish. It sold wars. The Rat Federation borrows to build an army, the Union borrows to answer it, and we hold both notes.",
   "And the crystals — you cleared that cave for us. Every one of them is in here now. Honestly, you were our best employee.",
   "Animals that fight each other never look up. You looked up.",
   "That makes you a liability. And liabilities… get written off.",
@@ -10979,15 +11057,21 @@ function updateHub(){
       // and never chase more than 400px from their spot
       const bird=(d.type==='duck'||d.type==='pigeon'), homeD=Math.hypot(d.x-d.homeX,d.y-d.homeY);
       if(bird){ if(distp<180) d.aggro=true; else if(distp>260 || homeD>400) d.aggro=false; }
-      const chase = bird ? (d.aggro && distp>2) : (distp<AGGRO && distp>2);
+      // they stop at striking range instead of pushing into you: right on top of you the left/right
+      // sign flipped every frame, and the sprite mirrored back and forth (the "flashing")
+      const REACH=shark?40:24;
+      const chase = bird ? (d.aggro && distp>REACH) : (distp<AGGRO && distp>REACH);
       d.moving = chase;
+      if(Math.abs(dxp)>14 && (bird ? d.aggro : distp<AGGRO)) d.dir=dxp<0?-1:1;   // face you, with a little slack
       if(chase){
         const spd=d.speed*(shark?2.6:1.45); let nx=d.x+dxp/distp*spd, ny=d.y+dyp/distp*spd;
         if(maskClassify(nx,ny)!=='walk'){ const base=Math.atan2(dyp,dxp); let ok=false;   // slide around edges
           for(const deg of [20,-20,44,-44,70,-70]){ const a=base+deg*Math.PI/180, ax=d.x+Math.cos(a)*spd, ay=d.y+Math.sin(a)*spd;
             if(maskClassify(ax,ay)==='walk'){ nx=ax; ny=ay; ok=true; break; } }
           if(!ok){ nx=d.x; ny=d.y; } }
-        d.x=nx; d.y=ny; d.dir=dxp<0?-1:1;
+        d.x=nx; d.y=ny;
+      } else if(distp<=REACH && (bird ? d.aggro : distp<AGGRO)){
+        d.moving=false;                                  // at striking range: hold still and peck
       } else if(bird){
         // idle: potter about inside a small square (±45px) around home — pick a spot, walk to it,
         // stand a moment, pick another. After a chase the first spot picked is back inside it.
@@ -11362,11 +11446,11 @@ function drawHub(){
       continue;
     }
     if(it.t==='mob'){ const d=it.d, sc=hubScale(d.y), dsx=d.x-HUB.camx;
-      const h=(d.sea?(d.kind.bh||64):(d.type==='pigeon'?60:d.type==='clobster'?66:d.type==='rat'?58:64))*sc;
+      const h=(d.sea?(d.kind.bh||64):(d.type==='pigeon'?60:d.type==='clobster'?66:d.type==='rat'?(d.rank==='commander'?72:58):64))*sc;
       const crawl=d.sea&&d.kind.ground;
       const birdD=(d.type==='duck'||d.type==='pigeon');
       drawEnemy(g, dsx, d.y, d.dir, d.type, {h, moving:(crawl||birdD)?!!d.moving:true, phase:crawl?(d.crawlT||0):d.phase,
-        attacking:(d.type==='duck'||d.type==='pigeon') && Math.hypot(HUB.cat.x-d.x,HUB.cat.y-d.y)<80, pigeonSprite:(d.type==='pigeon'?d.sprite:undefined), clobsterLevel:(d.type==='clobster'?d.level:undefined), noLabel:true});
+        attacking:(d.type==='duck'||d.type==='pigeon') && Math.hypot(HUB.cat.x-d.x,HUB.cat.y-d.y)<80, pigeonSprite:(d.type==='pigeon'?d.sprite:undefined), clobsterLevel:(d.type==='clobster'?d.level:undefined), rank:d.rank, noLabel:true});
       if(Date.now()-(d.hitFlash||0)<110){ g.save();g.globalAlpha=.5;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(dsx,d.y-30*sc,22*sc,28*sc,0,0,7);g.fill();g.restore(); }
       // name (+ level for land mobs) and health bar above the critter
       const topY=d.y-((d.sea?(d.kind.bh||64):70)+6)*sc;
@@ -11381,7 +11465,7 @@ function drawHub(){
           g.restore();
         }
       } else if(d.type==='rat'){
-      const nm=FACTIONS.rat.adj+' Soldier';
+      const nm=FACTIONS.rat.adj+(d.rank==='commander'?' Commander':' Soldier');
       g.save(); g.textAlign='center'; g.font='bold 10px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, dsx+1, topY+1);
       g.fillStyle='#ff9a9a'; g.fillText(nm, dsx, topY); g.restore();
@@ -12823,6 +12907,10 @@ function questProgress(type){ updateQuestHUD(); }
 function hudQuests(){
   const out=Object.keys(S.quests||{}).filter(k=>S.quests[k].state==='active' && QUESTS[k]).map(k=>{ const q=QUESTS[k];
     return {key:k, name:q.name, img:()=>q.img?q.img():q.dog?ROCKY.idle:SPRITES[q.cat], have:questCount(k), n:q.goal.n, talk:true}; });
+  if(storyAt('prophecy') && !storyAt('zoomies'))
+    out.push({key:'merlin', name:'Merlin', img:()=>MERLIN_IMG, have:Math.min(MERLIN_TOLL,sortDone()), n:MERLIN_TOLL, talk:true});
+  if(S.warQuest==='on' || S.warQuest==='won')
+    out.push({key:'war', name:'Union Commander', img:()=>ARMY_SPR.cat_commander.walk[0], have:S.warQuest==='won'?1:0, n:1, talk:true});
   if(S.beachOpen && storyAt('zoomies') && !storyAt('fivefish'))
     out.push({key:'trotter', name:'Agent Trotter', img:()=>ARMY_SPR.pig_agent.walk[0], have:Math.min(TROTTER_TOLL,S.totalFish||0), n:TROTTER_TOLL, talk:true});
   if(S.sharkQuest==='on')
@@ -14160,6 +14248,10 @@ function shellySay(lines,then){ sayLines('Old Shelly', lines, {img:SHELLY_IMG, b
 const SHELLY_PAY=[
   'Fill a whole shelf for me and I will pay you twenty silver. Any shelf — they are all worth the same to me.',
   'Fill every shelf, and I will give you three gold. I have been saving them for a very long time.'];
+// the Lucky Capsule: the sea brings back what people threw in it, sealed up small
+const SHELLY_CAPSULE=[
+  'The tide keeps bringing me these little capsules. People seal a wish in them and throw them in the sea.',
+  'Put a gold coin in and shake one. Sometimes a whole new coat falls out. Do not ask me how. The sea is strange.'];
 function shellyQuestStart(){
   if(S.quests.shelly) return;
   S.quests.shelly={state:'active', base:0}; save(); updateQuestHUD();
@@ -14182,8 +14274,12 @@ function shellyTalk(){
       'I am Shelly. I have been on this beach since before it was a beach. I keep a little museum.',
       'Everything the sand gives back, I keep one of. Walk the beach and bring me what the tide turns up.',
       ...SHELLY_PAY,
-      'And shells. I buy shells. Do not ask what for. Turtles are allowed one secret.'
-    ], ()=>{ shellyQuestStart(); museumOpen(); });
+      'And shells. I buy shells. Do not ask what for. Turtles are allowed one secret.',
+      ...SHELLY_CAPSULE
+    ], ()=>{ shellyQuestStart(); grantIcon('gacha'); museumOpen(); });
+    return; }
+  if(!S.hasGacha && !freeMode()){                        // met her before she had the capsules to give
+    shellySay(['Oh — before I forget.', ...SHELLY_CAPSULE], ()=>{ grantIcon('gacha'); shellyTalk(); });
     return; }
   if(!S.quests.shelly){                                  // met her before she said what the shelves pay
     shellySay(['Ah. The loud little cat. I forgot to tell you something last time.', ...SHELLY_PAY],
@@ -17486,6 +17582,10 @@ function mapQuests(){
                : LT('Defeat '+n+' enemies','Învinge '+n+' inamici');
     out.push({loc:QUEST_LOC[k], ready, text:T(q.name)+': '+what+' ('+have+'/'+n+')'+(ready?LT(' — go back',' — întoarce-te'):'')});
   }
+  if(storyAt('prophecy') && !storyAt('zoomies')){ const have=Math.min(MERLIN_TOLL,sortDone());
+    out.push({loc:'library', ready:have>=MERLIN_TOLL, text:LT('Merlin: sort three potions','Merlin: sortează trei poțiuni')+' ('+have+'/'+MERLIN_TOLL+')'}); }
+  if(S.warQuest==='on' || S.warQuest==='won')
+    out.push({loc:'slum', ready:S.warQuest==='won', text:LT('Union Commander: win a battle at the war table','Comandantul Uniunii: câștigă o bătălie la masa de război')+(S.warQuest==='won'?LT(' — go back',' — întoarce-te'):'')});
   if(S.beachOpen && storyAt('zoomies') && !storyAt('fivefish')){ const have=Math.min(TROTTER_TOLL,S.totalFish||0);
     out.push({loc:'beach', ready:have>=TROTTER_TOLL, text:LT('Agent Trotter: five fish','Agentul Copită: cinci pești')+' ('+have+'/'+TROTTER_TOLL+')'}); }
   if(S.sharkQuest==='on'){ const have=Math.min(2,S.sharkKills||0);
@@ -17775,10 +17875,23 @@ function warClose(){ const f=document.getElementById('warFrame'); if(f) f.remove
 window.addEventListener('message',e=>{
   const d=e.data; if(!d||typeof d!=='object') return;
   if(d.type==='borderwar-close') warClose();
-  if(d.type==='borderwar-result'){ S.coins+=d.coins|0; addXP(d.xp|0); syncHUD(); save();
+  if(d.type==='borderwar-result'){ S.coins+=d.coins|0; addXP(d.xp|0);
+    if(d.win && S.warQuest==='on'){ S.warQuest='won'; setTimeout(()=>toast(LT('The commander in the slums will want to hear about that.','Comandantul din mahala o să vrea să afle.')),2500); }
+    syncHUD(); updateQuestHUD(); save();
     toast(d.win?('Border War won! +'+moneyText(d.coins|0)+'  +'+(d.xp|0)+' XP'):('Border War lost. +'+moneyText(d.coins|0))); }
 });
 document.getElementById('btnWar').addEventListener('click',warOpen);
+// Full screen: the whole page, so the game, its menus and Border War all come with it. Browsers
+// that cannot (iPhone Safari) get no button rather than one that does nothing.
+{ const fsBtn=document.getElementById('btnFullscreen'), de=document.documentElement;
+  const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+  const canFs=!!(de.requestFullscreen||de.webkitRequestFullscreen);
+  if(!canFs) fsBtn.style.display='none';
+  fsBtn.addEventListener('click',()=>{ SFX&&SFX.click&&SFX.click();
+    if(fsEl()) (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+    else { const r=(de.requestFullscreen||de.webkitRequestFullscreen).call(de,{navigationUI:'hide'}); if(r&&r.catch) r.catch(()=>{}); } });
+  const sync=()=>{ document.body.classList.toggle('isFull',!!fsEl()); fsBtn.title=fsEl()?T('Exit full screen'):T('Full screen'); setTimeout(resize,60); };
+  document.addEventListener('fullscreenchange',sync); document.addEventListener('webkitfullscreenchange',sync); }
 document.getElementById('btnShopTop').addEventListener('click',()=>{ openModal('shop'); SFX&&SFX.click&&SFX.click(); });
 document.getElementById('gachaRoll').addEventListener('click',gachaRoll);
 { const _ms=document.getElementById('modeStory'), _mf=document.getElementById('modeFree');
