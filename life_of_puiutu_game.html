@@ -749,7 +749,7 @@
   @keyframes gShake{0%,100%{transform:translate(0,0)}12%{transform:translate(-8px,6px)}26%{transform:translate(7px,-5px)}
     42%{transform:translate(-6px,4px)}58%{transform:translate(5px,-3px)}74%{transform:translate(-3px,2px)}88%{transform:translate(2px,-1px)}}
   /* during charging, hide the prize until the flash */
-  #gachaCard.charging #gcArtCanvas,#gachaCard.charging #gcName,#gachaCard.charging #gcStars,#gachaCard.charging #gcRarity{visibility:hidden;}
+  #gachaCard.charging #gcArtCanvas,#gachaCard.charging #gcName,#gachaCard.charging #gcRarity{visibility:hidden;}
   #gcArtCanvas{border-radius:10px;display:none;image-rendering:pixelated;width:196px;height:196px;object-fit:contain;position:relative;z-index:2;}
   #gcArtCanvas.show{display:block;}
   #gachaCard.skin-reveal #gcArtCanvas{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;
@@ -761,10 +761,6 @@
   @keyframes gArtPop{0%{transform:scale(.15) rotate(-18deg);opacity:0;filter:brightness(6) saturate(1.6)}
     18%{opacity:1;filter:brightness(3)}45%{transform:scale(1.12) rotate(3deg);filter:brightness(1.7)}
     70%{transform:scale(.97) rotate(-1deg)}100%{transform:scale(1) rotate(0);opacity:1;filter:brightness(1)}}
-  #gcStars{display:flex;gap:3px;justify-content:center;min-height:20px;margin-top:2px;position:relative;z-index:2;}
-  #gcStars img{width:20px;height:20px;image-rendering:pixelated;animation:gStarPop .4s cubic-bezier(.2,1.6,.4,1) backwards;
-    filter:drop-shadow(0 0 4px rgba(255,210,90,.9));}
-  @keyframes gStarPop{0%{transform:scale(0) rotate(-90deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
   #gcName{color:#fff;font-weight:bold;font-size:15px;text-shadow:0 2px 6px #000;text-align:center;position:relative;z-index:2;}
   #gachaCard.skin-reveal #gcName{font-size:23px;}
   #gcRarity{font-weight:bold;font-size:12px;letter-spacing:2px;position:relative;z-index:2;}
@@ -1611,7 +1607,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
       <div id="gachaStage">
         <canvas id="gachaCanvas" width="360" height="536"></canvas>
         <div id="gcFlash"></div>
-        <div id="gachaCard"><div id="gcRays"></div><div id="gcCharge"></div><div id="gcShock"></div><div id="gcShock2"></div><canvas id="gcArtCanvas" width="196" height="196"></canvas><div id="gcIcon"></div><div id="gcName">???</div><div id="gcStars"></div><div id="gcRarity"></div></div>
+        <div id="gachaCard"><div id="gcRays"></div><div id="gcCharge"></div><div id="gcShock"></div><div id="gcShock2"></div><canvas id="gcArtCanvas" width="196" height="196"></canvas><div id="gcIcon"></div><div id="gcName">???</div><div id="gcRarity"></div></div>
       </div>
       <div id="gachaMsg">Turn the crank for a surprise!</div>
       <div id="gachaBtns">
@@ -14644,16 +14640,6 @@ function gachaDrawArt(artSrc,noKey){
   img.onerror=()=>{ const ic=document.getElementById('gcIcon'); if(ic) ic.style.display=''; };
   img.src=artSrc;
 }
-function gachaShowStars(rar){
-  const el=document.getElementById('gcStars'); if(!el) return;
-  const n=RAR_STARS[rar]||0;
-  el.innerHTML='';
-  for(let i=0;i<n;i++){
-    const s=document.createElement('img'); s.src='skins/star.png'; s.alt='';
-    s.style.animationDelay=(0.35+i*0.12)+'s';   // pop in one by one after the art lands
-    el.appendChild(s);
-  }
-}
 const GACHA={ cost:10000, busy:false, open:false, caps:[], raf:null, ctx:null, W:360, H:536,
   dome:{cx:178,cy:152,rx:124,ry:107},
   img:(()=>{const i=new Image();i.src='gacha/gacha.png';return i;})(),
@@ -14830,7 +14816,6 @@ function gachaReveal(rar,pick,gotCap){
   if(coinArt) document.getElementById('gcName').innerHTML=moneyHTML(pick.coins,2);
   else document.getElementById('gcName').textContent=label;
   const ra=document.getElementById('gcRarity'); ra.textContent=rar.toUpperCase(); ra.style.color=RAR_COL[rar];
-  gachaShowStars(rar);
   document.getElementById('gachaMsg').textContent=msg;
   save(); syncHUD(); gachaSyncUI();
 
