@@ -17636,9 +17636,9 @@ function wmFit(){
   const view=document.getElementById('wmView'), img=document.getElementById('wmImg');
   const iw=img.naturalWidth||1536, ih=img.naturalHeight||1024, vw=view.clientWidth, vh=view.clientHeight;
   const cover=Math.max(vw/iw, vh/ih), contain=Math.min(vw/iw, vh/ih);
-  // fill the screen when that only trims a sliver (a wide monitor); on a much narrower or taller screen show it
-  // all, or the castles at the far edges would fall off
-  WM.iw=iw; WM.ih=ih; WM.fit=WM.s=(cover/contain<1.12 ? cover : contain);
+  // the whole parchment always fits, with a little table showing round it: filling the screen
+  // instead cut off the castles and the warren at the edges on 16:10 screens
+  WM.iw=iw; WM.ih=ih; WM.fit=WM.s=contain*0.95;
   const world=document.getElementById('wmWorld'); world.style.width=iw+'px'; world.style.height=ih+'px';
   WM.x=(vw-iw*WM.s)/2; WM.y=(vh-ih*WM.s)/2;
   wmApply();
