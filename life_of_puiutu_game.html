@@ -2,7 +2,7 @@
 <html lang="ro">
 <head>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Life of Puiutu</title>
@@ -275,7 +275,9 @@
     display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(3px);}
 
   /* ---------- WORLD MAP (Witcher / Skyrim / Origins style) ---------- */
-  #mapModal{position:absolute;inset:0;z-index:55;display:none;background:#0b0907;opacity:0;transition:opacity .25s;}
+  /* the world map is an inked parchment: everything on it is drawn in the same brown ink */
+  #mapModal{--ink:#3a2410;--inkSoft:#6a4520;--paper:#f1e2bf;--paper2:#dcc493;--wax:#8e2414;
+    position:absolute;inset:0;z-index:55;display:none;background:#22170c;opacity:0;transition:opacity .25s;}
   #mapModal.show{display:block;opacity:1;animation:wmIn .35s ease-out;}
   @keyframes wmIn{from{opacity:0}to{opacity:1}}
   #wmView{position:absolute;inset:0;overflow:hidden;touch-action:none;
@@ -285,32 +287,32 @@
   #wmFog{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
   #wmRegions,#wmIcons{position:absolute;inset:0;pointer-events:none;}
   /* region names: wide spaced capitals laid on the land */
-  .wm-region{position:absolute;transform:translate(-50%,-50%) scale(var(--inv));opacity:0;transition:opacity .4s;
-    font:600 15px Georgia,'Times New Roman',serif;letter-spacing:.38em;text-transform:uppercase;white-space:nowrap;
-    color:rgba(255,246,222,.92);text-shadow:0 0 6px rgba(0,0,0,.9),0 2px 3px rgba(0,0,0,.8);}
+  .wm-region{position:absolute;transform:translate(-50%,-50%) scale(var(--inv)) rotate(var(--rot,-3deg));opacity:0;transition:opacity .4s;
+    font:italic 400 30px 'IM Fell English',Georgia,'Times New Roman',serif;letter-spacing:.06em;white-space:nowrap;
+    color:rgba(52,30,12,.86);text-shadow:0 0 3px rgba(241,226,191,.95),0 0 8px rgba(241,226,191,.7);}
   .wm-region.on{opacity:1;}
-  #wmRegions{display:none;}   /* the land speaks for itself: region names only on the card */
+  #wmRegions{pointer-events:none;}   /* written on the land once you have set foot there */
   /* places: a dark round badge with a pale glyph; gold when you look at it */
   .wm-pin{position:absolute;pointer-events:none;transform:translate(-50%,-50%) scale(var(--inv));background:none;border:0;padding:0;
     display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transition:opacity .3s;}
   .wm-pin.known,.wm-pin.obj{pointer-events:auto;opacity:1;cursor:inherit;}
   .wm-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    background:radial-gradient(circle at 40% 35%,#2b241b,#15110c);border:2px solid #b89a5e;color:#efe2c0;
-    box-shadow:0 2px 6px rgba(0,0,0,.7);transition:transform .15s, border-color .15s, color .15s;}
+    background:radial-gradient(circle at 40% 35%,#f6ead0,#d9bf8a);border:2px solid var(--ink);color:var(--ink);
+    box-shadow:0 1px 0 rgba(255,245,220,.6) inset,0 2px 5px rgba(40,22,8,.45);transition:transform .15s, border-color .15s, color .15s;}
   .wm-badge svg{width:20px;height:20px;}
-  .wm-name{font:600 15px Georgia,serif;letter-spacing:.06em;color:#f6ead0;white-space:nowrap;
-    text-shadow:0 0 4px #000,0 1px 2px #000;opacity:0;transition:opacity .15s;}
-  .wm-pin.hot .wm-badge{transform:scale(1.18);border-color:#ffd46b;color:#ffd46b;}
+  .wm-name{font:italic 600 17px 'IM Fell English',Georgia,serif;letter-spacing:.04em;color:var(--ink);white-space:nowrap;
+    text-shadow:0 0 3px var(--paper),0 0 7px var(--paper);opacity:0;transition:opacity .15s;}
+  .wm-pin.hot .wm-badge{transform:scale(1.18);border-color:var(--wax);color:var(--wax);}
   .wm-pin.hot .wm-name, .wm-pin.here .wm-name{opacity:1;}
-  .wm-pin.here .wm-badge{border-color:#ffd46b;color:#ffd46b;box-shadow:0 0 0 4px rgba(255,212,107,.25),0 0 18px rgba(255,212,107,.6);
+  .wm-pin.here .wm-badge{border-color:var(--wax);color:#fff2dc;background:radial-gradient(circle at 40% 35%,#c4422a,#7c1c10);box-shadow:0 0 0 4px rgba(142,36,20,.22),0 0 14px rgba(142,36,20,.55);
     animation:wmHere 1.6s ease-in-out infinite;}
-  @keyframes wmHere{50%{box-shadow:0 0 0 8px rgba(255,212,107,.08),0 0 26px rgba(255,212,107,.8);}}
+  @keyframes wmHere{50%{box-shadow:0 0 0 8px rgba(142,36,20,.08),0 0 22px rgba(142,36,20,.7);}}
   /* the objective: a gold diamond above the place */
-  .wm-pin.obj::before{content:'';position:absolute;top:-20px;width:12px;height:12px;background:#ffd46b;transform:rotate(45deg);
-    box-shadow:0 0 10px rgba(255,212,107,.9);animation:wmObj 1.2s ease-in-out infinite;}
+  .wm-pin.obj::before{content:'';position:absolute;top:-20px;width:12px;height:12px;background:var(--wax);transform:rotate(45deg);
+    border:1.5px solid #f6ead0;box-shadow:0 0 8px rgba(142,36,20,.7);animation:wmObj 1.2s ease-in-out infinite;}
   @keyframes wmObj{50%{transform:translateY(-4px) rotate(45deg);}}
   /* frame: a dark vignette at the screen edges, a header, the card, a legend */
-  #wmVignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 90px 10px rgba(0,0,0,.35);}
+  #wmVignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 110px 18px rgba(48,26,8,.55);}
   #wmTop{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:18px;padding:14px 64px 26px 24px;pointer-events:none;
     background:linear-gradient(rgba(8,6,4,.85),rgba(8,6,4,0));}
   #wmTitle{font:700 23px Georgia,serif;letter-spacing:.35em;color:#f3e2b4;text-transform:uppercase;}
@@ -318,18 +320,19 @@
   #wmObj i{width:9px;height:9px;background:#ffd46b;transform:rotate(45deg);flex:none;box-shadow:0 0 8px rgba(255,212,107,.8);}
   #wmObj span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #wmCard{position:absolute;right:22px;top:72px;width:min(340px,calc(100% - 44px));padding:16px 18px 14px;
-    background:linear-gradient(rgba(16,12,8,.94),rgba(10,8,5,.94));border:1px solid #6e5a36;border-top:2px solid #b89a5e;
-    box-shadow:0 10px 30px rgba(0,0,0,.6);color:#e8dcc0;font-family:Georgia,serif;
+    background:radial-gradient(ellipse at 30% 20%,rgba(255,250,235,.55),rgba(255,250,235,0) 60%),linear-gradient(var(--paper),var(--paper2));
+    border:1px solid #8a6a3a;border-top:2px solid var(--ink);border-radius:3px;
+    box-shadow:0 10px 30px rgba(0,0,0,.55),inset 0 0 28px rgba(120,80,30,.35);color:var(--ink);font-family:'IM Fell English',Georgia,serif;
     opacity:0;transform:translateX(12px);transition:opacity .18s, transform .18s;pointer-events:none;}
   #wmCard.on{opacity:1;transform:none;pointer-events:auto;}
   #wmCard.flip{right:auto;left:22px;transform:translateX(-12px);}   /* the place is under the card's usual corner */
   #wmCard.flip.on{transform:none;}
-  #wmCardReg{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:#b89a5e;margin-bottom:4px;}
-  #wmCardName{font-size:25px;color:#fff3d6;margin-bottom:8px;}
-  #wmCardDesc{font-size:16px;line-height:1.45;color:#d8ccb0;margin-bottom:10px;}
-  #wmCardObj{font-size:14px;color:#ffd46b;margin-bottom:10px;}
-  #wmCardQuests{margin:-2px 0 10px;font-size:14.5px;line-height:1.4;color:#e8dcc0;}
-  #wmCardQuests div{margin-bottom:4px;} #wmCardQuests b{color:#7fd0ff;margin-right:3px;} #wmCardQuests .rdy b{color:#8be08b;}
+  #wmCardReg{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--inkSoft);margin-bottom:4px;}
+  #wmCardName{font-size:27px;font-style:italic;color:#24150a;margin-bottom:8px;border-bottom:1px solid rgba(58,36,16,.35);padding-bottom:6px;}
+  #wmCardDesc{font-size:17px;line-height:1.4;color:#3d2814;margin-bottom:10px;}
+  #wmCardObj{font-size:15px;color:var(--wax);margin-bottom:10px;}
+  #wmCardQuests{margin:-2px 0 10px;font-size:15.5px;line-height:1.4;color:#3d2814;}
+  #wmCardQuests div{margin-bottom:4px;} #wmCardQuests b{color:#1f4f8a;margin-right:3px;} #wmCardQuests .rdy b{color:#2f6f2f;}
   /* an active quest here: a small blue "!" pinned to the badge (green tick when it is ready to hand in) */
   .wm-pin.quest::after{content:'!';position:absolute;top:-6px;right:-8px;width:17px;height:17px;border-radius:50%;
     background:#2f6fb5;border:1.5px solid #dff0ff;color:#fff;font:900 12px/15px Georgia,serif;text-align:center;
@@ -338,15 +341,16 @@
   #wmLegend b.q{border:1.5px solid #dff0ff;background:#2f6fb5;color:#fff;font:900 9px/9px Georgia,serif;text-align:center;}
   #wmTravel{width:100%;padding:9px;font:600 15px Georgia,serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
     color:#1b140b;background:linear-gradient(#f0d58e,#c9a456);border:1px solid #7a5f2e;}
-  #wmTravel:disabled{cursor:default;color:#9c8d70;background:#2a231a;border-color:#4a3e2c;}
-  #wmLegend{position:absolute;left:22px;bottom:18px;display:flex;gap:16px;font:14px Georgia,serif;color:#d8ccb0;pointer-events:none;
-    text-shadow:0 1px 2px #000;}
+  #wmTravel{font-family:'IM Fell English',Georgia,serif;color:#f6ead0;background:linear-gradient(#a8331d,#7c1c10);border:1px solid #4e1008;border-radius:3px;}
+  #wmTravel:disabled{cursor:default;color:#8a7350;background:rgba(120,90,50,.18);border-color:rgba(58,36,16,.35);}
+  #wmLegend{position:absolute;left:22px;bottom:18px;display:flex;gap:16px;font:italic 16px 'IM Fell English',Georgia,serif;color:var(--paper);pointer-events:none;
+    padding:6px 12px;border-radius:3px;background:rgba(34,23,12,.62);}
   #wmLegend span{display:flex;align-items:center;gap:6px;}
-  #wmLegend b{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid #ffd46b;background:#15110c;}
-  #wmLegend b.k{border-color:#b89a5e;} #wmLegend b.o{border:0;border-radius:0;width:9px;height:9px;background:#ffd46b;transform:rotate(45deg);}
+  #wmLegend b{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--paper);background:#a8331d;}
+  #wmLegend b.k{background:var(--paper2);border-color:var(--ink);} #wmLegend b.o{border:0;border-radius:0;width:9px;height:9px;background:#c4422a;transform:rotate(45deg);}
   #wmHint{position:absolute;right:22px;bottom:18px;font:14px Georgia,serif;color:#a89a7c;pointer-events:none;text-shadow:0 1px 2px #000;}
   #mapClose{position:absolute;top:12px;right:16px;width:36px;height:36px;border-radius:50%;padding:0;cursor:pointer;z-index:3;
-    background:rgba(20,15,10,.8);border:1.5px solid #b89a5e;color:#f3e2b4;font-size:20px;line-height:1;}
+    background:linear-gradient(var(--paper),var(--paper2));border:1.5px solid var(--ink);color:var(--ink);font-size:20px;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.45);}
   @media (max-width:640px){ #wmCard{top:auto;bottom:52px;right:12px;left:12px;width:auto;} #wmCard.flip{top:72px;bottom:auto;left:12px;right:12px;} #wmHint{display:none;} #wmTitle{font-size:15px;} }
 
   /* ---------- NAME modal ---------- */
@@ -691,18 +695,20 @@
   #gacha .modal-head{background:linear-gradient(#3a2360,#22113e);border-bottom:3px solid #7a4ad0;}
   #gachaWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px;min-height:0;}
   #gachaStage{position:relative;display:flex;align-items:center;justify-content:center;}
-  #gachaCanvas{height:62vh;max-height:540px;width:auto;max-width:94vw;touch-action:none;}
+  /* leave room for the header, message, buttons and pity line on short (landscape phone) screens */
+  #gachaCanvas{height:min(62vh,calc(100vh - 230px));max-height:540px;width:auto;max-width:94vw;touch-action:none;}
   #gachaCard{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;
     width:160px;height:160px;border-radius:18px;background:rgba(10,6,20,.82);}
   #gachaCard.show{display:flex;animation:gPop .4s cubic-bezier(.2,1.4,.5,1);}
-  #gachaCard.skin-reveal{top:42%;width:min(88vw,340px);height:min(86vh,600px);min-height:0;padding:0 0 12px;
+  /* the reveal card is sized from the machine's area (the stage), so it never covers the message and buttons below it */
+  #gachaCard.skin-reveal{top:50%;height:min(100%,calc(88vw*30/17));width:auto;aspect-ratio:17/30;min-height:0;padding:0 0 12px;
     background:#06030c;overflow:visible;gap:3px;justify-content:flex-end;}
   /* bottom scrim so the name/rarity stay readable over the full-bleed art */
   #gachaCard.skin-reveal::after{content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;z-index:1;
     background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.38) 20%, rgba(0,0,0,0) 40%);}
   #gachaCard.skin-reveal.charging::after{display:none;}
   /* potions, charms and coins are not cat cards: a square card, the picture in its upper part, name below */
-  #gachaCard.skin-reveal.item-art{width:min(80vw,300px);height:min(80vw,300px);}
+  #gachaCard.skin-reveal.item-art{height:min(80%,88vw);aspect-ratio:1;}
   #gachaCard.skin-reveal.spell-art.item-art #gcArtCanvas{top:9%;height:52%;}
   /* coins: exactly as many coin sprites as dropped, in rows — the amount (in coin icons) underneath */
   #gachaCard.skin-reveal.coin-art #gcIcon{position:absolute;left:8%;right:8%;top:9%;height:56%;display:flex;flex-wrap:wrap;align-content:center;
@@ -762,9 +768,9 @@
     18%{opacity:1;filter:brightness(3)}45%{transform:scale(1.12) rotate(3deg);filter:brightness(1.7)}
     70%{transform:scale(.97) rotate(-1deg)}100%{transform:scale(1) rotate(0);opacity:1;filter:brightness(1)}}
   #gcName{color:#fff;font-weight:bold;font-size:15px;text-shadow:0 2px 6px #000;text-align:center;position:relative;z-index:2;}
-  #gachaCard.skin-reveal #gcName{font-size:23px;}
+  #gachaCard.skin-reveal #gcName{font-size:clamp(12px,3.4vh,23px);line-height:1.1;padding:0 6px;}   /* shrinks with the card on short screens */
   #gcRarity{font-weight:bold;font-size:12px;letter-spacing:2px;position:relative;z-index:2;}
-  #gachaCard.skin-reveal #gcRarity{font-size:14px;}
+  #gachaCard.skin-reveal #gcRarity{font-size:clamp(9px,2vh,14px);}
   /* reveal flash over the whole machine */
   #gcFlash{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:5;
     background:radial-gradient(circle at 50% 44%, #fff 0%, #fff 22%, rgba(255,255,255,0) 64%);}
@@ -1339,7 +1345,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
   <div id="mapModal">
     <div id="wmView">
       <div id="wmWorld">
-        <img id="wmImg" src="maps/worldmap_world.png" alt="Puiutu Land" draggable="false">
+        <img id="wmImg" src="maps/worldmap_parchment.png?v=1" alt="Puiutu Land" draggable="false">
         <canvas id="wmFog" width="768" height="512"></canvas>
         <div id="wmRegions"></div>
         <div id="wmIcons"></div>
@@ -17534,8 +17540,8 @@ const MAP_LOCS=[
   {id:'ocean1',  name:'Ocean Depths',    x:2.4,  y:21.0, ico:'wave',   reg:'coast', desc:'The shallows. Nobody breathes down there without a suit.'},
   {id:'ocean2',  name:'Sunken Sanctum',  x:12.6, y:75.5, ico:'pillar', reg:'deep',  desc:'Drowned ruins around a sealed portal. The runes want something violet.'},
   {id:'street',  name:'City',            x:58.6, y:60.0, ico:'town',   reg:'city',  desc:'The square. Union soldiers, a fountain, and the most elegant cat in town.'},
-  {id:'bank',    name:'Whisker Savings Bank', x:61.0, y:46.8, ico:'coin', reg:'city', desc:'Every little fish counts. Neutral, they say. Very neutral.'},
-  {id:'castleentrance', name:'Castle Gate', x:84.9, y:17.0, ico:'castle', reg:'heights', desc:'The Cat King\'s castle. Lions on every wall.'},
+  {id:'bank',    name:'Whisker Savings Bank', x:63.6, y:48.2, ico:'coin', reg:'city', desc:'Every little fish counts. Neutral, they say. Very neutral.'},
+  {id:'castleentrance', name:'Castle Gate', x:89.6, y:21.5, ico:'castle', reg:'heights', desc:'The Cat King\'s castle. Lions on every wall.'},
   {id:'slum',    name:'The Slums',       x:62.2, y:79.7, ico:'hut',    reg:'slums', desc:'Shacks on stilts. NomNom\'s forge, and an alley everyone avoids.'},
   {id:'slum2',   name:'The Rat Warren',  x:89.7, y:65.9, ico:'pick',   reg:'warren', desc:'Wooden shanties climbing toward a fortress of scavenged junk.'},
   {id:'sewerentrance', name:'Sewer Tunnel', x:87.6, y:86.1, ico:'drop', reg:'slums', desc:'Where both armies go down, and keep going down.'},
@@ -17550,7 +17556,7 @@ const MAP_REGIONS={
   deep:   {name:'The Deep',         x:14, y:90},
   city:   {name:'Whisker City',     x:52, y:68},
   heights:{name:'The Royal Heights',x:80, y:30},
-  warren: {name:'Rat Federation',         x:90, y:42},
+  warren: {name:'Rat Federation',   x:84, y:47},
   slums:  {name:'The Slums',        x:64, y:96},
 };
 // what the story wants from you next, and where that is
@@ -17686,7 +17692,7 @@ function wmFogTexture(){
   const c=document.createElement('canvas'); c.width=768; c.height=512; const g2=c.getContext('2d');
   let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   for(let i=0;i<260;i++){ const x=rnd()*c.width, y=rnd()*c.height, r=30+rnd()*90, a=0.05+rnd()*0.09;
-    const gr=g2.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(150,146,140,'+a+')'); gr.addColorStop(1,'rgba(150,146,140,0)');
+    const gr=g2.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(150,112,64,'+a+')'); gr.addColorStop(1,'rgba(150,112,64,0)');
     g2.fillStyle=gr;
     // drawn wrapped across every edge, so the texture tiles with no seam as it drifts
     for(const ox of [-c.width,0,c.width]) for(const oy of [-c.height,0,c.height]){
@@ -17698,7 +17704,7 @@ function wmFogTick(t){
   if(!mapOpen) return;
   const cv=document.getElementById('wmFog'), g2=cv.getContext('2d'), W=cv.width, H=cv.height, tex=wmFogTexture();
   g2.globalCompositeOperation='source-over'; g2.clearRect(0,0,W,H);
-  g2.fillStyle='rgba(30,28,26,.9)'; g2.fillRect(0,0,W,H);                     // the base veil: thick — only the outline of the land shows through
+  g2.fillStyle='rgba(226,204,160,.93)'; g2.fillRect(0,0,W,H);                  // the base veil: blank parchment — the cartographer has not been there yet
   const dx=(t*0.006)%W, dx2=(t*0.0035)%W;
   for(const [ox,oy] of [[dx,0],[dx-W,0]]) g2.drawImage(tex,ox,oy,W,H);         // two layers drifting at different speeds
   for(const [ox,oy] of [[-dx2,18],[W-dx2,18],[-dx2,18-H],[W-dx2,18-H]]) g2.drawImage(tex,ox,oy,W,H);   // wrapped, so no clear strip along the top
