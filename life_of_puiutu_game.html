@@ -300,7 +300,7 @@
     background:radial-gradient(circle at 40% 35%,#2b241b,#15110c);border:2px solid #b89a5e;color:#efe2c0;
     box-shadow:0 2px 6px rgba(0,0,0,.7);transition:transform .15s, border-color .15s, color .15s;}
   .wm-badge svg{width:20px;height:20px;}
-  .wm-name{font:600 12px Georgia,serif;letter-spacing:.06em;color:#f6ead0;white-space:nowrap;
+  .wm-name{font:600 15px Georgia,serif;letter-spacing:.06em;color:#f6ead0;white-space:nowrap;
     text-shadow:0 0 4px #000,0 1px 2px #000;opacity:0;transition:opacity .15s;}
   .wm-pin.hot .wm-badge{transform:scale(1.18);border-color:#ffd46b;color:#ffd46b;}
   .wm-pin.hot .wm-name, .wm-pin.here .wm-name{opacity:1;}
@@ -315,22 +315,22 @@
   #wmVignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 90px 10px rgba(0,0,0,.35);}
   #wmTop{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:18px;padding:14px 64px 26px 24px;pointer-events:none;
     background:linear-gradient(rgba(8,6,4,.85),rgba(8,6,4,0));}
-  #wmTitle{font:700 20px Georgia,serif;letter-spacing:.35em;color:#f3e2b4;text-transform:uppercase;}
-  #wmObj{display:flex;align-items:center;gap:8px;font:14px Georgia,serif;color:#e8dcc0;min-width:0;}
+  #wmTitle{font:700 23px Georgia,serif;letter-spacing:.35em;color:#f3e2b4;text-transform:uppercase;}
+  #wmObj{display:flex;align-items:center;gap:8px;font:16px Georgia,serif;color:#e8dcc0;min-width:0;}
   #wmObj i{width:9px;height:9px;background:#ffd46b;transform:rotate(45deg);flex:none;box-shadow:0 0 8px rgba(255,212,107,.8);}
   #wmObj span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  #wmCard{position:absolute;right:22px;top:72px;width:min(300px,calc(100% - 44px));padding:16px 18px 14px;
+  #wmCard{position:absolute;right:22px;top:72px;width:min(340px,calc(100% - 44px));padding:16px 18px 14px;
     background:linear-gradient(rgba(16,12,8,.94),rgba(10,8,5,.94));border:1px solid #6e5a36;border-top:2px solid #b89a5e;
     box-shadow:0 10px 30px rgba(0,0,0,.6);color:#e8dcc0;font-family:Georgia,serif;
     opacity:0;transform:translateX(12px);transition:opacity .18s, transform .18s;pointer-events:none;}
   #wmCard.on{opacity:1;transform:none;pointer-events:auto;}
   #wmCard.flip{right:auto;left:22px;transform:translateX(-12px);}   /* the place is under the card's usual corner */
   #wmCard.flip.on{transform:none;}
-  #wmCardReg{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#b89a5e;margin-bottom:4px;}
-  #wmCardName{font-size:21px;color:#fff3d6;margin-bottom:8px;}
-  #wmCardDesc{font-size:13.5px;line-height:1.45;color:#d8ccb0;margin-bottom:10px;}
-  #wmCardObj{font-size:12px;color:#ffd46b;margin-bottom:10px;}
-  #wmCardQuests{margin:-2px 0 10px;font-size:12.5px;line-height:1.4;color:#e8dcc0;}
+  #wmCardReg{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:#b89a5e;margin-bottom:4px;}
+  #wmCardName{font-size:25px;color:#fff3d6;margin-bottom:8px;}
+  #wmCardDesc{font-size:16px;line-height:1.45;color:#d8ccb0;margin-bottom:10px;}
+  #wmCardObj{font-size:14px;color:#ffd46b;margin-bottom:10px;}
+  #wmCardQuests{margin:-2px 0 10px;font-size:14.5px;line-height:1.4;color:#e8dcc0;}
   #wmCardQuests div{margin-bottom:4px;} #wmCardQuests b{color:#7fd0ff;margin-right:3px;} #wmCardQuests .rdy b{color:#8be08b;}
   /* an active quest here: a small blue "!" pinned to the badge (green tick when it is ready to hand in) */
   .wm-pin.quest::after{content:'!';position:absolute;top:-6px;right:-8px;width:17px;height:17px;border-radius:50%;
@@ -338,15 +338,15 @@
     box-shadow:0 0 8px rgba(80,170,255,.8);animation:wmObj 1.4s ease-in-out infinite;}
   .wm-pin.qready::after{content:'✔';background:#3f8f3f;border-color:#e4ffe0;box-shadow:0 0 8px rgba(120,230,120,.8);font-size:10px;}
   #wmLegend b.q{border:1.5px solid #dff0ff;background:#2f6fb5;color:#fff;font:900 9px/9px Georgia,serif;text-align:center;}
-  #wmTravel{width:100%;padding:8px;font:600 13px Georgia,serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+  #wmTravel{width:100%;padding:9px;font:600 15px Georgia,serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
     color:#1b140b;background:linear-gradient(#f0d58e,#c9a456);border:1px solid #7a5f2e;}
   #wmTravel:disabled{cursor:default;color:#9c8d70;background:#2a231a;border-color:#4a3e2c;}
-  #wmLegend{position:absolute;left:22px;bottom:18px;display:flex;gap:16px;font:12px Georgia,serif;color:#d8ccb0;pointer-events:none;
+  #wmLegend{position:absolute;left:22px;bottom:18px;display:flex;gap:16px;font:14px Georgia,serif;color:#d8ccb0;pointer-events:none;
     text-shadow:0 1px 2px #000;}
   #wmLegend span{display:flex;align-items:center;gap:6px;}
   #wmLegend b{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid #ffd46b;background:#15110c;}
   #wmLegend b.k{border-color:#b89a5e;} #wmLegend b.o{border:0;border-radius:0;width:9px;height:9px;background:#ffd46b;transform:rotate(45deg);}
-  #wmHint{position:absolute;right:22px;bottom:18px;font:12px Georgia,serif;color:#a89a7c;pointer-events:none;text-shadow:0 1px 2px #000;}
+  #wmHint{position:absolute;right:22px;bottom:18px;font:14px Georgia,serif;color:#a89a7c;pointer-events:none;text-shadow:0 1px 2px #000;}
   #mapClose{position:absolute;top:12px;right:16px;width:36px;height:36px;border-radius:50%;padding:0;cursor:pointer;z-index:3;
     background:rgba(20,15,10,.8);border:1.5px solid #b89a5e;color:#f3e2b4;font-size:20px;line-height:1;}
   @media (max-width:640px){ #wmCard{top:auto;bottom:52px;right:12px;left:12px;width:auto;} #wmCard.flip{top:72px;bottom:auto;left:12px;right:12px;} #wmHint{display:none;} #wmTitle{font-size:15px;} }
@@ -1855,6 +1855,42 @@ const MUSIC={
     bar(); this.timer=setInterval(bar, 4000);   // a new chord every 4s -> calm
   },
   stop(){ if(this.timer){ clearInterval(this.timer); this.timer=null; } }
+};
+// ── the main menu's theme: a music box over warm chords — A minor, wistful, but it comes home.
+// Eight bars of two seconds (Am F C G · Am F Dm E): a soft pad, a plucked bass on 1 and 3, a
+// quiet arpeggio, and the tune on a little bell. Every other pass the tune sits an octave lower.
+// It only plays while the menu is on screen, and never before the browser lets audio run
+// (notes queued on a suspended context would all go off at once when it wakes).
+const MENU_MUSIC={
+  timer:null, step:0,
+  chords:[[110,220,261.63,329.63],[87.31,174.61,220,261.63],[130.81,196,261.63,329.63],[98,196,246.94,293.66],
+          [110,220,261.63,329.63],[87.31,174.61,220,261.63],[73.42,146.83,174.61,220],[82.41,164.81,207.65,246.94]],
+  tune:[[659.25,880,1046.5,987.77],[880,0,783.99,698.46],[659.25,783.99,1046.5,783.99],[1174.66,0,987.77,0],
+        [1046.5,987.77,880,659.25],[698.46,880,1046.5,880],[1174.66,1046.5,880,698.46],[830.61,0,987.77,0]],
+  bell(c,f,t,dur,vol){
+    for(const [m,ty,v] of [[1,'triangle',vol],[2,'sine',vol*0.35]]){
+      const o=c.createOscillator(), g=c.createGain(); o.type=ty; o.frequency.setValueAtTime(f*m,t);
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(v,t+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+0.05); }
+  },
+  start(){
+    if(this.timer||!S.musicOn) return;
+    const BEAT=0.5;
+    const bar=()=>{
+      const menu=document.getElementById('menu');
+      if(!S.musicOn || !menu || !menu.classList.contains('active')){ this.stop(); return; }
+      const c=SFX.ac(); if(!c || c.state!=='running') return;          // wait for the first tap / key
+      const i=this.step%8, ch=this.chords[i], tn=this.tune[i], low=Math.floor(this.step/8)%2===1, t0=c.currentTime+0.05;
+      ch.forEach((f,k)=>{ if(k) SFX.pad(f, 2.3, 0.014, 0.05); });                       // the pad
+      for(const b of [0,2]) this.bell(c, ch[0], t0+b*BEAT, 0.9, 0.045);                  // bass, plucked
+      ch.slice(1).concat(ch[2]*2).forEach((f,k)=>this.bell(c, f*2, t0+k*BEAT, 0.5, 0.010)); // arpeggio, barely there
+      tn.forEach((f,k)=>{ if(!f) return; let n=1; while(k+n<4 && !tn[k+n]) n++;            // a rest holds the note before it
+        this.bell(c, low?f/2:f, t0+k*BEAT, n*BEAT+0.6, low?0.04:0.034); });
+      this.step++;
+    };
+    bar(); this.timer=setInterval(bar, 2000);
+  },
+  stop(){ if(this.timer){ clearInterval(this.timer); this.timer=null; } this.step=0; }
 };
 // ── EPIC boss music: dark minor progression, pulsing bass, driving arpeggio (abyss arena) ──
 const BOSS_MUSIC={
@@ -5611,6 +5647,7 @@ function enterArea(id,fromRight,toX){
   // (Queen Seby now lives in the top-down 'sebyboss' arena — see the HUB boss in enterHub/updateHub)
   // spawn
   if(toX!=null){P.x=toX;}else if(fromRight){P.x=A.w-100;}else{P.x=A.spawnX;}
+  A.entryX=P.x;                                      // where a faint puts you back: the way you came in
   P.y=480;P.vx=0;P.vy=0;
   nearPortal=null;
   document.getElementById('areaName').textContent=A.name;
@@ -5657,7 +5694,7 @@ function startGame(){
   if(!S.introSeen) playIntro();
   if(S.companion) spawnCompanion();
   initUIBar(); syncHUD();
-  SFX.ac(); MUSIC.start();          // resume audio on user gesture
+  SFX.ac(); zoneMusic();           // resume audio on user gesture; the room's own theme
   updateQuestHUD(); checkAchievements();
   if(!rafRunning){rafRunning=true;requestAnimationFrame(loop);}
 }
@@ -6303,7 +6340,7 @@ function playerFaint(){
   SFX.lose();
   for(let i=0;i<12;i++)particles.push({x:P.x,y:P.y-30,vx:(Math.random()-.5)*6,vy:-(Math.random()*4),life:1,c:'#ff7a7a'});
   showFaintScreen();
-  P.x=A.spawnX; P.y=480; P.vx=0; P.vy=0;
+  P.x=A.entryX!=null?A.entryX:A.spawnX; P.y=480; P.vx=0; P.vy=0;   // back at the way you came in
   P.hp=P.maxHp; P.iframe=Date.now()+1500;
   cam.x=Math.max(0,Math.min(A.w-VW,P.x-VW/2));
   bananas=[];
@@ -7176,7 +7213,7 @@ function loseBattle(){
     pi.classList.remove('fainted');
     document.getElementById('battle').classList.remove('show');
     battleActive=false;
-    P.x=A.spawnX; P.y=480; P.vx=0; P.vy=0;
+    P.x=A.entryX!=null?A.entryX:A.spawnX; P.y=480; P.vx=0; P.vy=0;   // back at the way you came in
     cam.x=Math.max(0,Math.min(A.w-VW,P.x-VW/2));
     P.battleCD=Date.now()+1200;
     toast('Ai pierdut lupta — dar nimic grav!');
@@ -8077,6 +8114,7 @@ function enterHub(fromRight){
   // door); honour its exact y. only the default spawn is clamped to the band.
   c.y = ov ? Math.max(0,Math.min(VH,syf*VH)) : Math.max(b.top,Math.min(b.bot,syf*VH));
   c.z=0; c.vz=0; c.onPlat=false; c.moving=false; c.facing=1; c.phase=0;
+  HUB.entry={xf:sxf, yf:c.y/VH};                    // the door you came in by: where a faint sends you back
   if(maskReady() && maskClassify(c.x,c.y)!=='walk'){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
   c.safeX=c.x; c.safeY=c.y;
   HUB.target=null; HUB.nearCave=false; HUB.nearRocky=false; HUB.nearMerge=false; HUB.nearDoor=null; HUB.nearMerlin=false; HUB.nearPotions=false; HUB.nearFishbarrel=false; HUB.nearDivesuit=false; HUB.nearBankdesk=false; HUB.nearStaff=null; HUB.nearTomy=false; HUB.nearHubNpc=false; HUB.nearSeal=false; HUB.sealBreaking=null; HUB.nearSpot=null; HUB.nearShroom=false; HUB.nearGarrison=null; HUB.leverSeq=[];
@@ -8563,7 +8601,16 @@ function landHub(){
   else if(cl==='walk'){ c.onPlat=false; c.safeX=c.x; c.safeY=c.y; }
   else { c.x=c.safeX; c.y=c.safeY; }   // landed somewhere illegal -> snap back
 }
-// hurt the cat in top-down mode: damage + knockback away from (fx,fy); faint -> back to the area spawn
+// After a faint you wake at the door you came in by, never where you fell.
+function hubRespawnAtEntry(){
+  const c=HUB.cat, e=HUB.entry||A.hub.spawn;
+  c.x=e.xf*HUB.worldW; c.y=Math.max(0,Math.min(VH,e.yf*VH)); c.z=0; c.vz=0; c.onPlat=false;
+  if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
+  c.safeX=c.x; c.safeY=c.y; HUB.target=null; c.moving=false;
+  HUB.camx=Math.max(0,Math.min(HUB.worldW-VW, c.x-VW/2)); cam.x=HUB.camx;
+  if(HUB.rocky && S.companion && !COMP.staying){ HUB.rocky.x=c.x-c.facing*46; HUB.rocky.y=c.y; }   // he comes round with you
+}
+// hurt the cat in top-down mode: damage + knockback away from (fx,fy); faint -> back to the door you came in by
 function hubHurtPlayer(now,dmg,col,fx,fy,kb){
   if(now<=(P.iframe||0)) return;
   dmg=Math.max(1,Math.round(dmg*(HUB.dmgScale||1)));       // level scaling (see lvlScale)
@@ -8575,9 +8622,7 @@ function hubHurtPlayer(now,dmg,col,fx,fy,kb){
   if(P.hp<=0){
     SFX.lose(); showFaintScreen();
     P.hp=P.maxHp; P.iframe=now+1800;
-    const sp=A.hub.spawn; c.x=sp.xf*HUB.worldW; c.y=Math.max(0,Math.min(VH,sp.yf*VH));
-    if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} }
-    c.safeX=c.x; c.safeY=c.y; HUB.target=null;
+    hubRespawnAtEntry();
     if(bossFightLive()) HUB.restartFightAt=now+400;   // under the faint screen, the fight starts over
   }
 }
@@ -9440,8 +9485,8 @@ function bankCut(caption){
     actors:[{img:CINE_FACE.oink, xf:0.505, yf:0.678, h:0.17, cut:0.76},
             {img:CINE_FACE.bristle, xf:0.400, yf:0.845, h:0.14, bob:true}]};
 }
-// Queen Seby's entrance: the circle glows while she sleeps under it. Then it tears open into a
-// portal — a ring of runes, a spiral of light, lightning off its rim — and she climbs up out of it
+// Queen Seby's entrance: the vortex glows while she sleeps under it. Then it tears open into a
+// portal — a turning swirl like the painted one, lightning off its rim — and she climbs up out of it
 // through a column of light. When she is through, the portal slams shut in a flash and a shockwave.
 // Stages: hidden → portal → rise → land → (fight). It starts the moment you walk into her lair:
 // inside the opening scene the first time, on its own after that (and after every faint).
@@ -9482,6 +9527,48 @@ function sebyAppearStep(b,now){
     bossTitle('seby');
   }
 }
+// The portal is painted like the vortex in the floor art: a round swirl of magenta and pink arms
+// around a glowing heart, drawn at a quarter resolution and scaled up unsmoothed so its pixels
+// match the map's. It is the painted vortex's size (≈175 px of the 1184-px-tall art).
+const SEBY_PORTAL_R=0.148, SEBY_PORTAL_FL=0.62, SEBY_PX=3;
+const SEBY_CV={swirl:document.createElement('canvas'), beam:document.createElement('canvas')};
+function sebySwirl(R, open, spin, glow){
+  const cv=SEBY_CV.swirl, px=SEBY_PX, r=Math.max(1,R/px), w=Math.ceil(r*2.6), h=Math.ceil(r*2.6*SEBY_PORTAL_FL);
+  if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; }
+  const x=cv.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,w,h);
+  x.translate(w/2,h/2); x.scale(1,SEBY_PORTAL_FL);
+  const rr=r*open;
+  if(rr>1){
+    const bg=x.createRadialGradient(0,0,0,0,0,rr);                       // the throat: hot at the heart, dark at the rim
+    bg.addColorStop(0,'rgba(255,190,245,'+(0.95*glow)+')'); bg.addColorStop(0.18,'rgba(232,70,196,.95)');
+    bg.addColorStop(0.55,'rgba(120,24,120,.95)'); bg.addColorStop(0.9,'rgba(70,12,70,.85)'); bg.addColorStop(1,'rgba(70,12,70,0)');
+    x.fillStyle=bg; x.beginPath(); x.arc(0,0,rr,0,7); x.fill();
+    for(let k=0;k<3;k++){                                                 // three arms, wound in toward the heart
+      for(let t=0.04;t<=1;t+=0.012){
+        const a=spin+k*2.094-t*3.9, rad=rr*(0.06+0.9*t), dw=(0.5+2.6*t)*Math.min(1,rr/12);
+        const col = t<0.3 ? '255,200,248' : t<0.65 ? '255,92,214' : '186,70,230';
+        x.fillStyle='rgba('+col+','+(t>0.82?(1-t)/0.18:1)*0.9+')';
+        x.beginPath(); x.arc(Math.cos(a)*rad, Math.sin(a)*rad, dw, 0, 7); x.fill();
+        if(t>0.25){ x.fillStyle='rgba(60,8,60,'+(t>0.82?(1-t)/0.18:1)*0.55+')';      // the dark band trailing each arm
+          const a2=a-0.55; x.beginPath(); x.arc(Math.cos(a2)*rad*0.97, Math.sin(a2)*rad*0.97, dw*0.8, 0, 7); x.fill(); }
+      }
+    }
+  }
+  return cv;
+}
+function sebyBeam(wd, ht, alpha){                                          // one smooth column: soft at the sides, gone at the top
+  const cv=SEBY_CV.beam, w=Math.max(2,Math.ceil(wd)), h=Math.max(2,Math.ceil(ht));
+  if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; }
+  const x=cv.getContext('2d'); x.globalCompositeOperation='source-over'; x.clearRect(0,0,w,h);
+  const hz=x.createLinearGradient(0,0,w,0);
+  hz.addColorStop(0,'rgba(230,140,255,0)'); hz.addColorStop(0.3,'rgba(235,160,255,.55)'); hz.addColorStop(0.5,'rgba(255,225,255,1)');
+  hz.addColorStop(0.7,'rgba(235,160,255,.55)'); hz.addColorStop(1,'rgba(230,140,255,0)');
+  x.fillStyle=hz; x.fillRect(0,0,w,h);
+  x.globalCompositeOperation='destination-in';
+  const vt=x.createLinearGradient(0,0,0,h); vt.addColorStop(0,'rgba(0,0,0,0)'); vt.addColorStop(0.75,'rgba(0,0,0,'+alpha+')'); vt.addColorStop(1,'rgba(0,0,0,'+alpha+')');
+  x.fillStyle=vt; x.fillRect(0,0,w,h);
+  return cv;
+}
 function drawSebyRise(sx, fy, bsz, b){
   const now=Date.now(), ap=b.appear, st=ap.stage, el=now-(ap.t0||now);
   const sy=b.portalY||fy;                                              // the portal's heart
@@ -9491,49 +9578,32 @@ function drawSebyRise(sx, fy, bsz, b){
   const ep=1-Math.pow(1-kp,3), er=1-Math.pow(1-kr,3);
   const shut = st==='land' ? 1-Math.min(1,kl*1.6) : 1;               // it closes fast once she is out
   const pulse=0.5+0.5*Math.sin(now*(st==='hidden'?0.004:0.02));
-  const R=bsz*(0.5+0.55*ep)*shut, fl=0.32;
+  const R0=SEBY_PORTAL_R*VH, R=R0*ep*shut, fl=SEBY_PORTAL_FL;
   g.save(); g.globalCompositeOperation='lighter';
-  { const rr=Math.max(4, st==='hidden'?bsz*0.55:R*1.25), gr=g.createRadialGradient(sx,sy,4,sx,sy,rr);   // the circle, breathing
-    gr.addColorStop(0,'rgba(176,124,240,'+((st==='hidden'?0.18:0.5)+0.15*pulse)+')'); gr.addColorStop(1,'rgba(150,80,230,0)');
+  { const rr=st==='hidden'?R0*0.9:Math.max(R0*0.9,R*1.3), gr=g.createRadialGradient(sx,sy,4,sx,sy,rr);   // the vortex, breathing
+    gr.addColorStop(0,'rgba(240,90,210,'+((st==='hidden'?0.16:0.45*shut)+0.12*pulse)+')'); gr.addColorStop(1,'rgba(200,60,200,0)');
     g.fillStyle=gr; g.beginPath(); g.ellipse(sx,sy,rr,rr*fl,0,0,7); g.fill(); }
   g.restore();
   if(st!=='hidden' && R>2){
-    // the hole itself: dark at the heart, a violet throat
-    g.save();
-    const hg=g.createRadialGradient(sx,sy,2,sx,sy,R);
-    hg.addColorStop(0,'rgba(8,0,20,'+(0.95*ep)+')'); hg.addColorStop(0.6,'rgba(40,10,80,'+(0.85*ep)+')'); hg.addColorStop(1,'rgba(120,60,220,0)');
-    g.fillStyle=hg; g.beginPath(); g.ellipse(sx,sy,R,R*fl,0,0,7); g.fill();
-    g.globalCompositeOperation='lighter';
-    const spin=now*0.004*(1+kp*1.5);
-    for(let i=0;i<5;i++){                                              // spiral arms, wound inward
-      const rr=R*(0.25+i*0.17), a0=spin*(1+i*0.3)+i*1.3;
-      g.strokeStyle='rgba('+(i%2?'159,230,255':'200,160,255')+','+(0.55*ep*(1-i*0.08))+')'; g.lineWidth=2+ (4-i)*0.6;
-      g.beginPath(); g.ellipse(sx,sy,rr,rr*fl,0,a0,a0+2.2); g.stroke();
-      g.beginPath(); g.ellipse(sx,sy,rr,rr*fl,0,a0+3.14,a0+5.0); g.stroke(); }
-    // the ring of runes, turning the other way
-    g.strokeStyle='rgba(230,212,255,'+(0.9*ep)+')'; g.lineWidth=3;
-    g.beginPath(); g.ellipse(sx,sy,R,R*fl,0,0,7); g.stroke();
-    g.fillStyle='rgba(240,225,255,'+(0.85*ep)+')';
-    for(let i=0;i<16;i++){ const a=-spin*0.6+i*0.3927, x=sx+Math.cos(a)*R*1.09, y=sy+Math.sin(a)*R*fl*1.09;
-      g.save(); g.translate(x,y); g.rotate(a); g.fillRect(-1.5,-5*fl-2,3,6+((i*7)%3)*2); g.restore(); }
+    const cv=sebySwirl(R0, ep*shut, now*0.0035*(1+kp), 0.7+0.3*pulse);
+    g.save(); g.imageSmoothingEnabled=false;
+    g.drawImage(cv, Math.round(sx-cv.width*SEBY_PX/2), Math.round(sy-cv.height*SEBY_PX/2), cv.width*SEBY_PX, cv.height*SEBY_PX);
+    g.restore();
     // lightning off the rim, a few bolts at a time
-    if(st!=='land' && Math.random()<0.35){ const a=Math.random()*6.283, pts=[[sx+Math.cos(a)*R, sy+Math.sin(a)*R*fl]];
-      for(let j=0;j<5;j++){ const q=pts[pts.length-1]; pts.push([q[0]+(Math.random()-0.5)*40, q[1]-14-Math.random()*26]); }
+    g.save(); g.globalCompositeOperation='lighter';
+    if(st!=='land' && Math.random()<0.3){ const a=Math.random()*6.283, pts=[[sx+Math.cos(a)*R, sy+Math.sin(a)*R*fl]];
+      for(let j=0;j<5;j++){ const q=pts[pts.length-1]; pts.push([q[0]+(Math.random()-0.5)*36, q[1]-12-Math.random()*24]); }
       ap.bolts.push({pts, t:now}); }
     ap.bolts=ap.bolts.filter(o=>now-o.t<140);
-    g.lineWidth=2; g.shadowColor='#b07cf0'; g.shadowBlur=12;
-    for(const o of ap.bolts){ g.strokeStyle='rgba(235,220,255,'+(1-(now-o.t)/140)+')'; g.beginPath();
+    g.lineWidth=2; g.shadowColor='#ff5cd6'; g.shadowBlur=10;
+    for(const o of ap.bolts){ g.strokeStyle='rgba(255,200,250,'+(1-(now-o.t)/140)+')'; g.beginPath();
       o.pts.forEach((q,j)=>j?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1])); g.stroke(); }
     g.restore();
   }
   if(st==='rise' || st==='land'){
-    g.save(); g.globalCompositeOperation='lighter';                     // the column of light she comes up through
-    const cw=R*1.1*(1-0.4*kr)*(st==='land'?1-kl:1), top=sy-bsz*2.4;
-    for(const [wk,al] of [[1,0.16],[0.66,0.2],[0.33,0.3]]){             // soft edges: three widths, brightest at the core
-      const cg=g.createLinearGradient(0,top,0,sy);
-      cg.addColorStop(0,'rgba(190,150,255,0)'); cg.addColorStop(1,'rgba(205,175,255,'+(al*(1-kr*0.4))+')');
-      g.fillStyle=cg; g.beginPath(); g.ellipse(sx, sy, cw*wk/2, R*fl, 0, 0, Math.PI); g.lineTo(sx-cw*wk/2, top); g.lineTo(sx+cw*wk/2, top); g.closePath(); g.fill(); }
-    g.restore();
+    const cw=R0*1.15*(1-0.35*kr)*(st==='land'?1-kl:1), ch=bsz*2.4;      // the column of light she comes up through
+    if(cw>2){ const bm=sebyBeam(cw, ch, 0.6*(1-kr*0.35));
+      g.save(); g.globalCompositeOperation='lighter'; g.drawImage(bm, sx-cw/2, sy-ch); g.restore(); }
     g.save();
     if(st==='rise'){ g.beginPath(); g.rect(sx-bsz*2, sy-bsz*3, bsz*4, bsz*3+2); g.clip(); }   // nothing below the floor line while she climbs
     g.globalAlpha=Math.min(1,kr*1.6);
@@ -9543,10 +9613,10 @@ function drawSebyRise(sx, fy, bsz, b){
   }
   if(st==='land'){
     g.save();                                                           // the shockwave, and the flash
-    const sw=bsz*(0.6+kl*2.6);
-    g.strokeStyle='rgba(220,200,255,'+(1-kl)+')'; g.lineWidth=6*(1-kl)+1;
+    const sw=R0*(1+kl*3);
+    g.strokeStyle='rgba(255,180,245,'+(1-kl)+')'; g.lineWidth=6*(1-kl)+1;
     g.beginPath(); g.ellipse(sx,sy,sw,sw*fl,0,0,7); g.stroke();
-    g.fillStyle='rgba(235,225,255,'+(0.75*Math.max(0,1-kl*2.2))+')'; g.fillRect(0,0,VW,VH);
+    g.fillStyle='rgba(255,225,250,'+(0.75*Math.max(0,1-kl*2.2))+')'; g.fillRect(0,0,VW,VH);
     g.restore();
   }
 }
@@ -9610,6 +9680,7 @@ function restartBossFight(){
     bossTitle('coon');
     return;
   }
+  if(HUB.entry) HUB._spawnOverride={xf:HUB.entry.xf, yf:HUB.entry.yf};
   enterHub(false);
 }
 function startBossOpening(){
@@ -10845,7 +10916,7 @@ function updateHub(){
       floatText(c.x,c.y-42,'-'+dm,'#ff8a8a'); SFX.hit();
       const a=Math.atan2(c.y-d.y,c.x-d.x); c.x+=Math.cos(a)*10; c.y+=Math.sin(a)*8;
       if(!maskReady())hubClampY();
-      if(P.hp<=0){ SFX.lose(); showFaintScreen(); P.hp=P.maxHp; P.iframe=now+1500; setTimeout(()=>tutorialFire('faint'),1200); }
+      if(P.hp<=0){ SFX.lose(); showFaintScreen(); P.hp=P.maxHp; P.iframe=now+1500; hubRespawnAtEntry(); setTimeout(()=>tutorialFire('faint'),1200); }
     }
   }
   if(A.hub.tutorial) combatTutorial();
@@ -13384,6 +13455,23 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if(id!=='game')inGame=false;
+  if(id==='menu') zoneMusic();                 // the menu has its own theme; the game's waits
+  else MENU_MUSIC.stop();
+}
+// Start whichever theme belongs on screen now (and silence the rest): the menu's, or the room's.
+function zoneMusic(){
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,MENU_MUSIC].forEach(m=>m.stop());
+  if(!S.musicOn) return;
+  const menu=document.getElementById('menu'); if(menu && menu.classList.contains('active')){ MENU_MUSIC.start(); return; }
+  const H=A&&A.mode==='topdown'&&A.hub, live=HUB.boss&&!HUB.boss.defeated;
+  if(H&&H.abyssBoss) BOSS_MUSIC.start();
+  else if(H&&H.mechboar&&live) MECH_MUSIC.start();
+  else if(H&&H.sebyMusic&&live) SEBY_MUSIC.start();
+  else if(H&&H.catMusic&&live) CAT_MUSIC.start();
+  else if(H&&H.slumMusic) SLUM_MUSIC.start();
+  else if(H&&H.sewerChase) SEWER_MUSIC.start();
+  else if(H&&H.underwater) OCEAN_MUSIC.start();
+  else MUSIC.start();
 }
 function openModal(id){const el=document.getElementById(id);el.classList.add('active');renderModal(id);
   if(S.lang==='ro'){ try{ translateDOM(el); }catch(e){} } }
@@ -15912,8 +16000,7 @@ function renderProfile(){
   });
   document.getElementById('sndBtn').onclick=()=>{ S.soundOn=!S.soundOn; save(); if(S.soundOn)SFX.click(); renderProfile(); };
   document.getElementById('musBtn').onclick=()=>{ S.musicOn=!S.musicOn; save();
-    if(S.musicOn){ SFX.ac(); const H=A&&A.hub; if(H&&H.abyssBoss)BOSS_MUSIC.start(); else if(H&&H.mechboar&&HUB.boss&&!HUB.boss.defeated)MECH_MUSIC.start(); else if(H&&H.sebyMusic&&HUB.boss&&!HUB.boss.defeated)SEBY_MUSIC.start(); else if(H&&H.catMusic&&HUB.boss&&!HUB.boss.defeated)CAT_MUSIC.start(); else if(H&&H.slumMusic)SLUM_MUSIC.start(); else if(H&&H.sewerChase)SEWER_MUSIC.start(); else if(H&&H.underwater)OCEAN_MUSIC.start(); else MUSIC.start(); }
-    else { MUSIC.stop(); OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEWER_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); }
+    SFX.ac(); zoneMusic();
     renderProfile(); };
   document.getElementById('resetBtn').onclick=()=>{
     if(confirm(T('Reset all progress?'))){localStorage.removeItem('puiutu_save');S=load();A=null;AREAS=buildAreas();enterArea('garden',false);syncHUD();renderStatbars();renderProfile();updateQuestHUD();toast('Game reset!');}
@@ -17665,6 +17752,7 @@ document.getElementById('mapClose').addEventListener('click',closeMap);
 //═══════════════════════════════════════════════════════════════ BOOT
 renderStatbars();
 drawMenuCat();
+MENU_MUSIC.start();   // the menu is the first screen; its theme starts on the first tap or key
 window.addEventListener('load',resize);
 
 // browsers block audio until a user gesture — resume on the first tap/key
