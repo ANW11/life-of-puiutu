@@ -17539,7 +17539,7 @@ const MAP_LOCS=[
   {id:'beach',   name:'Beach',           x:19.1, y:42.5, ico:'anchor', reg:'coast', desc:'Sand, a pier, a fort, and a pig who will talk for five fish.'},
   {id:'ocean1',  name:'Ocean Depths',    x:2.4,  y:21.0, ico:'wave',   reg:'coast', desc:'The shallows. Nobody breathes down there without a suit.'},
   {id:'ocean2',  name:'Sunken Sanctum',  x:12.6, y:75.5, ico:'pillar', reg:'deep',  desc:'Drowned ruins around a sealed portal. The runes want something violet.'},
-  {id:'street',  name:'City',            x:58.6, y:60.0, ico:'town',   reg:'city',  desc:'The square. Union soldiers, a fountain, and the most elegant cat in town.'},
+  {id:'street',  name:'City',            x:58.6, y:60.0, clear:[[47,50],[44,62],[50,70]], ico:'town',   reg:'city',  desc:'The square. Union soldiers, a fountain, and the most elegant cat in town.'},
   {id:'bank',    name:'Whisker Savings Bank', x:63.6, y:48.2, ico:'coin', reg:'city', desc:'Every little fish counts. Neutral, they say. Very neutral.'},
   {id:'castleentrance', name:'Castle Gate', x:89.6, y:21.5, ico:'castle', reg:'heights', desc:'The Cat King\'s castle. Lions on every wall.'},
   {id:'slum',    name:'The Slums',       x:62.2, y:79.7, ico:'hut',    reg:'slums', desc:'Shacks on stilts. NomNom\'s forge, and an alley everyone avoids.'},
@@ -17711,9 +17711,10 @@ function wmFogTick(t){
   // clear around what you know
   g2.globalCompositeOperation='destination-out';
   for(const L of MAP_LOCS){ if(!(mapKnown(L)||mapHere(L))) continue;
-    const x=L.x/100*W, y=L.y/100*H, r=W*0.15;
-    const gr=g2.createRadialGradient(x,y,r*0.25,x,y,r); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(1,'rgba(0,0,0,0)');
-    g2.fillStyle=gr; g2.beginPath(); g2.arc(x,y,r,0,7); g2.fill(); }
+    for(const [px,py] of [[L.x,L.y], ...(L.clear||[])]){                // a place can uncover more than its pin
+      const x=px/100*W, y=py/100*H, r=W*0.15;
+      const gr=g2.createRadialGradient(x,y,r*0.25,x,y,r); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(1,'rgba(0,0,0,0)');
+      g2.fillStyle=gr; g2.beginPath(); g2.arc(x,y,r,0,7); g2.fill(); } }
   WM.raf=requestAnimationFrame(wmFogTick);
 }
 function openMap(){
