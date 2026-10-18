@@ -8481,7 +8481,15 @@ function rightmostWalkX(){
   }
   return HUB.worldW-14;
 }
-function hubClick(px,py){ HUB.target={x:px+HUB.camx, y:py}; }
+// Click-to-move. A click on a wall or on painted scenery used to set a target the cat could
+// never reach: the path assist kept turning it along the edge, and it ran and jittered there on
+// its own until you pressed a key. Now the target is the nearest ground you can stand on, and
+// a walk that stops getting closer gives up (see the stuck check in the hub update).
+function hubClick(px,py){
+  let t={x:px+HUB.camx, y:py};
+  if(maskReady() && !hubStand(t.x,t.y,HUB.cat&&HUB.cat.onPlat)){ const p=nearestWalk(t.x,t.y); if(p) t={x:p.x, y:p.y}; else return; }
+  t.best=Infinity; t.since=Date.now(); HUB.target=t;
+}
 // move along the path: try the desired direction, then small rotations so you
 // "slide" around the path's bends instead of sticking on invisible walls
 function hubTryMove(c,dx,dy){
@@ -10523,8 +10531,11 @@ function updateHub(){
   if(input.joy){ mvx=input.jx; mvy=input.jy; }     // the analog stick: direction AND how far it is pushed
   let dx=0,dy=0;
   if(mvx||mvy){ HUB.target=null; const l=Math.hypot(mvx,mvy)||1, k=Math.min(1,l); dx=mvx/l*sp*k; dy=mvy/l*sp*k; c.moving=true; if(mvx)c.facing=mvx<0?-1:1; c.phase+=0.16; }
-  else if(HUB.target){ const tx=HUB.target.x-c.x,ty=HUB.target.y-c.y,d=Math.hypot(tx,ty);
-    if(d>sp){ dx=tx/d*sp; dy=ty/d*sp; c.moving=true; if(Math.abs(tx)>1)c.facing=tx<0?-1:1; c.phase+=0.16; } else { c.moving=false; HUB.target=null; } }
+  else if(HUB.target){ const T=HUB.target, tx=T.x-c.x,ty=T.y-c.y,d=Math.hypot(tx,ty), now=Date.now();
+    // no closer for 0.6 s (a wall in the way, a ledge, a bend the assist cannot take): stop
+    if(T.best==null || d<T.best-4){ T.best=d; T.since=now; }
+    if(now-T.since>600){ c.moving=false; HUB.target=null; }
+    else if(d>sp){ dx=tx/d*sp; dy=ty/d*sp; c.moving=true; if(Math.abs(tx)>1)c.facing=tx<0?-1:1; c.phase+=0.16; } else { c.moving=false; HUB.target=null; } }
   else c.moving=false;
   // apply movement (free while airborne; constrained to current layer while grounded)
   const oldX=c.x;
@@ -16778,7 +16789,9 @@ document.addEventListener('keydown',e=>{
   }
 });
 document.addEventListener('keyup',e=>{
-  if(typingInField(e)) return;
+  // no typingInField check: a key held when the chat opened is let go inside the chat box,
+  // and ignoring that keyup left the cat running until the key was pressed again
+  if(e.key==='Meta'){ releaseMoveKeys(); return; }   // macOS sends no keyup for keys released while ⌘ was down
   if(e.code==='ArrowLeft'||e.code==='KeyA')input.left=false;
   if(e.code==='ArrowRight'||e.code==='KeyD')input.right=false;
   if(e.code==='ArrowUp'||e.code==='KeyW'||e.code==='Space')input.jumpHeld=false;
@@ -16786,10 +16799,16 @@ document.addEventListener('keyup',e=>{
   if(e.code==='ArrowDown'||e.code==='KeyS')input.down=false;
 });
 
+// Let go of every held direction. The browser sends no keyup to a page that is not focused, so
+// switching windows (or a ⌘-shortcut) with a key down used to leave the cat walking on its own.
+function releaseMoveKeys(){ input.left=input.right=input.up=input.down=false; input.jumpHeld=false; }
+window.addEventListener('blur', releaseMoveKeys);
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) releaseMoveKeys(); });
 // touch buttons
 function bindHold(el,on,off){
   el.addEventListener('touchstart',e=>{e.preventDefault();on();},{passive:false});
   el.addEventListener('touchend',e=>{e.preventDefault();off();},{passive:false});
+  el.addEventListener('touchcancel',()=>off());          // a call, a notification, the controls hidden by a scene
   el.addEventListener('mousedown',e=>{e.preventDefault();on();});
   el.addEventListener('mouseup',e=>{off();});
   el.addEventListener('mouseleave',e=>{off();});
