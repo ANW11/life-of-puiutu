@@ -197,7 +197,8 @@
 
   /* ── short screens (a phone held sideways): a smaller HUD that keeps clear of the top buttons ── */
   @media (max-height:500px){
-    #uiOrbs{transform:translateX(-50%) scale(.78);transform-origin:bottom center;bottom:6px;}
+    #uiOrbs{transform:translateX(-50%) scale(.78);transform-origin:bottom center;bottom:6px;
+      left:min(50%, calc(100% - 440px));}              /* keep the orbs clear of the spell bar on a narrow phone */
     .topbar{height:40px;padding:0 8px;}
     .topbar .back-btn{padding:4px 9px;font-size:12px;border-radius:11px;}
     .topbar>div{gap:6px !important;}
@@ -220,6 +221,7 @@
     text-shadow:0 1px 2px #000;font-family:'Trebuchet MS',sans-serif;}
   /* empty slot: dashed outline, no icon */
   .spellSlot.empty{border-style:dashed;border-color:#8a6a3f;background:rgba(58,42,22,.45);}
+  #spellBar .spellSlot.empty{padding:0;}   /* the generic `.empty` (empty lists) pads 30px — not in a hotbar slot */
   /* not enough mana → dim; on cooldown → dark sweep from the bottom + the seconds left */
   .spellSlot.nomana .sIco{opacity:.35;filter:grayscale(1);}
   .spellSlot .sCd{position:absolute;inset:0;border-radius:10px;background:rgba(10,6,2,.72);
@@ -228,6 +230,17 @@
   .spellSlot.cooling .sCd{display:flex;}
   @media(max-width:520px){ .spellSlot{width:46px;height:46px;} .spellSlot .sIco{font-size:22px;}
     .spellSlot .spIcoWrap{width:34px !important;height:34px !important;} }
+  /* a phone held sideways: smaller slots, so the bar (bottom-right) stops short of the orbs */
+  @media (max-height:500px){
+    #spellBar{gap:6px;right:10px;bottom:10px;}         /* smaller slots: the bar no longer reaches the orbs */
+    #spellBar .spellSlot{width:40px;height:40px;border-radius:10px;border-width:2px;}
+    #spellBar .spellSlot .sIco{font-size:19px;}
+    #spellBar .spellSlot .spIcoWrap{width:30px !important;height:30px !important;}
+    #spellBar .spellSlot.potSlot svg,#spellBar .spellSlot.potSlot .forgeArt{width:30px;height:30px;}
+    #spellBar .spellSlot.buddySlot .bIco{font-size:19px;}
+    #spellBar .spellSlot .sKey{font-size:9px;left:3px;top:1px;}
+    #spellBar .barGap{width:4px !important;}
+  }
   /* ── Dark Souls "YOU FAINTED" screen ── */
   #faintScreen{position:absolute;inset:0;z-index:90;display:none;pointer-events:none;
     align-items:center;justify-content:center;overflow:hidden;}
@@ -1063,10 +1076,23 @@
   .icon-btn:hover{transform:scale(1.08);} .icon-btn:active{transform:scale(.92);}
   @media (max-height:500px){ .icon-btn{width:36px;height:32px;} }
   /* settings: the moved language flags and mode buttons sit in normal flow there */
-  #settingsBody{padding:18px;color:#ffe7b0;}
-  .set-h{font-size:16px;margin:6px 0 10px;color:#ffd36b;}
-  #settingsBody #langPick, #settingsBody #modePick, #settingsBody .set-pick{position:static;margin-bottom:18px;}
+  /* one row per setting — the name on the left, its buttons beside it — so it all fits on one screen */
+  #settingsBody{padding:16px 20px;color:#ffe7b0;display:grid;grid-template-columns:max-content 1fr;
+    align-items:center;column-gap:24px;row-gap:12px;align-content:start;}
+  .set-h{font-size:16px;margin:0;color:#ffd36b;}
+  #settingsBody #langPick, #settingsBody #modePick, #settingsBody .set-pick{position:static;margin:0;}
+  #settingsBody #resetBtn{grid-column:1/-1;justify-self:start !important;margin:4px 0 0 !important;}
+  #settingsBody > div{display:flex;justify-content:flex-start;justify-self:start;margin:0 !important;}
+  #settingsBody #langPick,#settingsBody #modePick{justify-content:flex-start;}
   .set-pick{display:flex;gap:8px;}
+  @media (max-height:500px){
+    #settings .modal-head{height:44px;flex:0 0 44px;}
+    #settings .modal-head h2{font-size:18px;}
+    #settingsBody{padding:10px 18px;row-gap:7px;}
+    .set-h{font-size:14px;}
+    #settingsBody .mode-btn{padding:4px 10px;font-size:12px;}
+    #settingsBody #resetBtn{padding:5px 12px !important;font-size:12px;}
+  }
   .phone-app{flex:1;min-width:0;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;
     align-items:center;gap:5px;padding:0 1px;}
   .pa-ico{width:60%;aspect-ratio:1;background-position:center;background-repeat:no-repeat;background-size:auto 100%;
