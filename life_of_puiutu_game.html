@@ -127,8 +127,6 @@
   .back-btn{pointer-events:auto;cursor:pointer;background:rgba(20,14,8,.65);border:2px solid #6b4a1f;border-radius:14px;
     padding:6px 12px;color:#ffe7b0;font-weight:bold;font-size:13px;}
   #btnRocky.staying{background:rgba(60,40,16,.8);border-color:#9c7233;color:#caa46a;}
-  .area-name{position:absolute;top:54px;left:0;right:0;text-align:center;color:#fff;font-size:13px;
-    text-shadow:0 2px 5px rgba(0,0,0,.7);z-index:5;opacity:.85;pointer-events:none;}
 
   /* on-screen controls */
   .touch-ctrl{position:absolute;bottom:18px;z-index:6;display:flex;gap:12px;}
@@ -869,7 +867,7 @@
   #museum .fs-tag{left:0;top:0;width:24%;font-size:calc(var(--fs)*.95);transform:translate(-50%,calc(-100% - .8em));z-index:6;}
   #museum .fs-tag.on{animation:muPop .16s ease-out;}
   @keyframes muPop{from{opacity:0;transform:translate(-50%,calc(-100% - .2em));}to{opacity:1;transform:translate(-50%,calc(-100% - .8em));}}
-  #forgeCat{position:absolute;left:79.5%;bottom:18.5%;height:52%;z-index:2;transform:translateX(-50%);
+  #forgeCat{position:absolute;left:79.5%;bottom:18.5%;height:53.5%;z-index:2;transform:translateX(-50%);
     transform-origin:50% 100%;animation:fsBreath 3.4s ease-in-out infinite;pointer-events:none;}
   @keyframes fsBreath{0%,100%{transform:translateX(-50%) scale(1,1);}50%{transform:translateX(-50%) scale(1.006,1.022);}}
   #forgeCat.nod{animation:fsNod .45s ease-out;}
@@ -1055,7 +1053,8 @@
   /* settings: the moved language flags and mode buttons sit in normal flow there */
   #settingsBody{padding:18px;color:#ffe7b0;}
   .set-h{font-size:16px;margin:6px 0 10px;color:#ffd36b;}
-  #settingsBody #langPick, #settingsBody #modePick{position:static;margin-bottom:18px;}
+  #settingsBody #langPick, #settingsBody #modePick, #settingsBody .set-pick{position:static;margin-bottom:18px;}
+  .set-pick{display:flex;gap:8px;}
   .phone-app{flex:1;min-width:0;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;
     align-items:center;gap:5px;padding:0 1px;}
   .pa-ico{width:60%;aspect-ratio:1;background-position:center;background-repeat:no-repeat;background-size:auto 100%;
@@ -1114,11 +1113,6 @@
   #menu #btnPlay{width:clamp(180px,24%,380px);bottom:7%;}
   /* settings signboard: gear on top, the word on its plank (plank = bottom 27% of the art) */
   #btnMenuSettings{right:2.5%;bottom:5%;width:clamp(78px,9%,120px);}
-  #btnFullscreen{position:absolute;left:2.5%;bottom:5%;z-index:6;width:clamp(44px,4.6%,58px);aspect-ratio:1;padding:0;border-radius:12px;cursor:pointer;
-    background:rgba(16,12,8,.62);border:2px solid rgba(243,226,180,.55);box-shadow:0 3px 10px rgba(0,0,0,.45);transition:transform .12s,background .12s;}
-  #btnFullscreen:hover{transform:scale(1.08);background:rgba(36,28,18,.8);}
-  #btnFullscreen svg{width:62%;height:62%;fill:none;stroke:#f3e2b4;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
-  #btnFullscreen .fsOff{display:none;} body.isFull #btnFullscreen .fsOn{display:none;} body.isFull #btnFullscreen .fsOff{display:inline;}
   #btnMenuSettings img{width:100%;display:block;}
   #btnMenuSettings span{position:absolute;left:8%;right:8%;bottom:7%;height:17%;display:flex;align-items:center;justify-content:center;
     font:bold clamp(10px,1.3vw,15px) 'Trebuchet MS',sans-serif;color:#fff1d0;text-shadow:0 1px 0 #3a1f0c,0 0 3px #3a1f0c;pointer-events:none;}
@@ -1199,7 +1193,6 @@
   body.cine #interactBtn, body.cine #interactPrompt, body.cine #fightBtn,
   body.cine #toast, body.cine .statbar{display:none !important;}
   body.cine{cursor:none;}
-  body.cine .area-name{font-size:15px;letter-spacing:3px;text-shadow:0 2px 8px rgba(0,0,0,.9);}
   body.cine.bars #app::before, body.cine.bars #app::after{
     content:'';position:absolute;left:0;right:0;height:11.5%;background:#000;z-index:60;pointer-events:none;}
   body.cine.bars #app::before{top:0;} body.cine.bars #app::after{bottom:0;}
@@ -1232,11 +1225,6 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
       <button class="img-btn" id="btnProfile" style="display:none;"><img src="ui/btn_profile2.png" alt="Profile"></button>
       <button class="img-btn" id="btnInv" style="display:none;"><img src="ui/btn_inventory.png" alt="Inventory"></button>
       <button class="img-btn play" id="btnPlay"><img src="ui/btn_play.png" alt="Play"></button>
-      <!-- full screen, like a video player's: the whole screen is the game until Esc -->
-      <button id="btnFullscreen" title="Full screen" aria-label="Full screen">
-        <svg class="fsOn" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
-        <svg class="fsOff" viewBox="0 0 24 24"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg>
-      </button>
       <button class="img-btn" id="btnMenuSettings" title="Settings"><img src="ui/btn_settings_sign.png" alt=""><span>Settings</span></button>
 
       <!-- language: drawn as inline SVG so it needs no art and stays crisp at any size -->
@@ -1280,7 +1268,6 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
         <div class="chip" id="onlineChip" style="display:none;">Online <span id="hudOnline">1</span></div>
       </div>
     </div>
-    <div class="area-name" id="areaName">Garden</div>
     <div id="questHUD"></div>
     <canvas id="gameCanvas"></canvas>
 
@@ -1443,12 +1430,16 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
     </div>
   </div>
 
-  <!-- ============ SETTINGS (from the phone): language, story / free play ============ -->
+  <!-- ============ SETTINGS: language, story / free play, full screen, music, sound effects ============ -->
   <div id="settings" class="modal">
     <div class="modal-head"><h2>Settings</h2><button class="modal-close" data-close="settings"></button></div>
     <div class="modal-body" id="settingsBody">
       <h3 class="set-h">Language</h3><div id="setLang"></div>
       <h3 class="set-h">Game mode</h3><div id="setMode"></div>
+      <h3 class="set-h" id="setFullH">Screen</h3><div class="set-pick" id="setFullRow"><button class="mode-btn" id="setFull">FULLSCREEN</button></div>
+      <h3 class="set-h">Music</h3><div class="set-pick"><button class="mode-btn" id="setMusicOn">ON</button><button class="mode-btn" id="setMusicOff">OFF</button></div>
+      <h3 class="set-h">Sound effects</h3><div class="set-pick"><button class="mode-btn" id="setSfxOn">ON</button><button class="mode-btn" id="setSfxOff">OFF</button></div>
+      <button id="resetBtn" style="margin-top:8px;background:#b5453a;border:2px solid #7a2c24;color:#fff;padding:8px 14px;border-radius:12px;font-weight:bold;cursor:pointer;">↺ Reset game</button>
     </div>
   </div>
 
@@ -4680,6 +4671,7 @@ const RO = {
   "Settings":"Setări",
   "Language":"Limbă",
   "Game mode":"Mod de joc",
+  "Screen":"Ecran", "FULLSCREEN":"ECRAN COMPLET", "Sound effects":"Efecte sonore", "ON":"PORNIT", "OFF":"OPRIT",
   "Best":"Record",
   "Make: Apple":"Fă: Măr",
   "↺ Restart":"↺ Reîncepe",
@@ -5753,7 +5745,6 @@ function enterArea(id,fromRight,toX){
   A.entryX=P.x;                                      // where a faint puts you back: the way you came in
   P.y=480;P.vx=0;P.vy=0;
   nearPortal=null;
-  document.getElementById('areaName').textContent=A.name;
   particles=[]; bananas=[]; bubbles=[];
   // top-down hub vs side-scroll platformer: set up the right mode + on-screen controls
   HUB.inited=false;
@@ -15730,6 +15721,7 @@ function renderStatbars(){
 
 //═══════════════════════════════════════════════════════════════ MODAL RENDER
 function renderModal(id){
+  if(id==='settings')syncSoundSwitches();
   if(id==='shop')renderShop();
   if(id==='forge')renderForge();
   if(id==='museum')renderMuseum();
@@ -15924,17 +15916,26 @@ const FORGE_SAY={
   bell:['Rune bell. Every ring makes your spells bite harder. Do not ring it at night.','Clopoțel runic. Fiecare clinchet face vrăjile să muște mai tare. Nu-l suna noaptea.'],
 };
 let forgeTab='goods', forgeNpc=null, forgeAfterDlg=false, forgeSel=null;
-// NomNom's two faces: content, and the look she gives a cat with empty pockets
-const FORGE_FACE={ happy:'ui/forge/nomnom_shop.png', angry:'ui/forge/nomnom_shop_angry.png' };
+// NomNom's faces: content, delighted at a sale, curious about what you're eyeing, a blink while she
+// waits, and the look she gives a cat with empty pockets
+const FORGE_FACE={ happy:'ui/forge/nomnom_shop.png', angry:'ui/forge/nomnom_shop_angry.png',
+  delighted:'ui/forge/nomnom_shop_delighted.png', curious:'ui/forge/nomnom_shop_curious.png', blink:'ui/forge/nomnom_shop_blink.png' };
 Object.values(FORGE_FACE).forEach(src=>{ const im=new Image(); im.src=src; });   // preload, so the swap never blinks
-let forgeMoodT=0;
+let forgeMoodT=0, forgeFace='happy';
 function forgeMood(m,ms){
   const cat=document.getElementById('forgeCat'); if(!cat) return;
-  const src=FORGE_FACE[m]||FORGE_FACE.happy;
+  const src=FORGE_FACE[m]||FORGE_FACE.happy; forgeFace=m;
   if(!cat.src.endsWith(src)) cat.src=src;
   clearTimeout(forgeMoodT);
   if(m!=='happy' && ms) forgeMoodT=setTimeout(()=>forgeMood('happy'),ms);
 }
+// while the shop is open and she is just content, she blinks every few seconds
+(function forgeBlink(){
+  setTimeout(()=>{ const shop=document.getElementById('forge'), cat=document.getElementById('forgeCat');
+    if(shop && shop.classList.contains('active') && forgeFace==='happy' && cat){
+      cat.src=FORGE_FACE.blink; setTimeout(()=>{ if(forgeFace==='happy') cat.src=FORGE_FACE.happy; },150); }
+    forgeBlink(); }, 2600+Math.random()*3400);
+})();
 const FORGE_BROKE=[
   ['No coins, no broth. That is the whole rule.','Fără monede, fără supă. Asta e toată regula.'],
   ['You are looking at it like it is free. It is not free.','Te uiți la ea de parcă e gratis. Nu e gratis.'],
@@ -16030,7 +16031,7 @@ function forgePick(id){
     const w=forgeWares().find(x=>x.id===id);
     const gated=w && ((w.kind==='forge' && !w.maxed && S.level<FORGE_LV[w.tier]) || (w.kind==='charm' && S.level<w.c.lv));
     if(w && !w.owned && !w.maxed && !gated && S.coins<w.price){ forgeBroke(); renderForge(); return; }
-    forgeMood('happy');
+    forgeMood('curious',3500);
     forgeSay(say?LT(say[0],say[1]):(w&&w.kind==='trick'?LT('A good trick. Merlin swears by it.','Un truc bun. Merlin jură pe el.'):'…'));
     SFX.tone&&SFX.tone(700,0.05,'triangle',0.04); }
   renderForge();
@@ -16077,7 +16078,7 @@ function renderForgeTag(wares){
 }
 const FORGE_THANKS=[['Pleasure doing business.','Plăcerea e de partea mea.'],['Coins on the anvil. Good cat.','Monedele pe nicovală. Pisică bună.'],
   ['Spend it well. Or badly — I already have the coins.','Folosește-o bine. Sau prost — monedele sunt deja la mine.'],['Come back alive, I like repeat customers.','Să te întorci viu, îmi plac clienții fideli.']];
-function forgeThanks(){ const t=FORGE_THANKS[Math.floor(Math.random()*FORGE_THANKS.length)]; forgeSay(LT(t[0],t[1])); forgeMood('happy'); }
+function forgeThanks(){ const t=FORGE_THANKS[Math.floor(Math.random()*FORGE_THANKS.length)]; forgeSay(LT(t[0],t[1])); forgeMood('delighted',2600); }
 function buyCharm(id){
   const c=charmById(id); if(!c || charmOwned(id) || S.coins<c.price || S.level<c.lv) return;
   S.coins-=c.price; S.charmsOwned=S.charmsOwned||[]; S.charmsOwned.push(id);
@@ -16221,10 +16222,6 @@ function journalHTML(){
 function renderProfile(){
   const body=document.getElementById('profileBody');
   const need=xpForLevel(S.level);
-  const catsHTML=Object.keys(CATS).filter(k=>k!=='puiutu').map(k=>{
-    const met=S.catsMet[k];
-    return `<div class="cat-badge ${met?'':'locked'}"><div class="av"><canvas width="58" height="58" data-cat="${k}"></canvas></div>${met?CATS[k].name:'???'}</div>`;
-  }).join('');
   body.innerHTML=`
     <div class="profile-card">
       <img src="ui/profile_pic.png" alt="Puiutu" style="display:block;width:170px;max-width:60%;height:auto;margin:0 auto 6px;filter:drop-shadow(0 4px 8px rgba(60,35,10,.35));">
@@ -16237,40 +16234,10 @@ function renderProfile(){
       <div class="prow" style="border:none"><span>Friends met</span><span> ${Object.keys(S.catsMet).length} / 3</span></div>
       <div class="prow"><span>Enemies defeated</span><span> ${S.totalDefeats||0}</span></div>
       <div class="prow" style="border:none"><span>Fish collected (total)</span><span> ${S.totalFish||0}</span></div>
-      <div style="margin-top:10px;font-weight:bold;color:#5a3d18;">Friends:</div>
-      <div class="cats-met">${catsHTML}</div>
 
       ${journalHTML()}
 
-      <div style="margin-top:14px;font-weight:bold;color:#5a3d18;"> Achievements (${S.achievements.length}/${ACHIEVEMENTS.length}):</div>
-      <div class="ach-grid">${ACHIEVEMENTS.map(a=>{
-        const got=S.achievements.indexOf(a.id)>=0;
-        return `<div class="ach-cell ${got?'':'locked'}" title="${a.desc}"><div class="ai">${got?a.emoji:''}</div><div class="an">${got?a.name:'???'}</div></div>`;
-      }).join('')}</div>
-
-      <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;">
-        <button id="sndBtn" class="toggle-btn">${S.soundOn?'Sound':'Sound'}</button>
-        <button id="musBtn" class="toggle-btn">${S.musicOn?'Music':'̶ Music'}</button>
-      </div>
-      <button id="resetBtn" style="margin-top:14px;background:#b5453a;border:2px solid #7a2c24;color:#fff;padding:8px 14px;border-radius:12px;font-weight:bold;cursor:pointer;">↺ Reset game</button>
     </div>`;
-  // draw avatars
-  body.querySelectorAll('[data-cat]').forEach(cv2=>{
-    const k=cv2.dataset.cat;const c2=cv2.getContext('2d');
-    if(S.catsMet[k]){
-      const spr=SPRITES[k];
-      if(spr&&spr.complete&&spr.naturalWidth) paintPortrait(c2,58,spr,'#cfe6a8');
-      else { c2.fillStyle='#cfe6a8';c2.fillRect(0,0,58,58);drawCat(c2,29,57,1,0,CATS[k],{scale:.74}); }
-    }
-    else{c2.fillStyle='#555';c2.fillRect(0,0,58,58);c2.fillStyle='#999';c2.font='bold 30px Trebuchet MS';c2.textAlign='center';c2.fillText('?',29,40);}
-  });
-  document.getElementById('sndBtn').onclick=()=>{ S.soundOn=!S.soundOn; save(); if(S.soundOn)SFX.click(); renderProfile(); };
-  document.getElementById('musBtn').onclick=()=>{ S.musicOn=!S.musicOn; save();
-    SFX.ac(); zoneMusic();
-    renderProfile(); };
-  document.getElementById('resetBtn').onclick=()=>{
-    if(confirm(T('Reset all progress?'))){localStorage.removeItem('puiutu_save');S=load();A=null;AREAS=buildAreas();enterArea('garden',false);syncHUD();renderStatbars();renderProfile();updateQuestHUD();toast('Game reset!');}
-  };
 }
 function walletHTML(){
   const p=moneyParts(S.coins);
@@ -17883,14 +17850,14 @@ window.addEventListener('message',e=>{
 document.getElementById('btnWar').addEventListener('click',warOpen);
 // Full screen: the whole page, so the game, its menus and Border War all come with it. Browsers
 // that cannot (iPhone Safari) get no button rather than one that does nothing.
-{ const fsBtn=document.getElementById('btnFullscreen'), de=document.documentElement;
+{ const fsBtn=document.getElementById('setFull'), de=document.documentElement;
   const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
   const canFs=!!(de.requestFullscreen||de.webkitRequestFullscreen);
-  if(!canFs) fsBtn.style.display='none';
+  if(!canFs){ document.getElementById('setFullH').style.display='none'; document.getElementById('setFullRow').style.display='none'; }
   fsBtn.addEventListener('click',()=>{ SFX&&SFX.click&&SFX.click();
     if(fsEl()) (document.exitFullscreen||document.webkitExitFullscreen).call(document);
     else { const r=(de.requestFullscreen||de.webkitRequestFullscreen).call(de,{navigationUI:'hide'}); if(r&&r.catch) r.catch(()=>{}); } });
-  const sync=()=>{ document.body.classList.toggle('isFull',!!fsEl()); fsBtn.title=fsEl()?T('Exit full screen'):T('Full screen'); setTimeout(resize,60); };
+  const sync=()=>{ document.body.classList.toggle('isFull',!!fsEl()); fsBtn.classList.toggle('on',!!fsEl()); setTimeout(resize,60); };
   document.addEventListener('fullscreenchange',sync); document.addEventListener('webkitfullscreenchange',sync); }
 document.getElementById('btnShopTop').addEventListener('click',()=>{ openModal('shop'); SFX&&SFX.click&&SFX.click(); });
 document.getElementById('gachaRoll').addEventListener('click',gachaRoll);
@@ -17947,6 +17914,19 @@ function updatePhoneClock(){
 document.getElementById('btnPhone').addEventListener('click',()=>{ updatePhoneClock(); openModal('phone'); });
 document.getElementById('btnSettings').addEventListener('click',()=>openModal('settings'));
 document.getElementById('btnMenuSettings').addEventListener('click',()=>openModal('settings'));
+function syncSoundSwitches(){
+  [['setMusicOn',S.musicOn],['setMusicOff',!S.musicOn],['setSfxOn',S.soundOn],['setSfxOff',!S.soundOn]]
+    .forEach(([id,on])=>document.getElementById(id).classList.toggle('on',on)); }
+function setMusicOn(on){ S.musicOn=on; save(); SFX.ac(); zoneMusic(); syncSoundSwitches(); }
+function setSfxOn(on){ S.soundOn=on; save(); if(on) SFX.click(); syncSoundSwitches(); }
+document.getElementById('setMusicOn').addEventListener('click',()=>setMusicOn(true));
+document.getElementById('setMusicOff').addEventListener('click',()=>setMusicOn(false));
+document.getElementById('setSfxOn').addEventListener('click',()=>setSfxOn(true));
+document.getElementById('setSfxOff').addEventListener('click',()=>setSfxOn(false));
+syncSoundSwitches();
+document.getElementById('resetBtn').onclick=()=>{
+    if(confirm(T('Reset all progress?'))){localStorage.removeItem('puiutu_save');S=load();A=null;AREAS=buildAreas();enterArea('garden',false);syncHUD();renderStatbars();renderProfile();updateQuestHUD();toast('Game reset!');}
+};
 setInterval(()=>{ const m=document.getElementById('phone'); if(m&&m.classList.contains('active')) updatePhoneClock(); }, 1000);
 // Apps open ON the phone, like a real one: the app's window is moved onto the phone's screen (it keeps
 // every id, so the game draws it as usual), with a bar and a back button; back puts it home again.
