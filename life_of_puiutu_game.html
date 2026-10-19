@@ -11539,9 +11539,9 @@ function drawHub(){
       const topY=d.y-((d.sea?(d.kind.bh||64):70)+6)*sc;
       if(CINE.hideLabels){ /* cinematic: no floating name tags in trailer footage */ }
       else if(d.sea){
-        if(!d.schoolRef){   // schooling fish stay nameless to avoid a wall of labels
+        {   // schooling fish get a smaller tag so a shoal isn't a wall of labels
           const nm=d.kind.name, col=d.kind.big?'#dd88ff':'#9fe6ff';
-          g.save(); g.textAlign='center'; g.font='bold 10px Trebuchet MS';
+          g.save(); g.textAlign='center'; g.font=d.schoolRef?'bold 9px Trebuchet MS':'bold 10px Trebuchet MS';
           g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, dsx+1, topY+1);
           g.fillStyle=col; g.fillText(nm, dsx, topY);
           if(d.kind.big){ g.font='bold 8px Trebuchet MS'; g.fillStyle='#dd88ff'; g.fillText(''+(d.kind.tag||'APEX PREDATOR')+'', dsx, topY-11); }
@@ -11560,10 +11560,10 @@ function drawHub(){
       if(lv===10){ g.font='bold 8px Trebuchet MS'; g.fillStyle='#dd88ff'; g.fillText('LEGENDARY', dsx, topY-11); }
       g.restore();
       }
-      // hp bar (schooling fish only show it once they've been hit; cinematic hides untouched mobs' bars)
-      if((!d.schoolRef || d.hp<d.maxHp) && !(CINE.hideLabels && d.hp>=d.maxHp)){
+      // hp bar (schooling fish get a slimmer one so a shoal isn't a wall of bars; cinematic hides untouched mobs' bars)
+      if(!(CINE.hideLabels && d.hp>=d.maxHp)){
         g.save();
-        const bw=40*Math.max(0.8,sc), bh=5, by=topY+5, pct=Math.max(0,d.hp/d.maxHp);
+        const bw=(d.schoolRef?26:40)*Math.max(0.8,sc), bh=d.schoolRef?4:5, by=topY+5, pct=Math.max(0,d.hp/d.maxHp);
         g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(dsx-bw/2-1,by-1,bw+2,bh+2,3); g.fill();
         g.fillStyle = pct>0.5?'#5fce4a':pct>0.22?'#e8b53a':'#e0533a';
         g.beginPath(); g.roundRect(dsx-bw/2,by,bw*pct,bh,2); g.fill();
