@@ -4,8 +4,8 @@
 #  Serves the game files AND relays player positions + chat over one port.
 #  Run:  python3 play_server.py      (then expose it with a cloudflared tunnel)
 # ───────────────────────────────────────────────────────────────────────────
-import asyncio, os, json, mimetypes
-from websockets.asyncio.server import serve
+import asyncio, os, json, mimetypes, gzip
+from websockets.asyncio.server import serve, broadcast as ws_broadcast
 from websockets.http11 import Response
 from websockets.datastructures import Headers
 
@@ -17,13 +17,8 @@ clients = {}          # ws -> {id, name, last}
 _next   = [1]
 
 async def broadcast(msg, exc=None):
-    for ws in list(clients.keys()):
-        if ws is exc:
-            continue
-        try:
-            await ws.send(msg)
-        except Exception:
-            clients.pop(ws, None)
+    # fire-and-forget to everyone at once, so one slow connection never delays the others
+    ws_broadcast([ws for ws in clients if ws is not exc], msg)
 
 async def handler(ws):
     cid = 'p' + str(_next[0]); _next[0] += 1
@@ -62,7 +57,17 @@ async def handler(ws):
         if info:
             await broadcast(json.dumps({'type': 'leave', 'id': info['id']}), ws)
 
-def _file_response(connection, path):
+_GZ_TYPES = ('text/', 'application/javascript', 'application/json', 'image/svg+xml')
+_gz_cache = {}   # path -> (mtime, gzipped bytes)
+
+def _gzipped(full, body):
+    mtime = os.path.getmtime(full)
+    hit = _gz_cache.get(full)
+    if not hit or hit[0] != mtime:
+        hit = _gz_cache[full] = (mtime, gzip.compress(body, 6))
+    return hit[1]
+
+def _file_response(connection, path, accept_gzip=False):
     if path in ('/', ''):
         path = '/' + INDEX
     rel = os.path.normpath(path.lstrip('/'))
@@ -76,6 +81,10 @@ def _file_response(connection, path):
     ctype = mimetypes.guess_type(full)[0] or 'application/octet-stream'
     headers = Headers()
     headers['Content-Type'] = ctype
+    if accept_gzip and ctype.startswith(_GZ_TYPES):
+        body = _gzipped(full, body)
+        headers['Content-Encoding'] = 'gzip'
+        headers['Vary'] = 'Accept-Encoding'
     headers['Content-Length'] = str(len(body))
     headers['Cache-Control'] = 'no-cache'
     return Response(200, 'OK', headers, body)
@@ -85,7 +94,8 @@ async def process_request(connection, request):
     path = unquote(request.path.split('?')[0])   # decode %20 etc. (e.g. "new park 2.jpg")
     if path == '/ws':
         return None            # let the WebSocket upgrade proceed
-    return _file_response(connection, path)
+    accept_gzip = 'gzip' in request.headers.get('Accept-Encoding', '')
+    return _file_response(connection, path, accept_gzip)
 
 async def main():
     async with serve(handler, '0.0.0.0', PORT, process_request=process_request):

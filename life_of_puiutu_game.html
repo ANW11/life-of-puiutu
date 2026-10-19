@@ -13049,7 +13049,11 @@ const NET={
     if(m.type==='welcome'){ this.id=m.id; }
     else if(m.type==='state'){
       if(m.id===this.id) return;
-      let p=this.players[m.id]; if(!p){ p=this.players[m.id]={rx:m.x,ry:m.y}; }
+      let p=this.players[m.id]; if(!p){ p=this.players[m.id]={rx:m.x,ry:m.y,rphase:m.phase||0,snaps:[]}; }
+      // a new area (or a big jump) is a teleport: drop the old snapshots so we don't slide across the map
+      if(p.area!==m.area || Math.abs(m.x-p.x)>400 || Math.abs(m.y-p.y)>400) p.snaps.length=0;
+      p.snaps.push({t:performance.now(),x:m.x,y:m.y,phase:m.phase||0});
+      if(p.snaps.length>20) p.snaps.shift();
       p.x=m.x;p.y=m.y;p.facing=m.facing;p.phase=m.phase;p.moving=m.moving;p.hat=m.hat;p.area=m.area;p.tname=m.name;
       this.updateCount();
     }
@@ -13065,7 +13069,7 @@ const NET={
   tick(){
     if(!this.connected||!inGame) return;
     const now=Date.now();
-    if(now-this.lastSend>80){
+    if(now-this.lastSend>=50){            // 20 updates/sec
       this.lastSend=now;
       const td = A && A.mode==='topdown';   // in the park we are HUB.cat, not P
       const c = td ? HUB.cat : P;
@@ -13074,17 +13078,33 @@ const NET={
         hat:(S.equipped&&isHat(S.equipped))?S.equipped:null,name:this.name});
     }
   },
+  // snapshot interpolation: draw each remote player slightly in the past, gliding between the
+  // two updates around that moment, so network jitter never shows up as stutter
+  INTERP_DELAY:110,
+  interp(p){
+    const sn=p.snaps, rt=performance.now()-this.INTERP_DELAY;
+    if(!sn.length){ p.rx=p.x; p.ry=p.y; p.rphase=p.phase||0; return; }
+    while(sn.length>2 && sn[1].t<=rt) sn.shift();
+    const a=sn[0], b=sn[1];
+    if(!b || rt<=a.t){ p.rx=a.x; p.ry=a.y; p.rphase=a.phase; return; }
+    if(rt>=b.t){   // update is late: coast briefly along the last motion instead of freezing
+      const dt=Math.max(1,b.t-a.t), k=Math.min(rt-b.t,100)/dt;
+      p.rx=b.x+(b.x-a.x)*k; p.ry=b.y+(b.y-a.y)*k; p.rphase=b.phase+(b.phase-a.phase)*k; return;
+    }
+    const k=(rt-a.t)/(b.t-a.t);
+    p.rx=a.x+(b.x-a.x)*k; p.ry=a.y+(b.y-a.y)*k; p.rphase=a.phase+(b.phase-a.phase)*k;
+  },
   drawRemotes(){
     if(!this.connected) return;
     const topdown = A && A.mode==='topdown';
     for(const id in this.players){
       const p=this.players[id];
       if(p.area!==curArea) continue;
-      p.rx+=((p.x-p.rx))*0.25; p.ry+=((p.y-p.ry))*0.25;   // smooth interpolation
+      this.interp(p);
       const sx=p.rx-cam.x;
       if(sx<-90||sx>VW+90) continue;
       const sc = topdown ? hubScale(p.ry) : 1;
-      drawCat(g,sx,p.ry,p.facing||1,p.phase||0,CATS.puiutu,{moving:p.moving,hat:p.hat,tphase:id.length*7,scale:sc});
+      drawCat(g,sx,p.ry,p.facing||1,p.rphase||0,CATS.puiutu,{moving:p.moving,hat:p.hat,tphase:id.length*7,scale:sc});
       g.font='bold 11px Trebuchet MS';g.textAlign='center';
       const nm=p.tname||'Pisic'; const tw=g.measureText(nm).width+12;
       g.fillStyle='rgba(20,14,8,.72)';g.beginPath();g.roundRect(sx-tw/2,p.ry-92*sc,tw,16,5);g.fill();
