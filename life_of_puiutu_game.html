@@ -3045,7 +3045,8 @@ function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
   const key=C&&C.key?C.key:'puiutu';
   const moving=opt.moving;
   // When a cat skin is equipped, animate its sliced frames instead of Puiutu's sprite
-  const _skId=(key==='puiutu'&&typeof S!=='undefined'&&S.equippedSkin)?S.equippedSkin:null;
+  // opt.skin (even null) is another player's own skin online; otherwise it's the one we have equipped
+  const _skId=key!=='puiutu'?null:('skin' in opt)?opt.skin:((typeof S!=='undefined'&&S.equippedSkin)||null);
   const _skf=_skId?(SKIN_FRAMES[_skId]||loadSkinFrames(_skId)):null;
   const _useSkin=!!(_skf&&_skf.idle&&_skf.idle.complete&&_skf.idle.naturalWidth);
   // Puiutu uses a 2-frame RUN cycle while moving; everyone else uses the sitting sprite
@@ -17345,6 +17346,7 @@ const NET={
       if(m.id===this.id) return;
       let p=this.players[m.id]; if(!p){ p=this.players[m.id]={rx:m.x,ry:m.y}; }
       p.x=m.x;p.y=m.y;p.facing=m.facing;p.phase=m.phase;p.moving=m.moving;p.hat=m.hat;p.area=m.area;p.tname=m.name;
+      p.skin=CAT_SKINS.some(c=>c.id===m.skin)?m.skin:null;   // only skins the game knows
       this.updateCount();
     }
     else if(m.type==='leave'){ delete this.players[m.id]; this.updateCount(); }
@@ -17365,7 +17367,7 @@ const NET={
       const c = td ? HUB.cat : P;
       this.send({type:'state',area:curArea,x:Math.round(c.x),y:Math.round(c.y),facing:c.facing,
         phase:+(c.phase||0).toFixed(2),moving: td?!!c.moving:!!(P.moving&&P.onGround),
-        hat:(S.equipped&&isHat(S.equipped))?S.equipped:null,name:this.name});
+        hat:(S.equipped&&isHat(S.equipped))?S.equipped:null,skin:S.equippedSkin||null,name:this.name});
     }
   },
   drawRemotes(){
@@ -17378,7 +17380,7 @@ const NET={
       const sx=p.rx-cam.x;
       if(sx<-90||sx>VW+90) continue;
       const sc = topdown ? hubScale(p.ry) : 1;
-      drawCat(g,sx,p.ry,p.facing||1,p.phase||0,CATS.puiutu,{moving:p.moving,hat:p.hat,tphase:id.length*7,scale:sc});
+      drawCat(g,sx,p.ry,p.facing||1,p.phase||0,CATS.puiutu,{moving:p.moving,hat:p.hat,skin:p.skin,tphase:id.length*7,scale:sc});
       g.font='bold 11px Trebuchet MS';g.textAlign='center';
       const nm=p.tname||'Pisic'; const tw=g.measureText(nm).width+12;
       g.fillStyle='rgba(20,14,8,.72)';g.beginPath();g.roundRect(sx-tw/2,p.ry-92*sc,tw,16,5);g.fill();
