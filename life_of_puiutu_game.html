@@ -8395,7 +8395,8 @@ function enterHub(fromRight){
       // Once she has fallen and the piglet has handed over his crystal, she is back every time you
       // walk in — a rematch with no pigs in it: no scene at the cave mouth, no cart over her body.
       // Until the crystal is yours she stays down, so the piglet is still there to give it.
-      HUB.sebyRematch = !!S.sebyDefeated && (S.pigletGave || freeMode());
+      // (Free Play too — rematching before the crystal is in hand would leave no piglet to give it)
+      HUB.sebyRematch = !!S.sebyDefeated && (S.pigletGave || hasPurpleCrystal());
       if(S.sebyDefeated && !HUB.sebyRematch){ HUB.boss.defeated=true; HUB.boss.hp=0; HUB.boss.respawnAt=0; }
       else { spawnSebyCrystals(); HUB.boss.appear={stage:'hidden', t0:0}; }   // she rises out of her portal
       // the portal sits on the painted vortex; she is placed on the nearest floor below it, so she
