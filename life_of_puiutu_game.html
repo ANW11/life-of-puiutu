@@ -6445,17 +6445,15 @@ function hubMobKilled(d,now){
 }
 // Queen Seby falls (hub version — the side-scroll boss path lives in killEnemy)
 function sebyDefeated(b,now){
-  // She stays down while you are in the room; walk in again and she is back for a rematch
-  // (once the piglet has given you his crystal — see enterHub). The pigs only come the first time.
+  // She stays down while you are in the room; walk in again and she is back for a rematch.
+  // The piglet comes every time; he only hands over the crystal once (see GARRISON_TALK.piglet).
   b.defeated=true; b.hp=0; b.respawnAt=0; const k=b.kind;
   S.coins+=k.coins; addXP(k.xp); S.totalDefeats=(S.totalDefeats||0)+1;
   S.sebyDefeated=true; storySet('seby');
   SEBY_MUSIC.finale();                                     // the bells come down; then the cave is quiet
   setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.sebyMusic) MUSIC.start(); }, 4200);
-  if(!HUB.sebyRematch){                                     // a rematch has no pigs in it
-    HUB.pigletIn={phase:'wait', motes:[]};   // on his way already — so the parked cart is not drawn before he arrives
-    setTimeout(pigletEntrance, 300);   // he does not wait for you to leave — he wheels his cart in over her body
-  }
+  HUB.pigletIn={phase:'wait', motes:[]};   // on his way already — so the parked cart is not drawn before he arrives
+  setTimeout(pigletEntrance, 300);   // he does not wait for you to leave — he wheels his cart in over her body
   // the crystal is NOT loot. The piglet by the portal hands you one, and that is the point.
   grantSpell('crystalspikes','Queen Seby\'s power is yours — Crystal Spikes learned!');
   SFX.win();
@@ -7940,10 +7938,10 @@ const ARMY_NATIVE={ cat_soldier:1, cat_commander:1, rat_soldier:-1, rat_commande
 // the player is still there, and a garrison built on entry can never show him.
 function refreshGarrison(){ if(A&&A.hub) initGarrison(); }
 // Conditions that depend on what is happening in the room RIGHT NOW rather than on a save flag.
-// The piglet only turns up over Seby's body — and in Free Play, where she gets back up, he has
-// to leave again. `sebyDefeated` alone would keep him standing next to a living boss.
+// The piglet only turns up over Seby's body — and when she is back up next visit, he has
+// to be gone. `sebyDefeated` alone would keep him standing next to a living boss.
 const GARRISON_SHOW={
-  sebyGone(){ return !HUB.sebyRematch && !!(HUB.boss && HUB.boss.defeated) && !(HUB.pigletIn && HUB.pigletIn.phase!=='done'); },   // (while he is still wheeling in, he is the scene's)
+  sebyGone(){ return !!(HUB.boss && HUB.boss.defeated) && !(HUB.pigletIn && HUB.pigletIn.phase!=='done'); },   // (while he is still wheeling in, he is the scene's)
   // Agent Snout keeps his post until he comes with you, or until Seby is down and it no longer matters
   snoutAtCave(){ return S.snout!=='with' && S.snout!=='left' && !(S.sebyDefeated && !freeMode()); },
 };
@@ -8390,15 +8388,10 @@ function enterHub(fromRight){
       HUB.hangar = ((S.hangarIntroSeen && !freeMode()) || !HUB.spirit) ? null
                  : {phase:'await', t0:0, pin:null, agent:{xf:0.655, yf:0.790, placed:false, facing:1, phase:0, moving:false}};
     } else {
-      // walking back into her lair after she has fallen must not put her back on her feet —
-      // the piglet is standing right there telling you she is gone
-      // Once she has fallen and the piglet has handed over his crystal, she is back every time you
-      // walk in — a rematch with no pigs in it: no scene at the cave mouth, no cart over her body.
-      // Until the crystal is yours she stays down, so the piglet is still there to give it.
-      // (Free Play too — rematching before the crystal is in hand would leave no piglet to give it)
-      HUB.sebyRematch = !!S.sebyDefeated && (S.pigletGave || hasPurpleCrystal());
-      if(S.sebyDefeated && !HUB.sebyRematch){ HUB.boss.defeated=true; HUB.boss.hp=0; HUB.boss.respawnAt=0; }
-      else { spawnSebyCrystals(); HUB.boss.appear={stage:'hidden', t0:0}; }   // she rises out of her portal
+      // She is there every time you walk in. Every time she falls the piglet wheels his cart in over
+      // her — he hands over the crystal once, and after that it is just "mind the cart".
+      HUB.sebyRematch = !!S.sebyDefeated;
+      spawnSebyCrystals(); HUB.boss.appear={stage:'hidden', t0:0};   // she rises out of her portal
       // the portal sits on the painted vortex; she is placed on the nearest floor below it, so she
       // climbs out at its heart and steps down onto the floor
       HUB.boss.portalY=H.boss.yf*VH;
@@ -11974,6 +11967,7 @@ function drawAbyssBoss(){
     g.save(); g.fillStyle='rgba(10,8,14,.7)'; roundRectPath(x-3,y-3,bw+6,18,6); g.fill();
     g.fillStyle='#7a1f2a'; roundRectPath(x,y,bw,10,5); g.fill();
     g.fillStyle='#ff5a4a'; roundRectPath(x,y,bw*pct,10,5); g.fill();
+    g.textAlign='center'; g.fillStyle='#ffd9cf'; g.font='bold 11px Trebuchet MS'; g.fillText('The Dreamer in the Deep', VW/2, y+9);
     // the call to strike sits right under the Dreamer's own bar, not over the core
     if(ab.state==='exposed'){ const pr=0.5+0.5*Math.sin(now*0.012);
       g.textAlign='center'; g.font='bold 26px Trebuchet MS'; g.fillStyle='rgba(0,0,0,.7)'; g.fillText('STRIKE THE CORE!', VW/2+2, y+46);
