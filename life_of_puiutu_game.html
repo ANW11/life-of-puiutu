@@ -11964,10 +11964,11 @@ function drawAbyssBoss(){
     g.restore();
   }
   if(ab.state==='tentacles' || ab.state==='exposed'){ const bw=Math.min(VW*0.6,360), x=(VW-bw)/2, y=72, pct=Math.max(0,ab.headHp/ab.headMax);
-    g.save(); g.fillStyle='rgba(10,8,14,.7)'; roundRectPath(x-3,y-3,bw+6,18,6); g.fill();
-    g.fillStyle='#7a1f2a'; roundRectPath(x,y,bw,10,5); g.fill();
-    g.fillStyle='#ff5a4a'; roundRectPath(x,y,bw*pct,10,5); g.fill();
-    g.textAlign='center'; g.fillStyle='#ffd9cf'; g.font='bold 11px Trebuchet MS'; g.fillText('The Dreamer in the Deep', VW/2, y+9);
+    // name plate + HP bar on one panel, the name just above the bar (like the Cat King's)
+    g.save(); g.fillStyle='rgba(10,8,14,.7)'; roundRectPath(x-8,y-28,bw+16,48,8); g.fill();
+    g.textAlign='center'; g.font='bold 17px Trebuchet MS'; g.fillStyle='#ffd9cf'; g.fillText('The Dreamer in the Deep', VW/2, y-8);
+    g.fillStyle='#7a1f2a'; roundRectPath(x,y,bw,13,6); g.fill();
+    g.fillStyle='#ff5a4a'; roundRectPath(x,y,bw*pct,13,6); g.fill();
     // the call to strike sits right under the Dreamer's own bar, not over the core
     if(ab.state==='exposed'){ const pr=0.5+0.5*Math.sin(now*0.012);
       g.textAlign='center'; g.font='bold 26px Trebuchet MS'; g.fillStyle='rgba(0,0,0,.7)'; g.fillText('STRIKE THE CORE!', VW/2+2, y+46);
