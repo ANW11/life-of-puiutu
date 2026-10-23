@@ -260,10 +260,11 @@
     24%{opacity:1;transform:scale(1);}78%{opacity:1;transform:scale(1.04);letter-spacing:.22em;}
     100%{opacity:0;transform:scale(1.08);}}
   /* contextual interact button */
-  #interactBtn{position:absolute;right:14px;bottom:162px;z-index:7;display:none;width:62px;height:62px;
-    border-radius:50%;border:3px solid rgba(255,255,255,.5);background:linear-gradient(#5aa0e0,#3a72b5);
-    color:#fff;font-size:26px;align-items:center;justify-content:center;cursor:pointer;user-select:none;
-    box-shadow:0 5px 14px rgba(0,0,0,.4);animation:fightPulse 1s ease-in-out infinite;}
+  #interactBtn{position:absolute;right:10px;bottom:156px;z-index:7;display:none;width:72px;height:76px;padding-top:7px;
+    background:url('ui/btn_interact.png') center/contain no-repeat;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5));
+    color:#ffe7a0;font-size:30px;font-weight:900;align-items:center;justify-content:center;cursor:pointer;user-select:none;
+    text-shadow:0 2px 0 #3a210c,0 0 8px rgba(0,0,0,.6),-1px 0 0 #3a210c,1px 0 0 #3a210c;animation:ePulse 1.2s ease-in-out infinite;}
+  @keyframes ePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
   #interactBtn:active{transform:scale(.94);}
 
   /* ---------- CHAT (multiplayer) ---------- */
@@ -1003,6 +1004,18 @@
   .skc-badge{position:absolute;right:6%;top:6%;z-index:2;font-size:10px;font-weight:900;padding:3px 7px;border-radius:9px;
     background:#3a8fd9;color:#fff;border:2px solid #fff;box-shadow:0 2px 4px #0008;}
   .skc-badge.own{background:#5a9a2a;}
+  .skc-badge.new{background:#e2453a;animation:ePulse 1.2s ease-in-out infinite;}
+  /* skin of the day: one card up front, cheaper until midnight */
+  .wd-deal{display:flex;align-items:center;gap:18px;max-width:880px;margin:0 auto 22px;padding:14px 18px;border-radius:18px;
+    background:linear-gradient(120deg,#4a2a0c,#2a1606);border:3px solid #ffd86b;box-shadow:0 0 24px rgba(255,200,80,.35);}
+  .wd-deal .skc{width:min(36vw,190px);flex:0 0 auto;}
+  .wd-deal-side{flex:1;display:flex;flex-direction:column;gap:8px;color:#ffe7b0;min-width:0;}
+  .wd-deal-side .tag{align-self:flex-start;font-size:11px;font-weight:900;letter-spacing:2px;padding:3px 10px;border-radius:9px;background:#e2453a;color:#fff;}
+  .wd-deal-side h4{font-size:clamp(18px,4.6vw,26px);text-shadow:0 2px 0 #000;}
+  .wd-deal-side .ends{font-size:12px;opacity:.8;}
+  .wd-deal-side .was{text-decoration:line-through;opacity:.6;margin-right:8px;font-weight:bold;}
+  .wd-deal-side .buy-btn{align-self:flex-start;font-size:16px;padding:10px 18px;background:linear-gradient(#ffd45a,#e8962a);border-color:#8a4a10;color:#3a1c04;}
+  @media (max-width:560px){ .wd-deal{gap:12px;padding:12px;} }
   .r-common{--rc:#cfd6de;--w1:#5d646d;--w2:#23272c;}
   .r-rare{--rc:#7cc0ff;--w1:#2b6cc4;--w2:#0d1d3d;}
   .r-epic{--rc:#d39bff;--w1:#7a37c4;--w2:#1f0b36;}
@@ -1387,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
         <div class="icon-btn" id="btnPhone" title="Phone"><img src="ui/icon_phone.png" alt="Phone"></div>
         <div class="icon-btn" id="btnGacha" title="Lucky Capsule"><img src="ui/icon_can.png" alt="Lucky Capsule"></div>
         <div class="icon-btn" id="btnShopTop" title="Shop"><img src="ui/icon_shop.png" alt="Shop"></div>
-        <div class="icon-btn" id="btnWar" title="Border War, a real-time strategy game"><img src="ui/icon_warcat.png" alt="Border War"></div>
+        <div class="icon-btn" id="btnWar" title="Border War: a real-time strategy game"><img src="ui/icon_warcat.png" alt="Border War"></div>
         <div class="icon-btn" id="btnSettings" title="Settings"><img src="ui/btn_settings.png" alt="Settings"></div>
         <div class="icon-btn" id="btnRocky" title="Stay" style="display:none;"><img src="ui/icon_follow.png" alt="Stay"></div>
         <div class="chip" id="onlineChip" style="display:none;">Online <span id="hudOnline">1</span></div>
@@ -1648,7 +1661,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
     <div class="modal-head"><h2> Power Conduit</h2><button class="modal-close" data-close="circuit"></button></div>
     <button id="circuitDevBtn" title="layout dev tool"></button>
     <div id="circuitWrap">
-      <div id="circuitMsg"> Reroute the conduit, power all 3 sockets.</div>
+      <div id="circuitMsg"> Reroute the conduit to power all 3 sockets.</div>
       <div id="circuitFrame"><div id="circuitGrid"></div></div>
       <div id="circuitHint">Tap a pipe to rotate it. Connect the  source to all 3 sockets.</div>
     </div>
@@ -1760,7 +1773,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
     <div id="fishWrap">
       <div id="fishHud"> caught: <span id="fishCount">0</span><span style="opacity:.6;margin:0 8px;">·</span>biggest: <span id="fishBest">-</span></div>
       <canvas id="fishCanvas" width="360" height="540"></canvas>
-      <div id="fishHint"><b>↑ / ↓</b> move the bar, keep it on the fish · tap when it bites</div>
+      <div id="fishHint"><b>↑ / ↓</b> move the bar to keep it on the fish · tap when it bites</div>
       <!-- touch screens: hold to move the green bar -->
       <div id="fishPad"><div id="fishUpBtn">▲</div><div id="fishDownBtn">▼</div></div>
     </div>
@@ -2733,7 +2746,8 @@ function puiPose(){
 // Puiutu diving-suit frames (used underwater) — 3-frame swim paddle
 const SWIM=[]; for(let i=0;i<3;i++){ const im=new Image(); im.src='puiutu/swim_'+i+'.png'; SWIM.push(im); }
 const SWIM_IDLE=new Image(); SWIM_IDLE.src='puiutu/swim_idle.png';   // sitting diver pose (floating still)
-const SWIM_ATK=new Image(); SWIM_ATK.src='puiutu/swim_atk.png';       // the suit lunging, claws out (swipe + cast underwater)
+// the suit's attack: wind-up, the lunge with claws out, follow-through (swipe + cast underwater)
+const SWIM_ATK=[0,1,2].map(i=>{ const im=new Image(); im.src='puiutu/swim_atk'+i+'.png'; return im; });
 // Cat skin animation frames — sliced from the gacha sprite sheets (6-frame run + idle).
 // Lazy-loaded per skin (only the equipped one) to keep memory light.
 const SKIN_FRAMES={};
@@ -2750,7 +2764,7 @@ function loadSkinFrames(id){
   const ld=n=>{ const im=new Image(); im.src=base+n+'.png'; return im; };
   const melee=[0,1,2].map(i=>ld('melee'+i)), cast=[0,1,2].map(i=>ld('cast'+i)), duck=ld('duck');
   // underwater every skin wears the same diving suit Puiutu does: three kick frames and a floating sit
-  const swim=[0,1,2].map(i=>ld('swim_'+i)), swimIdle=ld('swim_idle'), swimAtk=ld('swim_atk');
+  const swim=[0,1,2].map(i=>ld('swim_'+i)), swimIdle=ld('swim_idle'), swimAtk=[0,1,2].map(i=>ld('swim_atk'+i));
   return (SKIN_FRAMES[id]={run,idle,melee,cast,duck,swim,swimIdle,swimAtk});
 }
 // Rocky the dog (NPC + companion) frames
@@ -3165,7 +3179,8 @@ function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
   // Underwater one suit lunge stands in for both, from the same suit set the swim frames came from
   let posing=false, ducking=false, swimAtk=false;
   if(swimming && key==='puiutu' && opt.pose && opt.pose!=='duck'){
-    const sa = SW===SWIM ? SWIM_ATK : _skf.swimAtk;
+    const set = SW===SWIM ? SWIM_ATK : _skf.swimAtk, dur=opt.pose==='cast'?CAST_MS:MELEE_MS;
+    const sa = set && set[Math.max(0,Math.min(2,Math.floor((opt.poseT||0)/dur*3)))];
     if(_ok(sa)){ img=sa; swimAtk=true; swimIdle=false; } }
   else if(!swimming && key==='puiutu' && opt.pose==='duck'){             // same canvas as idle: same scale, no bob
     const d=catDuckImg(); if(d){ img=d; ducking=true; running=false; } }
@@ -3894,7 +3909,7 @@ function buildAreas(){
                 {img:'piggyjunior', xf:0.596, yf:0.827, h:104, face:-1, cut:1, r:100, name:'Piggy Junior',
                   lines:['Oink oink! I keep the big vault all shiny!','One day I’ll count EVERY fish in here. Maybe two days.']} ],
         bankdesk:{xf:0.505, yf:0.678, r:170, img:'siroink', h:116, cut:0.76, name:'Sir Oink',   // -> banking UI
-                  lines:['Oink~ Welcome to Whisker Savings Bank, Puiutu!','Every little fish counts in here, deposit them and they’ll grow with interest.','Come back to my desk whenever you want to deposit or withdraw. Oink!']},
+                  lines:['Oink~ Welcome to Whisker Savings Bank, Puiutu!','Every little fish counts in here. Deposit them and they’ll grow with interest.','Come back to my desk whenever you want to deposit or withdraw. Oink!']},
         // Two doors on the far wall. The enormous steel vault is the one everybody looks at, and
         // it is exactly what it appears to be — the room where the fish are kept. The lift beside
         // it is the one that matters, and it is the most boring object in the building.
@@ -4009,7 +4024,7 @@ const QUESTS={
            'Oh no, my fish got scattered all over the garden...',
            'Bring me 8 fish and I’ll reward you! (quest accepted)'],
     progress:['I still need more fish, Puiutu! Follow the path and collect them.'],
-    complete:['Yay! You collected all the fish!','Thank you so much, here’s your reward!'],
+    complete:['Yay! You collected all the fish!','Thank you so much! Here’s your reward!'],
     done:['You’re the best, Puiutu! Meow~'] },
   lucian:{ name:'Lucian', cat:'lucian', goal:{type:'defeat', n:2}, reward:{coins:45, xp:60, gold:1},
     offer:['Mrrr... Hello. I’m Lucian, the most elegant cat in the city.',
@@ -4020,7 +4035,7 @@ const QUESTS={
     done:['Stay elegant, Puiutu. Mrrow~'] },
   nomnom:{ name:'NomNom', cat:'nomnom', goal:{type:'fish', n:15}, reward:{coins:80, xp:100, gold:2},
     offer:['Psst! Puiutu! You shouldn’t be here in the slums…',
-           'A masked thief rules this place, the Evil Coon. He robbed everyone and slunk into that dark alley to the east.',
+           'A masked thief rules this place: the Evil Coon. He robbed everyone and slunk into that dark alley to the east.',
            'They say his lair is piled with stolen treasure… and bananas. So many bananas.',
            'I’m too scared (and too hungry) to face him. Bring me 15 fish so I keep my strength up?',
            'Do that and I’ll give you something fit for facing a king. (quest accepted)',
@@ -4028,14 +4043,14 @@ const QUESTS={
     progress:['Hmph. Fish first. Then we talk.',
               'Still hungry… And the Coon’s shadow keeps creeping closer. Bring me 15 fish, please~',
               'Listen… at night you can hear him laughing in that alley. Be careful.'],
-    complete:['NOM NOM NOM! Bless you.','Take this crown, you’ll need to look the part when you dethrone the Evil Coon.'],
+    complete:['NOM NOM NOM! Bless you.','Take this crown. You’ll need to look the part when you dethrone the Evil Coon.'],
     done:['Go give that thieving raccoon what he deserves, Puiutu. I believe in you!'] },
   rocky:{ name:'Rocky', dog:true, goal:{type:'defeat', n:3}, reward:{coins:40, xp:60, gold:1, companion:true},
     offer:['Woof! Hey there, little cat! I’m Rocky the dog.',
            'You look brave! Prove it and I’ll join your team.',
            'Defeat 3 enemies and I’ll fight by your side! (quest accepted)'],
-    progress:['Woof! Go bonk 3 enemies, press / F near them. Then come back!'],
-    complete:['WOOF WOOF! You’re a real fighter!','I’m your buddy now, let’s wreck some baddies together!'],
+    progress:['Woof! Go bonk 3 enemies. Press / F near them. Then come back!'],
+    complete:['WOOF WOOF! You’re a real fighter!','I’m your buddy now. Let’s wreck some baddies together!'],
     done:['Woof! Right behind you, partner!'] },
 };
 
@@ -4059,7 +4074,7 @@ const RO = {
   "Talk to the mushroom in the middle of the garden.":"Vorbește cu ciuperca din mijlocul grădinii.",
   "The mushroom is quiet. Tomy is still talking to you.":"Ciuperca tace. Tomy încă îți vorbește.",
   "To swipe: press F, or click with the RIGHT mouse button. (The left button is for walking.)":"Ca să zgârii: apasă F sau dă click cu butonul DREPT al mouse-ului. (Butonul stâng e pentru mers.)",
-  "Get right up close first, claws only reach a little way, too far and you hit air.":"Apropie-te bine întâi, ghearele ajung doar puțin, prea departe și lovești aerul.",
+  "Get right up close first. Claws only reach a little way. Too far, and you hit air.":"Apropie-te bine întâi, ghearele ajung doar puțin, prea departe și lovești aerul.",
   "or right mouse click":"sau click dreapta pe mouse",
   "Woof! You came through the gate. Good.":"Ham! Ai intrat pe poartă. Bun.",
   "Those birds are coming back any moment. Before they do, I am going to teach you everything. Properly.":"Păsările alea se întorc din clipă în clipă. Până atunci te învăț tot. Cum trebuie.",
@@ -4067,17 +4082,17 @@ const RO = {
   "Nice walking. Now jump.":"Frumos mers. Acum sari.",
   "A jump gets you out of the way of a claw, and over things in the garden.":"O săritură te scoate din calea unei gheare, și te trece peste lucruri prin grădină.",
   "See the straw dummy? That is your pigeon.":"Vezi manechinul de paie? Ăla e porumbelul tău.",
-  "Get right up close and swipe. Claws only reach a little way, too far and you hit air.":"Apropie-te bine și zgârie. Ghearele ajung doar puțin, prea departe și lovești aerul.",
+  "Get right up close and swipe. Claws only reach a little way. Too far, and you hit air.":"Apropie-te bine și zgârie. Ghearele ajung doar puțin, prea departe și lovești aerul.",
   "Three good hits.":"Trei lovituri bune.",
   "Now magic. Your spells live in the bar at the bottom, one per key.":"Acum magie. Vrăjile tale stau în bara de jos, câte una pe tastă.",
-  "Press 1. Hairball Volley flies the way you are facing, turn toward the dummy first.":"Apasă 1. Hairball Volley zboară în direcția în care te uiți, întoarce-te întâi spre manechin.",
-  "See the blue orb? That is mana. Every spell eats some, and it fills back up slowly, do not waste it.":"Vezi globul albastru? Aia e mana. Fiecare vrajă mănâncă din ea și se umple încet la loc, n-o risipi.",
+  "Press 1. Hairball Volley flies the way you are facing, so turn toward the dummy first.":"Apasă 1. Hairball Volley zboară în direcția în care te uiți, întoarce-te întâi spre manechin.",
+  "See the blue orb? That is mana. Every spell eats some, and it fills back up slowly. Do not waste it.":"Vezi globul albastru? Aia e mana. Fiecare vrajă mănâncă din ea și se umple încet la loc, n-o risipi.",
   "The red one is your health. It does NOT come back by itself in a fight.":"Cel roșu e viața ta. În luptă NU revine singură.",
   "So… *nip*. Sorry! That is what a hit feels like. Here, fish broth, drink it. Press Q.":"Deci… *ham*. Scuze! Așa se simte o lovitură. Poftim, supă de pește, bea-o. Apasă Q.",
   "Last one. When there is someone to talk to, or a door, or a thing worth touching, press E.":"Ultima. Când e cineva cu care să vorbești, o ușă sau ceva de atins, apasă E.",
   "Come talk to me.":"Vino să vorbești cu mine.",
   "That is everything. Walk, jump, claws up close, spells from the bar, drink before you are empty, E to talk.":"Asta e tot. Mergi, sari, gheare de aproape, vrăji din bară, bea înainte să rămâi gol, E ca să vorbești.",
-  "And keep moving between swings, a cat that stands still gets pecked.":"Și mișcă-te între lovituri, o pisică ce stă pe loc e ciugulită.",
+  "And keep moving between swings. A cat that stands still gets pecked.":"Și mișcă-te între lovituri, o pisică ce stă pe loc e ciugulită.",
   "…Here they come!":"…Uite-i că vin!",
   "or left-click the ground":"sau click stânga pe jos",
   "the joystick":"joystick-ul",
@@ -4273,7 +4288,7 @@ const RO = {
   "One down. Keep moving between swings.":"Unul jos. Mișcă-te între lovituri.",
   "That is the lot of them. Woof.":"Ăștia au fost toți. Ham.",
   "The old man is inside. He has been listening the whole time.":"Bătrânul e înăuntru. A ascultat tot timpul.",
-  "That is five. Go back to the pig on the pier, he wanted five.":"Gata, cinci. Întoarce-te la porcul de pe ponton, el voia cinci.",
+  "That is five. Go back to the pig on the pier. He wanted five.":"Gata, cinci. Întoarce-te la porcul de pe ponton, el voia cinci.",
   "Union Soldier: Five fish? Then go see the pig on the pier. When he calls it in, the road is yours.":"Soldat al Uniunii: Cinci pești? Atunci du-te la porcul de pe ponton. Când sună el, drumul e al tău.",
   "That is five. The pig on the pier wanted five.":"Ăștia sunt cinci. Porcul de pe ponton voia cinci.",
   "Five. Look at that.":"Cinci. Ia te uită.",
@@ -4326,7 +4341,7 @@ const RO = {
   "Bring me 8 fish and I’ll reward you! (quest accepted)":"Adu-mi 8 pești și te răsplătesc! (misiune acceptată)",
   "I still need more fish, Puiutu! Follow the path and collect them.":"Îmi mai trebuie pești, Puiutu! Mergi pe potecă și adună-i.",
   "Yay! You collected all the fish!":"Ura! Ai adunat toți peștii!",
-  "Thank you so much, here’s your reward!":"Mulțumesc mult, uite răsplata ta!",
+  "Thank you so much! Here’s your reward!":"Mulțumesc mult, uite răsplata ta!",
   "You’re the best, Puiutu! Meow~":"Ești cel mai bun, Puiutu! Miau~",
   "Mrrr... Hello. I’m Lucian, the most elegant cat in the city.":"Mrrr... Salut. Eu sunt Lucian, cea mai elegantă pisică din oraș.",
   "These cheeky pigeons are ruining my image...":"Porumbeii ăștia obraznici îmi strică imaginea...",
@@ -4341,7 +4356,7 @@ const RO = {
   "Hmph. Fish first. Then we talk.":"Hmf. Întâi peștele. Apoi vorbim.",
   "Old Shelly's Museum":"Muzeul bătrânei Shelly","Herbs":"Ierburi","Rarities":"Rarități","Press E: The Merchant":"Apasă E. Negustorul","Shelves":"Rafturi","Trade":"Schimb","Notes":"Bilețele","Press E: Old Shelly":"Apasă E. Bătrâna Shelly",
   "Mm? Oh. A cat. You walk very loudly for something so small.":"Mm? A. O pisică. Calci foarte apăsat pentru ceva atât de mic.",
-  "Fill a whole shelf for me and I will pay you twenty silver. Any shelf, they are all worth the same to me.":"Umple-mi un raft întreg și îți dau douăzeci de argint. Orice raft, toate valorează la fel pentru mine.",
+  "Fill a whole shelf for me and I will pay you twenty silver. Any shelf. They are all worth the same to me.":"Umple-mi un raft întreg și îți dau douăzeci de argint. Orice raft, toate valorează la fel pentru mine.",
   "Fill every shelf, and I will give you three gold. I have been saving them for a very long time.":"Umple-mi toate rafturile și îți dau trei aur. Le păstrez de foarte multă vreme.",
   "Ah. The loud little cat. I forgot to tell you something last time.":"Ah. Pisicuța gălăgioasă. Am uitat să-ți spun ceva data trecută.",
   "Old Shelly":"Bătrâna Shelly",
@@ -4354,12 +4369,12 @@ const RO = {
   "You look brave! Prove it and I’ll join your team.":"Pari curajos! Dovedește-o și mă alătur echipei tale.",
   "Defeat 3 enemies and I’ll fight by your side! (quest accepted)":"Învinge 3 dușmani și lupt alături de tine! (misiune acceptată)",
   "WOOF WOOF! You’re a real fighter!":"HAM HAM! Ești un luptător adevărat!",
-  "I’m your buddy now, let’s wreck some baddies together!":"Acum sunt prietenul tău, hai să facem praf niște răufăcători!",
+  "I’m your buddy now. Let’s wreck some baddies together!":"Acum sunt prietenul tău, hai să facem praf niște răufăcători!",
   "Woof! Right behind you, partner!":"Ham! Chiar în spatele tău, partenere!",
   "Ah, a curious cat enters my library!":"Ah, o pisică curioasă intră în biblioteca mea!",
   "Those potions on the table must be sorted by colour… care to try?":"Poțiunile alea de pe masă trebuie sortate după culoare… vrei să încerci?",
   "Step up to the bubbling table and give it a stir.":"Apropie-te de masa care clocotește și amestecă puțin.",
-  "Mind the stairs, a good leap will carry you across.":"Atenție la scări, o săritură bună te duce dincolo.",
+  "Mind the stairs. A good leap will carry you across.":"Atenție la scări, o săritură bună te duce dincolo.",
   "Ah. A curious cat enters my library.":"Ah. O pisică curioasă intră în biblioteca mea.",
   "There is a prophecy about one who puts this land back together. It is not very specific.":"Există o profeție despre cel care va reface tărâmul ăsta. Nu e foarte precisă.",
   "They never are. They leave the work to whoever turns up.":"Niciodată nu sunt. Lasă munca pe seama celui care apare.",
@@ -4389,7 +4404,7 @@ const RO = {
   "Still not fighting, then.":"Tot nu lupți, deci.",
   "I will not stop you going down. I stopped asking a while ago.":"Nu te opresc să cobori. Am încetat să mai cer de mult.",
   "You went DOWN there? And came back? With 3 of them?":"Ai coborât ACOLO? Și te-ai întors? Cu 3 dintre ele?",
-  "Take your share. And listen, the pair on the hill road stopped. I do not know which one stopped first.":"Ia-ți partea. Și ascultă, perechea de pe drumul dealului s-a oprit. Nu știu care s-a oprit primul.",
+  "Take your share. And listen: the pair on the hill road stopped. I do not know which one stopped first.":"Ia-ți partea. Și ascultă, perechea de pe drumul dealului s-a oprit. Nu știu care s-a oprit primul.",
   "Mind the cart, mind the cart.":"Atenție la căruț, atenție la căruț.",
   "We will be at this for weeks. Weeks! Wonderful.":"O să lucrăm la asta săptămâni întregi. Săptămâni! Minunat.",
   "A lion steps out of the light. It does not look at him. It does not speak at all.":"Un leu iese din lumină. Nu se uită la el. Nu vorbește deloc.",
@@ -4448,19 +4463,19 @@ const RO = {
   "He blinks at you slowly, the gentlest \"I love you\" a cat can give.":"Clipește încet spre tine, cel mai blând „te iubesc” pe care îl poate da o pisică.",
   "Such a good kitty.":"Ce pisică bună.",
   "Old friend, brave little heart… you are always welcome here.":"Prieten vechi, inimioară curajoasă… ești mereu binevenit aici.",
-  "A masked thief rules this place, the Evil Coon. He robbed everyone and slunk into that dark alley to the east.":"Un hoț mascat conduce locul ăsta. Evil Coon. I-a jefuit pe toți și s-a strecurat în aleea întunecată dinspre est.",
+  "A masked thief rules this place: the Evil Coon. He robbed everyone and slunk into that dark alley to the east.":"Un hoț mascat conduce locul ăsta. Evil Coon. I-a jefuit pe toți și s-a strecurat în aleea întunecată dinspre est.",
   "They say his lair is piled with stolen treasure… and bananas. So many bananas.":"Se spune că vizuina lui e plină de comori furate… și banane. Atât de multe banane.",
   "Do that and I’ll give you something fit for facing a king. (quest accepted)":"Fă asta și îți dau ceva potrivit pentru a înfrunta un rege. (misiune acceptată)",
   "Still hungry… And the Coon’s shadow keeps creeping closer. Bring me 15 fish, please~":"Tot flămând… Iar umbra lui Coon se apropie tot mai mult. Adu-mi 15 pești, te rog~",
   "Listen… at night you can hear him laughing in that alley. Be careful.":"Ascultă… noaptea îl auzi râzând pe aleea aia. Ai grijă.",
-  "Take this crown, you’ll need to look the part when you dethrone the Evil Coon.":"Ia coroana asta, trebuie să arăți cum se cuvine când îl detronezi pe Evil Coon.",
+  "Take this crown. You’ll need to look the part when you dethrone the Evil Coon.":"Ia coroana asta, trebuie să arăți cum se cuvine când îl detronezi pe Evil Coon.",
   "Go give that thieving raccoon what he deserves, Puiutu. I believe in you!":"Du-te și dă-i ratonului hoț ce merită, Puiutu. Cred în tine!",
   "Careful, Puiutu… something really BAD lives deeper in here.":"Ai grijă, Puiutu… ceva foarte RĂU trăiește mai adânc aici.",
   "Rocky joined your team!":"Rocky s-a alăturat echipei tale!",
   "Rocky is helping again!":"Rocky ajută din nou!",
   "Rocky will wait here.":"Rocky va aștepta aici.",
   "Oink~ Welcome to Whisker Savings Bank, Puiutu!":"Oinc~ Bine ai venit la Banca Whisker Savings, Puiutu!",
-  "Every little fish counts in here, deposit them and they’ll grow with interest.":"Fiecare peștișor contează aici, depune-i și vor crește cu dobândă.",
+  "Every little fish counts in here. Deposit them and they’ll grow with interest.":"Fiecare peștișor contează aici, depune-i și vor crește cu dobândă.",
   "Come back to my desk whenever you want to deposit or withdraw. Oink!":"Vino la ghișeul meu oricând vrei să depui sau să retragi. Oinc!",
   "Meow Stock Exchange":"Bursa Meow",
   "Back on your feet. The fight starts over.":"Te-ai ridicat. Lupta începe de la capăt.",
@@ -4520,14 +4535,14 @@ const RO = {
   "The crystal barrier shatters. Queen Seby is exposed!":"Bariera de cristal se sparge. Regina Seby e descoperită!",
   "Queen Seby's power is yours. Crystal Spikes learned!":"Puterea Reginei Seby e a ta, ai învățat Țepii de cristal!",
   "Something stirs in the deep…":"Ceva se mișcă în adânc…",
-  "The Dreamer wakes, sever its tentacles!":"Visătorul se trezește, taie-i tentaculele!",
-  "Its core is exposed, strike it!":"Miezul lui e descoperit, lovește-l!",
+  "The Dreamer wakes! Sever its tentacles!":"Visătorul se trezește, taie-i tentaculele!",
+  "Its core is exposed! Strike it!":"Miezul lui e descoperit, lovește-l!",
   "More tentacles rise!":"Se ridică și mai multe tentacule!",
   "“MY treasure!”, the Evil Coon turns to FIGHT!":"„Comoara MEA!”. Evil Coon se întoarce să LUPTE!",
-  "The Coon lunges, you scramble back!":"Coon se repede, te tragi înapoi!",
+  "The Coon lunges! You scramble back!":"Coon se repede, te tragi înapoi!",
   "It’s coming. RUN!":"Vine. FUGI!",
   "You climb out of the sewers.":"Te cățări afară din canalizare.",
-  "You scramble up to the surface, safe!":"Te cățări la suprafață, în siguranță!",
+  "You scramble up to the surface. Safe!":"Te cățări la suprafață, în siguranță!",
   "The King uses a SPECIAL ATTACK!":"Regele folosește un ATAC SPECIAL!",
   "YOU BEAT THE KING! You’re a legend!":"L-AI ÎNVINS PE REGE! Ești o legendă!",
   "The King's storm is yours. Thunder Paw learned!":"Furtuna Regelui e a ta, ai învățat Laba tunetului!",
@@ -4558,7 +4573,7 @@ const RO = {
   "Wraps you in a humming bubble that absorbs a chunk of incoming damage.":"Te învăluie într-o bulă care absoarbe o parte din daunele primite.",
   "A bolt that leaps from foe to foe, hitting up to four of them.":"Un fulger care sare de la dușman la dușman, lovind până la patru.",
   "Calls down a rain of fish over a wide area. Absurd. Effective.":"Cheamă o ploaie de pești pe o zonă largă. Absurd. Eficient.",
-  "Stores a spare life, the next hit that would drop you revives you instead.":"Păstrează o viață de rezervă, următoarea lovitură care te-ar doborî te învie în schimb.",
+  "Stores a spare life: the next hit that would drop you revives you instead.":"Păstrează o viață de rezervă, următoarea lovitură care te-ar doborî te învie în schimb.",
   "Cut from the cave Queen Seby was guarding. The runes want one of these.":"Tăiat din peștera pe care o păzea Regina Seby. Runele vor unul ca asta.",
   "Press E to talk to a friend":"Apasă E ca să vorbești cu un prieten",
   "Press E: Talk":"Apasă E. Vorbește",
@@ -4576,8 +4591,8 @@ const RO = {
   "Press E: The Glow":"Apasă E. Licărul",
   "Type a message…":"Scrie un mesaj…",
   "Tap a pipe to rotate it. Connect the source to all 3 sockets.":"Apasă o țeavă ca s-o rotești. Conectează sursa la toate cele 3 prize.",
-  "Reroute the conduit, power all 3 sockets.":"Redirecționează conducta, alimentează toate cele 3 prize.",
-  "All 3 sockets powered, the gate to the Lair opens!":"Toate cele 3 prize sunt alimentate, poarta spre Bârlog se deschide!",
+  "Reroute the conduit to power all 3 sockets.":"Redirecționează conducta, alimentează toate cele 3 prize.",
+  "All 3 sockets powered! The gate to the Lair opens!":"Toate cele 3 prize sunt alimentate, poarta spre Bârlog se deschide!",
   "Tap a shard to flip it and its neighbours. Light them all.":"Apasă un ciob ca să-l întorci pe el și pe vecinii lui. Aprinde-le pe toate.",
   "Light every shard":"Aprinde fiecare ciob",
   "The array blazes to life!":"Rețeaua prinde viață!",
@@ -4589,9 +4604,9 @@ const RO = {
   "The seal weakens… now longer!":"Sigiliul slăbește… acum mai lung!",
   "The seal shatters!":"Sigiliul se sfărâmă!",
   "The ancient portal roars open!":"Portalul străvechi se deschide cu un vuiet!",
-  "The tide-glyphs align, the reef vault unlocks!":"Glifele mareei se aliniază, seiful recifului se deschide!",
+  "The tide-glyphs align. The reef vault unlocks!":"Glifele mareei se aliniază, seiful recifului se deschide!",
   "The tide-glyphs already rest, aligned.":"Glifele mareei stau deja aliniate.",
-  "Locked tight, something must unlock it first…":"Încuiat bine, ceva trebuie să-l deschidă mai întâi…",
+  "Locked tight. Something must unlock it first…":"Încuiat bine, ceva trebuie să-l deschidă mai întâi…",
   "All levels complete!":"Toate nivelurile terminate!",
   "Watermelon made!":"Ai făcut un pepene!",
   "Turn the crank for a surprise!":"Învârte manivela pentru o surpriză!",
@@ -4612,13 +4627,14 @@ const RO = {
   "Next price update in":"Următoarea actualizare de preț în",
   "PORTFOLIO VALUE":"VALOAREA PORTOFOLIULUI",
   "no holdings yet":"încă nu deții nimic",
-  "Whisker Savings, your fish earn interest, even while you're away":"Whisker Savings, peștii tăi fac dobândă, chiar și când nu ești aici",
+  "Whisker Savings: your fish earn interest, even while you're away":"Whisker Savings, peștii tăi fac dobândă, chiar și când nu ești aici",
   "Sir Oink's Wares":"Marfa lui Sir Oink",
   "Lucky Capsule":"Capsula norocoasă",
   "Cat Skins":"Skinuri de pisică",
   "tap a spell to move it through slots 1-4":"apasă o vrajă ca s-o muți prin sloturile 1-4",
   "100 bronze = 1 silver · 100 silver = 1 gold":"100 bronz = 1 argint · 100 argint = 1 aur",
   "LEVEL UP!":"NIVEL NOU!",
+  "Power the gate":"Alimentează poarta",
   "YOU FAINTED":"AI LEȘINAT",
   "NINE LIVES!":"NOUĂ VIEȚI!",
   "Direct hit!":"Lovitură directă!",
@@ -4633,7 +4649,7 @@ const RO = {
   "Somewhere in":"Undeva în",
   "Already lit":"Deja aprins",
   "Arrived in":"Ai ajuns în",
-  "CAMPAIGN mode, the story gates are back on":"Mod CAMPANIE, porțile poveștii sunt din nou active",
+  "CAMPAIGN mode: the story gates are back on":"Mod CAMPANIE, porțile poveștii sunt din nou active",
   "First Fish":"Primul pește",
   "Catch your first fish":"Prinde primul tău pește",
   "Collect 50 fish":"Adună 50 de pești",
@@ -4697,7 +4713,7 @@ const RO = {
   "Thunder Paw":"Laba tunetului",
   "Fish Storm":"Furtuna de pești",
   "Nine Lives":"Nouă vieți",
-  "Queen Seby's gift, crystal shards erupt in a ring around you.":"Darul Reginei Seby, cioburi de cristal erup într-un cerc în jurul tău.",
+  "Queen Seby's gift: crystal shards erupt in a ring around you.":"Darul Reginei Seby, cioburi de cristal erup într-un cerc în jurul tău.",
   "Castle Gate":"Poarta castelului",
   "Throne Hall":"Sala tronului",
   "Sewer Tunnel":"Tunelul canalizării",
@@ -4743,8 +4759,8 @@ const RO = {
   "The King":"Regele",
   "NINE LIVES":"NOUĂ VIEȚI",
   "not built yet.":"încă neconstruit.",
-  "TEST mode, every gate is open, !warp enabled":"Mod TEST, toate porțile sunt deschise, !warp activat",
-  "!warp is TEST mode only, type !mode test":"!warp merge doar în modul TEST, scrie !mode test",
+  "TEST mode: every gate is open, !warp enabled":"Mod TEST, toate porțile sunt deschise, !warp activat",
+  "!warp is TEST mode only. Type !mode test":"!warp merge doar în modul TEST, scrie !mode test",
   "!story <step> is TEST mode only":"!story <pas> merge doar în modul TEST",
   "Cat magic":"Magie de pisică",
   "Silent paws.":"Lăbuțe tăcute.",
@@ -4797,7 +4813,7 @@ const RO = {
   "Bag":"Rucsac",
   "Map":"Hartă",
   "Phone":"Telefon",
-  "Border War, a real-time strategy game":"Războiul de la graniță, un joc de strategie în timp real",
+  "Border War: a real-time strategy game":"Războiul de la graniță, un joc de strategie în timp real",
   "War":"Război",
   "Stay":"Stai",
   "Follow":"Urmează",
@@ -4840,7 +4856,7 @@ const RO = {
   "Fishing":"Pescuit",
   "caught:":"prinși:",
   "biggest:":"cel mai mare:",
-  "move the bar, keep it on the fish · tap when it bites":"mută bara, ține-o pe pește · apasă când trage",
+  "move the bar to keep it on the fish · tap when it bites":"mută bara, ține-o pe pește · apasă când trage",
   "Inamic":"Inamic",
   "Lv.1":"Niv.1",
   "Level 2":"Nivelul 2",
@@ -4903,7 +4919,7 @@ const RO = {
   "Union Soldier":"Soldat al Uniunii",
   "Union Commander":"Comandant al Uniunii",
   "Full screen":"Ecran complet", "Exit full screen":"Ieși din ecran complet",
-  "And take this. A map, mine, drawn badly, but the roads are where it says. You will be needing it.":"Și ia asta. O hartă, a mea, desenată prost, dar drumurile sunt unde scrie. O să-ți trebuiască.",
+  "And take this. A map. Mine. Drawn badly, but the roads are where it says. You will be needing it.":"Și ia asta. O hartă, a mea, desenată prost, dar drumurile sunt unde scrie. O să-ți trebuiască.",
   "Paws off the table, little one. Those are mine.":"Lăbuțele jos de pe masă, micuțule. Alea sunt ale mele.",
   "Come and talk to me first.":"Vino întâi să vorbești cu mine.",
   "The tide keeps bringing me these little capsules. People seal a wish in them and throw them in the sea.":"Valul îmi tot aduce capsulele astea mici. Oamenii închid o dorință în ele și le aruncă în mare.",
@@ -4942,7 +4958,7 @@ const RO = {
   "Neutral standing (currently ":"Poziție neutră (acum ",
   "One maker’s mark on both armies’ weapons.":"Un singur semn de producător pe armele ambelor armate.",
   "You still have enemies to deal with. Get close and right-click (or press F) to attack.":"Mai ai dușmani de rezolvat. Apropie-te și dă clic dreapta (sau apasă F) ca să ataci.",
-  "Woof! Go bonk 3 enemies, press / F near them. Then come back!":"Ham! Du-te și pocnește 3 dușmani, apasă / F lângă ei. Apoi întoarce-te!",
+  "Woof! Go bonk 3 enemies. Press / F near them. Then come back!":"Ham! Du-te și pocnește 3 dușmani, apasă / F lângă ei. Apoi întoarce-te!",
   "Rat Emissary: Away from the stand. That suit is not for cats who cannot pay for it.":"Emisar șobolan: Departe de stand. Costumul ăla nu e pentru pisici care nu-l pot plăti.",
   "Sir Oink":"Sir Oink",
   "Clownfish":"Pește-clovn",
@@ -5090,10 +5106,10 @@ const RO = {
   "Approve it. Bill the interest to his grandchildren.":"Aprobă. Trece dobânda în contul nepoților lui.",
   "And Snout, make sure the rats hear about the lion. Lions are very good for business.":"Și, Râtan, ai grijă să afle șobolanii de leu. Leii sunt foarte buni pentru afaceri.",
   "Yes, Sir Oink. Oink.":"Da, Sir Oink. Oinc.",
-  "Ah. Puiutu. Do come in, mind the step, it is a long way down.":"Ah. Puiutu. Intră, te rog, atenție la treaptă, e mult până jos.",
+  "Ah. Puiutu. Do come in. Mind the step, it is a long way down.":"Ah. Puiutu. Intră, te rog, atenție la treaptă, e mult până jos.",
   "You will have questions. Everyone does, at the bottom of the lift.":"O să ai întrebări. Toată lumea are, la capătul liftului.",
   "The bank never sold fish. It sold wars. The Rat Federation borrows to build an army, the Union borrows to answer it, and we hold both notes.":"Banca n-a vândut niciodată pește. A vândut războaie. Federația Șobolanilor se împrumută ca să-și facă o armată, Uniunea se împrumută ca să-i răspundă, iar noi deținem ambele datorii.",
-  "And the crystals, you cleared that cave for us. Every one of them is in here now. Honestly, you were our best employee.":"Iar cristalele, tu ne-ai curățat peștera aia. Fiecare dintre ele e acum aici. Sincer, ai fost cel mai bun angajat al nostru.",
+  "And the crystals. You cleared that cave for us. Every one of them is in here now. Honestly, you were our best employee.":"Iar cristalele, tu ne-ai curățat peștera aia. Fiecare dintre ele e acum aici. Sincer, ai fost cel mai bun angajat al nostru.",
   "Animals that fight each other never look up. You looked up.":"Animalele care se bat între ele nu se uită niciodată în sus. Tu te-ai uitat.",
   "That makes you a liability. And liabilities… get written off.":"Asta te face o pasivă. Iar pasivele… se trec pe pierderi.",
   "…There. Under the city. Something just opened its eyes.":"…Acolo. Sub oraș. Ceva tocmai a deschis ochii.",
@@ -5104,17 +5120,17 @@ const RO = {
   "Agent Snout scurries off behind the cradle, ledger under his arm.":"Agentul Râtan o ia la fugă în spatele leagănului, cu registrul sub braț.",
   "Not with what you tore out of my ground.":"Nu cu ce ai smuls din pământul meu.",
   "Meanwhile, in the garden…":"Între timp, în grădină…",
-  "The plating holds. The crystal on its back is keeping it going, bring the Glow sporelings, then climb.":"Blindajul ține. Cristalul de pe spate îl ține în mișcare, adu-i Licărului spori, apoi cațără-te.",
+  "The plating holds. The crystal on its back is keeping it going. Bring the Glow sporelings, then climb.":"Blindajul ține. Cristalul de pe spate îl ține în mișcare, adu-i Licărului spori, apoi cațără-te.",
   "Somewhere above you, a ledger closes. The machine in front of the cradle wakes up.":"Undeva deasupra ta, un registru se închide. Mașinăria din fața leagănului se trezește.",
   "The crystals on its back flare white. It stops holding anything back.":"Cristalele de pe spatele lui strălucesc alb. Nu se mai abține deloc.",
   "A third eye opens on its forehead. Get off the line.":"Un al treilea ochi i se deschide în frunte. Ieși din linia lui.",
   "Take it to the Glow.":"Du-l la Licăr.",
-  "Hammer attack, tear the crystal out before the roots give!":"Atac cu ciocanul, smulge cristalul înainte să cedeze rădăcinile!",
+  "Hammer attack! Tear the crystal out before the roots give!":"Atac cu ciocanul, smulge cristalul înainte să cedeze rădăcinile!",
   "The roots snap and it throws you off. Bring the Glow more sporelings.":"Rădăcinile se rup și te aruncă jos. Adu-i Licărului mai mulți spori.",
   "The roots snap. Bring the Glow more sporelings.":"Rădăcinile se rup. Adu-i Licărului mai mulți spori.",
   "One crystal out. It screams like a gearbox. Two left.":"Un cristal scos. Urlă ca o cutie de viteze. Mai sunt două.",
   "Two out. One left, and it has stopped holding anything back.":"Două scoase. Mai e unul, și nu se mai abține deloc.",
-  "The Glow sinks back into the floor. It is regrowing, keep the machine busy.":"Licărul se scufundă înapoi în podea. Crește la loc, ține mașinăria ocupată.",
+  "The Glow sinks back into the floor. It is regrowing. Keep the machine busy.":"Licărul se scufundă înapoi în podea. Crește la loc, ține mașinăria ocupată.",
   "Hold still, little one. This part is mine.":"Stai liniștit, micuțule. Partea asta e a mea.",
   "The Glow grows back out of the floor.":"Licărul crește din nou din podea.",
   "Don't come closer. It is only roots, coming apart.":"Nu te apropia. Sunt doar rădăcini care se desfac.",
@@ -5124,15 +5140,15 @@ const RO = {
   "Now. I have it. Climb!":"Acum, îl țin. Cațără-te!",
   "The Glow, regrowing":"Licărul, crește la loc",
   "The crystals go grey and the machine sits down. The ones who paid for it were never in the room.":"Cristalele se fac gri și mașinăria se lasă jos. Cei care au plătit-o n-au fost niciodată în cameră.",
-  "Your claws skid off the plating. Carry sporelings to the Glow, its roots can hold this thing still.":"Ghearele îți alunecă pe blindaj. Du-i spori Licărului, rădăcinile lui pot ține namila pe loc.",
+  "Your claws skid off the plating. Carry sporelings to the Glow. Its roots can hold this thing still.":"Ghearele îți alunecă pe blindaj. Du-i spori Licărului, rădăcinile lui pot ține namila pe loc.",
   "You came down so far…":"Ai coborât atât de departe…",
   "…to wake me.":"…ca să mă trezești.",
   "They will ask you to choose. They always ask. Remember that I was here before there was anything to choose between.":"Îți vor cere să alegi. Mereu cer. Ține minte că eu eram aici înainte să existe ceva între care să alegi.",
   "Arrows or WASD to walk. Or just click where you want to go.":"Săgeți sau WASD ca să mergi. Sau doar dă clic unde vrei să ajungi.",
   "Press E when something is worth touching. The button in the corner does the same.":"Apasă E când merită să atingi ceva. Butonul din colț face același lucru.",
   "Space jumps. You will need it to get up to me.":"Spațiu sare. O să ai nevoie ca să urci până la mine.",
-  "Hold the direction while you jump, a cat that lets go mid-air lands where it started.":"Ține direcția cât sari, o pisică ce dă drumul în aer aterizează de unde a plecat.",
-  "You have a spell now. It sits in the bar at the bottom, press 1 to 4, or tap it.":"Acum ai o vrajă. Stă în bara de jos, apasă de la 1 la 4 sau atinge-o.",
+  "Hold the direction while you jump. A cat that lets go mid-air lands where it started.":"Ține direcția cât sari, o pisică ce dă drumul în aer aterizează de unde a plecat.",
+  "You have a spell now. It sits in the bar at the bottom. Press 1 to 4, or tap it.":"Acum ai o vrajă. Stă în bara de jos, apasă de la 1 la 4 sau atinge-o.",
   "The blue orb is mana. Spells eat it and it refills slowly, so a spell you waste is a spell you do not have.":"Globul albastru e mana. Vrăjile o consumă și se umple încet, așa că o vrajă irosită e o vrajă pe care n-o mai ai.",
   "Open your bag to drag a spell into a different slot.":"Deschide rucsacul ca să muți o vrajă în alt slot.",
   "A hundred bronze make a silver. A hundred silver make a gold.":"O sută de bronz fac un argint. O sută de argint fac un aur.",
@@ -5141,7 +5157,7 @@ const RO = {
   "Fish are money, and some of them are worth telling people about.":"Peștii sunt bani, iar despre unii merită să le povestești și altora.",
   "You have been to enough places to keep a map now. It is the button at the top.":"Ai fost în destule locuri ca să ai acum o hartă. E butonul de sus.",
   "It only takes you where you have already walked. Nothing is skipped.":"Te duce doar unde ai mers deja. Nu sari peste nimic.",
-  "You woke up. You always do, this world is not finished with you.":"Te-ai trezit. Mereu te trezești, lumea asta n-a terminat cu tine.",
+  "You woke up. You always do. This world is not finished with you.":"Te-ai trezit. Mereu te trezești, lumea asta n-a terminat cu tine.",
   "You dropped some coins where you fell. Nothing else is lost.":"Ai scăpat niște monede unde ai căzut. Altceva nu s-a pierdut.",
   "They will keep asking you to pick a side. The bar in your journal remembers what you actually did, not what you said.":"Îți vor tot cere să alegi o tabără. Bara din jurnal ține minte ce ai făcut cu adevărat, nu ce ai spus.",
   "Standing in the middle is a choice too. It is just the one nobody thanks you for.":"Să stai la mijloc e tot o alegere. Doar că nimeni nu-ți mulțumește pentru ea.",
@@ -5151,10 +5167,10 @@ const RO = {
   "Press E: Climb out":"Apasă E. Ieși afară",
   "+1 Legendary Capsule!":"+1 capsulă legendară!",
   "+100 gold!":"+100 aur!",
-  "Story mode, the campaign gates apply.":"Modul poveste, porțile campaniei sunt active.",
-  "Free play, everything is open and every boss comes back.":"Joc liber, totul e deschis și fiecare boss revine.",
-  "FREE PLAY, every gate is open and every boss comes back":"JOC LIBER, fiecare poartă e deschisă și fiecare boss revine",
-  "STORY, the campaign gates are back on":"POVESTE, porțile campaniei sunt din nou active",
+  "Story mode: the campaign gates apply.":"Modul poveste, porțile campaniei sunt active.",
+  "Free play: everything is open and every boss comes back.":"Joc liber, totul e deschis și fiecare boss revine.",
+  "FREE PLAY: every gate is open and every boss comes back":"JOC LIBER, fiecare poartă e deschisă și fiecare boss revine",
+  "STORY: the campaign gates are back on":"POVESTE, porțile campaniei sunt din nou active",
   "Tap to cast · tap when it bites · hold <b>▲ / ▼</b> to keep the bar on the fish":"Atinge ca să arunci · atinge când trage · ține <b>▲ / ▼</b> ca să ții bara pe pește",
   "Tap to cast · tap when it bites · hold":"Atinge ca să arunci · atinge când trage · ține",
   "to keep the bar on the fish":"ca să ții bara pe pește",
@@ -5283,7 +5299,7 @@ RO_PAT.push(
   [/^Watch closely… \((\d+) runes\)$/, m=>'Privește atent… ('+m[1]+' rune)'],
   [/^Repeat the (\d+) runes!$/, m=>'Repetă cele '+m[1]+' rune!'],
   [/^(\d+) shards? still dark$/, m=>m[1]+(m[1]==='1'?' ciob încă stins':' cioburi încă stinse')],
-  [/^Reroute the conduit, power all 3 sockets\. \((\d+)\/(\d+)\)$/, m=>'Redirecționează conducta, alimentează toate cele 3 prize. ('+m[1]+'/'+m[2]+')'],
+  [/^Reroute the conduit to power all 3 sockets\. \((\d+)\/(\d+)\)$/, m=>'Redirecționează conducta, alimentează toate cele 3 prize. ('+m[1]+'/'+m[2]+')'],
   [/^Open Legendary Capsule \((\d+)\)$/, m=>'Deschide capsula legendară ('+m[1]+')'],
   [/^Legendary in (\d+) rolls · capsule in (\d+)$/, m=>'Legendar în '+m[1]+' învârtiri · capsulă în '+m[2]],
   [/^Won (.+)!$/, m=>'Ai câștigat '+m[1]+'!'],
@@ -5662,7 +5678,7 @@ function doInteract(){
       if(dr.requires && !gateOpen(dr.requires)){ npcSay(dr.lockedMsg, dr.speaker); return; }
       // the Lair's tunnel is sealed by a conduit gate, and it has to be powered EVERY time you go in —
       // so the gate is always drawn shut, and solving the puzzle walks you straight through.
-      if(dr.to==='sebyboss'){ circOpen(()=>{ if(!S.sebyGateOpen){ S.sebyGateOpen=true; save(); toast('The gate grinds open, the way to the Lair is clear.'); } go(); }); }
+      if(dr.to==='sebyboss'){ circOpen(()=>{ if(!S.sebyGateOpen){ S.sebyGateOpen=true; save(); toast(LT('The gate grinds open. The way to the Lair is clear.','Poarta se deschide scârțâind. Drumul spre Bârlog e liber.')); } go(); }); }
       // a door with a sigil plate stays shut until its crest is formed. Unlike the conduit this
       // is solved ONCE — a door you have opened is a door you have opened.
       else if(dr.sigil && !(S.locks&&S.locks[dr.sigil])){ lockOpen(dr.sigil, go); }
@@ -6091,7 +6107,7 @@ function renderMarket(){
     const bal=Math.floor(S.bank), tomorrow=Math.floor(S.bank*Math.pow(1+BANK_RATE,40)); // ~1h projection
     const dep=[10,100,'Max'], wd=[10,100,'Max'];
     body.innerHTML=`<div class="bank-card">
-      <div class="sub"> Whisker Savings, your fish earn interest, even while you're away</div>
+      <div class="sub"> Whisker Savings: your fish earn interest, even while you're away</div>
       <div class="bal">${fmtCoins(bal)}</div>
       <div class="sub">Interest ≈ ${(BANK_RATE*100).toFixed(2)}% / tick · in ~1h: <b>${fmtCoins(tomorrow)}</b></div>
       <div class="bank-actions">
@@ -6451,7 +6467,7 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
     if(!b.defeated && (b.stage==='fight'||b.stage==='bound') && near(b.x,b.y,64)){
       hits++; b.hitFlash=now; floatText(b.x,b.y-110,'ARMORED','#bda8ff');
       SFX.tone&&SFX.tone(180,0.08,'square',0.04);
-      if(!b.armorHint){ b.armorHint=true; toast('Your claws skid off the plating. Carry sporelings to the Glow, its roots can hold this thing still.'); }
+      if(!b.armorHint){ b.armorHint=true; toast('Your claws skid off the plating. Carry sporelings to the Glow. Its roots can hold this thing still.'); }
     }
     return hits;
   }
@@ -6490,7 +6506,7 @@ function checkFiveFish(){
   updateQuestHUD();                                  // the pig's count on the plaques
   if(trotterReady() && !S.fishNudged && !storyAt('fivefish')){
     S.fishNudged=true; save();
-    toast('That is five. Go back to the pig on the pier, he wanted five.');
+    toast('That is five. Go back to the pig on the pier. He wanted five.');
   }
 }
 const SHARK_TYPES=['greatwhite','hammerhead'];
@@ -6754,7 +6770,7 @@ const SPELLS=[
      SFX.seq&&SFX.seq([523,659,784],'sine',0.05);
    }},
   {id:'crystalspikes', name:'Crystal Spikes', emoji:'', color:'#c79cff', mana:26, cd:6000,
-   desc:"Queen Seby's gift, crystal shards erupt in a ring around you.",
+   desc:"Queen Seby's gift: crystal shards erupt in a ring around you.",
    price:0, source:'boss:seby',
    cast(o){
      const now=Date.now();
@@ -6798,7 +6814,7 @@ const SPELLS=[
      SFX.seq&&SFX.seq([400,520,660],'sine',0.05);
    }},
   {id:'ninelives', name:'Nine Lives', emoji:'', color:'#ffd24a', mana:40, cd:30000,
-   desc:'Stores a spare life, the next hit that would drop you revives you instead.',
+   desc:'Stores a spare life: the next hit that would drop you revives you instead.',
    price:0, source:'gacha:legendary',
    cast(o){
      P.nineLives=true;
@@ -7614,7 +7630,7 @@ const MERLIN_LINES=[
   'Ah, a curious cat enters my library!',
   'Those potions on the table must be sorted by colour… care to try?',
   'Step up to the bubbling table and give it a stir.',
-  'Mind the stairs, a good leap will carry you across.',
+  'Mind the stairs. A good leap will carry you across.',
 ];
 let _merlinLine=0;
 // S.sortLevel is the NEXT Colour Sort level to play, so five finished means it has moved past 5.
@@ -7631,7 +7647,7 @@ function merlinTalk(){
       'There is a prophecy about one who puts this land back together. It is not very specific.',
       'They never are. They leave the work to whoever turns up.',
       'Sort three of my potions by colour. Then I will know whether the rest is worth telling you.',
-      'And take this. A map, mine, drawn badly, but the roads are where it says. You will be needing it.'
+      'And take this. A map. Mine. Drawn badly, but the roads are where it says. You will be needing it.'
     ], ()=>{ storySet('prophecy'); grantIcon('map'); });
     return;
   }
@@ -8495,7 +8511,7 @@ function abyssNextWave(now, phase){
     const hp=Math.round((110+phase*45)*((HUB.lvBoss&&HUB.lvBoss.hp)||1));
     ab.tentacles.push({x,y,hp,maxHp:hp,hitFlash:0,dead:false,slamAt:0,nextSlam:now+1000+Math.random()*2000,born:now});
   }
-  toast(phase===0?'The Dreamer wakes, sever its tentacles!':'More tentacles rise!');
+  toast(phase===0?'The Dreamer wakes! Sever its tentacles!':'More tentacles rise!');
 }
 // a long falling roar for the Dreamer's waking: two detuned saws sliding down, and a noise rush
 function abyssRoar(){
@@ -8661,7 +8677,7 @@ function updateSewer(now){
     hubHurtPlayer(now, rnd(14,22), '#ff3a3a', co.x, co.y, 12);
     const sp=H.spawn; c.x=sp.xf*HUB.worldW; c.y=sp.yf*VH; if(maskReady()){ const p=nearestWalk(c.x,c.y); if(p){c.x=p.x;c.y=p.y;} } c.safeX=c.x; c.safeY=c.y;
     SEWER.coon.x=(H.coonStart.xf*HUB.worldW); SEWER.coon.y=(H.coonStart.yf*VH); SEWER.chaseStart=now+2500; SEWER.warned=false;
-    toast('The Coon lunges, you scramble back!');
+    toast('The Coon lunges! You scramble back!');
   }
 }
 // The Evil Coon takes damage from the paw swipe AND from every spell — both arrive here
@@ -10080,10 +10096,10 @@ function startBossOpening(){
 // and gives the order. Then the scene cuts to the garden: the mushroom feels it wake, and stops
 // being a mushroom. It arrives in a flash between the cat and the machine.
 const SNOUT_SPEECH=[
-  "Ah. Puiutu. Do come in, mind the step, it is a long way down.",
+  "Ah. Puiutu. Do come in. Mind the step, it is a long way down.",
   "You will have questions. Everyone does, at the bottom of the lift.",
   "The bank never sold fish. It sold wars. The Rat Federation borrows to build an army, the Union borrows to answer it, and we hold both notes.",
-  "And the crystals, you cleared that cave for us. Every one of them is in here now. Honestly, you were our best employee.",
+  "And the crystals. You cleared that cave for us. Every one of them is in here now. Honestly, you were our best employee.",
   "Animals that fight each other never look up. You looked up.",
   "That makes you a liability. And liabilities… get written off.",
 ];
@@ -10232,7 +10248,7 @@ function mechBoarHurt(b,dmg,now){
   if(b.hp<=fl+0.5){                                  // at the line: it shrugs the blow off
     b.hitFlash=now; floatText(b.x, b.y-MBOAR_H*hubScale(b.y)*0.85, 'HOLDS', '#a99cc0');
     if(!b.floorHint){ b.floorHint=true;
-      toast('The plating holds. The crystal on its back is keeping it going, bring the Glow sporelings, then climb.'); }
+      toast('The plating holds. The crystal on its back is keeping it going. Bring the Glow sporelings, then climb.'); }
     return;
   }
   const d=Math.max(1,Math.round(Math.min(dmg, b.hp-fl)));
@@ -10420,7 +10436,7 @@ function mechBoarHeld(b,now){
   if(!HUB.ride){
     if(Math.hypot(c.x-b.x,c.y-b.y)<140 && now<b.boundUntil-400){   // touch its flank: up you go
       HUB.ride={t0:now, pulls:0, buckAt:now+1800, shake:0};
-      if(!b.rideHint){ b.rideHint=true; toast('Hammer attack, tear the crystal out before the roots give!'); }
+      if(!b.rideHint){ b.rideHint=true; toast('Hammer attack! Tear the crystal out before the roots give!'); }
       SFX.seq&&SFX.seq([392,523],'square',0.05);
     }
   } else {
@@ -10487,7 +10503,7 @@ function spiritHurt(sp,dmg,now){
   floatText(sp.x, sp.y-SPIRIT_H*hubScale(sp.y)*0.9, '-'+dmg, '#ffb08a');
   if(sp.hp<=0){
     sp.hp=0; sp.stage='rooted'; sp.stageUntil=now+9000; sp.state='walk'; sp.moving=false;
-    toast('The Glow sinks back into the floor. It is regrowing, keep the machine busy.');
+    toast('The Glow sinks back into the floor. It is regrowing. Keep the machine busy.');
     SFX.seq&&SFX.seq([330,262,196],'triangle',0.05);
   }
 }
@@ -11292,7 +11308,10 @@ function hubAttack(){
 }
 function drawHub(){
   const IM=hubImg();
-  if(!HUB.inited){ if(IM.complete&&IM.naturalWidth) enterHub(); else { g.fillStyle='#7cbb5f'; g.fillRect(0,0,VW,VH); return; } }
+  // the big maps (the ocean ones are 6 MB) take a moment on a phone: paint the room's own colour
+  // until the art is in, instead of a white screen with the fish floating on it
+  if(!(IM.complete&&IM.naturalWidth)){ g.fillStyle=A.hub.underwater?'#0d2a36':'#7cbb5f'; g.fillRect(0,0,VW,VH); return; }
+  if(!HUB.inited) enterHub();
   const scale=VH/IM.naturalHeight, w=IM.naturalWidth*scale;
   if(Math.abs(HUB.worldW-w)>0.5){ if(HUB.worldW>0) HUB.cat.x*=w/HUB.worldW; HUB.worldW=w; }   // world width was taken before the art loaded: keep bg, occluders and props on one scale
   g.drawImage(IM, -HUB.camx, 0, w, VH);
@@ -13071,7 +13090,7 @@ function nomnomMelt(){
     'You went DOWN there? And came back? With '+n+' of them?',
     'Give them here. Gold is gold once it is melted; nobody can tell whose it was.',
     'There. Cleaner than it went in.',
-    'Take your share. And listen, the pair on the hill road stopped. I do not know which one stopped first.'
+    'Take your share. And listen: the pair on the hill road stopped. I do not know which one stopped first.'
   ], {portrait:'nomnom', bg:'#cfe6a8', tone:520, then:()=>{
     S.coonLoot=0; S.coins+=coins; addXP(120); save(); syncHUD();
     toast('NomNom melted it down. +'+moneyText(coins));
@@ -13420,7 +13439,7 @@ const TUT_BEATS=[
           'The old man is inside. He has been listening the whole time.']},
   // ── spells and mana ──
   {id:'spell',   who:'glow', when:()=>S.spellbook && S.spellbook.length>1,
-   lines:['You have a spell now. It sits in the bar at the bottom, press 1 to 4, or tap it.',
+   lines:['You have a spell now. It sits in the bar at the bottom. Press 1 to 4, or tap it.',
           'The blue orb is mana. Spells eat it and it refills slowly, so a spell you waste is a spell you do not have.',
           'Open your bag to drag a spell into a different slot.']},
   // ── money ──
@@ -13436,7 +13455,7 @@ const TUT_BEATS=[
    lines:['You have been to enough places to keep a map now. It is the button at the top.',
           'It only takes you where you have already walked. Nothing is skipped.']},
   // ── taking damage / fainting ──
-  {id:'faint',   who:'glow', lines:['You woke up. You always do, this world is not finished with you.',
+  {id:'faint',   who:'glow', lines:['You woke up. You always do. This world is not finished with you.',
           'You dropped some coins where you fell. Nothing else is lost.']},
   // ── the first choice ──
   {id:'choice',  who:'glow', when:()=>S.pledge!=null || (S.allegiance||0)!==0,
@@ -13472,13 +13491,13 @@ const TRAIN_STEPS=[
    say:['Good. Now jump.','A jump gets you out of the way of a claw, and up onto things. Hold the direction while you jump, or you land where you started.'],
    task:()=>LT('Jump once','Sari o dată'), done:()=>TRAIN.jumped},
   {id:'claws',  key:['F','or right mouse click'], touchKey:['the F button'],
-   say:['See that straw dummy? Pretend it is a pigeon. The pigeons around here are rude.','To swipe: press F, or click with the RIGHT mouse button. (The left button is for walking.)','Get right up close first, claws only reach a little way, too far and you hit air.','Three good hits.'],
+   say:['See that straw dummy? Pretend it is a pigeon. The pigeons around here are rude.','To swipe: press F, or click with the RIGHT mouse button. (The left button is for walking.)','Get right up close first. Claws only reach a little way. Too far, and you hit air.','Three good hits.'],
    task:()=>LT('Claw the dummy','Zgârie manechinul')+' ('+Math.min(3,TRAIN.hits)+'/3)', done:()=>TRAIN.hits>=3},
   {id:'spell',  key:['1','2  3  4 for the other slots'], touchKey:['tap the first spell','in the bar at the bottom'],
-   say:['Now magic. Your spells live in the bar at the bottom, one per key.','…Yes, it is a hairball. I did not name it.','Press 1. Hairball Volley flies the way you are facing, turn toward the dummy first.'],
+   say:['Now magic. Your spells live in the bar at the bottom, one per key.','…Yes, it is a hairball. I did not name it.','Press 1. Hairball Volley flies the way you are facing, so turn toward the dummy first.'],
    task:()=>LT('Cast Hairball Volley','Aruncă Hairball Volley'), done:()=>TRAIN.cast},
   {id:'potion', key:['Q','Z for mana potions'], touchKey:['tap the red potion','next to your spells'],
-   say:['See the blue orb? That is mana. Every spell eats some, and it fills back up slowly, do not waste it.','The red one is your health. It does NOT come back by itself in a fight.','So… *bap*. Sorry! A small paw on the nose. That is what a hit feels like.','Here, fish broth. Drink it. Press Q.'],
+   say:['See the blue orb? That is mana. Every spell eats some, and it fills back up slowly. Do not waste it.','The red one is your health. It does NOT come back by itself in a fight.','So… *bap*. Sorry! A small paw on the nose. That is what a hit feels like.','Here, fish broth. Drink it. Press Q.'],
    start:()=>{ bagAdd('broth',1); P.hp=Math.max(1,Math.round(P.maxHp*0.55)); P.lastHit=Date.now(); save(); syncHUD&&syncHUD(); },
    task:()=>LT('Drink a potion','Bea o poțiune'), done:()=>TRAIN.drank},
   {id:'talk',   key:['E'], touchKey:['the E button'],
@@ -13700,7 +13719,7 @@ function nextAch(){
 // file://, so the game cannot find eyes by itself at runtime.
 const PORTRAITS={
   'npcs/sprite_lucian.png':{ex:0.52,ey:0.2,vw:1.3725},
-  'npcs/sprite_tomy.png':{ex:0.5425,ey:0.2239,vw:1.3142},
+  'npcs/sprite_tomy.png':{ex:0.70,ey:0.32,vw:1.05},   // his face sits right of centre on the sheet (three-quarter view)
   'npcs/sprite_nomnom.png':{ex:0.59,ey:0.2239,vw:1.2364},
   'ui/forge/nomnom_shop.png':{ex:0.70,ey:0.26,vw:1.05},
   'ui/beach/shelly_big.png':{ex:0.24,ey:0.25,vw:0.42},
@@ -13766,7 +13785,7 @@ function showPortrait(img,bg){
 const NOMNOM_FACE={ happy:new Image(), angry:new Image() };
 NOMNOM_FACE.happy.src='ui/forge/nomnom_shop.png'; NOMNOM_FACE.angry.src='ui/forge/nomnom_shop_angry.png';
 const NOMNOM_GRUMPY=[
-  'A masked thief rules this place, the Evil Coon.',
+  'A masked thief rules this place: the Evil Coon.',
   'I’m too scared (and too hungry) to face him.',
   'Still hungry… And the Coon’s shadow keeps creeping closer.',
   'You went DOWN there? And came back?',
@@ -13942,7 +13961,7 @@ function pullLever(sp){
   }
   if(seq.length===want.length){
     S.oceanFlags[lp.flag]=true; save(); SFX&&SFX.win&&SFX.win();
-    toast('The tide-glyphs align, the reef vault unlocks!');
+    toast('The tide-glyphs align. The reef vault unlocks!');
     // sparkle burst on the chest, if one is nearby
     const ch=(A.hub.spots||[]).find(s=>s.type==='chest'&&s.requires===lp.flag);
     if(ch) for(let n=0;n<22;n++) particles.push({x:ch.xf*HUB.worldW,y:ch.yf*VH-18,vx:(Math.random()-0.5)*4,vy:-(Math.random()*4),life:1,c:'#ffe066'});
@@ -13952,7 +13971,7 @@ function pullLever(sp){
 function openChest(sp){
   if(S.oceanFlags[sp.flag+'_open']) return;
   if(sp.requires && !S.oceanFlags[sp.requires]){
-    toast('Locked tight, something must unlock it first…'); SFX&&SFX.tone&&SFX.tone(150,0.22,'sawtooth',0.05); return; }
+    toast('Locked tight. Something must unlock it first…'); SFX&&SFX.tone&&SFX.tone(150,0.22,'sawtooth',0.05); return; }
   S.oceanFlags[sp.flag+'_open']=true;
   const l=sp.loot||{}; if(l.coins) S.coins+=l.coins; if(l.xp) addXP(l.xp);
   save(); syncHUD(); SFX&&SFX.win&&SFX.win();
@@ -14199,7 +14218,7 @@ function circRender(){
   const tgts=[]; CIRC.cells.forEach((c,i)=>{ if(c.type==='target') tgts.push(i); });
   const poweredCount=tgts.filter(t=>powered.has(t)).length;
   if(poweredCount===tgts.length){ circWin(); }
-  else { const m=document.getElementById('circuitMsg'); if(m&&!CIRC.won) m.textContent='Reroute the conduit, power all 3 sockets. ('+poweredCount+'/'+tgts.length+')'; }
+  else { const m=document.getElementById('circuitMsg'); if(m&&!CIRC.won) m.textContent='Reroute the conduit to power all 3 sockets. ('+poweredCount+'/'+tgts.length+')'; }
 }
 function circTap(i){ if(CIRC.won) return; const c=CIRC.cells[i]; if(c.fixed) return;
   c.rot=(c.rot+1)%4; SFX&&SFX.tone&&SFX.tone(360+(i%5)*40,0.06,'square',0.04); circRender(); }
@@ -14212,7 +14231,7 @@ function circOpen(onSolve){
 function circClose(){ CIRC.active=false; document.getElementById('circuit').classList.remove('active'); }
 function circWin(){
   if(CIRC.won) return; CIRC.won=true;
-  const m=document.getElementById('circuitMsg'); if(m) m.textContent='All 3 sockets powered, the gate to the Lair opens!';
+  const m=document.getElementById('circuitMsg'); if(m) m.textContent='All 3 sockets powered! The gate to the Lair opens!';
   SFX&&SFX.win&&SFX.win();
   setTimeout(()=>{ circClose(); const cb=CIRC.cb; CIRC.cb=null; if(cb) cb(); }, 950);
 }
@@ -14374,7 +14393,7 @@ function rollFossil(){ return weightedPick(FOSSILS, f=>f.w*(f.rar==='common'?1:2
 const SHELLY_IMG=new Image(); SHELLY_IMG.src='ui/beach/shelly_big.png?v=2';
 function shellySay(lines,then){ sayLines('Old Shelly', lines, {img:SHELLY_IMG, bg:'#2a4a52', tone:300, then}); }
 const SHELLY_PAY=[
-  'Fill a whole shelf for me and I will pay you twenty silver. Any shelf, they are all worth the same to me.',
+  'Fill a whole shelf for me and I will pay you twenty silver. Any shelf. They are all worth the same to me.',
   'Fill every shelf, and I will give you three gold. I have been saving them for a very long time.'];
 // the Lucky Capsule: the sea brings back what people threw in it, sealed up small
 const SHELLY_CAPSULE=[
@@ -14430,7 +14449,7 @@ function museumOpen(){
   const done=S.museum.length, tot=FOSSILS.length;
   museumSay(done>=tot ? LT('Every shelf full. I never thought I would see it. Sit a while.','Toate rafturile pline. N-am crezut că o să văd asta. Mai stai puțin.')
     : done ? LT('Back again. '+done+' of '+tot+' on display. The sand is not done with us yet.','Iar aici. '+done+' din '+tot+' expuse. Nisipul n-a terminat cu noi.')
-    : LT('Everything the sand gives back, I keep one of. Walk the beach, the tide brings things in.','Din tot ce dă nisipul înapoi, păstrez câte unul. Plimbă-te pe plajă, valul aduce lucruri.'));
+    : LT('Everything the sand gives back, I keep one of. Walk the beach. The tide brings things in.','Din tot ce dă nisipul înapoi, păstrez câte unul. Plimbă-te pe plajă, valul aduce lucruri.'));
   openModal('museum');
   shellyQuestCheck();
 }
@@ -16154,7 +16173,7 @@ function switchForgeTab(tab,quiet){
   forgeTab=tab; forgeSel=null;
   document.querySelectorAll('[data-ftab]').forEach(b=>b.classList.toggle('active',b.dataset.ftab===tab));
   if(!quiet) forgeSay(tab==='forge'?LT('The anvil. Five tiers for each, and I only work for cats who have grown into them.','Nicovala. Cinci trepte la fiecare, și lucrez doar pentru pisicile care au crescut destul.')
-    : tab==='charms'?LT('Charms from the border camps. Wear three, any more and you jingle like a sleigh.','Amulete din taberele de la graniță. Poartă trei, mai multe și zornăi ca o sanie.')
+    : tab==='charms'?LT('Charms from the border camps. Wear three. Any more and you jingle like a sleigh.','Amulete din taberele de la graniță. Poartă trei, mai multe și zornăi ca o sanie.')
     : tab==='tricks'?LT('Tricks and scrolls. Old Merlin writes them, I sell them. He gets a fish.','Trucuri și pergamente. Bătrânul Merlin le scrie, eu le vând. El primește un pește.')
     : LT('Pick something up. Look with your eyes, pay with your coins.','Ia ceva în labă. Te uiți cu ochii, plătești cu monedele.'));
   renderForge();
@@ -16320,6 +16339,7 @@ function renderShop(){
   let h=`<div class="wd-head"><h3>${LT('The Wardrobe','Garderoba')}</h3>
       <div class="wd-sub">${LT('Collected','Colecționate')} ${have} / ${n}</div>
       <div class="wd-bar"><i style="width:${Math.round(have/n*100)}%"></i></div></div>`;
+  h+=skinDealHTML();
   h+='<div class="wd-grid">'+skinsByRarity().map(cs=>`<div class="skc-wrap">${skinCardHTML(cs)}${skinBtnHTML(cs)}</div>`).join('')+'</div>';
   // the coin packs under the cards, one row of tiles
   h+=`<div class="wd-head wd-coins"><h3>${LT('Coins','Monede')}</h3></div><div class="gold-grid">`+IAP_GOLD.map(g=>`<div class="gold-tile">
@@ -16336,6 +16356,31 @@ function renderShop(){
 }
 // ── the Wardrobe cards ──
 const SKIN_RARITY_ORDER=['legendary','epic','rare','common'];
+// one skin a day at 30% off, the same for everyone on the same date (local midnight to midnight)
+const SKIN_DEAL_OFF=0.30;
+function skinOfTheDay(){
+  const d=new Date(), day=Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000);
+  const pool=CAT_SKINS.filter(c=>!(S.catSkins||[]).includes(c.id));
+  return pool.length ? pool[(day*7)%pool.length] : null;     // a skin you already own is never the deal
+}
+function dealPrice(cs){
+  const n=parseFloat(IAP_SKIN_PRICE[cs.rarity].replace(',','.'));
+  return (Math.floor(n*(1-SKIN_DEAL_OFF)*100)/100+0.00).toFixed(2).replace('.',',')+' €';
+}
+function dealEndsText(){
+  const d=new Date(), end=new Date(d); end.setHours(24,0,0,0);
+  const m=Math.max(0,Math.round((end-d)/60000)), h=Math.floor(m/60);
+  return LT('Ends in '+h+'h '+(m%60)+'m','Se termină în '+h+'h '+(m%60)+'m');
+}
+function skinDealHTML(){
+  const cs=skinOfTheDay(); if(!cs) return '';
+  const line=SKIN_LINES[cs.id]||['',''];
+  return `<div class="wd-deal r-${cs.rarity}">${skinCardHTML(cs)}
+    <div class="wd-deal-side"><span class="tag">${LT('SKIN OF THE DAY','SKINUL ZILEI')} · -${Math.round(SKIN_DEAL_OFF*100)}%</span>
+      <h4>${cs.name}</h4><div class="sk-line">${LT(line[0],line[1])}</div>
+      <div><span class="was">${IAP_SKIN_PRICE[cs.rarity]}</span><button class="buy-btn iap" data-iap="skin:${cs.id}">${dealPrice(cs)}</button></div>
+      <div class="ends">${dealEndsText()}</div></div></div>`;
+}
 const SKIN_CARD_BOX={   // where each frame's window and nameplate sit, in % of the card (measured off the art)
   common:   {win:[13.6,13.7,86.3,74.4], plate:[14.0,77.4,86.2,86.6]},
   rare:     {win:[13.6,13.7,86.3,76.4], plate:[13.2,79.1,86.4,88.4]},
@@ -16347,7 +16392,9 @@ function skinsByRarity(){ return CAT_SKINS.slice().sort((a,b)=>SKIN_RARITY_ORDER
 function skinCardHTML(cs,big){
   const B=SKIN_CARD_BOX[cs.rarity], box=r=>`left:${r[0]}%;top:${r[1]}%;right:${100-r[2]}%;bottom:${100-r[3]}%;`;
   const owned=(S.catSkins||[]).includes(cs.id), eq=S.equippedSkin===cs.id;
-  const badge=eq?`<div class="skc-badge">${LT('Equipped','Echipat')}</div>`:owned?`<div class="skc-badge own">${LT('Owned','Al tău')}</div>`:'';
+  const seen=(S.skinSeen||[]).includes(cs.id);
+  const badge=eq?`<div class="skc-badge">${LT('Equipped','Echipat')}</div>`:owned?`<div class="skc-badge own">${LT('Owned','Al tău')}</div>`
+    :(!seen&&!big)?`<div class="skc-badge new">${LT('NEW','NOU')}</div>`:'';
   return `<div class="skc r-${cs.rarity}"${big?'':` data-show="${cs.id}"`}>
     <div class="skc-win" style="${box(B.win)}"><img src="skins/cards/${cs.id}${big?'_big':''}.webp" alt="" loading="lazy"></div>
     <img class="skc-frame" src="ui/card_${cs.rarity}.webp" alt="">
@@ -16369,6 +16416,7 @@ let skinShowT=null, skinShowId=null;
 function openSkinShow(id){
   const cs=CAT_SKINS.find(c=>c.id===id); if(!cs) return;
   skinShowId=id;
+  if(!(S.skinSeen||[]).includes(id)){ S.skinSeen=(S.skinSeen||[]).concat(id); save(); renderShop(); }   // looked at: no longer NEW
   let el=document.getElementById('skinShow');
   if(!el){ el=document.createElement('div'); el.id='skinShow'; el.className='sk-show'; document.getElementById('shop').appendChild(el);
     el.onclick=e=>{ if(e.target===el) closeSkinShow(); }; }
@@ -16378,7 +16426,9 @@ function openSkinShow(id){
       <div class="sk-side"><span class="sk-pill">${LT(...RARITY_NAME[cs.rarity])}</span>
         <h3>${cs.name}</h3><div class="sk-line">${LT(line[0],line[1])}</div>
         <div class="sk-stage"><small>${LT('In the game','În joc')}</small><img id="skShowCat" alt=""></div>
-        ${skinBtnHTML(cs)}</div></div>`;
+        ${skinOfTheDay()===cs && !(S.catSkins||[]).includes(cs.id)
+          ? `<div><span class="was" style="text-decoration:line-through;opacity:.6;margin-right:8px;font-weight:bold;">${IAP_SKIN_PRICE[cs.rarity]}</span><button class="buy-btn iap" data-iap="skin:${cs.id}">${dealPrice(cs)}</button></div>`
+          : skinBtnHTML(cs)}</div></div>`;
   el.querySelector('.sk-x').onclick=closeSkinShow;
   wireSkinButtons(el);
   el.classList.add('on');
@@ -17530,15 +17580,15 @@ function chatCommand(t){
     if((S.story||0)<STORY_IX.runes) storySet('runes');            // the runes are what open the cave
     else if(S.story>STORY_IX.runes) S.story=STORY_IX.runes;
     S.caveOpen=true; save(); updateRockyBtn();
-    toast('Agent Snout is back at the cave mouth.'); enterArea('garden',false); return true; }
+    toast(LT('Agent Snout is back at the cave mouth.','Agent Snout s-a întors la gura peșterii.')); enterArea('garden',false); return true; }
   if(c==='!money'){ S.coins+=100*10000; save(); syncHUD(); SFX.coin&&SFX.coin(); toast('+100 gold!'); return true; }
   // dev: !ending third | union | federation | unproven — watch an ending without replaying the game
   if(c.indexOf('!ending')===0){ const id=c.slice(7).trim()||'third';
-    if(!testMode()){ toast('!ending is TEST mode only, type !mode test'); return true; }
+    if(!testMode()){ toast('!ending is TEST mode only. Type !mode test'); return true; }
     if(!OUTROS[id]){ toast('endings: third, union, federation, unproven'); return true; }
     startOutro(id); return true; }
   if(c.indexOf('!warp ')===0){ const id=c.slice(6).trim();   // dev: !warp slum2 / !warp ratking …
-    if(!testMode()){ toast('!warp is TEST mode only, type !mode test'); return true; }
+    if(!testMode()){ toast('!warp is TEST mode only. Type !mode test'); return true; }
     if(AREAS[id]){ enterArea(id,false); toast('warp'+id); } else toast('no such area:'+id);
     return true; }
   // ── campaign / test ──
@@ -17546,8 +17596,8 @@ function chatCommand(t){
     const want=c.slice(6).trim();
     if(want==='test'||want==='free'||want==='story'||want==='campaign'){
       setMode(want==='story'?'campaign':want);   // keeps the menu buttons in sync
-      toast(freeMode() ? 'FREE PLAY, every gate is open and every boss comes back'
-                       : 'STORY, the campaign gates are back on'); }
+      toast(freeMode() ? 'FREE PLAY: every gate is open and every boss comes back'
+                       : 'STORY: the campaign gates are back on'); }
     else toast('mode: '+(freeMode()?'free':'story')+'  ·  use !mode free / !mode story');
     return true; }
   if(c==='!story'){
@@ -18102,9 +18152,9 @@ document.getElementById('btnShopTop').addEventListener('click',()=>{ openModal('
 document.getElementById('gachaRoll').addEventListener('click',gachaRoll);
 { const _ms=document.getElementById('modeStory'), _mf=document.getElementById('modeFree');
   if(_ms) _ms.addEventListener('click',()=>{ setMode('campaign'); SFX&&SFX.click&&SFX.click();
-    toast('Story mode, the campaign gates apply.'); });
+    toast('Story mode: the campaign gates apply.'); });
   if(_mf) _mf.addEventListener('click',()=>{ setMode('free'); SFX&&SFX.click&&SFX.click();
-    toast('Free play, everything is open and every boss comes back.'); });
+    toast('Free play: everything is open and every boss comes back.'); });
   setMode(S.mode||'campaign'); }
 { const _en=document.getElementById('langEN'), _ro=document.getElementById('langRO');
   if(_en) _en.addEventListener('click',()=>{ setLang('en'); SFX&&SFX.click&&SFX.click(); });
