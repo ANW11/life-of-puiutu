@@ -787,6 +787,21 @@
   #gcFlash{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:5;
     background:radial-gradient(circle at 50% 44%, #fff 0%, #fff 22%, rgba(255,255,255,0) 64%);}
   #gcFlash.go{animation:gFlash .85s ease-out;}
+  /* a cat skin comes out in the same rarity frame the Wardrobe shows it in */
+  #gcFrame{display:none;}
+  #gachaCard.framed{aspect-ratio:523/881;background:transparent;padding:0;}
+  #gachaCard.framed::after{display:none;}
+  #gachaCard.framed.r-common,#gachaCard.framed.r-rare,#gachaCard.framed.r-epic,#gachaCard.framed.r-legendary{box-shadow:none;animation:gPop .4s cubic-bezier(.2,1.4,.5,1);}
+  #gachaCard.framed #gcFrame{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;
+    filter:drop-shadow(0 0 18px var(--ray,#ffd24a));}
+  #gachaCard.framed.charging #gcFrame{visibility:hidden;}
+  #gachaCard.framed:not(.charging) #gcFrame{animation:gArtPop .95s cubic-bezier(.16,1.7,.34,1);}
+  #gachaCard.framed #gcArtCanvas{inset:auto;left:var(--wl);top:var(--wt);width:var(--ww);height:var(--wh);
+    object-fit:contain;object-position:50% 100%;border-radius:6%;background:radial-gradient(circle at 50% 42%,var(--w1),var(--w2) 75%);}
+  #gachaCard.framed #gcName{position:absolute;left:var(--pl);top:var(--pt);width:var(--pw);height:var(--ph);z-index:4;
+    display:flex;align-items:center;justify-content:center;color:#ffe7b0;text-shadow:0 1px 0 #000;}
+  #gachaCard.framed #gcRarity{position:absolute;top:15%;left:50%;transform:translateX(-50%);z-index:4;white-space:nowrap;
+    background:rgba(0,0,0,.55);padding:2px 8px;border-radius:8px;}
   @keyframes gFlash{0%{opacity:0}9%{opacity:1}22%{opacity:.9}100%{opacity:0}}
   #gachaMsg{color:#dcc8ff;font-weight:bold;font-size:15px;text-align:center;min-height:20px;}
   #gachaRoll{background:linear-gradient(#b46ad8,#7a3fb0);border:2px solid #4a2670;color:#fff;font-weight:bold;font-size:17px;padding:11px 28px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 #3a1d5a;}
@@ -961,8 +976,20 @@
   .wd-head .wd-sub{font-size:12px;opacity:.8;margin-top:2px;}
   .wd-bar{height:8px;border-radius:5px;background:#120c06;border:1px solid #6b4a1f;margin:8px auto 0;max-width:260px;overflow:hidden;}
   .wd-bar i{display:block;height:100%;background:linear-gradient(90deg,#ffb347,#ffe27a);}
-  .wd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px;max-width:600px;margin:0 auto;}
-  @media (max-width:520px){ .wd-grid{grid-template-columns:repeat(2,1fr);} }
+  #shopBody .wd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px 16px;max-width:880px;margin:0 auto;}
+  @media (max-width:560px){ #shopBody .wd-grid{grid-template-columns:repeat(2,1fr);gap:14px 10px;} }
+  #shopBody .wd-coins{margin-top:28px;}
+  #shopBody .gold-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:880px;margin:0 auto 18px;}
+  @media (max-width:560px){ #shopBody .gold-grid{grid-template-columns:repeat(2,1fr);gap:10px;} }
+  .gold-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px 10px;border-radius:16px;
+    background:linear-gradient(#fff6e2,#f0ddb6);border:3px solid #6b4a1f;text-align:center;}
+  .gold-ico{width:64px;height:58px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#3a2a10;}
+  .gold-nm{font-weight:900;color:#5a3d18;font-size:14px;line-height:1.1;}
+  .gold-amt{font-size:12px;color:#7a5a32;}
+  .gold-tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:900;
+    padding:2px 8px;border-radius:9px;background:#c46a1c;color:#fff;border:2px solid #fff3d6;}
+  .gold-tile .buy-btn{width:100%;}
+  .gold-tile .buy-btn.iap{background:linear-gradient(#ffd45a,#e8962a);border-color:#8a4a10;color:#3a1c04;}
   .skc-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
   .skc{position:relative;width:100%;aspect-ratio:523/881;cursor:pointer;transition:transform .18s;}
   .skc:hover{transform:translateY(-4px) scale(1.02);} .skc:active{transform:scale(.97);}
@@ -970,8 +997,8 @@
   .skc-win img{position:absolute;left:50%;bottom:0;height:100%;transform:translateX(-50%);max-width:none;}
   .skc-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
   .skc-plate{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
-    color:#ffe7b0;font-weight:900;font-size:clamp(10px,2.6vw,14px);line-height:1.05;text-shadow:0 1px 0 #000;padding:0 4%;}
-  .skc-rar{position:absolute;left:50%;transform:translateX(-50%);top:15%;font-size:9px;font-weight:900;letter-spacing:1.5px;
+    color:#ffe7b0;font-weight:900;font-size:clamp(11px,2.8vw,17px);line-height:1.05;text-shadow:0 1px 0 #000;padding:0 4%;}
+  .skc-rar{position:absolute;left:50%;transform:translateX(-50%);top:15%;font-size:clamp(9px,1.6vw,11px);font-weight:900;letter-spacing:1.5px;
     padding:2px 7px;border-radius:8px;background:rgba(0,0,0,.55);color:var(--rc);text-transform:uppercase;white-space:nowrap;}
   .skc-badge{position:absolute;right:6%;top:6%;z-index:2;font-size:10px;font-weight:900;padding:3px 7px;border-radius:9px;
     background:#3a8fd9;color:#fff;border:2px solid #fff;box-shadow:0 2px 4px #0008;}
@@ -1469,10 +1496,6 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
   <!-- ============ STORE (the Shop button: real-money gold + skins) ============ -->
   <div id="shop" class="modal">
     <div class="modal-head"><h2>Store</h2><button class="modal-close" data-close="shop" onclick="closeSkinShow()"></button></div>
-    <div class="mkt-tabs">
-      <button class="mkt-tab active" data-stab="gold">Gold</button>
-      <button class="mkt-tab" data-stab="skins">Skins</button>
-    </div>
     <div class="modal-body" id="shopBody"></div>
     <div class="statbar" id="statbarShop"></div>
   </div>
@@ -1699,7 +1722,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
       <div id="gachaStage">
         <canvas id="gachaCanvas" width="360" height="536"></canvas>
         <div id="gcFlash"></div>
-        <div id="gachaCard"><div id="gcRays"></div><div id="gcCharge"></div><div id="gcShock"></div><div id="gcShock2"></div><canvas id="gcArtCanvas" width="196" height="196"></canvas><div id="gcIcon"></div><div id="gcName">???</div><div id="gcRarity"></div></div>
+        <div id="gachaCard"><div id="gcRays"></div><div id="gcCharge"></div><div id="gcShock"></div><div id="gcShock2"></div><canvas id="gcArtCanvas" width="196" height="196"></canvas><img id="gcFrame" alt=""><div id="gcIcon"></div><div id="gcName">???</div><div id="gcRarity"></div></div>
       </div>
       <div id="gachaMsg">Turn the crank for a surprise!</div>
       <div id="gachaBtns">
@@ -14895,7 +14918,8 @@ function gachaReveal(rar,pick,gotCap){
   artCv.classList.remove('show');
   document.getElementById('gcIcon').style.display='';
 
-  let emoji,label,msg,skinArt=null,squareArt=false,itemArt=false,coinArt=null;
+  let emoji,label,msg,skinArt=null,squareArt=false,itemArt=false,coinArt=null,framed=null;
+  card.removeAttribute('style');
   if(pick.coins){
     emoji=''; label=moneyText(pick.coins); S.coins+=pick.coins; msg='Won '+moneyText(pick.coins)+'!';
     const mp=moneyParts(pick.coins);
@@ -14906,7 +14930,7 @@ function gachaReveal(rar,pick,gotCap){
     const already=(S.catSkins||[]).includes(pick.skin);
     if(already){ const ref=RAR_REFUND[rar]||50; S.coins+=ref; msg='Duplicate: '+moneyText(ref)+' refunded.'; }
     else { S.catSkins=S.catSkins||[]; S.catSkins.push(pick.skin); msg='NEW cat skin unlocked!'; }
-    if(cs) skinArt=cs.art||('skins/frames/'+cs.id+'/avatar.png');   // fall back to the sprite if no art illustration
+    if(cs){ skinArt='skins/cards/'+cs.id+'_big.webp'; framed=cs.rarity; }   // the Wardrobe's card art, in its frame
   } else if(pick.potion){
     const p=potById(pick.potion), room=Math.max(0,(p.max||10)-bagCount(p.id)), got=Math.min(room,pick.n||1);
     emoji=''; label=(pick.n>1?pick.n+'× ':'')+potName(p);
@@ -14961,6 +14985,11 @@ function gachaReveal(rar,pick,gotCap){
     card.classList.add('skin-reveal','r-'+rar,'show','charging');  // suspense buildup
     if(squareArt) card.classList.add('spell-art');                 // square icon → contain, not cover
     if(itemArt) card.classList.add('item-art');
+    if(framed){ const B=SKIN_CARD_BOX[framed], v=(k,x)=>card.style.setProperty(k,x+'%');
+      document.getElementById('gcFrame').src='ui/card_'+framed+'.webp';
+      v('--wl',B.win[0]); v('--wt',B.win[1]); v('--ww',B.win[2]-B.win[0]); v('--wh',B.win[3]-B.win[1]);
+      v('--pl',B.plate[0]); v('--pt',B.plate[1]); v('--pw',B.plate[2]-B.plate[0]); v('--ph',B.plate[3]-B.plate[1]);
+      card.classList.add('framed'); }
     SFX.tone&&SFX.tone(140,1.15,'sawtooth',0.04);                  // rising charge hum
     SFX.tone&&SFX.tone(210,1.15,'sawtooth',0.03,0.12);
     SFX.tone&&SFX.tone(300,1.15,'sine',0.02,0.24);
@@ -16285,28 +16314,21 @@ const IAP_GOLD=[
   {sku:'gold_xl', coins:10000, price:'12,99 €', name:['Royal Treasury','Tezaurul regal'], tag:['Best value','Cea mai bună ofertă']},
 ];
 const IAP_SKIN_PRICE={common:'0,99 €',rare:'1,99 €',epic:'3,99 €',legendary:'6,99 €'};
-let storeTab='gold';
-function switchStoreTab(tab){ storeTab=tab; closeSkinShow();
-  document.querySelectorAll('[data-stab]').forEach(b=>b.classList.toggle('active',b.dataset.stab===tab));
-  renderShop();
-}
 function renderShop(){
   const body=document.getElementById('shopBody'); if(!body) return;
-  let h=`<div class="iap-note">${LT('Potions, gear and spells are sold by NomNom at her forge in the slums.','Poțiunile, echipamentul și vrăjile le vinde NomNom, la forja ei din mahala.')}
-    ${IAP_TEST_MODE?'<br><b>'+LT('Test mode: purchases are free.','Mod test: achizițiile sunt gratuite.')+'</b>':''}</div>`;
-  if(storeTab==='gold'){
-    h+=IAP_GOLD.map(g=>`<div class="shop-item"><div class="shop-emoji" style="background:#3a2a10;">
-        <span style="${coinFaceStyle(g.coins>=10000?COIN_IMG.g:g.coins>=1500?COIN_IMG.s:COIN_IMG.b,40)}"></span></div>
-      <div class="shop-info"><div class="nm">${LT(g.name[0],g.name[1])}</div>
-        <div class="ds">${moneyHTML(g.coins)}${g.tag?` <span style="color:#c46a1c;font-weight:bold;">${LT(g.tag[0],g.tag[1])}</span>`:''}</div></div>
-      <button class="buy-btn iap" data-iap="${g.sku}">${g.price}</button></div>`).join('');
-  } else {
-    const have=(S.catSkins||[]).length, n=CAT_SKINS.length;
-    h=`<div class="wd-head"><h3>${LT('The Wardrobe','Garderoba')}</h3>
+  const have=(S.catSkins||[]).length, n=CAT_SKINS.length;
+  let h=`<div class="wd-head"><h3>${LT('The Wardrobe','Garderoba')}</h3>
       <div class="wd-sub">${LT('Collected','Colecționate')} ${have} / ${n}</div>
-      <div class="wd-bar"><i style="width:${Math.round(have/n*100)}%"></i></div></div>`+h;
-    h+='<div class="wd-grid">'+skinsByRarity().map(cs=>`<div class="skc-wrap">${skinCardHTML(cs)}${skinBtnHTML(cs)}</div>`).join('')+'</div>';
-  }
+      <div class="wd-bar"><i style="width:${Math.round(have/n*100)}%"></i></div></div>`;
+  h+='<div class="wd-grid">'+skinsByRarity().map(cs=>`<div class="skc-wrap">${skinCardHTML(cs)}${skinBtnHTML(cs)}</div>`).join('')+'</div>';
+  // the coin packs under the cards, one row of tiles
+  h+=`<div class="wd-head wd-coins"><h3>${LT('Coins','Monede')}</h3></div><div class="gold-grid">`+IAP_GOLD.map(g=>`<div class="gold-tile">
+      ${g.tag?`<div class="gold-tag">${LT(g.tag[0],g.tag[1])}</div>`:''}
+      <div class="gold-ico"><span style="${coinFaceStyle(g.coins>=10000?COIN_IMG.g:g.coins>=1500?COIN_IMG.s:COIN_IMG.b,46)}"></span></div>
+      <div class="gold-nm">${LT(g.name[0],g.name[1])}</div><div class="gold-amt">${moneyHTML(g.coins)}</div>
+      <button class="buy-btn iap" data-iap="${g.sku}">${g.price}</button></div>`).join('')+'</div>';
+  h+=`<div class="iap-note">${LT('Potions, gear and spells are sold by NomNom at her forge in the slums.','Poțiunile, echipamentul și vrăjile le vinde NomNom, la forja ei din mahala.')}
+    ${IAP_TEST_MODE?'<br><b>'+LT('Test mode: purchases are free.','Mod test: achizițiile sunt gratuite.')+'</b>':''}</div>`;
   body.innerHTML=h;
   renderStatbars();
   wireSkinButtons(body);
@@ -17380,7 +17402,6 @@ document.querySelectorAll('#spellBar .potSlot').forEach(el=>{
   el.addEventListener('mousedown',fire);
 });
 document.querySelectorAll('[data-ftab]').forEach(b=>b.onclick=()=>switchForgeTab(b.dataset.ftab));
-document.querySelectorAll('[data-stab]').forEach(b=>b.onclick=()=>switchStoreTab(b.dataset.stab));
 document.querySelectorAll('[data-tltab]').forEach(b=>b.onclick=()=>{ tailorTab=b.dataset.tltab; tailorSel=null;
   tailorSay(tailorTab==='rare'?LT('Ahh, the good stuff. Rare, and worth every coin.','Ahh, marfa bună. Rară, și merită fiecare monedă.'):LT('Herbs and eggs, stranger. Nobody else sells these.','Ierburi și ouă, străine. Nimeni altcineva nu le vinde.')); renderTailor(); });
 document.querySelectorAll('[data-mutab]').forEach(b=>b.onclick=()=>{ museumTab=b.dataset.mutab; museumSel=null;
