@@ -1293,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
   <div id="game" class="screen">
     <div class="topbar">
       <div style="display:flex;gap:8px;">
-        <div class="back-btn" id="btnBackMenu">‹ Menu</div>
+        <div class="icon-btn" id="btnBackMenu" title="Menu"><img src="ui/icon_menu.png" alt="Menu"></div>
         <div class="back-btn" id="btnMineCart" title="Mine-Cart Escape" style="display:none;">Cart</div>
         <div class="back-btn" id="btnBag" style="display:none;">Bag</div>
         <div class="icon-btn" id="btnMap" title="Map"><img src="ui/icon_map.png" alt="Map"></div>
@@ -2650,6 +2650,7 @@ function puiPose(){
 // Puiutu diving-suit frames (used underwater) — 3-frame swim paddle
 const SWIM=[]; for(let i=0;i<3;i++){ const im=new Image(); im.src='puiutu/swim_'+i+'.png'; SWIM.push(im); }
 const SWIM_IDLE=new Image(); SWIM_IDLE.src='puiutu/swim_idle.png';   // sitting diver pose (floating still)
+const SWIM_ATK=new Image(); SWIM_ATK.src='puiutu/swim_atk.png';       // the suit lunging, claws out (swipe + cast underwater)
 // Cat skin animation frames — sliced from the gacha sprite sheets (6-frame run + idle).
 // Lazy-loaded per skin (only the equipped one) to keep memory light.
 const SKIN_FRAMES={};
@@ -2666,8 +2667,8 @@ function loadSkinFrames(id){
   const ld=n=>{ const im=new Image(); im.src=base+n+'.png'; return im; };
   const melee=[0,1,2].map(i=>ld('melee'+i)), cast=[0,1,2].map(i=>ld('cast'+i)), duck=ld('duck');
   // underwater every skin wears the same diving suit Puiutu does: three kick frames and a floating sit
-  const swim=[0,1,2].map(i=>ld('swim_'+i)), swimIdle=ld('swim_idle');
-  return (SKIN_FRAMES[id]={run,idle,melee,cast,duck,swim,swimIdle});
+  const swim=[0,1,2].map(i=>ld('swim_'+i)), swimIdle=ld('swim_idle'), swimAtk=ld('swim_atk');
+  return (SKIN_FRAMES[id]={run,idle,melee,cast,duck,swim,swimIdle,swimAtk});
 }
 // Rocky the dog (NPC + companion) frames
 // Rocky, redrawn: every pose cut from the same sheets at one shared scale (npcs/rocky_new/), so a pose keeps its
@@ -3077,9 +3078,13 @@ function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
     running=true;
     img = RUN[Math.floor((phase||0)*1.25)%RUN.length];   // ~12fps gallop
   }
-  // attack poses override idle/run (not underwater; every skin has its own set): the cast wins over the swipe
-  let posing=false, ducking=false;
-  if(!swimming && key==='puiutu' && opt.pose==='duck'){             // same canvas as idle: same scale, no bob
+  // attack poses override idle/run (every skin has its own set): the cast wins over the swipe.
+  // Underwater one suit lunge stands in for both, from the same suit set the swim frames came from
+  let posing=false, ducking=false, swimAtk=false;
+  if(swimming && key==='puiutu' && opt.pose && opt.pose!=='duck'){
+    const sa = SW===SWIM ? SWIM_ATK : _skf.swimAtk;
+    if(_ok(sa)){ img=sa; swimAtk=true; swimIdle=false; } }
+  else if(!swimming && key==='puiutu' && opt.pose==='duck'){             // same canvas as idle: same scale, no bob
     const d=catDuckImg(); if(d){ img=d; ducking=true; running=false; } }
   else if(!swimming && key==='puiutu' && opt.pose){
     const set=(_useSkin ? _skf[opt.pose] : PUI_ATK[opt.pose]), dur=opt.pose==='cast'?CAST_MS:MELEE_MS;
@@ -3091,7 +3096,8 @@ function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
   // smooth walk hop + idle breathing, with volume-preserving squash & stretch
   let bob, sq;
   if(swimming){
-    if(swimIdle){ bob = Math.sin(tt*1.1)*1.2 + 1; sq = 1; }   // gentle float in place
+    if(swimAtk){ bob=0; sq=1; swimSurge=6; swimTilt=0.06; }   // the frame carries the lunge; hold it level
+    else if(swimIdle){ bob = Math.sin(tt*1.1)*1.2 + 1; sq = 1; }   // gentle float in place
     else {
       const kick = swimCp<0.42, k = kick ? swimCp/0.42 : (swimCp-0.42)/0.58;
       const e = Math.sin(k*Math.PI);                  // 0→1→0 ease within the current phase
@@ -4310,7 +4316,6 @@ const RO = {
   "You were invited. That is not the same as being welcome.":"Ai fost invitat. Nu e același lucru cu a fi binevenit.",
   "…Fine. FINE. I will do it myself.":"…Bine. BINE. O fac eu însumi.",
   "MY treasure!":"Comoara MEA!",
-  "The Evil Coon turns to FIGHT!":"Evil Coon se întoarce să LUPTE!",
   "What’s your name?":"Cum te cheamă?",
   "Your name appears above your cat, for your friends.":"Numele tău apare deasupra pisicii tale, pentru prietenii tăi.",
   "Enter game":"Intră în joc",
@@ -4649,7 +4654,6 @@ const RO = {
   "The tiles seat themselves. Something heavy turns behind the door.":"Plăcuțele se așază la locul lor. Ceva greu se rotește în spatele ușii.",
   "“Enough crawling.”":"„Gata cu târâtul.”",
   "STRIKE THE CORE!":"LOVEȘTE MIEZUL!",
-  "XP — the sewers fall quiet. Head for the light to leave.":"XP — canalizarea se liniștește. Mergi spre lumină ca să ieși.",
   "It’s a birthday!":"E o zi de naștere!",
   "Cozy · BOSS":"Confortabil · BOSS",
   "That way":"Pe acolo",
@@ -4705,7 +4709,6 @@ const RO = {
   "Free play":"Joc liber",
   "English":"English",
   "Romana":"Română",
-  "‹ Menu":"‹ Meniu",
   "Menu":"Meniu",
   "Cart":"Vagonet",
   "Bag":"Rucsac",
@@ -5062,7 +5065,6 @@ const RO = {
   "Walk to the edge, then hold and jump (⤒) to climb the ledges.":"Mergi până la margine, apoi ține apăsat și sari (⤒) ca să urci pe pervazuri.",
   "Puiutu a obosit… se retrage!":"Puiutu a obosit… se retrage!",
   "Ai pierdut lupta — dar nimic grav!":"Ai pierdut lupta — dar nimic grav!",
-  "The Dreamer recoils into the abyss!":"Visătorul se retrage în abis!",
   "Press E — Climb out":"Apasă E — Ieși afară",
   "+1 Legendary Capsule!":"+1 capsulă legendară!",
   "+100 gold!":"+100 aur!",
@@ -5158,11 +5160,6 @@ RO_PAT.push(
   [/^Level ?(\d+) solved!\s+\+(\S+)\s+\+(\d+) XP$/, m=>'Nivelul '+m[1]+' rezolvat!  +'+m[2]+'  +'+m[3]+' XP'],
   [/^Level (\d+) done!$/, m=>'Nivelul '+m[1]+' terminat!'],
   // fights
-  [/^BOSS defeated! \+(\S+)\s+\+(\d+) XP$/, m=>'BOSS învins! +'+m[1]+'  +'+m[2]+' XP'],
-  [/^Queen Seby, the Ancient One falls! \+(\S+)\s+\+(\d+) ?XP$/, m=>'Regina Seby, Cea Străveche, cade! +'+m[1]+'  +'+m[2]+' XP'],
-  [/^The Dreamer recoils into the abyss! \+(\S+)\s+\+(\d+) ?XP$/, m=>'Visătorul se retrage în abis! +'+m[1]+'  +'+m[2]+' XP'],
-  [/^The Evil Coon is defeated! \+(\S+)\s+\+(\d+) ?XP — the sewers fall quiet\. Head for the light to leave\.$/, m=>'Evil Coon e învins! +'+m[1]+'  +'+m[2]+' XP — canalizarea se liniștește. Mergi spre lumină ca să ieși.'],
-  [/^(.*?)\s*defeated!\s+\+(\S+)\s+\+(\d+) ?XP$/, m=>(m[1]?_rw(m[1])+' învins!':'Învins!')+'  +'+m[2]+'  +'+m[3]+' XP'],
   [/^(.+) appears! A real fight!$/, m=>_rw(m[1])+' apare! O luptă adevărată!'],
   [/^A wild (.+) blocks your path!$/, m=>'Un '+_rwl(m[1])+' sălbatic îți blochează drumul!'],
   [/^Puiutu uses (.+)!$/, m=>'Puiutu folosește '+_rw(m[1])+'!'],
@@ -6323,8 +6320,7 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
     const before=u.hp; armyHurt(u,dmg,wx,col); hits++;
     if(before>0 && u.hp<=0){
       S.coins+=ARMY_STATS[u.rank].coins; addXP(ARMY_STATS[u.rank].xp); S.totalDefeats=(S.totalDefeats||0)+1;
-      const nm=unitName(u.team,u.rank);
-      toast(nm+' defeated!  +'+moneyText(ARMY_STATS[u.rank].coins)+'  +'+ARMY_STATS[u.rank].xp+' XP');
+      floatText(u.x, u.y-58, '+'+ARMY_STATS[u.rank].xp+' XP', '#aef36b');
       // thinning one army is help for the other — the war keeps the score
       const step=(u.rank==='commander'?2:1)*(u.team==='cat'?-1:1);
       shiftAllegiance(step);
@@ -6437,9 +6433,7 @@ function hubMobKilled(d,now){
   // the flock at the wizard's gate: down to the last bird is what opens the door
   if(A.hub && A.hub.clearStory && !HUB.ducks.some(x=>!x.dead)) { storySet(A.hub.clearStory); tutorialFire('last'); }
   S.coins+=d.kind.coins; addXP(d.kind.xp); S.totalDefeats=(S.totalDefeats||0)+1;
-  const nm=d.sea?d.kind.name:(d.type==='rat'?unitName('rat',d.rank||'soldier')
-    :(d.type==='pigeon'?'Pigeon':d.type==='clobster'?'Crystal Lobster':'Duck')+' Lv.'+((d.level||1)+((HUB.lvMob&&HUB.lvMob.bonus)||0)));   // the same level its name tag shows
-  toast(nm+' defeated!  +'+moneyText(d.kind.coins)+'  +'+d.kind.xp+' XP');
+  floatText(d.x, d.y-50, '+'+d.kind.xp+' XP', '#aef36b');
   snoutOnKill();
   questProgress('defeat'); checkAchievements(); syncHUD(); save();
 }
@@ -6458,7 +6452,7 @@ function sebyDefeated(b,now){
   grantSpell('crystalspikes','Queen Seby\'s power is yours — Crystal Spikes learned!');
   SFX.win();
   for(let i=0;i<12;i++) floatText(b.x+(Math.random()-.5)*150, b.y-10-Math.random()*110, '', i%2?'#9fe6ff':'#b07cf0');
-  toast('Queen Seby, the Ancient One falls! +'+moneyText(k.coins)+'  +'+k.xp+' XP');
+  floatText(b.x, b.y-60, '+'+k.xp+' XP', '#aef36b');
   questProgress('defeat'); checkAchievements(); renderStatbars();
 }
 
@@ -6497,18 +6491,12 @@ function killEnemy(e){
       grantSpell('crystalspikes','Queen Seby\'s power is yours — Crystal Spikes learned!');
       // a shower of crystal shards on defeat
       for(let i=0;i<22;i++)particles.push({x:e.x,y:e.y-50,vx:(Math.random()-.5)*9,vy:-(Math.random()*6+1),life:1,c:i%2?'#9fe6ff':'#b07cf0'});
-      toast('Queen Seby, the Ancient One falls! +'+moneyText(k.coins)+'  +'+k.xp+' XP');
     }else{
       S.bossDefeated=true;
       grantSpell('thunderpaw','The King\'s storm is yours — Thunder Paw learned!');
-      toast('BOSS defeated! +'+moneyText(k.coins)+'  +'+k.xp+' XP');
     }
   }else{
     e.respawnAt=Date.now()+ENEMY_RESPAWN; SFX.coin();
-    const lbl = e.type==='duck' ? 'Duck'
-              : e.type==='clobster' ? 'Crystal Lobster Lv.'+(e.clobsterLevel||1)
-              : 'Pigeon Lv.'+(e.pigeonLevel||1);
-    toast(lbl+' defeated!  +'+moneyText(k.coins)+'  +'+k.xp+' XP');
   }
   questProgress('defeat'); checkAchievements();
   syncHUD(); renderStatbars(); save();
@@ -7168,12 +7156,6 @@ function gainCoin(x,y){
   checkAchievements();
   syncHUD();renderStatbars();save();
 }
-function defeatEnemy(e){
-  S.coins+=15; addXP(20);
-  for(let i=0;i<14;i++)particles.push({x:e.x,y:e.y-30,vx:(Math.random()-.5)*7,vy:-(Math.random()*5+2),life:1,c:i%2?'#ffd86b':'#fff'});
-  syncHUD();renderStatbars();save();
-  toast((e.type==='duck'?'':'')+' defeated!  +'+moneyText(15)+'  +20 XP');
-}
 //──────── draw enemies
 function drawEnemies(){
   const now=Date.now();
@@ -7225,22 +7207,16 @@ function drawEnemies(){
       g.save();g.globalAlpha=.55;g.globalCompositeOperation='lighter';g.fillStyle='#fff';
       g.beginPath();g.ellipse(sx,fy-e.dh*0.5,e.dh*0.32,e.dh*0.42,0,0,7);g.fill();g.restore();
     }
-    // HP bar (when damaged) — boss always
-    if(!e.defeated && (e.hp<e.maxHp || e.isBoss)){
+    // HP bar (when damaged); bosses get the shared plate instead
+    if(!e.defeated && e.hp<e.maxHp && !e.isBoss){
       const bw=e.isBoss?120:46, bh=e.isBoss?9:5, by=fy-e.dh-(e.isBoss?10:6);
       g.fillStyle='rgba(0,0,0,.55)';g.beginPath();g.roundRect(sx-bw/2-1,by-1,bw+2,bh+2,3);g.fill();
       const pct=Math.max(0,e.hp/e.maxHp);
       g.fillStyle = pct>0.5?'#5fce4a':pct>0.22?'#e8b53a':'#e0533a';
       g.beginPath();g.roundRect(sx-bw/2,by,bw*pct,bh,2);g.fill();
     }
-    // BOSS label
-    if(e.isBoss && !e.defeated){
-      g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
-      const lbl=''+ (e.name||'BOSS').split(',')[0];const tw=g.measureText(lbl).width+14;
-      g.fillStyle=e.bossKind==='seby'?'rgba(28,60,150,.85)':'rgba(150,30,20,.85)';
-      g.beginPath();g.roundRect(sx-tw/2,fy-e.dh-30,tw,18,6);g.fill();
-      g.fillStyle=e.bossKind==='seby'?'#bfeeff':'#ffd86b';g.fillText(lbl,sx,fy-e.dh-17);g.restore();
-    }
+    if(e.isBoss && !e.defeated)
+      drawBossPlate(sx, fy-e.dh-18, e.name||'Boss', e.hp/e.maxHp, e.bossKind==='seby'?'#b07cf0':'#e0402a');
   }
 }
 //──────── floating combat numbers
@@ -7385,7 +7361,7 @@ function winBattle(){
     B.enemy.defeated=true; B.enemy.defeatedAt=Date.now();
     const n = boss?40:16;
     for(let i=0;i<n;i++)particles.push({x:B.enemy.x,y:B.enemy.y-30,vx:(Math.random()-.5)*8,vy:-(Math.random()*6+2),life:1,c:i%2?'#ffd86b':'#fff'});
-    toast(boss ? 'BOSS defeated! +'+moneyText(100)+'  +150 XP' : (B.enemy.type==='duck'?'':'')+' defeated!  +'+moneyText(15)+'  +20 XP');
+    floatText(B.enemy.x, B.enemy.y-60, boss?'+150 XP':'+20 XP', '#aef36b');
     P.battleCD=Date.now()+900; P.vy=-3;
   }, boss?2200:1500);
 }
@@ -8323,6 +8299,7 @@ function enterHub(fromRight){
   HUB.cityX = H.cityExit ? (rightmostWalkX()-10) : Infinity;   // only the park exits to the City on its right
   HUB.camx=Math.max(0,Math.min(HUB.worldW-VW, c.x-VW/2)); cam.x=HUB.camx;
   // Rocky: follows the cat if recruited, else waits as an NPC on the path
+  HUB.rockyTrail=[];
   if(rockyInHub()){ const r=HUB.rocky;
     if(S.companion && COMP.staying && S.rockyStayArea===curArea && S.rockyStayX!=null){ r.x=S.rockyStayX*HUB.worldW; r.y=S.rockyStayY*VH; }
     else if(S.companion && !snoutWith()){ r.x=c.x-c.facing*46; r.y=c.y; }
@@ -8513,7 +8490,6 @@ function abyssVictory(now){
   // the thing in the deep leaves you what it had: the sea itself
   grantSpell('fishstorm','Fish Storm learned!');
   SFX.win&&SFX.win(); save(); syncHUD(); questProgress('defeat'); checkAchievements();
-  toast('The Dreamer recoils into the abyss! +'+moneyText(coins)+'  +'+xp+' XP');
 }
 //═══════════════════════════════════════════════ THE SEWERS — survival-horror stalker chase
 const SEWER={ on:false, mode:'hunt', coon:{x:0,y:0,phase:0,facing:-1}, speed:3.1, dist:null, GW:72, GH:26, gridT:0, beatAt:0,
@@ -8572,7 +8548,7 @@ function updateSewer(now){
   if(!boss) for(const l of SEWER.loot){ if(l.got)continue; if(Math.hypot(c.x-l.x,c.y-l.y)<40){ l.got=true; SEWER.got++; SFX.coin&&SFX.coin();
     for(let i=0;i<10;i++)particles.push({x:l.x,y:l.y-10,vx:(Math.random()-.5)*4,vy:-(Math.random()*4),life:1,c:'#ffd86b'});
     toast('Recovered '+(l.name||'stolen treasure')+'!  ('+SEWER.got+'/'+SEWER.loot.length+')');
-    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=Math.round(260*((HUB.lvBoss&&HUB.lvBoss.hp)||1));   /* 150+10·L at its level 11; scales like every boss */ SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); npcBark('The Evil Coon','MY treasure!',{bg:'#1a1410', tone:120}); toast('The Evil Coon turns to FIGHT!');
+    if(SEWER.got>=SEWER.loot.length){ SEWER.mode='boss'; SEWER.bossMax=SEWER.bossHp=Math.round(260*((HUB.lvBoss&&HUB.lvBoss.hp)||1));   /* 150+10·L at its level 11; scales like every boss */ SFX.lose&&SFX.lose(); SFX.tone&&SFX.tone(70,0.6,'sawtooth',0.09); npcBark('The Evil Coon','MY treasure!',{bg:'#1a1410', tone:120});
       co.x=H.coonStart.xf*HUB.worldW; co.y=H.coonStart.yf*VH;                         // it melts into the dark…
       if(maskReady()){ const p=nearestWalk(co.x,co.y); if(p){co.x=p.x;co.y=p.y;} }
       SEWER.coonEmergeAt=now; bossTitle('coon'); } } }
@@ -8622,7 +8598,6 @@ function hurtSewerCoon(dmg,now,col,fromX){
     S.coins+=coins; addXP(xp); S.totalDefeats=(S.totalDefeats||0)+1; S.bossDefeated=true;
     SFX.win&&SFX.win(); save(); syncHUD(); questProgress('defeat'); checkAchievements();
     for(let i=0;i<24;i++) floatText(co.x+(Math.random()-.5)*160, co.y-30-Math.random()*90,'', i%2?'#ffd86b':'#ff8a3a');
-    toast('The Evil Coon is defeated! +'+moneyText(coins)+'  +'+xp+'XP — the sewers fall quiet. Head for the light to leave.');
   }
 }
 function drawSewer(){
@@ -8692,10 +8667,7 @@ function drawSewer(){
   const hp=P.hp/P.maxHp; if(hp<0.4){ g.save(); const a=(0.4-hp)/0.4*0.5; const v=g.createRadialGradient(VW/2,VH/2,VH*0.35,VW/2,VH/2,VH*0.8); v.addColorStop(0,'rgba(120,0,0,0)'); v.addColorStop(1,'rgba(120,0,0,'+a+')'); g.fillStyle=v; g.fillRect(0,0,VW,VH); g.restore(); }
   g.save(); g.textAlign='center';
   if(boss){ // boss HP bar
-    const bw=Math.min(VW*0.6,360), x=(VW-bw)/2, y=72, pct=Math.max(0,SEWER.bossHp/SEWER.bossMax);
-    g.fillStyle='rgba(10,8,6,.75)'; roundRectPath(x-3,y-3,bw+6,18,6); g.fill();
-    g.fillStyle='#3a1010'; roundRectPath(x,y,bw,10,5); g.fill(); g.fillStyle='#e0402a'; roundRectPath(x,y,bw*pct,10,5); g.fill();
-    g.fillStyle='#ffd9cf'; g.font='bold 11px Trebuchet MS'; g.fillText('Evil Coon', VW/2, y+9);
+    drawBossPlate(VW/2, 72, 'Evil Coon', SEWER.bossHp/SEWER.bossMax, '#e0402a', '#3a1010');
   } else if(SEWER.mode!=='cleared'){ // treasure counter (hidden once the Coon is beaten)
     g.font='bold 14px Trebuchet MS'; g.fillStyle='rgba(10,8,6,.7)'; const t=''+SEWER.got+' / '+SEWER.loot.length, tw=g.measureText(t).width+18;
     roundRectPath(VW/2-tw/2,12,tw,24,8); g.fill(); g.fillStyle='#ffe7b0'; g.fillText(t, VW/2, 29);
@@ -8848,6 +8820,7 @@ function hubRespawnAtEntry(){
   c.safeX=c.x; c.safeY=c.y; HUB.target=null; c.moving=false;
   HUB.camx=Math.max(0,Math.min(HUB.worldW-VW, c.x-VW/2)); cam.x=HUB.camx;
   if(HUB.rocky && S.companion && !COMP.staying){ HUB.rocky.x=c.x-c.facing*46; HUB.rocky.y=c.y; }   // he comes round with you
+  HUB.rockyTrail=[];
 }
 // hurt the cat in top-down mode: damage + knockback away from (fx,fy); faint -> back to the door you came in by
 function hubHurtPlayer(now,dmg,col,fx,fy,kb){
@@ -9079,14 +9052,7 @@ function drawCatKing(g,b){
   if(stage==='lion' || stage==='cat'){
     const bsz=(stage==='lion'?210:118)*sc, topY=b.y-bsz-14;
     const label = stage==='lion' ? 'The Crown’s Lion' : 'The Cat King';
-    g.save(); g.textAlign='center'; g.font='bold 13px Trebuchet MS';
-    const bw=170, bh=9, bx=sx-bw/2, by=topY+4;
-    g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(bx-6,topY-16,bw+12,bh+24,6); g.fill();
-    g.fillStyle='#ffe7b0'; g.fillText(label, sx, topY-4);
-    g.fillStyle='#3a2a10'; g.beginPath(); g.roundRect(bx,by,bw,bh,4); g.fill();
-    g.fillStyle=stage==='lion'?'#ffd76a':'#ff9a4a';
-    g.beginPath(); g.roundRect(bx,by,bw*Math.max(0,b.hp/b.maxHp),bh,4); g.fill();
-    g.restore();
+    drawBossPlate(sx, topY+4, label, b.hp/b.maxHp, stage==='lion'?'#ffd76a':'#ff9a4a', '#3a2a10');
   }
 }
 // ── The Rat King's lair ────────────────────────────────────────────────────────────────────
@@ -9261,14 +9227,7 @@ function drawRatKing(g,b){
     g.beginPath();g.ellipse(sx,b.y-bsz*0.5,bsz*0.35,bsz*0.47,0,0,7);g.fill();g.restore(); }
   if(b.stage!=='idle' && b.stage!=='talk' && b.stage!=='stagger'){
     const topY=b.y-bsz-14;
-    g.save(); g.textAlign='center'; g.font='bold 13px Trebuchet MS';
-    const bw=170, bh=9, bx=sx-bw/2, by=topY+4;
-    g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(bx-6,topY-16,bw+12,bh+24,6); g.fill();
-    g.fillStyle='#ffd0c0'; g.fillText('Rattus Magnus', sx, topY-4);
-    g.fillStyle='#3a1410'; g.beginPath(); g.roundRect(bx,by,bw,bh,4); g.fill();
-    g.fillStyle=tall?'#ff3a2a':'#c94a3a';
-    g.beginPath(); g.roundRect(bx,by,bw*Math.max(0,b.hp/b.maxHp),bh,4); g.fill();
-    g.restore();
+    drawBossPlate(sx, topY+4, 'Rattus Magnus', b.hp/b.maxHp, tall?'#ff3a2a':'#c94a3a', '#3a1410');
   }
 }
 // ── The Hangar: the Mech Boar ──────────────────────────────────────────────────────────────
@@ -10622,13 +10581,10 @@ function drawForestSpirit(g,sp){
     g.restore(); }
   }
   if(sp.stage==='fight' || sp.stage==='rooted'){
-    const topY=sp.y-base*grow-16, bw=150, bh=8, bx=sx-bw/2, by=topY+4;
-    g.save(); g.textAlign='center'; g.font='bold 12px Trebuchet MS';
-    g.fillStyle='rgba(0,0,0,.5)'; g.beginPath(); g.roundRect(bx-6,topY-15,bw+12,bh+22,6); g.fill();
-    g.fillStyle='#d8ffe9'; g.fillText(sp.stage==='rooted'?'The Glow — regrowing':'The Glow', sx, topY-3);
-    g.fillStyle='#10261c'; g.beginPath(); g.roundRect(bx,by,bw,bh,4); g.fill();
+    const topY=sp.y-base*grow-16;
     const pct = sp.stage==='rooted' ? 1-Math.max(0,sp.stageUntil-now)/9000 : Math.max(0,sp.hp/sp.maxHp);
-    g.fillStyle=sp.stage==='rooted'?'#4f9c7c':'#7dffcf'; g.beginPath(); g.roundRect(bx,by,bw*pct,bh,4); g.fill();
+    const {by,bh}=drawBossPlate(sx, topY+4, 'The Glow', pct, sp.stage==='rooted'?'#4f9c7c':'#7dffcf', '#10261c');   // a dim bar refilling = regrowing
+    g.save();
     // sporelings delivered toward the next hold
     for(let i=0;i<3;i++){ const cx=sx+(i-1)*16, cy=by+bh+10, on=i<(sp.charge||0);
       g.fillStyle=on?'#ffb36b':'rgba(255,179,107,.25)'; g.beginPath(); g.arc(cx,cy,5,Math.PI,0); g.fill();
@@ -10762,13 +10718,8 @@ function drawMechBoar(g,b){
     g.beginPath();g.ellipse(sx,b.y-h*0.5,h*0.55,h*0.42,0,0,7);g.fill();g.restore(); }
   if(b.stage==='fight' || (b.stage==='bound' && b.bindKind==='hold')){
     const topY=b.y-h-14;
-    g.save(); g.textAlign='center'; g.font='bold 13px Trebuchet MS';
-    const bw=190, bh=9, bx=sx-bw/2, by=topY+4;
-    g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(bx-6,topY-16,bw+12,bh+24,6); g.fill();
-    g.fillStyle='#ecd0ff'; g.fillText('The Mech Boar', sx, topY-4);
-    g.fillStyle='#24102e'; g.beginPath(); g.roundRect(bx,by,bw,bh,4); g.fill();
-    g.fillStyle=b.phase2?'#f070ff':'#a64dff';
-    g.beginPath(); g.roundRect(bx,by,bw*Math.max(0,b.hp/b.maxHp),bh,4); g.fill();
+    const {bx,by,bw,bh}=drawBossPlate(sx, topY+4, 'The Mech Boar', b.hp/b.maxHp, b.phase2?'#f070ff':'#a64dff', '#24102e');
+    g.save();
     // one notch per segment: the crystal holding it, or gone
     for(let i=0;i<3;i++){ const nx=bx+bw*(i+1)/3; if(i<2){ g.fillStyle='rgba(0,0,0,.7)'; g.fillRect(nx-1,by,2,bh); }
       const left=i>=(b.torn||0); g.fillStyle=left?'#d7a8ff':'rgba(120,110,140,.5)';
@@ -11042,12 +10993,20 @@ function updateHub(){
     const follows = S.companion && !COMP.staying && !snoutWith();
     const fights  = follows || !!A.hub.rockyFights;
     if(follows){
-      // follow the cat (target a spot just behind it), constrained to the path
-      const tx=c.x-c.facing*48, ty=c.y;
+      // follow the cat along the way it actually walked: a straight line to it cuts through
+      // walls, and in a maze (the sewers) he got stuck on the far side of one
+      const tr=HUB.rockyTrail||(HUB.rockyTrail=[]), last=tr[tr.length-1];
+      if(!last || Math.hypot(c.x-last.x,c.y-last.y)>6){ tr.push({x:c.x,y:c.y}); if(tr.length>80) tr.shift(); }
+      let tx=c.x-c.facing*48, ty=c.y;
+      for(let i=tr.length-1, run=0, px=c.x, py=c.y; i>=0; i--){
+        run+=Math.hypot(tr[i].x-px,tr[i].y-py); px=tr[i].x; py=tr[i].y; tx=px; ty=py; if(run>=48) break; }
+      if(Math.hypot(tx-r.x,ty-r.y)>280){ r.x=tx; r.y=ty; }   // left far behind (a door, a knockback): catch up
       const ndx=(tx-r.x)*0.12, ndy=(ty-r.y)*0.12;
       const nx=r.x+ndx, ny=r.y+ndy;
-      if(!maskReady() || hubStand(nx,r.y,false)) r.x=nx;
-      if(!maskReady() || hubStand(r.x,ny,false)) r.y=ny;
+      // the trail is ground the cat stood on, so he may cut its corners a little
+      const okX=!maskReady() || hubStand(nx,r.y,false), okY=!maskReady() || hubStand(r.x,ny,false);
+      if(okX || !okY) r.x=nx;
+      if(okY || !okX) r.y=ny;
       r.moving=Math.hypot(ndx,ndy)>0.4; if(r.moving)r.phase+=0.18; r.facing=c.facing;
     } else if(A.hub.rockyFights){
       // holds his ground: steps toward the nearest live bird, but never far from his own spot
@@ -11596,15 +11555,8 @@ function drawHub(){
       if(now-(b.hitFlash||0)<110){ g.save();g.globalAlpha=.45;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(sx,b.y-bsz*0.5,bsz*0.35,bsz*0.47,0,0,7);g.fill();g.restore(); }
       // royal name plate + big HP bar
       const topY=b.y-bsz-14;
-      g.save(); g.textAlign='center'; g.font='bold 13px Trebuchet MS';
-      g.fillStyle='rgba(28,16,60,.85)'; const lbl='Queen Seby, the Ancient One'+(b.phase2?'':''), tw=g.measureText(lbl).width+16;
-      roundRectPath(sx-tw/2, topY-16, tw, 22, 8); g.fill();
-      g.fillStyle='#e6c9ff'; g.fillText(lbl, sx, topY);
-      const bw=150*Math.max(0.8,sc), bh=9, by=topY+8, pct=Math.max(0,b.hp/b.maxHp);
-      g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(sx-bw/2-1,by-1,bw+2,bh+2,4); g.fill();
-      g.fillStyle = pct>0.5?'#b07cf0':pct>0.22?'#e8b53a':'#e0533a';
-      g.beginPath(); g.roundRect(sx-bw/2,by,bw*pct,bh,3); g.fill();
-      g.restore();
+      const pct=Math.max(0,b.hp/b.maxHp);
+      drawBossPlate(sx, topY+4, 'Queen Seby, the Ancient One', pct, pct>0.5?'#b07cf0':pct>0.22?'#e8b53a':'#e0533a', '#1c1030');
     } else if(it.t==='spirit'){ drawForestSpirit(g, HUB.spirit);
     } else if(it.t==='crowd'){ drawCrowdActor(g, it.a);
     } else if(it.t==='snout'){ drawSnout(g, HUB.hangar.agent);
@@ -11963,12 +11915,10 @@ function drawAbyssBoss(){
     }
     g.restore();
   }
-  if(ab.state==='tentacles' || ab.state==='exposed'){ const bw=Math.min(VW*0.6,360), x=(VW-bw)/2, y=72, pct=Math.max(0,ab.headHp/ab.headMax);
-    // name plate + HP bar on one panel, the name just above the bar (like the Cat King's)
-    g.save(); g.fillStyle='rgba(10,8,14,.7)'; roundRectPath(x-8,y-28,bw+16,48,8); g.fill();
-    g.textAlign='center'; g.font='bold 17px Trebuchet MS'; g.fillStyle='#ffd9cf'; g.fillText('The Dreamer in the Deep', VW/2, y-8);
-    g.fillStyle='#7a1f2a'; roundRectPath(x,y,bw,13,6); g.fill();
-    g.fillStyle='#ff5a4a'; roundRectPath(x,y,bw*pct,13,6); g.fill();
+  if(ab.state==='tentacles' || ab.state==='exposed'){ const y=72, pct=Math.max(0,ab.headHp/ab.headMax);
+    // the shared boss plate, up top: the Dreamer has no head to hang it over
+    drawBossPlate(VW/2, y, 'The Dreamer in the Deep', pct, '#ff5a4a', '#7a1f2a');
+    g.save();
     // the call to strike sits right under the Dreamer's own bar, not over the core
     if(ab.state==='exposed'){ const pr=0.5+0.5*Math.sin(now*0.012);
       g.textAlign='center'; g.font='bold 26px Trebuchet MS'; g.fillStyle='rgba(0,0,0,.7)'; g.fillText('STRIKE THE CORE!', VW/2+2, y+46);
@@ -12025,6 +11975,19 @@ function drawHubSpots(){
   }
 }
 function roundRectPath(x,y,w,h,r){ g.beginPath(); g.roundRect(x,y,w,h,r); }
+// Every boss wears the same plate: its name on top, the HP bar under it, one panel, one font.
+// barY is the bar's top edge; returns the bar box so a boss can add its own marks under it.
+function drawBossPlate(cx,barY,name,pct,fill,track){
+  const bw=200, bh=10, bx=cx-bw/2;
+  g.save(); g.textAlign='center'; g.font='bold 15px Trebuchet MS';
+  const pw=Math.max(bw,g.measureText(name).width)+20;
+  g.fillStyle='rgba(10,8,6,.7)'; roundRectPath(cx-pw/2,barY-25,pw,bh+33,8); g.fill();
+  g.fillStyle='#ffe7b0'; g.fillText(name,cx,barY-7);
+  g.fillStyle=track||'#2a1a10'; roundRectPath(bx,barY,bw,bh,5); g.fill();
+  g.fillStyle=fill; roundRectPath(bx,barY,bw*Math.max(0,Math.min(1,pct)),bh,5); g.fill();
+  g.restore();
+  return {bx,by:barY,bw,bh};
+}
 
 function draw(){
   if(!A){return;}
