@@ -1317,13 +1317,16 @@
   /* the star-and-ribbon emblem (ui/levelup.png); the words sit on its empty ribbon */
   #levelup .lu{position:relative;width:min(88vw,540px);text-align:center;animation:pop .4s;
     filter:drop-shadow(0 0 28px rgba(255,216,107,.55));}
+  #levelup .luArt{position:relative;}   /* the ribbon is placed on the art alone, not on the art + the line under it */
   #levelup .lu img{display:block;width:100%;image-rendering:pixelated;}
-  #levelup .luBand{position:absolute;left:14%;right:14%;top:66%;height:20%;display:flex;flex-direction:column;
+  #levelup .luBand{position:absolute;left:16%;right:16%;top:67%;height:16%;display:flex;flex-direction:column;
     align-items:center;justify-content:center;}
   @keyframes pop{0%{transform:scale(.5);opacity:0;}100%{transform:scale(1);opacity:1;}}
   #levelup h2{color:#ffd86b;font-size:clamp(20px,5.4vw,32px);line-height:1;letter-spacing:1px;
     text-shadow:0 2px 0 #3a210c,0 0 10px rgba(255,190,80,.6);}
-  #levelup p{color:#f6e3b8;font-size:clamp(11px,2.6vw,14px);margin-top:4px;text-shadow:0 1px 0 #2a1608;}
+  /* the level line sits under the emblem: the ribbon only has room for the one word */
+  #levelup p{display:inline-block;margin-top:18px;padding:5px 14px;border-radius:12px;background:rgba(30,16,6,.85);
+    border:2px solid #c9902e;color:#f6e3b8;font-size:clamp(12px,2.8vw,15px);font-weight:bold;text-shadow:0 1px 0 #000;}
 
   /* ── cinematic capture mode (trailer recording): F2 toggles, F3 letterbox ── */
   body.cine .topbar, body.cine #uiOrbs, body.cine #lowHpVignette, body.cine #questHUD, body.cine #chatLog,
@@ -1806,7 +1809,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
 
   <div id="achPop"></div>
   <div id="toast"></div>
-  <div id="levelup"><div class="lu"><img src="ui/levelup.png" alt=""><div class="luBand"><h2>LEVEL UP!</h2><p id="luText">Level 2</p></div></div></div>
+  <div id="levelup"><div class="lu"><div class="luArt"><img src="ui/levelup.png" alt=""><div class="luBand"><h2>LEVEL UP!</h2></div></div><p id="luText">Level 2</p></div></div>
 </div>
 
 <script>
