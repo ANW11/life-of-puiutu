@@ -1219,11 +1219,16 @@
   /* level up */
   #levelup{position:absolute;inset:0;z-index:45;display:none;align-items:center;justify-content:center;
     background:rgba(0,0,0,.5);}
-  #levelup .lu{background:linear-gradient(#fff6e2,#f0ddb6);border:5px solid #ffd86b;border-radius:24px;
-    padding:26px 34px;text-align:center;box-shadow:0 0 60px rgba(255,216,107,.6);animation:pop .4s;}
+  /* the star-and-ribbon emblem (ui/levelup.png); the words sit on its empty ribbon */
+  #levelup .lu{position:relative;width:min(88vw,540px);text-align:center;animation:pop .4s;
+    filter:drop-shadow(0 0 28px rgba(255,216,107,.55));}
+  #levelup .lu img{display:block;width:100%;image-rendering:pixelated;}
+  #levelup .luBand{position:absolute;left:14%;right:14%;top:66%;height:20%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;}
   @keyframes pop{0%{transform:scale(.5);opacity:0;}100%{transform:scale(1);opacity:1;}}
-  #levelup h2{color:#c8862a;font-size:30px;}
-  #levelup p{color:#5a3d18;font-size:16px;margin-top:6px;}
+  #levelup h2{color:#ffd86b;font-size:clamp(20px,5.4vw,32px);line-height:1;letter-spacing:1px;
+    text-shadow:0 2px 0 #3a210c,0 0 10px rgba(255,190,80,.6);}
+  #levelup p{color:#f6e3b8;font-size:clamp(11px,2.6vw,14px);margin-top:4px;text-shadow:0 1px 0 #2a1608;}
 
   /* ── cinematic capture mode (trailer recording): F2 toggles, F3 letterbox ── */
   body.cine .topbar, body.cine #uiOrbs, body.cine #lowHpVignette, body.cine #questHUD, body.cine #chatLog,
@@ -1710,7 +1715,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
 
   <div id="achPop"></div>
   <div id="toast"></div>
-  <div id="levelup"><div class="lu"><h2> LEVEL UP!</h2><p id="luText">Level 2</p></div></div>
+  <div id="levelup"><div class="lu"><img src="ui/levelup.png" alt=""><div class="luBand"><h2>LEVEL UP!</h2><p id="luText">Level 2</p></div></div></div>
 </div>
 
 <script>
