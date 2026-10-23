@@ -1306,7 +1306,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
         <div class="icon-btn" id="btnShopTop" title="Shop"><img src="ui/icon_shop.png" alt="Shop"></div>
         <div class="icon-btn" id="btnWar" title="Border War, a real-time strategy game"><img src="ui/icon_warcat.png" alt="Border War"></div>
         <div class="icon-btn" id="btnSettings" title="Settings"><img src="ui/btn_settings.png" alt="Settings"></div>
-        <div class="icon-btn" id="btnRocky" title="Stay" style="display:none;"><img src="ui/icon_stay.png" alt="Stay"></div>
+        <div class="icon-btn" id="btnRocky" title="Stay" style="display:none;"><img src="ui/icon_follow.png" alt="Stay"></div>
         <div class="chip" id="onlineChip" style="display:none;">Online <span id="hudOnline">1</span></div>
       </div>
     </div>
@@ -12397,9 +12397,10 @@ function drawPlayer(){
 function updateRockyBtn(){
   const b=document.getElementById('btnRocky'); if(!b) return;
   b.style.display = (S.companion && !snoutWith()) ? 'flex' : 'none';
-  // the icon shows what a tap will do: make him sit and wait, or call him back to heel
+  // the icon shows what Rocky is doing now (sitting and waiting, or trotting after you);
+  // the tooltip says what a tap will do
   const lbl=T(COMP.staying ? 'Follow' : 'Stay'), img=b.querySelector('img');
-  img.src = COMP.staying ? 'ui/icon_follow.png' : 'ui/icon_stay.png'; img.alt=lbl; b.title=lbl;
+  img.src = COMP.staying ? 'ui/icon_stay.png' : 'ui/icon_follow.png'; img.alt=lbl; b.title=lbl;
 }
 function toggleRocky(){
   if(!S.companion || snoutWith()) return;
