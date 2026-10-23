@@ -955,6 +955,62 @@
   .mu-note-txt{font-style:italic;line-height:1.4;margin:.4em 0 .2em;}
   /* ── the Store (real-money: gold + skins) ── */
   .iap-note{max-width:600px;margin:0 auto 12px;font-size:12px;color:#ffe7b0;opacity:.8;text-align:center;}
+  /* ── the Wardrobe: skins as collectible cards (frames ui/card_<rarity>.webp, art skins/cards/) ── */
+  .wd-head{max-width:600px;margin:0 auto 14px;text-align:center;color:#ffe7b0;}
+  .wd-head h3{font-size:22px;letter-spacing:1px;text-shadow:0 2px 0 #000;}
+  .wd-head .wd-sub{font-size:12px;opacity:.8;margin-top:2px;}
+  .wd-bar{height:8px;border-radius:5px;background:#120c06;border:1px solid #6b4a1f;margin:8px auto 0;max-width:260px;overflow:hidden;}
+  .wd-bar i{display:block;height:100%;background:linear-gradient(90deg,#ffb347,#ffe27a);}
+  .wd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px;max-width:600px;margin:0 auto;}
+  @media (max-width:520px){ .wd-grid{grid-template-columns:repeat(2,1fr);} }
+  .skc-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .skc{position:relative;width:100%;aspect-ratio:523/881;cursor:pointer;transition:transform .18s;}
+  .skc:hover{transform:translateY(-4px) scale(1.02);} .skc:active{transform:scale(.97);}
+  .skc-win{position:absolute;overflow:hidden;border-radius:6%;}
+  .skc-win img{position:absolute;left:50%;bottom:0;height:100%;transform:translateX(-50%);max-width:none;}
+  .skc-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  .skc-plate{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
+    color:#ffe7b0;font-weight:900;font-size:clamp(10px,2.6vw,14px);line-height:1.05;text-shadow:0 1px 0 #000;padding:0 4%;}
+  .skc-rar{position:absolute;left:50%;transform:translateX(-50%);top:15%;font-size:9px;font-weight:900;letter-spacing:1.5px;
+    padding:2px 7px;border-radius:8px;background:rgba(0,0,0,.55);color:var(--rc);text-transform:uppercase;white-space:nowrap;}
+  .skc-badge{position:absolute;right:6%;top:6%;z-index:2;font-size:10px;font-weight:900;padding:3px 7px;border-radius:9px;
+    background:#3a8fd9;color:#fff;border:2px solid #fff;box-shadow:0 2px 4px #0008;}
+  .skc-badge.own{background:#5a9a2a;}
+  .r-common{--rc:#cfd6de;--w1:#5d646d;--w2:#23272c;}
+  .r-rare{--rc:#7cc0ff;--w1:#2b6cc4;--w2:#0d1d3d;}
+  .r-epic{--rc:#d39bff;--w1:#7a37c4;--w2:#1f0b36;}
+  .r-legendary{--rc:#ffd86b;--w1:#e0902a;--w2:#3a1606;}
+  .skc-win{background:radial-gradient(circle at 50% 42%,var(--w1),var(--w2) 75%);}
+  .r-epic.skc{filter:drop-shadow(0 0 8px rgba(190,110,255,.45));}
+  .r-legendary.skc{filter:drop-shadow(0 0 10px rgba(255,200,70,.6));}
+  /* a light sweep across the legendary cards */
+  .r-legendary .skc-win::after{content:'';position:absolute;inset:-20%;
+    background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.38) 50%,transparent 60%);
+    transform:translateX(-120%);animation:skShine 3.2s ease-in-out infinite;}
+  @keyframes skShine{0%,55%{transform:translateX(-120%);}100%{transform:translateX(120%);}}
+  .skc-wrap .buy-btn{min-width:70%;}
+  .skc-wrap .buy-btn.iap{background:linear-gradient(#ffd45a,#e8962a);border-color:#8a4a10;color:#3a1c04;}
+  /* the showcase: one skin, big, with how it looks in the game */
+  .sk-show{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
+    background:rgba(8,5,2,.82);backdrop-filter:blur(3px);padding:16px;}
+  .sk-show.on{display:flex;animation:pop .3s;}
+  .sk-box{display:flex;gap:22px;align-items:center;max-width:720px;width:100%;}
+  .sk-box .skc{width:min(44vw,300px);flex:0 0 auto;cursor:default;} .sk-box .skc:hover{transform:none;}
+  .sk-box .skc-plate{font-size:clamp(13px,3.4vw,20px);}
+  .sk-side{flex:1;color:#ffe7b0;display:flex;flex-direction:column;gap:10px;min-width:0;}
+  .sk-side h3{font-size:clamp(20px,5vw,30px);line-height:1.05;text-shadow:0 2px 0 #000;}
+  .sk-pill{align-self:flex-start;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;
+    padding:3px 10px;border-radius:10px;background:rgba(0,0,0,.5);color:var(--rc);border:1px solid var(--rc);}
+  .sk-line{font-size:14px;opacity:.9;font-style:italic;}
+  .sk-stage{position:relative;height:120px;border-radius:14px;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 100%,rgba(255,216,107,.25),transparent 70%),linear-gradient(#2a1d10,#1a1208);border:2px solid #6b4a1f;}
+  .sk-stage img{position:absolute;left:50%;bottom:14px;height:86px;transform:translateX(-50%);image-rendering:auto;}
+  .sk-stage small{position:absolute;left:10px;top:7px;font-size:10px;opacity:.6;letter-spacing:1px;text-transform:uppercase;}
+  .sk-side .buy-btn{font-size:17px;padding:12px 16px;}
+  .sk-side .buy-btn.iap{background:linear-gradient(#ffd45a,#e8962a);border-color:#8a4a10;color:#3a1c04;}
+  .sk-x{position:absolute;top:12px;right:14px;background:#6b4a1f;color:#ffe7b0;border:none;border-radius:10px;
+    width:38px;height:38px;font-size:24px;font-weight:bold;cursor:pointer;}
+  @media (max-width:560px){ .sk-box{flex-direction:column;gap:12px;} .sk-box .skc{width:min(58vw,240px);} .sk-side{width:100%;} .sk-stage{height:100px;} }
   .buy-btn.iap{background:linear-gradient(#ffd24a,#d9971c);border-color:#8a5a0c;color:#3a2410;}
   /* ── potion belt (sits in the spell bar) + active buffs ── */
   .spellSlot.potSlot{border-color:#3d6fa8;background:rgba(22,36,58,.82);}
@@ -1412,7 +1468,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
 
   <!-- ============ STORE (the Shop button: real-money gold + skins) ============ -->
   <div id="shop" class="modal">
-    <div class="modal-head"><h2>Store</h2><button class="modal-close" data-close="shop"></button></div>
+    <div class="modal-head"><h2>Store</h2><button class="modal-close" data-close="shop" onclick="closeSkinShow()"></button></div>
     <div class="mkt-tabs">
       <button class="mkt-tab active" data-stab="gold">Gold</button>
       <button class="mkt-tab" data-stab="skins">Skins</button>
@@ -14644,6 +14700,22 @@ const CAT_SKINS=[
   {id:'skin_siamese',    name:'Siamese',            rarity:'rare',      art:'skins/siamense_art.png',       skin:'skins/siamese.png'},
   {id:'skin_sphynx',     name:'Sphynx',             rarity:'legendary', art:'skins/sphinx_art.png',         skin:'skins/sphinx.png'},
 ];
+// one line each for the Wardrobe showcase
+const SKIN_LINES={
+  skin_abyssinian:['Quick as a spark, and she knows it.','Iute ca o scânteie, și știe asta.'],
+  skin_american:['Steady paws, a good friend on any road.','Lăbuțe sigure, un prieten bun pe orice drum.'],
+  skin_angora:['Snow white and soft as a cloud. Rarely seen outside palaces.','Albă ca neaua și moale ca un nor. Rar văzută în afara palatelor.'],
+  skin_silvbengal:['Silver stripes that shine under the moon.','Dungi argintii care strălucesc sub lună.'],
+  skin_british:['Round face, calm eyes, never in a hurry.','Față rotundă, ochi liniștiți, niciodată grăbit.'],
+  skin_calico:['Three colours, three times the luck.','Trei culori, de trei ori mai mult noroc.'],
+  skin_goldbengal:['A little leopard with a coat of gold.','Un mic leopard cu blană de aur.'],
+  skin_mainecoon:['The gentle giant of the forest, with a tail like a fox.','Uriașul blând al pădurii, cu o coadă ca de vulpe.'],
+  skin_ragdoll:['Blue eyes and the softest fur in the kingdom.','Ochi albaștri și cea mai moale blană din regat.'],
+  skin_russianblue:['Silver blue velvet and green eyes. Quiet as a shadow.','Catifea albastru argintie și ochi verzi. Tăcut ca o umbră.'],
+  skin_scottish:['Folded ears and round cheeks. Impossible to refuse.','Urechi pliate și obraji rotunzi. Imposibil de refuzat.'],
+  skin_siamese:['Sapphire eyes, and a lot to say about it.','Ochi de safir, și multe de spus despre asta.'],
+  skin_sphynx:['No fur, all magic. Warm to the touch.','Fără blană, numai magie. Cald la atingere.'],
+};
 if(typeof S!=='undefined' && S.equippedSkin) loadSkinFrames(S.equippedSkin);   // resume the equipped skin
 // no hats: the capsule gives coins, cat skins, spells, potions (a small stack) and charms of the rolled rarity.
 // A charm the story has not unlocked yet (the Golden Banana) stays out until it has.
@@ -16214,7 +16286,7 @@ const IAP_GOLD=[
 ];
 const IAP_SKIN_PRICE={common:'0,99 €',rare:'1,99 €',epic:'3,99 €',legendary:'6,99 €'};
 let storeTab='gold';
-function switchStoreTab(tab){ storeTab=tab;
+function switchStoreTab(tab){ storeTab=tab; closeSkinShow();
   document.querySelectorAll('[data-stab]').forEach(b=>b.classList.toggle('active',b.dataset.stab===tab));
   renderShop();
 }
@@ -16229,22 +16301,73 @@ function renderShop(){
         <div class="ds">${moneyHTML(g.coins)}${g.tag?` <span style="color:#c46a1c;font-weight:bold;">${LT(g.tag[0],g.tag[1])}</span>`:''}</div></div>
       <button class="buy-btn iap" data-iap="${g.sku}">${g.price}</button></div>`).join('');
   } else {
-    const RCL={common:'#aeb6c0',rare:'#5aaaff',epic:'#be6eff',legendary:'#ffc846'};
-    h+=CAT_SKINS.map(cs=>{
-      const owned=(S.catSkins||[]).includes(cs.id), eq=S.equippedSkin===cs.id;
-      const btn=owned?`<button class="buy-btn ${eq?'equipped':'owned'}" data-skineq="${cs.id}">${eq?LT('Equipped','Echipat'):LT('Equip','Echipează')}</button>`
-        :`<button class="buy-btn iap" data-iap="skin:${cs.id}">${IAP_SKIN_PRICE[cs.rarity]}</button>`;
-      return `<div class="shop-item"><div class="shop-emoji" style="background:#1a0a2e;border-color:${RCL[cs.rarity]};">
-          <img src="skins/frames/${cs.id}/avatar.png" style="width:52px;height:52px;object-fit:contain;image-rendering:pixelated;"></div>
-        <div class="shop-info"><div class="nm">${cs.name}</div>
-          <div class="ds" style="color:${RCL[cs.rarity]};font-weight:bold;text-transform:capitalize;">${cs.rarity}</div></div>${btn}</div>`;
-    }).join('');
+    const have=(S.catSkins||[]).length, n=CAT_SKINS.length;
+    h=`<div class="wd-head"><h3>${LT('The Wardrobe','Garderoba')}</h3>
+      <div class="wd-sub">${LT('Collected','Colecționate')} ${have} / ${n}</div>
+      <div class="wd-bar"><i style="width:${Math.round(have/n*100)}%"></i></div></div>`+h;
+    h+='<div class="wd-grid">'+skinsByRarity().map(cs=>`<div class="skc-wrap">${skinCardHTML(cs)}${skinBtnHTML(cs)}</div>`).join('')+'</div>';
   }
   body.innerHTML=h;
   renderStatbars();
-  body.querySelectorAll('[data-iap]').forEach(b=>b.onclick=()=>iapBuy(b.dataset.iap));
-  body.querySelectorAll('[data-skineq]').forEach(b=>b.onclick=()=>{ equipSkin(b.dataset.skineq); renderShop(); });
+  wireSkinButtons(body);
+  body.querySelectorAll('.skc[data-show]').forEach(c=>c.onclick=()=>openSkinShow(c.dataset.show));
 }
+// ── the Wardrobe cards ──
+const SKIN_RARITY_ORDER=['legendary','epic','rare','common'];
+const SKIN_CARD_BOX={   // where each frame's window and nameplate sit, in % of the card (measured off the art)
+  common:   {win:[13.6,13.7,86.3,74.4], plate:[14.0,77.4,86.2,86.6]},
+  rare:     {win:[13.6,13.7,86.3,76.4], plate:[13.2,79.1,86.4,88.4]},
+  epic:     {win:[13.8,13.6,86.4,74.7], plate:[14.1,77.5,86.4,86.7]},
+  legendary:{win:[13.6,13.7,86.3,76.3], plate:[12.8,79.5,87.6,88.9]},
+};
+const RARITY_NAME={common:['Common','Comun'],rare:['Rare','Rar'],epic:['Epic','Epic'],legendary:['Legendary','Legendar']};
+function skinsByRarity(){ return CAT_SKINS.slice().sort((a,b)=>SKIN_RARITY_ORDER.indexOf(a.rarity)-SKIN_RARITY_ORDER.indexOf(b.rarity)); }
+function skinCardHTML(cs,big){
+  const B=SKIN_CARD_BOX[cs.rarity], box=r=>`left:${r[0]}%;top:${r[1]}%;right:${100-r[2]}%;bottom:${100-r[3]}%;`;
+  const owned=(S.catSkins||[]).includes(cs.id), eq=S.equippedSkin===cs.id;
+  const badge=eq?`<div class="skc-badge">${LT('Equipped','Echipat')}</div>`:owned?`<div class="skc-badge own">${LT('Owned','Al tău')}</div>`:'';
+  return `<div class="skc r-${cs.rarity}"${big?'':` data-show="${cs.id}"`}>
+    <div class="skc-win" style="${box(B.win)}"><img src="skins/cards/${cs.id}${big?'_big':''}.webp" alt="" loading="lazy"></div>
+    <img class="skc-frame" src="ui/card_${cs.rarity}.webp" alt="">
+    <div class="skc-rar">${LT(...RARITY_NAME[cs.rarity])}</div>
+    <div class="skc-plate" style="${box(B.plate)}">${cs.name}</div>${badge}</div>`;
+}
+function skinBtnHTML(cs){
+  const owned=(S.catSkins||[]).includes(cs.id), eq=S.equippedSkin===cs.id;
+  return owned?`<button class="buy-btn ${eq?'equipped':'owned'}" data-skineq="${cs.id}">${eq?LT('Equipped','Echipat'):LT('Equip','Echipează')}</button>`
+    :`<button class="buy-btn iap" data-iap="skin:${cs.id}">${IAP_SKIN_PRICE[cs.rarity]}</button>`;
+}
+function wireSkinButtons(root){
+  root.querySelectorAll('[data-iap]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); iapBuy(b.dataset.iap); });
+  root.querySelectorAll('[data-skineq]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); equipSkin(b.dataset.skineq); renderShop();
+    if(skinShowId) openSkinShow(skinShowId); });
+}
+// the showcase: the card big, its line, and the cat running the way it will in the game
+let skinShowT=null, skinShowId=null;
+function openSkinShow(id){
+  const cs=CAT_SKINS.find(c=>c.id===id); if(!cs) return;
+  skinShowId=id;
+  let el=document.getElementById('skinShow');
+  if(!el){ el=document.createElement('div'); el.id='skinShow'; el.className='sk-show'; document.getElementById('shop').appendChild(el);
+    el.onclick=e=>{ if(e.target===el) closeSkinShow(); }; }
+  const line=SKIN_LINES[id]||['',''];
+  el.innerHTML=`<button class="sk-x" aria-label="Close">\u00D7</button>
+    <div class="sk-box r-${cs.rarity}">${skinCardHTML(cs,true)}
+      <div class="sk-side"><span class="sk-pill">${LT(...RARITY_NAME[cs.rarity])}</span>
+        <h3>${cs.name}</h3><div class="sk-line">${LT(line[0],line[1])}</div>
+        <div class="sk-stage"><small>${LT('In the game','În joc')}</small><img id="skShowCat" alt=""></div>
+        ${skinBtnHTML(cs)}</div></div>`;
+  el.querySelector('.sk-x').onclick=closeSkinShow;
+  wireSkinButtons(el);
+  el.classList.add('on');
+  // run a few strides, sit a moment, run again
+  const base='skins/frames/'+id+'/', seq=[0,1,2,3,4,5,0,1,2,3,4,5,'idle','idle','idle','idle','idle','idle'];
+  let i=0; clearInterval(skinShowT);
+  const step=()=>{ const im=document.getElementById('skShowCat'); if(!im){ clearInterval(skinShowT); return; }
+    const k=seq[i++%seq.length]; im.src=base+(k==='idle'?'idle':'f'+k)+'.png'; };
+  step(); skinShowT=setInterval(step,95);
+}
+function closeSkinShow(){ clearInterval(skinShowT); skinShowId=null; const el=document.getElementById('skinShow'); if(el) el.classList.remove('on'); }
 function iapBuy(sku){
   if(IAP_TEST_MODE){ iapGrant(sku); return; }
   if(window.PuiutuPayments && typeof window.PuiutuPayments.buy==='function'){ window.PuiutuPayments.buy(sku); return; }
@@ -16260,6 +16383,7 @@ function iapGrant(sku){
     S.coins+=g.coins; toast('+'+moneyText(g.coins));
   }
   SFX.win&&SFX.win(); save(); syncHUD(); renderShop();
+  if(skinShowId) openSkinShow(skinShowId);
 }
 function equip(idv){
   S.equipped=(S.equipped===idv)?null:idv;
