@@ -111,6 +111,24 @@
         "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/fd93eaa0-0be9-4863-8aa7-036eb5045444/scratchpad/www && exec python3 -m http.server 8803 --bind 127.0.0.1"
       ],
       "port": 8803
+    },
+    {
+      "name": "puiutu-desk",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/3902c9b0-a711-4bc0-a0ec-c093e268987b/scratchpad/www && exec python3 -m http.server 8804 --bind 127.0.0.1"
+      ],
+      "port": 8804
+    },
+    {
+      "name": "puiutu-repo-root",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/c4cc0284-4ab3-415c-83ce-e2f1a896697e/scratchpad/www && exec python3 -m http.server 8805 --bind 127.0.0.1"
+      ],
+      "port": 8805
     }
   ]
 }
