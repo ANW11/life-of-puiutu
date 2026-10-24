@@ -1008,7 +1008,7 @@
   .skc-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
   .skc-plate{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
     color:#ffe7b0;font-weight:900;font-size:clamp(11px,2.8vw,17px);line-height:1.05;text-shadow:0 1px 0 #000;padding:0 4%;}
-  .skc-rar{position:absolute;left:50%;transform:translateX(-50%);top:15%;font-size:clamp(9px,1.6vw,11px);font-weight:900;letter-spacing:1.5px;
+  .skc-rar{position:absolute;left:50%;transform:translate(-50%,-30%);top:15%;z-index:1;font-size:clamp(9px,1.6vw,11px);font-weight:900;letter-spacing:1.5px;
     padding:2px 7px;border-radius:8px;background:rgba(0,0,0,.55);color:var(--rc);text-transform:uppercase;white-space:nowrap;}
   .skc-badge{position:absolute;right:6%;top:6%;z-index:2;font-size:10px;font-weight:900;padding:3px 7px;border-radius:9px;
     background:#3a8fd9;color:#fff;border:2px solid #fff;box-shadow:0 2px 4px #0008;}
@@ -14787,6 +14787,8 @@ const SKIN_ART_TRIM={abyssinian:[13,162,696,1166], american:[24,43,696,1252], an
   calico:[14,162,701,1155], goldbengal:[24,209,701,1242], mainecoon:[51,163,706,1167], ragdoll:[36,220,680,1149],
   russianblue:[13,194,707,1153], scottish:[15,178,720,1290], siamese:[78,172,663,1182], silvbengal:[51,156,667,1183],
   sphynx:[56,177,664,1204]};
+// per-skin zoom on top of the fill rule (<1 = zoomed out, shows more of the art around the cat)
+const SKIN_ART_ZOOM={american:.88};
 function gachaDrawArt(artSrc,noKey){
   const cv=document.getElementById('gcArtCanvas');
   const ctx2=cv.getContext('2d');
@@ -14821,7 +14823,7 @@ function gachaDrawArt(artSrc,noKey){
       if(T){ cx0=T[0]; cy0=T[1]; cw=T[2]-T[0]; ch=T[3]-T[1]; }
       const winA=((B.win[2]-B.win[0])*523)/((B.win[3]-B.win[1])*881);
       // cover the window, but crop at most ~2.5% off the top and bottom (so a standing cat keeps its head)
-      const Hc=ch, Wc=Math.round(Hc*winA), s=Math.min(Math.max(Wc/cw,Hc/ch), Hc*1.05/ch), dw=cw*s, dh=ch*s;
+      const Hc=ch, Wc=Math.round(Hc*winA), s=Math.min(Math.max(Wc/cw,Hc/ch), Hc*1.05/ch)*(SKIN_ART_ZOOM[k]||1), dw=cw*s, dh=ch*s;
       cv.width=Wc; cv.height=Hc; ctx2.clearRect(0,0,Wc,Hc); ctx2.imageSmoothingEnabled=false;
       ctx2.drawImage(off, cx0,cy0,cw,ch, (Wc-dw)/2,(Hc-dh)/2,dw,dh);
     } else {
@@ -16423,6 +16425,15 @@ const SKIN_CARD_BOX={   // where each frame's window and nameplate sit, in % of 
 };
 const RARITY_NAME={common:['Common','Comun'],rare:['Rare','Rar'],epic:['Epic','Epic'],legendary:['Legendary','Legendar']};
 function skinsByRarity(){ return CAT_SKINS.slice().sort((a,b)=>SKIN_RARITY_ORDER.indexOf(a.rarity)-SKIN_RARITY_ORDER.indexOf(b.rarity)); }
+// the same fill as the gacha reveal: the art's content box covers the frame window (at most ~2.5% cropped top and bottom)
+function skinArtFill(cs){
+  const k=cs.id.replace(/^skin_/,''), T=SKIN_ART_TRIM[k], B=SKIN_CARD_BOX[cs.rarity]; if(!T) return '';
+  const W=720, H=k==='angora'?1073:1290;                       // the _big file's size (the small one is the same art at half)
+  const winA=((B.win[2]-B.win[0])*523)/((B.win[3]-B.win[1])*881), cw=T[2]-T[0], ch=T[3]-T[1];
+  const s=Math.min(Math.max(winA/cw,1/ch),1.05/ch)*(SKIN_ART_ZOOM[k]||1);   // in window heights per source pixel
+  const pct=x=>(x*100).toFixed(2)+'%';
+  return `left:${pct((winA/2-(T[0]+cw/2)*s)/winA)};top:${pct(0.5-(T[1]+ch/2)*s)};width:${pct(W*s/winA)};height:${pct(H*s)};bottom:auto;transform:none;`;
+}
 function skinCardHTML(cs,big){
   const B=SKIN_CARD_BOX[cs.rarity], box=r=>`left:${r[0]}%;top:${r[1]}%;right:${100-r[2]}%;bottom:${100-r[3]}%;`;
   const owned=(S.catSkins||[]).includes(cs.id), eq=S.equippedSkin===cs.id;
@@ -16430,9 +16441,9 @@ function skinCardHTML(cs,big){
   const badge=eq?`<div class="skc-badge">${LT('Equipped','Echipat')}</div>`:owned?`<div class="skc-badge own">${LT('Owned','Al tău')}</div>`
     :(!seen&&!big)?`<div class="skc-badge new">${LT('NEW','NOU')}</div>`:'';
   return `<div class="skc r-${cs.rarity}"${big?'':` data-show="${cs.id}"`}>
-    <div class="skc-win" style="${box(B.win)}"><img src="skins/cards/${cs.id}${big?'_big':''}.webp" alt="" loading="lazy"></div>
+    <div class="skc-win" style="${box(B.win)}"><img src="skins/cards/${cs.id}${big?'_big':''}.webp" alt="" loading="lazy" style="${skinArtFill(cs)}"></div>
     <img class="skc-frame" src="ui/card_${cs.rarity}.webp" alt="">
-    <div class="skc-rar">${LT(...RARITY_NAME[cs.rarity])}</div>
+    <div class="skc-rar" style="top:${B.win[1]}%;">${LT(...RARITY_NAME[cs.rarity])}</div>
     <div class="skc-plate" style="${box(B.plate)}">${cs.name}</div>${badge}</div>`;
 }
 function skinBtnHTML(cs){
