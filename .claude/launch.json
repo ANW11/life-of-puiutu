@@ -129,6 +129,15 @@
         "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/c4cc0284-4ab3-415c-83ce-e2f1a896697e/scratchpad/www && exec python3 -m http.server 8805 --bind 127.0.0.1"
       ],
       "port": 8805
+    },
+    {
+      "name": "puiutu-occ",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/a0a5a194-ebb1-4fcd-b530-e2b0d329c947/scratchpad/www/ && exec python3 -m http.server 8806 --bind 127.0.0.1"
+      ],
+      "port": 8806
     }
   ]
 }

@@ -2814,6 +2814,19 @@ const SEBY_ANIM_FILL=0.799;
 // plain scenery sprites, loaded on demand and cached by path (hub `decor` entries)
 const DECOR_IMG={};
 function decorImg(src){ let im=DECOR_IMG[src]; if(!im){ im=DECOR_IMG[src]=new Image(); im.src=src; } return im; }
+// where a hub's scenery sprite lands on screen this frame (null until its art is in). The same
+// rect draws it and tells the occlusion code what it covers.
+function decorRect(d){
+  // d.frames + d.fps: an animated prop (e.g. the cart rolling); otherwise the still d.img
+  const im=decorImg(d.frames ? d.frames[Math.floor(Date.now()/1000*(d.fps||10))%d.frames.length] : d.img);
+  if(!(im.complete&&im.naturalWidth)) return null;
+  const sx=d.xf*HUB.worldW-HUB.camx, y=d.yf*VH, sc=hubScale(y), h=(d.h||160)*sc, w=im.naturalWidth/im.naturalHeight*h;
+  // a moored airship is never quite still — a slow drift on its ropes
+  const bob=d.bob? Math.sin(Date.now()*0.0011+(d.xf*7))*d.bob*sc : 0;
+  // something alive resting in place: a slow breath, taller by a hair, base on the ground
+  const br=d.breathe? 1+Math.sin(Date.now()*0.0016)*0.012 : 1;
+  return {im, sc, h, sx:0, sy:0, sw:im.naturalWidth, sh:im.naturalHeight, dx:sx-w/2, dy:y-h*br+bob, dw:w, dh:h*br};
+}
 // ── The Cat King and the lion he summons — the Throne Hall fight ──
 // Two sprite sets on purpose. The lion is not a creature, it is a PROJECTION: its sheet has
 // materialise frames (spawn0-2) and shatter frames (crack, fade) that no living thing would have.
@@ -3701,7 +3714,11 @@ function buildAreas(){
         // airship is moored where they used to stand. Lucian is not a soldier, so Lucian stays —
         // he is the one who lives here, and the only one still in the City either way.
         garrisonGoneIf:'castleSummons',
-        decor:[{img:'props/aeronava.png', xf:0.3752, yf:0.789, zf:0.520, h:569, bob:9, showIf:'castleSummons'}],
+        // The ship floats, so its art says nothing about where it meets the ground: `zf` is its
+        // footprint, the foot of the gangway. Whoever walks the square above that line is behind
+        // the hull and hidden by it; the guards and the Emissary stand below it, at the gangway,
+        // in front.
+        decor:[{img:'props/aeronava.png', xf:0.3752, yf:0.789, zf:0.780, h:569, bob:9, showIf:'castleSummons'}],
         // ── the Union garrison. They never fight — they stand, patrol, and are very polite
         //    about it. The City is the Union's polished face; these are the teeth behind it. ──
         garrison:[
@@ -7628,9 +7645,57 @@ function hubOccluders(){
   }catch(e){ HUB._occ=[]; }                                     // tainted canvas (file://): no occlusion
   return HUB._occ;
 }
-function drawOccStrip(s){
-  const x=s.fx*HUB.worldW-HUB.camx, w=s.fw*HUB.worldW;
-  g.drawImage(s.cv, s.sx, 0, s.sw, s.cv.height, x, s.fy*VH, w+0.75, s.fh*VH);   // +0.75: no hairline seams
+function occStripRect(s){
+  return {im:s.cv, sx:s.sx, sy:0, sw:s.sw, sh:s.cv.height,
+          dx:s.fx*HUB.worldW-HUB.camx, dy:s.fy*VH, dw:s.fw*HUB.worldW+0.75, dh:s.fh*VH};   // +0.75: no hairline seams
+}
+function drawOccRect(ctx,r){ ctx.drawImage(r.im, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh); }
+function drawOccStrip(s){ drawOccRect(g, occStripRect(s)); }
+// ── Occlusion, part two: what a character loses when something is drawn over it ────────────────
+// The depth sort already puts a prop (or a painted-in strip) over whoever stands behind it. That
+// hides the body but not what floats above it, so a name tag would hover on the front of a ship
+// whose owner is out of sight. Each occluder is kept as a rect {im, source, screen} and its alpha
+// is read from a small copy of the image, so it only hides what its painted pixels really cover.
+// A character mostly behind one loses its tags.
+const OCC_ALPHA=new Map();
+function occAlpha(im){
+  let r=OCC_ALPHA.get(im); if(r!==undefined) return r;
+  const W=im.naturalWidth||im.width, H=im.naturalHeight||im.height; if(!W||!H) return false;
+  try{ const w=Math.min(256,W), h=Math.max(1,Math.round(H*w/W)), c=document.createElement('canvas');
+    c.width=w; c.height=h; const x=c.getContext('2d'); x.drawImage(im,0,0,w,h);
+    const d=x.getImageData(0,0,w,h).data, a=new Uint8Array(w*h);
+    for(let i=0;i<a.length;i++) a[i]=d[i*4+3];
+    r={w,h,W,H,a}; }
+  catch(e){ r=false; }                                         // tainted (file://): the whole box counts
+  OCC_ALPHA.set(im,r); return r;
+}
+function occHits(list,px,py){
+  for(const o of list){
+    if(px<o.dx||px>=o.dx+o.dw||py<o.dy||py>=o.dy+o.dh) continue;
+    const A=occAlpha(o.im); if(!A) return true;
+    const u=(o.sx+(px-o.dx)/o.dw*o.sw)/A.W, v=(o.sy+(py-o.dy)/o.dh*o.sh)/A.H;
+    if(A.a[Math.min(A.h-1,(v*A.h)|0)*A.w+Math.min(A.w-1,(u*A.w)|0)]>110) return true;
+  }
+  return false;
+}
+// share (0..1) of a body, centre x / foot line / width / height, that sits behind `list`
+function occCover(list,x,foot,w,h){
+  if(!list.length) return 0; let n=0;
+  for(let j=0;j<4;j++) for(let i=0;i<3;i++) if(occHits(list, x+(i-1)*w*0.3, foot-h*(0.12+j*0.25))) n++;
+  return n/12;
+}
+// the body box of anything in the hub's depth sort that carries a tag (null: no tag to manage)
+function occActorBox(it){
+  const s=(y,k)=>hubScale(y)*(k||1);
+  switch(it.t){
+    case 'garrison': { const u=it.gu, h=(u.rank==='commander'?92:78)*s(u.y)*1.32*u.scale; return {x:u.x-HUB.camx, y:u.y, w:h*0.6, h}; }
+    case 'army': { const u=it.u, h=ARMY_STATS[u.rank].h*s(u.y)*(u.team==='cat'?1.32:0.82); return {x:u.x-HUB.camx, y:u.y, w:h*0.6, h}; }
+    case 'mob': { const d=it.d, h=(d.sea?(d.kind.bh||64):64)*s(d.y); return {x:d.x-HUB.camx, y:d.y, w:h*0.8, h}; }
+    case 'hubnpc': case 'tomy': { const h=70*s(it.p.y); return {x:it.p.x-HUB.camx, y:it.p.y, w:h*0.7, h}; }
+    case 'merlin': { const h=150*s(it.p.y,0.95); return {x:it.p.x-HUB.camx, y:it.p.y, w:h*0.5, h}; }
+    case 'rocky': { const r=HUB.rocky, h=86*s(r.y,0.92); return {x:r.x-HUB.camx, y:r.y, w:h*0.8, h}; }
+  }
+  return null;
 }
 const HUB_ROCKY_NPC={id:'rocky', dog:true};   // for openDialogue (recruit quest)
 // Merlin the wizard-dog (Library NPC) + the alchemy potions
@@ -11371,9 +11436,19 @@ function drawHub(){
   { const occ=hubOccluders(); if(occ) for(const o of occ){ const x=o.fx*HUB.worldW-HUB.camx;
       if(x+o.fw*HUB.worldW<0 || x>VW) continue; items.push({z:o.fBase*VH, t:'occ', o}); } }
   items.sort((a,b)=>a.z-b.z);
+  // everything that can cover a character, as screen rects, in draw order (see occCover)
+  const occs=[];
+  items.forEach((it,i)=>{ const r = it.t==='occ' ? occStripRect(it.o) : it.t==='decor' ? (it.r=decorRect(it.d)) : null;
+    if(r){ r.i=i; occs.push(r); } });
+  const occAfter=i=>{ const o=[]; for(const r of occs) if(r.i>i) o.push(r); return o; };
   let catTag=null;                                   // your name + chat bubble: drawn after everything, so no occluder hides them
-  for(const it of items){
-    if(it.t==='occ'){ drawOccStrip(it.o); continue; }
+  for(let ii=0; ii<items.length; ii++){ const it=items[ii];
+    if(it.t==='occ'){ drawOccRect(g, occStripRect(it.o)); continue; }
+    // a character mostly behind a prop loses its name tag, level and hp bar (the talk nudge stays: it is a cue to walk round)
+    let tagOff=false;
+    if(occs.length && occs[occs.length-1].i>ii){ const bx=occActorBox(it);
+      if(bx){ const over=occAfter(ii), cov=occCover(over, bx.x, bx.y, bx.w, bx.h);
+        tagOff = cov>=0.5; } }
     if(it.t==='barrel'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx;
       if(BARRELIMG.complete&&BARRELIMG.naturalWidth){ const h=120*sc, bw=BARRELIMG.naturalWidth/BARRELIMG.naturalHeight*h;
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,bw*0.4,9*sc,0,0,7);g.fill();g.restore();
@@ -11391,9 +11466,9 @@ function drawHub(){
       if(MERLIN_IMG.complete&&MERLIN_IMG.naturalWidth){ const h=150*sc, w=MERLIN_IMG.naturalWidth/MERLIN_IMG.naturalHeight*h;
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,w*0.42,9*sc,0,0,7);g.fill();g.restore();
         g.drawImage(MERLIN_IMG, sx-w/2, it.p.y-h, w, h); }
-      g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
+      if(!tagOff){ g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText('Merlin',sx+1,it.p.y-152*sc+1);
-      g.fillStyle='rgba(255,231,176,.96)';g.fillText('Merlin',sx,it.p.y-152*sc);g.restore();
+      g.fillStyle='rgba(255,231,176,.96)';g.fillText('Merlin',sx,it.p.y-152*sc);g.restore(); }
       if(HUB.nearMerlin){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Trebuchet MS';g.fillText('',sx,it.p.y-166*sc);g.restore(); }
       continue;
     }
@@ -11410,7 +11485,7 @@ function drawHub(){
       // shadow + Tomy, dozing
       g.save();g.globalAlpha=0.18;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,15*sc,5*sc,0,0,7);g.fill();g.restore();
       drawCat(g, sx, it.p.y, 1, now*0.0018, CATS.tomy, {scale:sc});
-      if(!CINE.hideLabels){ g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
+      if(!CINE.hideLabels && !tagOff){ g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText('Tomy',sx+1,it.p.y-72*sc+1);
       g.fillStyle='rgba(255,231,176,.97)';g.fillText('Tomy',sx,it.p.y-72*sc);g.restore(); }
       if(HUB.nearTomy){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Trebuchet MS';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
@@ -11420,7 +11495,7 @@ function drawHub(){
       const npc=A.hub.npc, cat=CATS[npc.cat]||CATS.lucian;
       g.save();g.globalAlpha=0.18;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,15*sc,5*sc,0,0,7);g.fill();g.restore();
       drawCat(g, sx, it.p.y, -1, now*0.0018, cat, {scale:sc});
-      if(!CINE.hideLabels){ g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
+      if(!CINE.hideLabels && !tagOff){ g.save();g.textAlign='center';g.font='bold 12px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText(cat.name,sx+1,it.p.y-72*sc+1);
       g.fillStyle='rgba(255,231,176,.97)';g.fillText(cat.name,sx,it.p.y-72*sc);g.restore(); }
       if(HUB.nearHubNpc){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Trebuchet MS';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
@@ -11461,11 +11536,9 @@ function drawHub(){
         g.fillStyle=owned?'#bfe6ff':'#e8d2a0';g.fillText(lbl,sx,it.p.y-124*sc-5);g.restore(); }
       continue;
     }
-    if(it.t==='decor'){ const d=it.d, sx=d.xf*HUB.worldW-HUB.camx, y=d.yf*VH;
-      // d.frames + d.fps: an animated prop (e.g. the cart rolling); otherwise the still d.img
-      const im=decorImg(d.frames ? d.frames[Math.floor(Date.now()/1000*(d.fps||10))%d.frames.length] : d.img);
-      if(im.complete&&im.naturalWidth){
-        const sc=hubScale(y), h=(d.h||160)*sc, w=im.naturalWidth/im.naturalHeight*h;
+    if(it.t==='decor'){ const d=it.d, sx=d.xf*HUB.worldW-HUB.camx, y=d.yf*VH, r=it.r;
+      if(r){
+        const im=r.im, sc=r.sc, h=r.h, w=r.dw;
         if(d.shadow==='cart'){
           // a 3/4-view cart stands on three visible wheels: front (low), back-left and right (higher up the
           // floor). The shade is the patch of floor between them, plus a dark touch under each wheel.
@@ -11475,12 +11548,8 @@ function drawHub(){
           g.globalAlpha=0.45; for(const [fx,fy] of [[0.41,0.99],[0.19,0.80],[0.86,0.80]]){ g.beginPath(); g.ellipse(X(fx),Y(fy)-1,w*0.07,h*0.022,0,0,7); g.fill(); }
           g.restore();
         } else if(d.shadow){ g.save(); g.globalAlpha=0.3; g.fillStyle='#000'; g.beginPath(); g.ellipse(sx,y-2*sc,w*0.36,h*0.07,0,0,7); g.fill(); g.restore(); }
-        // a moored airship is never quite still — a slow drift on its ropes
-        const bob=d.bob? Math.sin(Date.now()*0.0011+(d.xf*7))*d.bob*sc : 0;
-        // something alive resting in place: a slow breath, taller by a hair, base on the ground
-        const br=d.breathe? 1+Math.sin(Date.now()*0.0016)*0.012 : 1;
         g.save(); g.imageSmoothingEnabled=!d.crisp; g.imageSmoothingQuality='high';   // d.crisp: hard pixels (Shelly's chunky Gemini sprite)
-        g.drawImage(im, sx-w/2, y-h*br+bob, w, h*br); g.restore();
+        drawOccRect(g, r); g.restore();
       }
       continue; }
     if(it.t==='pig'){ const s=it.s, im=PIG_IMG[s.img], sx=s.xf*HUB.worldW-HUB.camx, y=s.yf*VH;
@@ -11537,7 +11606,7 @@ function drawHub(){
         g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
         g.drawImage(img,-iw/2,-h,iw,h); g.restore();
       }
-      if(!CINE.hideLabels){
+      if(!CINE.hideLabels && !tagOff){
         const nm=garrisonName(u), ny=u.y-h-10;
         g.save(); g.textAlign='center'; g.font='bold 12px Trebuchet MS';
         g.fillStyle='rgba(0,0,0,.6)'; g.fillText(nm,sx+1,ny+1);
@@ -11584,14 +11653,14 @@ function drawHub(){
       const isCmd=u.rank==='commander';
       const nm=FACTIONS[u.team].adj+' '+(isCmd?'Commander':'Soldier');
       const col=u.team==='cat'?'#8fc4ff':'#ff9a9a';
-      if(!CINE.hideLabels){
+      if(!CINE.hideLabels && !tagOff){
       g.save(); g.textAlign='center'; g.font='bold '+(isCmd?11:9)+'px Trebuchet MS';
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, sx+1, topY+1);
       g.fillStyle=col; g.fillText(nm, sx, topY); g.restore(); }
       const bw=(isCmd?52:38)*Math.max(0.8,sc), bh=isCmd?6:4, by=topY+4, pct=Math.max(0,u.hp/u.maxHp);
-      g.save(); g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(sx-bw/2-1,by-1,bw+2,bh+2,3); g.fill();
+      if(!tagOff){ g.save(); g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(sx-bw/2-1,by-1,bw+2,bh+2,3); g.fill();
       g.fillStyle = pct>0.5?'#5fce4a':pct>0.22?'#e8b53a':'#e0533a';
-      g.beginPath(); g.roundRect(sx-bw/2,by,bw*pct,bh,2); g.fill(); g.restore();
+      g.beginPath(); g.roundRect(sx-bw/2,by,bw*pct,bh,2); g.fill(); g.restore(); }
       continue;
     }
     if(it.t==='mob'){ const d=it.d, sc=hubScale(d.y), dsx=d.x-HUB.camx;
@@ -11603,7 +11672,7 @@ function drawHub(){
       if(Date.now()-(d.hitFlash||0)<110){ g.save();g.globalAlpha=.5;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(dsx,d.y-30*sc,22*sc,28*sc,0,0,7);g.fill();g.restore(); }
       // name (+ level for land mobs) and health bar above the critter
       const topY=d.y-((d.sea?(d.kind.bh||64):70)+6)*sc;
-      if(CINE.hideLabels){ /* cinematic: no floating name tags in trailer footage */ }
+      if(CINE.hideLabels || tagOff){ /* cinematic: no floating name tags in trailer footage */ }
       else if(d.sea){
         {   // schooling fish get a smaller tag so a shoal isn't a wall of labels
           const nm=d.kind.name, col=d.kind.big?'#dd88ff':'#9fe6ff';
@@ -11627,7 +11696,7 @@ function drawHub(){
       g.restore();
       }
       // hp bar (schooling fish get a slimmer one so a shoal isn't a wall of bars; cinematic hides untouched mobs' bars)
-      if(!(CINE.hideLabels && d.hp>=d.maxHp)){
+      if(!tagOff && !(CINE.hideLabels && d.hp>=d.maxHp)){
         g.save();
         const bw=(d.schoolRef?26:40)*Math.max(0.8,sc), bh=d.schoolRef?4:5, by=topY+5, pct=Math.max(0,d.hp/d.maxHp);
         g.fillStyle='rgba(0,0,0,.55)'; g.beginPath(); g.roundRect(dsx-bw/2-1,by-1,bw+2,bh+2,3); g.fill();
@@ -11683,8 +11752,8 @@ function drawHub(){
     } else if(it.t==='rocky'){ const r=HUB.rocky, sc=hubScale(r.y)*0.92, sx=r.x-HUB.camx, now=Date.now();
       const key=rockyPose(r, now, S.companion?'idle':'sit');
       drawDogSprite(g,sx,r.y,r.facing,86*sc,key);
-      g.save(); g.textAlign='center'; g.font='bold 11px Trebuchet MS'; g.fillStyle='rgba(255,231,176,.92)';
-      g.fillText(COMP.staying&&S.companion?'Rocky':'Rocky', sx, r.y-88*sc); g.restore();
+      if(!tagOff){ g.save(); g.textAlign='center'; g.font='bold 11px Trebuchet MS'; g.fillStyle='rgba(255,231,176,.92)';
+      g.fillText(COMP.staying&&S.companion?'Rocky':'Rocky', sx, r.y-88*sc); g.restore(); }
       if(HUB.nearRocky){ g.save(); g.globalAlpha=0.5+0.5*Math.abs(Math.sin(now*0.006)); g.textAlign='center'; g.font='18px Trebuchet MS'; g.fillText('',sx,r.y-80*sc); g.restore(); }
     } else {
       // platLift raises the cat so she reads as standing ON a raised ledge. It's tuned per
@@ -18137,6 +18206,27 @@ function drawPlaceOverlay(){ if(!A||!A.hub) return; g.save(); g.font='11px monos
   g.fillText('PLACE MODE, drag props/door trigger/GLOW · / size · [ ] crop · P exits', 14, 24);
   g.fillText('(orange = door GLOW & prompt-text position · logged to console)', 14, 38); g.restore(); }
 cv.addEventListener('contextmenu',e=>e.preventDefault());
+// ── Keep the art from walking out the casual way: no "Save image as…" from a right click or a
+// long press, and no dragging a sprite out to the desktop, on the canvas or on any picture in the
+// menus (gacha, store, skin cards, minigames). Text fields keep their own menu for paste. This only
+// stops the casual copy: whoever opens DevTools or the Network tab can still take every file, and
+// nothing a page does can prevent that. Border War runs in its own page, so it is guarded on load.
+function guardArt(doc){
+  const free=t=>t && t.closest && t.closest('input,textarea,[contenteditable="true"]');
+  doc.addEventListener('contextmenu',e=>{ if(!free(e.target)) e.preventDefault(); }, true);
+  doc.addEventListener('dragstart',e=>{ if(!free(e.target)) e.preventDefault(); }, true);
+  const st=doc.createElement('style');
+  st.textContent='img,canvas,svg,video{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;}'
+    +'body{-webkit-touch-callout:none;}'
+    +'input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}';
+  (doc.head||doc.documentElement).appendChild(st);
+  const nodrag=root=>{ if(root.tagName==='IMG') root.draggable=false;
+    if(root.querySelectorAll) root.querySelectorAll('img').forEach(i=>{ i.draggable=false; }); };
+  nodrag(doc.documentElement);
+  new MutationObserver(ms=>{ for(const m of ms) for(const n of m.addedNodes) if(n.nodeType===1) nodrag(n); })
+    .observe(doc.documentElement,{childList:true,subtree:true});
+}
+guardArt(document);
 cv.addEventListener('pointerdown',e=>{
   if(!inGame||paused||dialogueActive||battleActive||mapOpen) return;
   // right click: attack, in the park and on the platforms alike
@@ -18160,6 +18250,7 @@ function warOpen(){
   if(document.getElementById('warFrame')) return; WAR_OPEN=true; stopAllMusic();     // Border War brings its own
   const f=document.createElement('iframe'); f.id='warFrame'; f.src='rts.html?v=33&lang='+(S.lang||'en');
   f.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:none;z-index:200;background:#0c0f0a;';
+  f.addEventListener('load',()=>{ try{ guardArt(f.contentDocument); }catch(e){} });   // same origin; if not, it simply goes unguarded
   document.body.appendChild(f); paused=true; try{ f.focus(); }catch(e){}
   if(typeof SFX!=='undefined'&&SFX.click) SFX.click();
 }
