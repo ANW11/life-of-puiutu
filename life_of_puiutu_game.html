@@ -2953,10 +2953,10 @@ function drawBossSprite(ctx,sx,sy,facing,h,key,enraged,bob,sprites,aura,footPad)
     ctx.restore();
   }
 }
-function drawDogSprite(ctx,sx,sy,facing,h,key){
+function drawDogSprite(ctx,sx,sy,facing,h,key,noShadow){   // noShadow: the dog alone (the occlusion outline)
   const img=ROCKY[key]||ROCKY.idle;
-  ctx.save();ctx.globalAlpha=0.18;ctx.fillStyle='#000';
-  ctx.beginPath();ctx.ellipse(sx,sy+1,h*0.30,h*0.08,0,0,7);ctx.fill();ctx.restore();
+  if(!noShadow){ ctx.save();ctx.globalAlpha=0.18;ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(sx,sy+1,h*0.30,h*0.08,0,0,7);ctx.fill();ctx.restore(); }
   if(img&&img.complete&&img.naturalWidth){
     h=h*0.9*img.naturalHeight/ROCKY_REF;                       // each pose at its own true size (h = the standing height)
     if(key==='jump') sy-=h*0.18;                               // off the ground
@@ -7658,7 +7658,7 @@ function drawOccStrip(s){ drawOccRect(g, occStripRect(s)); }
 // hides the body but not what floats above it, so a name tag would hover on the front of a ship
 // whose owner is out of sight. Each occluder is kept as a rect {im, source, screen} and its alpha
 // is read from a small copy of the image, so it only hides what its painted pixels really cover.
-// A character mostly behind one loses its tags; your own cat shows through as a bright outline.
+// A character mostly behind one loses its tags; your cat and companions show through as a bright outline.
 const OCC_ALPHA=new Map();
 function occAlpha(im){
   let r=OCC_ALPHA.get(im); if(r!==undefined) return r;
@@ -7696,17 +7696,19 @@ function occActorBox(it){
     case 'hubnpc': case 'tomy': { const h=70*s(it.p.y); return {x:it.p.x-HUB.camx, y:it.p.y, w:h*0.7, h}; }
     case 'merlin': { const h=150*s(it.p.y,0.95); return {x:it.p.x-HUB.camx, y:it.p.y, w:h*0.5, h}; }
     case 'rocky': { const r=HUB.rocky, h=86*s(r.y,0.92); return {x:r.x-HUB.camx, y:r.y, w:h*0.8, h}; }
+    case 'buddysnout': { const b=HUB.snout, h=92*s(b.y); return {x:b.x-HUB.camx, y:b.y, w:h*0.7, h}; }
     case 'cat': { const c=HUB.cat, h=70*s(c.y), lift=(c.z||0)+(c.onPlat?((A.hub&&A.hub.platLift!=null)?A.hub.platLift:20):0);
       return {x:c.x-HUB.camx, y:c.y-lift, w:h*0.8, h}; }
   }
   return null;
 }
-// your cat, behind something: the hidden part of it is drawn again over the occluders as a bright
-// rim with a faint fill, so you never lose track of where you are. Small offscreen layers: the cat
-// (no halo, no ground shadow: only its own shape), the union of what covers it, and the rim, which
-// is that shape stamped a pixel or two off in every direction, minus the shape itself.
+// your cat or your companion, behind something: the hidden part is drawn again over the occluders
+// as a bright rim with a faint fill, so you never lose track of them. Small offscreen layers: the
+// body (no halo, no ground shadow: only its own shape), the union of what covers it, and the rim,
+// which is that shape stamped a pixel or two off in every direction, minus the shape itself.
+const OCC_OUTLINED={cat:1, rocky:1, buddysnout:1};
 const OCC_SIL={a:null,b:null,c:null};
-function drawCatSilhouette(box,over,drawFn){
+function drawOccOutline(box,over,drawFn){
   const s=VIEW.base*VIEW.z, pad=24, bx=box.x-box.w-pad, by=box.y-box.h*1.5-pad, bw=box.w*2+pad*2, bh=box.h*1.5+pad*2;
   const cw=Math.ceil(bw*s), ch=Math.ceil(bh*s); if(cw<2||ch<2) return;
   const mk=k=>{ let c=OCC_SIL[k]; if(!c){ c=OCC_SIL[k]=document.createElement('canvas'); }
@@ -11473,15 +11475,15 @@ function drawHub(){
     if(r){ r.i=i; occs.push(r); } });
   const occAfter=i=>{ const o=[]; for(const r of occs) if(r.i>i) o.push(r); return o; };
   let catTag=null;                                   // your name + chat bubble: drawn after everything, so no occluder hides them
-  let catOcc=null;                                   // what covers your cat, for the outline
+  const outlines=[];                                 // your cat and companions behind something: {box, over, draw}
   for(let ii=0; ii<items.length; ii++){ const it=items[ii];
     if(it.t==='occ'){ drawOccRect(g, occStripRect(it.o)); continue; }
     // a character mostly behind a prop loses its name tag, level and hp bar (the talk nudge stays: it is a cue to walk round)
-    let tagOff=false;
+    let tagOff=false, occNow=null;
     if(occs.length && occs[occs.length-1].i>ii){ const bx=occActorBox(it);
       if(bx){ const over=occAfter(ii), cov=occCover(over, bx.x, bx.y, bx.w, bx.h);
         tagOff = cov>=0.5;
-        if(it.t==='cat' && cov>0) catOcc={box:bx, over}; } }
+        if(OCC_OUTLINED[it.t] && cov>0) outlines.push(occNow={box:bx, over}); } }
     if(it.t==='barrel'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx;
       if(BARRELIMG.complete&&BARRELIMG.naturalWidth){ const h=120*sc, bw=BARRELIMG.naturalWidth/BARRELIMG.naturalHeight*h;
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,bw*0.4,9*sc,0,0,7);g.fill();g.restore();
@@ -11779,12 +11781,13 @@ function drawHub(){
     } else if(it.t==='crystal'){ const k=it.k, sc=hubScale(k.y), sx=k.x-HUB.camx, now=Date.now();
       drawSebyCrystal(g, sx, k.y, k.h*sc, now-(k.hitFlash||0)<90, 1-k.hp/k.maxHp);
       // damage shows through the crack sprite / flash — no floating HP bar
-    } else if(it.t==='buddysnout'){ drawBuddySnout(g);
+    } else if(it.t==='buddysnout'){ drawBuddySnout(g,{noTag:tagOff}); if(occNow) occNow.draw=ctx=>drawBuddySnout(ctx,{body:true});
     } else if(it.t==='traindummy'){ drawTrainDummy(g);
     } else if(it.t==='pigletin'){ drawPigletIn(g);
     } else if(it.t==='rocky'){ const r=HUB.rocky, sc=hubScale(r.y)*0.92, sx=r.x-HUB.camx, now=Date.now();
       const key=rockyPose(r, now, S.companion?'idle':'sit');
       drawDogSprite(g,sx,r.y,r.facing,86*sc,key);
+      if(occNow) occNow.draw=ctx=>drawDogSprite(ctx,sx,r.y,r.facing,86*sc,key,true);
       if(!tagOff){ g.save(); g.textAlign='center'; g.font='bold 11px Trebuchet MS'; g.fillStyle='rgba(255,231,176,.92)';
       g.fillText(COMP.staying&&S.companion?'Rocky':'Rocky', sx, r.y-88*sc); g.restore(); }
       if(HUB.nearRocky){ g.save(); g.globalAlpha=0.5+0.5*Math.abs(Math.sin(now*0.006)); g.textAlign='center'; g.font='18px Trebuchet MS'; g.fillText('',sx,r.y-80*sc); g.restore(); }
@@ -11801,11 +11804,11 @@ function drawHub(){
         g.strokeStyle='rgba(255,255,255,'+(0.8*(1-k))+')'; g.lineWidth=5*(1-k)+1; g.lineCap='round';
         g.beginPath(); g.arc(0,0,30,-0.7,0.7); g.stroke(); g.restore(); }
       const catDraw=(ctx,sil)=>drawCat(ctx,sx,c.y-lift,c.facing,c.phase,CATS.puiutu,Object.assign({scale:sc,moving:c.moving,hat:S.equipped&&isHat(S.equipped)?S.equipped:null,highlight:!sil,noShadow:!!sil,swim:!!A.hub.underwater},puiPose()));
-      if(!CINE.hideCat && !(HUB.cine && HUB.cine.catHidden)){ catDraw(g); if(catOcc) catOcc.draw=ctx=>catDraw(ctx,true); }
+      if(!CINE.hideCat && !(HUB.cine && HUB.cine.catHidden)){ catDraw(g); if(occNow) occNow.draw=ctx=>catDraw(ctx,true); }
       catTag={sx, y:c.y-lift, sc};
     }
   }
-  if(catOcc && catOcc.draw) drawCatSilhouette(catOcc.box, catOcc.over, catOcc.draw);
+  for(const o of outlines) if(o.draw) drawOccOutline(o.box, o.over, o.draw);
   if(catTag){ const {sx,y,sc}=catTag;
     // your own name above your cat
     const myName=(NET.name&&NET.connected)?NET.name:'Puiutu';
@@ -12976,16 +12979,18 @@ function updateBuddySlot(){
   const f=el.querySelector('.bFill'); if(f) f.style.height=BUDDY.charge+'%';
   el.classList.toggle('ready', BUDDY.charge>=100);
 }
-function drawBuddySnout(g){
+// body:true draws Agent Snout alone, no shadow or name (the occlusion outline); noTag drops the name
+function drawBuddySnout(g,opt={}){
   const s=HUB.snout, spr=SNOUT_SPR(), sc=hubScale(s.y), sx=s.x-HUB.camx, now=Date.now();
   const h=92*sc, img=spr ? (now<s.atkUntil ? spr.atk : s.moving ? spr.walk[Math.floor(s.phase)%spr.walk.length] : spr.walk[0]) : null;
   const bob=s.moving ? Math.abs(Math.sin(s.phase*Math.PI))*3*sc : Math.sin(now*0.003)*1.4*sc;
   g.save(); g.globalAlpha=Math.max(0,s.alpha);
-  g.save(); g.globalAlpha*=0.2; g.fillStyle='#000'; g.beginPath(); g.ellipse(sx,s.y,h*0.3,h*0.085,0,0,7); g.fill(); g.restore();
+  if(!opt.body){ g.save(); g.globalAlpha*=0.2; g.fillStyle='#000'; g.beginPath(); g.ellipse(sx,s.y,h*0.3,h*0.085,0,0,7); g.fill(); g.restore(); }
   if(img&&img.complete&&img.naturalWidth){ const iw=img.naturalWidth/img.naturalHeight*h;
     g.save(); g.translate(sx,s.y-bob); if(s.facing!==ARMY_NATIVE.snout) g.scale(-1,1);
     g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(img,-iw/2,-h,iw,h); g.restore(); }
-  if(!CINE.hideLabels){ g.textAlign='center'; g.font='bold 11px Trebuchet MS';
+  if(opt.body){ g.restore(); return; }
+  if(!CINE.hideLabels && !opt.noTag){ g.textAlign='center'; g.font='bold 11px Trebuchet MS';
     g.fillStyle='rgba(0,0,0,.6)'; g.fillText(T('Agent Snout'),sx+1,s.y-h-7);
     g.fillStyle='rgba(255,214,226,.95)'; g.fillText(T('Agent Snout'),sx,s.y-h-8); }
   g.restore();
