@@ -3258,12 +3258,14 @@ function drawCat(ctx,sx,sy,facing,phase,C,opt={}){
     ctx.restore();
   }
 
-  // soft ground shadow (shrinks while hopping)
+  // soft ground shadow (shrinks while hopping); opt.noShadow: the cat alone (the occlusion outline)
+  if(!opt.noShadow){
   ctx.save();
   ctx.globalAlpha=0.18; ctx.fillStyle='#000';
   const shS=1-bob/16;
   ctx.beginPath(); ctx.ellipse(sx, sy+1, h*0.27*shS, h*0.07*shS, 0, 0, 7); ctx.fill();
   ctx.restore();
+  }
 
   if(img && img.complete && img.naturalWidth){
     const w=img.naturalWidth/img.naturalHeight*drawH;
@@ -3716,8 +3718,8 @@ function buildAreas(){
         garrisonGoneIf:'castleSummons',
         // The ship floats, so its art says nothing about where it meets the ground: `zf` is its
         // footprint, the foot of the gangway. Whoever walks the square above that line is behind
-        // the hull and hidden by it; the guards and the Emissary stand below it, at the gangway,
-        // in front.
+        // the hull and hidden by it (your own cat shows through as an outline); the guards and
+        // the Emissary stand below it, at the gangway, in front.
         decor:[{img:'props/aeronava.png', xf:0.3752, yf:0.789, zf:0.780, h:569, bob:9, showIf:'castleSummons'}],
         // ── the Union garrison. They never fight — they stand, patrol, and are very polite
         //    about it. The City is the Union's polished face; these are the teeth behind it. ──
@@ -7656,7 +7658,7 @@ function drawOccStrip(s){ drawOccRect(g, occStripRect(s)); }
 // hides the body but not what floats above it, so a name tag would hover on the front of a ship
 // whose owner is out of sight. Each occluder is kept as a rect {im, source, screen} and its alpha
 // is read from a small copy of the image, so it only hides what its painted pixels really cover.
-// A character mostly behind one loses its tags.
+// A character mostly behind one loses its tags; your own cat shows through as a bright outline.
 const OCC_ALPHA=new Map();
 function occAlpha(im){
   let r=OCC_ALPHA.get(im); if(r!==undefined) return r;
@@ -7694,8 +7696,37 @@ function occActorBox(it){
     case 'hubnpc': case 'tomy': { const h=70*s(it.p.y); return {x:it.p.x-HUB.camx, y:it.p.y, w:h*0.7, h}; }
     case 'merlin': { const h=150*s(it.p.y,0.95); return {x:it.p.x-HUB.camx, y:it.p.y, w:h*0.5, h}; }
     case 'rocky': { const r=HUB.rocky, h=86*s(r.y,0.92); return {x:r.x-HUB.camx, y:r.y, w:h*0.8, h}; }
+    case 'cat': { const c=HUB.cat, h=70*s(c.y), lift=(c.z||0)+(c.onPlat?((A.hub&&A.hub.platLift!=null)?A.hub.platLift:20):0);
+      return {x:c.x-HUB.camx, y:c.y-lift, w:h*0.8, h}; }
   }
   return null;
+}
+// your cat, behind something: the hidden part of it is drawn again over the occluders as a bright
+// rim with a faint fill, so you never lose track of where you are. Small offscreen layers: the cat
+// (no halo, no ground shadow: only its own shape), the union of what covers it, and the rim, which
+// is that shape stamped a pixel or two off in every direction, minus the shape itself.
+const OCC_SIL={a:null,b:null,c:null};
+function drawCatSilhouette(box,over,drawFn){
+  const s=VIEW.base*VIEW.z, pad=24, bx=box.x-box.w-pad, by=box.y-box.h*1.5-pad, bw=box.w*2+pad*2, bh=box.h*1.5+pad*2;
+  const cw=Math.ceil(bw*s), ch=Math.ceil(bh*s); if(cw<2||ch<2) return;
+  const mk=k=>{ let c=OCC_SIL[k]; if(!c){ c=OCC_SIL[k]=document.createElement('canvas'); }
+    if(c.width<cw||c.height<ch){ c.width=Math.max(c.width,cw); c.height=Math.max(c.height,ch); }
+    const x=c.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.clearRect(0,0,c.width,c.height);
+    x.setTransform(s,0,0,s,-bx*s,-by*s); return x; };
+  const ca=mk('a'), cb=mk('b'), cc=mk('c');
+  drawFn(ca);
+  for(const o of over) drawOccRect(cb,o);
+  ca.setTransform(1,0,0,1,0,0); cc.setTransform(1,0,0,1,0,0);
+  ca.globalCompositeOperation='source-in'; ca.fillStyle='rgb(255,222,150)'; ca.fillRect(0,0,cw,ch);
+  const t=Math.max(1.5,s*1.2);                                   // rim width, canvas px
+  for(let k=0;k<8;k++){ const an=k*Math.PI/4; cc.drawImage(OCC_SIL.a, Math.cos(an)*t, Math.sin(an)*t); }
+  cc.globalCompositeOperation='source-in'; cc.fillStyle='rgb(255,244,205)'; cc.fillRect(0,0,cw,ch);
+  cc.globalCompositeOperation='destination-out'; cc.drawImage(OCC_SIL.a,0,0);
+  for(const x of [ca,cc]){ x.globalCompositeOperation='destination-in'; x.drawImage(OCC_SIL.b,0,0); x.globalCompositeOperation='source-over'; }
+  g.save();
+  g.globalAlpha=0.32; g.drawImage(OCC_SIL.a, 0,0,cw,ch, bx,by,cw/s,ch/s);
+  g.globalAlpha=0.95; g.drawImage(OCC_SIL.c, 0,0,cw,ch, bx,by,cw/s,ch/s);
+  g.restore();
 }
 const HUB_ROCKY_NPC={id:'rocky', dog:true};   // for openDialogue (recruit quest)
 // Merlin the wizard-dog (Library NPC) + the alchemy potions
@@ -11442,13 +11473,15 @@ function drawHub(){
     if(r){ r.i=i; occs.push(r); } });
   const occAfter=i=>{ const o=[]; for(const r of occs) if(r.i>i) o.push(r); return o; };
   let catTag=null;                                   // your name + chat bubble: drawn after everything, so no occluder hides them
+  let catOcc=null;                                   // what covers your cat, for the outline
   for(let ii=0; ii<items.length; ii++){ const it=items[ii];
     if(it.t==='occ'){ drawOccRect(g, occStripRect(it.o)); continue; }
     // a character mostly behind a prop loses its name tag, level and hp bar (the talk nudge stays: it is a cue to walk round)
     let tagOff=false;
     if(occs.length && occs[occs.length-1].i>ii){ const bx=occActorBox(it);
       if(bx){ const over=occAfter(ii), cov=occCover(over, bx.x, bx.y, bx.w, bx.h);
-        tagOff = cov>=0.5; } }
+        tagOff = cov>=0.5;
+        if(it.t==='cat' && cov>0) catOcc={box:bx, over}; } }
     if(it.t==='barrel'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx;
       if(BARRELIMG.complete&&BARRELIMG.naturalWidth){ const h=120*sc, bw=BARRELIMG.naturalWidth/BARRELIMG.naturalHeight*h;
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,bw*0.4,9*sc,0,0,7);g.fill();g.restore();
@@ -11767,11 +11800,12 @@ function drawHub(){
         g.translate(sx + c.facing*24*sc, c.y-lift-30*sc); g.scale(c.facing*sc,sc); g.rotate(-0.6+k*1.4);
         g.strokeStyle='rgba(255,255,255,'+(0.8*(1-k))+')'; g.lineWidth=5*(1-k)+1; g.lineCap='round';
         g.beginPath(); g.arc(0,0,30,-0.7,0.7); g.stroke(); g.restore(); }
-      if(!CINE.hideCat && !(HUB.cine && HUB.cine.catHidden))
-      drawCat(g,sx,c.y-lift,c.facing,c.phase,CATS.puiutu,Object.assign({scale:sc,moving:c.moving,hat:S.equipped&&isHat(S.equipped)?S.equipped:null,highlight:true,swim:!!A.hub.underwater},puiPose()));
+      const catDraw=(ctx,sil)=>drawCat(ctx,sx,c.y-lift,c.facing,c.phase,CATS.puiutu,Object.assign({scale:sc,moving:c.moving,hat:S.equipped&&isHat(S.equipped)?S.equipped:null,highlight:!sil,noShadow:!!sil,swim:!!A.hub.underwater},puiPose()));
+      if(!CINE.hideCat && !(HUB.cine && HUB.cine.catHidden)){ catDraw(g); if(catOcc) catOcc.draw=ctx=>catDraw(ctx,true); }
       catTag={sx, y:c.y-lift, sc};
     }
   }
+  if(catOcc && catOcc.draw) drawCatSilhouette(catOcc.box, catOcc.over, catOcc.draw);
   if(catTag){ const {sx,y,sc}=catTag;
     // your own name above your cat
     const myName=(NET.name&&NET.connected)?NET.name:'Puiutu';
