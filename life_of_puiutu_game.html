@@ -298,6 +298,13 @@
   #wmWorld{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;}
   #wmImg{position:absolute;inset:0;width:100%;height:100%;user-select:none;-webkit-user-drag:none;}
   #wmFog{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  /* fast travel: the airship flies over the parchment from where you are to where you are going */
+  #wmShip{position:absolute;left:0;top:0;display:none;pointer-events:none;transform-origin:50% 100%;will-change:transform,opacity;
+    filter:drop-shadow(0 2px 2px rgba(40,22,8,.45));}
+  #wmShadow{position:absolute;left:0;top:0;display:none;pointer-events:none;border-radius:50%;will-change:transform,opacity;
+    background:radial-gradient(closest-side,rgba(48,26,8,.7),rgba(48,26,8,0));}
+  #mapModal.flying .wm-pin{pointer-events:none!important;}
+  #mapModal.flying #wmCard{display:none;}
   #wmRegions,#wmIcons{position:absolute;inset:0;pointer-events:none;}
   /* region names: wide spaced capitals laid on the land */
   .wm-region{position:absolute;transform:translate(-50%,-50%) scale(var(--inv)) rotate(var(--rot,-3deg));opacity:0;transition:opacity .4s;
@@ -1928,6 +1935,11 @@ function load(){
   catch(e){return fresh();}
 }
 function save(){localStorage.setItem('puiutu_save',JSON.stringify(S));}
+// also save every few seconds and when the tab is hidden or closed: XP from a fight, for one, is
+// only written by the next thing that saves, so closing the tab right after lost it
+setInterval(()=>{ if(inGame) save(); }, 10000);
+addEventListener('pagehide', ()=>{ if(inGame) save(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden && inGame) save(); });
 function xpForLevel(l){return 50+l*50;}
 
 //──────────────────────────────────────────────────────────────── SOUND (WebAudio, no files)
@@ -5898,6 +5910,7 @@ function hasDouble(){return S.items.includes('dbljump');}
 function enterArea(id,fromRight,toX){
   curArea=id;A=AREAS[id];
   S.visited[id]=true;
+  try{ mapNoteArea(id); }catch(e){}
   if(id==='sewerentrance' && !S.sewerSeen) S.sewerSeen=true;   // The Glow asks about this later
   save();
   // platformer areas (e.g. House) get the calm theme; hub music is handled in enterHub
@@ -5971,7 +5984,7 @@ function startGame(){
   iconsMigrate();
   showScreen('game');
   resize();
-  if(!A) enterArea('garden',false);
+  if(!A) enterArea(resumeArea(),false);
   P.maxHp=playerMaxHp(); P.hp=P.maxHp;                  // you always come into the game rested:
   P.maxMana=playerMaxMana(); P.mana=P.maxMana;          // full health, full mana
   SPELLS.filter(s=>s.source==='start').forEach(s=>grantSpell(s.id));   // starter spellbook
@@ -11416,11 +11429,41 @@ function hubAttack(){
   if(hit){ SFX.hit(); buddyCharge(9); }
   trainHitDummy(c);
 }
+// loading screen while a map's art is still downloading (the big maps take a moment on the web):
+// the place's name and a little row of paw prints, instead of a flat green screen
+function drawAreaLoading(underwater){
+  const t=performance.now()/1000;
+  const bg=g.createLinearGradient(0,0,0,VH);
+  bg.addColorStop(0, underwater?'#0b2430':'#1e1a12'); bg.addColorStop(1, underwater?'#04121a':'#0c0a06');
+  g.fillStyle=bg; g.fillRect(0,0,VW,VH);
+  const L=MAP_LOCS.find(l=>l.id===curArea||mapLocDest(l)===curArea);
+  const name=L?T(L.name):(A&&A.name?T(A.name):'');
+  const cx=VW/2, cy=VH/2, fs=Math.max(22,Math.min(VW,VH)*0.07);
+  g.save(); g.textAlign='center'; g.textBaseline='middle';
+  g.shadowColor='rgba(0,0,0,.6)'; g.shadowBlur=8;
+  g.fillStyle='#ffe7b0'; g.font=`bold ${fs}px 'Trebuchet MS',sans-serif`;
+  if(name) g.fillText(name, cx, cy-fs*0.9);
+  g.font=`${fs*0.45}px 'Trebuchet MS',sans-serif`; g.fillStyle='rgba(255,231,176,.75)';
+  g.fillText(LT('Loading','Se încarcă'), cx, cy+fs*0.15);
+  g.shadowBlur=0;
+  // four paw prints walking left to right, each lighting up in turn
+  const r=fs*0.16, gap=fs*0.75, y0=cy+fs*1.05;
+  for(let i=0;i<4;i++){
+    const on=((t*2.2-i)%4+4)%4<1;
+    const x=cx+(i-1.5)*gap, y=y0+(i%2?-r*0.9:r*0.9);
+    g.fillStyle=on?'#ffd27a':'rgba(255,210,122,.22)';
+    g.beginPath(); g.ellipse(x, y+r*0.35, r, r*0.8, 0, 0, 7); g.fill();
+    for(const [dx,dy] of [[-0.95,-0.75],[-0.35,-1.2],[0.35,-1.2],[0.95,-0.75]]){
+      g.beginPath(); g.arc(x+dx*r, y+dy*r, r*0.34, 0, 7); g.fill();
+    }
+  }
+  g.restore();
+}
 function drawHub(){
   const IM=hubImg();
-  // the big maps (the ocean ones are 6 MB) take a moment on a phone: paint the room's own colour
+  // the big maps (the ocean ones are 6 MB) take a moment on a phone: show the loading screen
   // until the art is in, instead of a white screen with the fish floating on it
-  if(!(IM.complete&&IM.naturalWidth)){ g.fillStyle=A.hub.underwater?'#0d2a36':'#7cbb5f'; g.fillRect(0,0,VW,VH); return; }
+  if(!(IM.complete&&IM.naturalWidth)){ drawAreaLoading(A.hub.underwater); return; }
   if(!HUB.inited) enterHub();
   const scale=VH/IM.naturalHeight, w=IM.naturalWidth*scale;
   if(Math.abs(HUB.worldW-w)>0.5){ if(HUB.worldW>0) HUB.cat.x*=w/HUB.worldW; HUB.worldW=w; }   // world width was taken before the art loaded: keep bg, occluders and props on one scale
@@ -18019,6 +18062,9 @@ function wmBuild(){
       if(mapKnown(L) && !mapHere(L)) travelTo(L.id); });
     icons.appendChild(b);
   }
+  // the airship that flies you between places, and its shadow on the parchment
+  const shadow=document.createElement('div'); shadow.id='wmShadow'; world.appendChild(shadow);
+  const ship=document.createElement('img'); ship.id='wmShip'; ship.alt=''; ship.draggable=false; ship.src='props/aeronava.png'; world.appendChild(ship);
   document.getElementById('wmTravel').addEventListener('click',()=>{ const L=MAP_LOCS.find(l=>l.id===WM.hover); if(L && mapKnown(L) && !mapHere(L)) travelTo(L.id); });
   // a tap on empty land puts away the card a touch selection opened
   document.getElementById('wmView').addEventListener('pointerdown',e=>{ WM.lastPtr=e.pointerType; });
@@ -18120,17 +18166,74 @@ function openMap(){
   if(img.complete && img.naturalWidth) go(); else img.onload=go;
   SFX.tone&&SFX.tone(220,0.18,'sine',0.04); SFX.tone&&SFX.tone(330,0.22,'sine',0.03,0.06);
 }
-function closeMap(){ mapOpen=false; cancelAnimationFrame(WM.raf); document.getElementById('mapModal').classList.remove('show'); }
+// the last place on the map you were at, so a flight from a room or a tunnel starts from its door
+// where a returning player comes back in: the last map place they were at, if it is one they
+// have reached (not the sewers, which hold you until the Coon is beaten); otherwise the Garden
+function resumeArea(){
+  const L=S.introSeen && MAP_LOCS.find(l=>l.id===S.mapAt), id=L && mapLocDest(L);
+  return (id && AREAS[id] && S.visited[id] && id!=='sewer') ? id : 'garden';
+}
+function mapNoteArea(id){ const L=MAP_LOCS.find(l=>l.id===id||mapLocDest(l)===id); if(L) S.mapAt=L.id; }
+function mapFrom(){ return MAP_LOCS.find(mapHere) || MAP_LOCS.find(l=>l.id===S.mapAt) || null; }
+// fly the airship from one place to another over the map, then call arrive. Returns false when it
+// cannot fly (the sprite has not loaded, the map is not laid out), and the caller travels at once.
+function wmFly(from,to,arrive){
+  const ship=document.getElementById('wmShip'), sh=document.getElementById('wmShadow');
+  if(!ship || !ship.complete || !ship.naturalWidth || !WM.iw || WM.fly) return false;
+  const W=WM.iw, H=WM.ih, ax=from.x/100*W, ay=from.y/100*H, bx=to.x/100*W, by=to.y/100*H;
+  const dx=bx-ax, dy=by-ay, d=Math.hypot(dx,dy)||1, dn=d/Math.hypot(W,H);
+  const dur=1500+Math.min(1,dn/0.8)*1500;                          // 1.5 s next door, 3 s across the world
+  // the course bows a little to one side, the way a balloon drifts on the wind: toward the middle
+  // of the map, so a trip along the top edge does not leave the parchment
+  let bow=d*0.16, cx=(ax+bx)/2-dy/d*bow, cy=(ay+by)/2+dx/d*bow;
+  if(Math.abs(cy-H/2)>Math.abs((ay+by)/2-H/2) || cx<0 || cx>W){ bow=-bow; cx=(ax+bx)/2-dy/d*bow; cy=(ay+by)/2+dx/d*bow; }
+  const sw=Math.max(W*0.13, 120/WM.s), shh=sw*ship.naturalHeight/ship.naturalWidth, face=dx<0?-1:1;   // the sprite faces right; never smaller than 120 px on a phone
+  const top=H*(0.035+0.07*Math.min(1,dn/0.6));                    // how high it climbs: higher for longer trips
+  ship.style.width=sw+'px'; sh.style.width=sw*0.8+'px'; sh.style.height=sw*0.18+'px';
+  ship.style.opacity=sh.style.opacity='0'; ship.style.display=sh.style.display='block';
+  wmHover(null); WM.touchSel=false; document.getElementById('mapModal').classList.add('flying');
+  const t0=performance.now(); WM.fly={arrive, raf:0};
+  const step=now=>{
+    if(!WM.fly) return;
+    const t=Math.min(1,(now-t0)/dur), e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2, u=1-e;
+    const x=u*u*ax+2*u*e*cx+e*e*bx, y=u*u*ay+2*u*e*cy+e*e*by;
+    const arc=Math.sin(Math.PI*t), lift=Math.min(arc*top, Math.max(0,y-shh-H*0.01))+Math.sin(now/240)*H*0.004*arc;
+    const k=0.72+0.28*arc, tilt=-4*Math.cos(Math.PI*t)*face;     // nose up leaving, nose down landing
+    ship.style.transform='translate('+(x-sw/2)+'px,'+(y-shh-lift)+'px) rotate('+tilt.toFixed(2)+'deg) scale('+(face*k).toFixed(3)+','+k.toFixed(3)+')';
+    ship.style.opacity=Math.min(1,t/0.08).toFixed(2);
+    const sk=1-0.4*arc;
+    sh.style.transform='translate('+(x-sw*0.4)+'px,'+(y-sw*0.09)+'px) scale('+sk.toFixed(3)+')';
+    sh.style.opacity=(Math.min(1,t/0.08)*(0.9-0.4*arc)).toFixed(2);
+    if(t<1) WM.fly.raf=requestAnimationFrame(step); else wmFlyEnd(true);
+  };
+  WM.fly.raf=requestAnimationFrame(step);
+  // a page in the background gets no frames: land anyway, so travel never hangs on the animation
+  WM.fly.safety=setTimeout(()=>wmFlyEnd(true), dur+800);
+  SFX.tone&&SFX.tone(196,0.35,'sine',0.035); SFX.tone&&SFX.tone(294,0.4,'sine',0.025,0.12);
+  return true;
+}
+function wmFlyEnd(arrive){
+  const f=WM.fly; if(!f) return; WM.fly=null; cancelAnimationFrame(f.raf); clearTimeout(f.safety);
+  document.getElementById('wmShip').style.display=document.getElementById('wmShadow').style.display='none';
+  document.getElementById('mapModal').classList.remove('flying');
+  if(arrive) f.arrive();
+}
+function closeMap(){ if(WM.fly){ wmFlyEnd(true); return; }   // closing the map mid-flight lands you straight away
+  mapOpen=false; cancelAnimationFrame(WM.raf); document.getElementById('mapModal').classList.remove('show'); }
 function travelTo(id){
+  if(WM.fly) return;                                                  // already on the way somewhere
   const L0=MAP_LOCS.find(l=>l.id===id); id=(L0&&L0.dest)||id;           // some places are reached at their door
   if((!S.visited[id] && !(id==='bank' && S.visited.street)) || id===curArea){ closeMap(); return; }
   // the sewers keep you until the Coon is beaten — the map is not a way around that
   if(curArea==='sewer' && SEWER.on && SEWER.mode!=='cleared'){ closeMap(); toast('There is no way out while it lives.'); return; }
-  closeMap();
-  enterArea(id,false);
-  P.maxHp=playerMaxHp(); if(P.hp>P.maxHp)P.hp=P.maxHp;
-  P.maxMana=playerMaxMana(); if(P.mana>P.maxMana)P.mana=P.maxMana;
-  SFX.seq([523,659,784],'triangle',0.05);
+  const go=()=>{ closeMap();
+    enterArea(id,false);
+    P.maxHp=playerMaxHp(); if(P.hp>P.maxHp)P.hp=P.maxHp;
+    P.maxMana=playerMaxMana(); if(P.mana>P.maxMana)P.mana=P.maxMana;
+    SFX.seq([523,659,784],'triangle',0.05); };
+  const from=mapFrom();
+  if(mapOpen && L0 && from && from!==L0 && wmFly(from,L0,go)) return;
+  go();
 }
 // top-down park: click-to-move (WASD also works)
 // ── dev sprite-placement tool ──
