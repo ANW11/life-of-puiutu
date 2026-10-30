@@ -11712,7 +11712,8 @@ function drawHub(){
       const teamScale=(u.team==='cat'?1.32:0.82);   // cats loom larger; rats are smaller, scrappier
       // rearing/leaping attack frames have a taller bounding box, so scaling them to the same
       // height shrinks the body — bump the height for those frames so the unit stays its size
-      const ATK_SCALE={ rat_commander:1.42, rat_soldier:1.12 };
+      // (the rat commander's lunge shares his walk canvas, so it needs none)
+      const ATK_SCALE={ rat_soldier:1.12 };
       const h=ARMY_STATS[u.rank].h*sc*teamScale*((attacking&&ATK_SCALE[u.key])||1);
       const bob=(u.state==='advance')?Math.abs(Math.sin(u.phase*Math.PI))*3:0;
       // a quick forward lunge on the strike so the attack reads clearly
@@ -17448,10 +17449,28 @@ function mcDrawCart(mg){
   }
   mg.restore();
 }
+// a cat has nine lives: six went on other adventures long ago, the three you ride with are the red ones
+function mcHeart(mg,x,y,r){ mg.beginPath(); mg.moveTo(x,y+r*0.9);
+  mg.bezierCurveTo(x-r*1.4,y-r*0.1,x-r*0.75,y-r*1.15,x,y-r*0.45);
+  mg.bezierCurveTo(x+r*0.75,y-r*1.15,x+r*1.4,y-r*0.1,x,y+r*0.9); mg.closePath(); }
+function mcDrawLives(mg,s){
+  const u=MC_U, r=8*u, gap=21*u, x0=22*u, y0=MC_H-42*u, spent=9-3, hp=Math.max(0,s.hp);   // bottom-left: the modal's title bar covers the top-left
+  mg.save(); mg.fillStyle='rgba(0,0,0,.5)'; mg.beginPath(); mg.roundRect(8*u,y0-16*u,gap*9+10*u,48*u,9*u); mg.fill();
+  for(let i=0;i<9;i++){ const x=x0+i*gap;
+    const live=i<hp, lost=!live && i<9-spent;   // the 3 you ride with come first, then the 6 long gone
+    const beat=live && i===hp-1 ? 1+Math.sin(s.t*0.18)*0.08 : 1;   // the last one left beats
+    mcHeart(mg,x,y0,r*beat);
+    mg.fillStyle=live?'#ff4a5a':lost?'#5a2a2e':'#4a4a50'; mg.fill();
+    mg.lineWidth=1.6*u; mg.strokeStyle=live?'#ffd0d4':'rgba(0,0,0,.6)'; mg.stroke();
+    if(!live){ mg.strokeStyle=lost?'rgba(255,120,120,.75)':'rgba(200,200,210,.55)'; mg.lineWidth=1.8*u;
+      mg.beginPath(); mg.moveTo(x-r*0.5,y0-r*0.5); mg.lineTo(x+r*0.5,y0+r*0.4); mg.moveTo(x+r*0.5,y0-r*0.5); mg.lineTo(x-r*0.5,y0+r*0.4); mg.stroke(); } }
+  mg.textAlign='left'; mg.font='bold '+Math.round(12*u)+'px Trebuchet MS'; mg.fillStyle='#ffe7b0';
+  mg.fillText(LT('Lives '+hp+'/9 (6 already used)','Vieți '+hp+'/9 (6 deja consumate)'),x0-r,y0+24*u);
+  mg.restore();
+}
 function mcDrawHUD(mg){
   const s=MC.st;
-  mg.textAlign='left'; mg.font='22px Trebuchet MS';
-  for(let i=0;i<3;i++){ mg.globalAlpha=i<s.hp?1:0.25; mg.fillStyle='#ff8a8a'; mg.fillText('',16+i*28,36);} mg.globalAlpha=1;
+  mcDrawLives(mg,s);
   mg.font='bold 18px Trebuchet MS'; mg.fillStyle='#ffe7b0'; mg.textAlign='right'; mg.fillText(''+s.coins,MC_W-16,34);
   const bw=MC_W*0.5,bx=(MC_W-bw)/2,by=20,pct=Math.min(1,s.scroll/MC_TOTAL);
   mg.fillStyle='rgba(0,0,0,.5)'; mg.beginPath(); mg.roundRect(bx-3,by-3,bw+6,16,6); mg.fill();
