@@ -15,7 +15,7 @@ const SPR = {
   rat_bandit:    { walk: ['mobs/coon_walk0.png', 'mobs/coon_walk1.png'], atk: 'mobs/coon_throw.png', h: 36 },
   rat_lobster:   { walk: [0,1,2,3,4,5].map(i => `mobs/seby/anim/walk${i}.png`), atk: 'mobs/seby/anim/claw1.png', h: 112 },   // Seby's brood — the main game's 6-frame scuttle; these frames stand on the canvas floor
   merlin:        { walk: ['npcs/merlin_npc.png'], h: 46, wobble: true },
-  rat_commander: { walk: [0,1,2,3].map(i => `army/frames/rat_commander_walk${i}.png?v=2`), atk: 'army/frames/rat_commander_atk.png?v=2', h: 34 },
+  rat_commander: { walk: [0,1,2,3,4,5].map(i => `army/frames/rat_commander_walk${i}.png?v=3`), atk: 'army/frames/rat_commander_atk.png?v=3', h: 34 },
   cat_herald:    { walk: [0,1,2,3,4,5].map(i => `army/frames/cat_emissary_walk${i}.png?v=2`), atk: 'army/frames/cat_emissary_atk.png?v=2', h: 36 },
   rat_saboteur:  { walk: [0,1,2,3,4,5].map(i => `army/frames/rat_emissary_walk${i}.png?v=2`), atk: 'army/frames/rat_emissary_atk.png?v=2', h: 36, faceLeft: true },
   pig_snout:     { walk: [0,1,2,3,4,5].map(i => `army/frames/pig_agent_walk${i}.png?v=2`), atk: 'army/frames/pig_agent_atk.png?v=2', h: 40 },

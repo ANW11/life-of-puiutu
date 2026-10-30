@@ -3013,13 +3013,15 @@ function birdFrames(type,variant){
 // army units (cats vs rats) — each: 4 walk frames + 1 attack frame, art faces LEFT
 const ARMY_SPR={};
 // how many walk frames each unit actually has — a longer cycle reads far less stiff
-const ARMY_FRAMES={ cat_commander:5, cat_emissary:6, pig_agent:6, snout:6, rat_emissary:6 };   // snout = Agent Snout: the agent's sheet in a brown field coat, so he never looks like just another banker
+const ARMY_FRAMES={ cat_commander:5, cat_emissary:6, pig_agent:6, snout:6, rat_emissary:6, rat_commander:6 };
+const ARMY_VER={ rat_commander:3 };   // the rat commander was redrawn (iron armour, red cloak): new frames, new cache key   // snout = Agent Snout: the agent's sheet in a brown field coat, so he never looks like just another banker
 ['cat_soldier','rat_soldier','cat_commander','rat_commander','cat_emissary','pig_agent','snout','rat_emissary'].forEach(n=>{
   const walk=[], N=ARMY_FRAMES[n]||4;
   // ?v= busts the cache: the pig and rat emissary frames were re-exported onto a shared canvas,
   // and anyone holding the old tight-cropped ones would still see the sprite jump every frame
-  for(let i=0;i<N;i++){ const im=new Image(); im.src='army/frames/'+n+'_walk'+i+'.png?v=2'; walk.push(im); }
-  const atk=new Image(); atk.src='army/frames/'+n+'_atk.png?v=2';
+  const v='?v='+(ARMY_VER[n]||2);
+  for(let i=0;i<N;i++){ const im=new Image(); im.src='army/frames/'+n+'_walk'+i+'.png'+v; walk.push(im); }
+  const atk=new Image(); atk.src='army/frames/'+n+'_atk.png'+v;
   ARMY_SPR[n]={walk, atk};
 });
 
