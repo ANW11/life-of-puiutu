@@ -1799,7 +1799,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
     <div id="fishWrap">
       <div id="fishHud"> caught: <span id="fishCount">0</span><span style="opacity:.6;margin:0 8px;">·</span>biggest: <span id="fishBest">-</span></div>
       <canvas id="fishCanvas" width="360" height="540"></canvas>
-      <div id="fishHint"><b>↑ / ↓</b> move the bar to keep it on the fish · tap when it bites</div>
+      <div id="fishHint"><b>↑ / ↓</b> move the bar to keep it on the fish · <b>Space</b> or tap when it bites</div>
       <!-- touch screens: hold to move the green bar -->
       <div id="fishPad"><div id="fishUpBtn">▲</div><div id="fishDownBtn">▼</div></div>
     </div>
@@ -4912,6 +4912,9 @@ const RO = {
   "caught:":"prinși:",
   "biggest:":"cel mai mare:",
   "move the bar to keep it on the fish · tap when it bites":"mută bara, ține-o pe pește · apasă când trage",
+  "move the bar to keep it on the fish ·":"mută bara, ține-o pe pește ·",
+  "Space":"Space",
+  "or tap when it bites":"sau atinge când trage",
   "Inamic":"Inamic",
   "Lv.1":"Niv.1",
   "Level 2":"Nivelul 2",
@@ -9905,7 +9908,6 @@ function drawCine(){
   if(C && C.title){ const t=now-C.title.t0, a=Math.min(1,t/350)*(Math.random()<0.08?0.35:1);   // it flickers like a bad bulb
     g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='bold 34px Trebuchet MS'; g.fillStyle='#e9e2d6';
     g.shadowColor='#5a0000'; g.shadowBlur=18; g.fillText(C.title.text, VW/2+(Math.random()-0.5)*2, VH*0.46); g.restore(); }
-  if(C && !C.noBars){ g.save(); g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.08); g.fillRect(0,VH*0.92,VW,VH*0.08); g.restore(); }
   if(C && C.fadeAt){ g.save(); g.fillStyle='rgba(0,0,0,'+Math.min(1,(now-C.fadeAt)/1600)+')'; g.fillRect(0,0,VW,VH); g.restore(); }
   const fl=C ? C.flashAt : HUB.cineFlashAt;
   if(fl && now-fl<500){ g.save(); g.fillStyle='rgba(0,0,0,'+(1-(now-fl)/500)+')'; g.fillRect(0,0,VW,VH); g.restore(); }   // cut back: from black
@@ -9933,7 +9935,6 @@ function drawCut(cut){
       g.restore();
     }
   }
-  g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.09); g.fillRect(0,VH*0.91,VW,VH*0.09);
   if(cut.caption && t<5200){ g.globalAlpha=Math.min(1,t/600)*Math.min(1,(5200-t)/800);
     g.font='italic 17px Trebuchet MS'; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=6;
     g.fillStyle='#efe6cc'; g.fillText(cut.caption, VW/2, VH*0.09+30); g.shadowBlur=0; g.globalAlpha=1; }
@@ -10331,11 +10332,10 @@ function drawSnout(g,ag){
     g.fillText(T('Agent Bristle'), sx, ag.y-h-8); g.restore();
   }
 }
-// black bars while the hangar's opening plays, the garden cut, and the flash it ends in
+// the hangar's garden cut and the flash it ends in (cutscenes play full screen, no black bars)
 function drawHangarCinema(){
   const now=Date.now(), H=HUB.hangar;
   if(HUB.cut) drawGlowCutscene();
-  else if(H && H.phase!=='await'){ g.save(); g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.08); g.fillRect(0,VH*0.92,VW,VH*0.08); g.restore(); }
   if(HUB.flashAt && now-HUB.flashAt<900){ const a=1-(now-HUB.flashAt)/900;
     g.save(); g.fillStyle='rgba(225,255,240,'+a+')'; g.fillRect(0,0,VW,VH); g.restore(); }
 }
@@ -10378,7 +10378,6 @@ function drawGlowCutscene(){
     }
   }
   g.globalCompositeOperation='source-over';
-  g.fillStyle='#000'; g.fillRect(0,0,VW,VH*0.09); g.fillRect(0,VH*0.91,VW,VH*0.09);   // letterbox
   if(t<5000){ g.globalAlpha=Math.min(1,t/600)*Math.min(1,(5000-t)/800);
     g.font='italic 17px Trebuchet MS'; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=6;
     g.fillStyle='#efe6cc'; g.fillText('Meanwhile, in the garden…', VW/2, VH*0.09+30); g.shadowBlur=0; g.globalAlpha=1; }
@@ -16056,7 +16055,7 @@ const FSCENE={
   puiutu:{ idle:fimg('puiutu_idle.png'), bite:fimg('puiutu_bite.png'), reel:fimg('puiutu_reel.png') },
   bobber:    fimg('bobber.png'),         // 128x128 floating
   bobberDip: fimg('bobber_dip.png'),     // 128x128 dipped underwater
-  splash:    fimg('splash_sheet.png'),   // 4 frames in a row, 256x256 each
+  splash:    fimg('splash_sheet.png'),   // 4 frames in a row, 1200x1024 each, centred on the water ring
   gauge:     fimg('gauge.png'),          // optional 220x980 wooden reel frame
   card:      fimg('trophy_card.png'),    // optional wooden "fish caught" banner
 };
@@ -16074,17 +16073,19 @@ const FISH_TRACK={ x:248, w:74, top:46, bot:498 };
 // Tuned to the lateral-dock sunset bg: Puiutu sits on the planks (left),
 // the line casts out into the open sunlit water on the right.
 // Tweak these if the dock art changes — everything else follows.
-const ANCHOR={ horizonF:0.38, catXf:0.02, catYf:0.86, catHF:0.22, bobXf:0.80, bobYf:0.78 };
+const ANCHOR={ horizonF:0.38, catXf:0.03, catYf:0.78, catHF:0.26, bobXf:0.80, bobYf:0.78 };
 // rod-tip position as a fraction of each Puiutu sprite (x,y) — so the cast line
 // starts exactly at the rod tip, not floating in mid-air
 // rod-tip position as a fraction of each sprite (measured from the artwork) so the
 // cast line starts exactly at the rod tip — not the cat's head
-const RODTIP={ idle:[0.684,0.169], reel:[0.876,0.183], bite:[0.939,0.202] };
+const RODTIP={ idle:[0.684,0.169], reel:[0.876,0.183], bite:[0.893,0.427] };
 // per-frame cat-body metrics (measured): native height, body height (cat without
 // the thin rod), and feet row — so all 3 frames render the cat at the SAME body
 // size with feet on the dock, regardless of how high the rod reaches.
 // mul = small per-frame size boost (standing/startled reads a touch bigger)
-const CATFIT={ idle:{h:520,bodyH:406,bodyBot:506,mul:1}, reel:{h:520,bodyH:423,bodyBot:488,mul:1}, bite:{h:466,bodyH:340,bodyBot:409,mul:1.12} };
+// All three frames are the same sitting cat (bite was redrawn from idle on the same canvas), so the
+// numbers are the cat's ear-to-paw height and its lowest pixel: the cat never grows or shrinks.
+const CATFIT={ idle:{h:520,bodyH:514,bodyBot:516,mul:1}, reel:{h:520,bodyH:496,bodyBot:498,mul:1}, bite:{h:520,bodyH:514,bodyBot:516,mul:1} };
 // the rectangle the bg is actually drawn into (contain-fit, centered with letterbox)
 function fishBgRect(){
   const W=FISH.W, H=FISH.H, im=FSCENE.bg;
@@ -16145,6 +16146,7 @@ function fishRoll(){ let tot=0; for(const f of FISH_SPECIES) tot+=f.w; let r=Mat
 function fishOpen(){ openModal('fishhub'); }
 function fishStartGame(){
   closeModal('fishhub');
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();   // so Space hooks the fish instead of pressing the Fish button again
   const cv=document.getElementById('fishCanvas'); FISH.cv=cv; FISH.ctx=cv.getContext('2d');
   openModal('fishing'); fishResize(); fishHudSync(); fishReset('ready');
   FISH.jumpers.length=0; FISH.splashes.length=0; FISH.ripples.length=0;
@@ -16277,8 +16279,8 @@ function fishLoop(){
 function drawSplash(g,sp,now){
   const p=Math.min(1,(now-sp.t)/520), s=sp.size;
   if(imgOK(FSCENE.splash)){ const im=FSCENE.splash, fw=im.naturalWidth/4, fh=im.naturalHeight;
-    const fr=Math.min(3,Math.floor(p*4));
-    g.drawImage(im, fr*fw,0,fw,fh, sp.x-s/2, sp.y-s*0.7, s, s);
+    const fr=Math.min(3,Math.floor(p*4)), dw=s*fw/fh;   // cells are wider than tall so the crown's spray isn't clipped
+    g.drawImage(im, fr*fw,0,fw,fh, sp.x-dw/2, sp.y-s*0.7, dw, s);
   } else {
     g.save(); g.globalAlpha=(1-p)*0.8; g.strokeStyle='#eaf8ff'; g.lineWidth=3;
     g.beginPath(); g.arc(sp.x,sp.y,s*0.2+p*s*0.5,0,Math.PI,true); g.stroke();
@@ -16414,13 +16416,16 @@ function fishDraw(){
     else { g.fillStyle='rgba(8,40,70,.55)'; rr(t.x,t.top,t.w,t.bot-t.top,14); }
     const f=FISH.fish, halfH=(f.barH*(t.bot-t.top))/2;
     if(FISH.phase==='reel'){
-      // green catch bar — fits exactly inside the dark groove (small inset off the walls)
-      const ins=Math.max(2,t.w*0.06), bw=t.w-ins*2, brd=Math.min(8,bw*0.45);
+      // green catch bar: a capsule as wide as the groove, clipped to the groove's own capsule
+      // (round top and bottom), so at the ends it follows the wooden frame's curve exactly
+      const bw=t.w;
       let by=FISH.barC-halfH, bh=halfH*2;                 // clamp into the groove
       if(by<t.top){ bh-=(t.top-by); by=t.top; } if(by+bh>t.bot) bh=t.bot-by;
       const inside=Math.abs(FISH.fishP-FISH.barC)<=halfH;
+      g.save(); g.beginPath(); g.roundRect(t.x, t.top, t.w, t.bot-t.top, t.w/2); g.clip();
       g.fillStyle=inside?'rgba(120,230,110,.95)':'rgba(95,180,95,.7)';
-      rr(t.x+ins, by, bw, bh, brd);
+      rr(t.x, by, bw, bh, Math.min(bw/2, bh/2));
+      g.restore();
       // neutral target marker, centered in the groove
       const mr=Math.min(14,bw/2.2), mx=t.x+t.w/2, my=Math.max(t.top+mr,Math.min(t.bot-mr,FISH.fishP));
       g.fillStyle='rgba(20,40,60,.92)'; g.beginPath(); g.arc(mx,my,mr,0,7); g.fill();
