@@ -545,8 +545,8 @@
   #mergeWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px;min-height:0;}
   #mergeHud{color:#ffe7b0;font-weight:bold;font-size:18px;}
   #mergeObjective{color:#ffd86b;font-weight:bold;font-size:15px;background:rgba(20,14,8,.5);padding:4px 14px;border-radius:12px;}
-  #mergeCanvas{background:#3a2414 url('fruitmerge/barrel_interior.jpg') center/cover;border:4px solid #3a2414;border-radius:14px;   /* the fruit falls into a wooden barrel */
-    box-shadow:0 8px 24px rgba(0,0,0,.4);max-height:72vh;max-width:94vw;height:auto;touch-action:none;cursor:pointer;}
+  #mergeCanvas{background:url('fruitmerge/barrel_interior.png') center/100% 100% no-repeat;border:0;   /* just the barrel, no box around it */
+    filter:drop-shadow(0 8px 18px rgba(0,0,0,.5));max-height:72vh;max-width:94vw;height:auto;touch-action:none;cursor:pointer;}
   @media (orientation:portrait){ #mergeCanvas{max-height:calc(100vh - 200px);max-width:96vw;} }
   #mergeRestart{background:linear-gradient(#7ed957,#4d9a2a);border:2px solid #3a6f1c;color:#fff;font-weight:bold;
     font-size:15px;padding:9px 20px;border-radius:12px;cursor:pointer;}
@@ -15590,7 +15590,7 @@ const MG_SH=MG_SHAPES.map(cs=>{                       // centroid-relative circl
 });
 const MG={ active:false, W:360, H:540, ctx:null, bodies:[], cur:0, next:0, score:0, dropX:180, dropCD:0, overSince:0, gameOver:false, objective:5, raf:null };
 function mgRandType(){ return Math.floor(Math.random()*5); }     // only drop the 5 smallest
-// The play area is the inside of the barrel in fruitmerge/barrel_interior.jpg: MG_BARREL is the
+// The play area is the inside of the barrel in fruitmerge/barrel_interior.png: MG_BARREL is the
 // inner edge of its stave rim, as a fraction of the width, at 65 even heights from top to bottom
 // (measured from the art). mgWall(y) gives both inside edges at a height and their slopes dx/dy,
 // so a fruit is pushed back along the curved wall's real normal; the floor is flat.
@@ -15791,7 +15791,7 @@ function mgRender(){
   if(danger){ const p=0.5+0.5*Math.sin(Date.now()*0.02);
     ctx.strokeStyle='rgba(255,40,40,'+(0.6+0.4*p)+')'; ctx.lineWidth=3; }
   else ctx.strokeStyle='rgba(220,80,60,.5)', ctx.lineWidth=2;
-  ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(0,line); ctx.lineTo(W,line); ctx.stroke(); ctx.setLineDash([]);
+  const lw=mgWall(line); ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(lw.l,line); ctx.lineTo(lw.r,line); ctx.stroke(); ctx.setLineDash([]);   // only across the barrel
   if(!MG.gameOver){
     const t=MG.cur, r=MG_FRUITS[t].r, x=mgDropXClamp(MG.dropX,r);
     ctx.strokeStyle='rgba(255,230,190,.35)'; ctx.lineWidth=2; ctx.setLineDash([4,8]);   // light guide on the dark barrel wood
@@ -15800,12 +15800,14 @@ function mgRender(){
   }
   for(const b of MG.bodies) mgDrawFruit(ctx,b.x,b.y,b.r,b.type,b);
   ctx.fillStyle='rgba(255,231,176,.75)'; ctx.font='11px Trebuchet MS'; ctx.textAlign='right';
-  ctx.fillText('next', W-30, 16); mgDrawFruit(ctx, W-16, 18, 11, MG.next);
+  const nx=mgWall(18).r-16; ctx.fillText('next', nx-14, 16); mgDrawFruit(ctx, nx, 18, 11, MG.next);   // tucked inside the barrel's rim
   // overflow countdown — drawn on top, top-left so a fruit can't hide it
   if(danger){ ctx.save(); ctx.fillStyle='#ff4a4a'; ctx.textAlign='left'; ctx.font='bold 16px Trebuchet MS';
     ctx.shadowColor='#000'; ctx.shadowBlur=4; ctx.fillText(''+left.toFixed(1)+'s', 10, 20); ctx.restore(); }
   if(MG.gameOver){
-    ctx.fillStyle='rgba(20,14,8,.72)'; ctx.fillRect(0,0,W,H);
+    const bp=new Path2D(); for(let i=0;i<=40;i++){ const y=H*i/40; i?bp.lineTo(mgWall(y).l,y):bp.moveTo(mgWall(y).l,y); }
+    for(let i=40;i>=0;i--){ const y=H*i/40; bp.lineTo(mgWall(y).r,y); }
+    ctx.fillStyle='rgba(20,14,8,.72)'; ctx.fill(bp);            // darken the barrel only, not a box around it
     ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='bold 30px Trebuchet MS';
     ctx.fillText('Game Over', W/2, H/2-20);
     ctx.font='bold 20px Trebuchet MS'; ctx.fillText('Score: '+MG.score, W/2, H/2+14);
