@@ -574,9 +574,10 @@
     filter:drop-shadow(0 12px 24px rgba(0,0,0,.5));}
   #fishhubBtns{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;}
   /* wooden plank sprites in the barrel's pixel style; the icon sits on the left end, the label is text */
-  .fishhub-btn{background:url('fishing/btn_fish.png') center/100% 100% no-repeat;border:0;padding:0 0 0 13%;
-    width:min(340px,44vw);aspect-ratio:900/133;color:#ffe7b0;font-weight:bold;font-size:clamp(16px,2.7vw,24px);
-    letter-spacing:.5px;text-shadow:0 2px 0 #2a1a0e,0 0 3px #2a1a0e,0 0 3px #2a1a0e;cursor:pointer;
+  .fishhub-btn{background:url('fishing/btn_fish.png') center/100% 100% no-repeat;border:0;--bw:min(270px,43vw);
+    padding:0 calc(var(--bw)*.11) 0 calc(var(--bw)*.22);   /* label centred on the bare plank, between the icon and the end cap */
+    width:var(--bw);aspect-ratio:640/181;color:#ffe7b0;font-weight:bold;font-size:clamp(17px,2.9vw,25px);
+    white-space:nowrap;letter-spacing:.5px;text-shadow:0 2px 0 #2a1a0e,0 0 3px #2a1a0e,0 0 3px #2a1a0e;cursor:pointer;
     filter:drop-shadow(0 4px 0 rgba(0,0,0,.45));transition:transform .08s, filter .12s;}
   .fishhub-btn.alt{background-image:url('fishing/btn_fishlog.png');}
   .fishhub-btn:hover{filter:drop-shadow(0 4px 0 rgba(0,0,0,.45)) brightness(1.12);}
