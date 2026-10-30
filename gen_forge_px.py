@@ -10,6 +10,7 @@ SRC={
  'broth':'ui/forge/broth.png','tonic':'rts/art/item_potion.png','moonmilk':'rts/art/item_mana.png',
  'fury':'ui/forge/fury.png','ironfur':'ui/forge/ironfur.png','lucky':'ui/forge/lucky.png','phoenix':'ui/forge/phoenix.png',
  'forge_claws':'ui/forge/claws.png','forge_collar':'ui/forge/collar.png','forge_bell':'ui/forge/bell.png',
+ 'trick_dbljump':'ui/forge/dbljump.png','trick_speed':'ui/forge/speed.png',
  'charm_carrot':'rts/art/item_carrot.png','charm_bell':'rts/art/item_bell.png','charm_mouse':'rts/art/item_mouse.png',
  'charm_heart':'ui/forge/heart_chain_hi.png' if os.path.exists('ui/forge/heart_chain_hi.png') else 'rts/art/item_heart.png','charm_goldbanana':'ui/forge/goldbanana_hi.png',
  # the beach: Old Shelly's fossils and beachcombing finds
