@@ -14558,8 +14558,10 @@ const CIMG={};
 // normalized sprites already touch the cell edges, so all pieces use the same scale now
 const CIRC_SCALE={ straight:1.0, corner:1.0, t:1.0, cross:1.0, source:1.0, target:1.0 };
 // ── dev layout tool (live tweak frame/grid/gap/piece scale; persisted) ──
-const CIRC_DEV=Object.assign({frame:582, grid:54, gap:0, scale:1.03},
-  (()=>{ try{ return JSON.parse(localStorage.getItem('puiutu_circ3')||'{}'); }catch(e){ return {}; } })());
+// grid = the board art's slate play area (53.9% of circuit/board.png, centred); a new storage key so
+// tweaks made for the old board don't shift the grid on this one
+const CIRC_DEV=Object.assign({frame:582, grid:53.9, gap:0, scale:1.03},
+  (()=>{ try{ return JSON.parse(localStorage.getItem('puiutu_circ4')||'{}'); }catch(e){ return {}; } })());
 function circApplyDev(){
   const f=document.getElementById('circuitFrame'), gr=document.getElementById('circuitGrid');
   if(f) f.style.width='min(94vw,'+CIRC_DEV.frame+'px)';
@@ -14568,7 +14570,7 @@ function circApplyDev(){
     im.style.transform='rotate('+((+im.dataset.rot||0)*90)+'deg) scale('+((+im.dataset.base||1.2)*CIRC_DEV.scale)+')'; });
   const ro=document.getElementById('circuitDevRead'); if(ro) ro.textContent=JSON.stringify(CIRC_DEV);
 }
-function circDevSet(k,v){ CIRC_DEV[k]=parseFloat(v); localStorage.setItem('puiutu_circ3',JSON.stringify(CIRC_DEV)); circApplyDev(); }
+function circDevSet(k,v){ CIRC_DEV[k]=parseFloat(v); localStorage.setItem('puiutu_circ4',JSON.stringify(CIRC_DEV)); circApplyDev(); }
 function circDevInit(){
   const map={cdFrame:'frame',cdGrid:'grid',cdGap:'gap',cdScale:'scale'};
   for(const id in map){ const el=document.getElementById(id); if(!el) continue; el.value=CIRC_DEV[map[id]]; el.oninput=()=>circDevSet(map[id],el.value); }
