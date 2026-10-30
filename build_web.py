@@ -15,7 +15,7 @@ What it does:
     exact; everything else is lossy at high quality.
   - adds a _headers file for Cloudflare caching
 """
-import os, re, shutil, subprocess, sys
+import os, re, shutil, subprocess, sys, time
 from concurrent.futures import ThreadPoolExecutor
 
 SRC = os.path.dirname(os.path.abspath(__file__))
@@ -95,7 +95,8 @@ def main():
 
     sw = open(os.path.join(SRC, 'sw.js'), encoding='utf-8').read()
     sw = sw.replace("'./life_of_puiutu_game.html'", "'./index.html'")
-    sw = re.sub(r"const CACHE = '[^']*';", "const CACHE = 'puiutu-web-v1';", sw)
+    # a new cache name per build, so the offline copy of an old build is thrown away
+    sw = re.sub(r"const CACHE = '[^']*';", "const CACHE = 'puiutu-web-%d';" % int(time.time()), sw)
     open(os.path.join(OUT, 'sw.js'), 'w', encoding='utf-8').write(sw)
 
     man = open(os.path.join(SRC, 'manifest.json'), encoding='utf-8').read()
@@ -107,9 +108,12 @@ def main():
         "/*\n  X-Content-Type-Options: nosniff\n\n"
         "/index.html\n  Cache-Control: no-cache\n\n"
         "/sw.js\n  Cache-Control: no-cache\n\n"
-        "/*.png\n  Cache-Control: public, max-age=3600, stale-while-revalidate=604800\n\n"
-        "/*.jpeg\n  Cache-Control: public, max-age=3600, stale-while-revalidate=604800\n\n"
-        "/*.jpg\n  Cache-Control: public, max-age=3600, stale-while-revalidate=604800\n")
+        # art keeps its file name when it is redrawn, so browsers must ask every time (a cheap
+        # 304 via the ETag when nothing changed); a long max-age kept showing the old sprites
+        "/*.png\n  Cache-Control: public, max-age=0, must-revalidate\n\n"
+        "/*.jpeg\n  Cache-Control: public, max-age=0, must-revalidate\n\n"
+        "/*.jpg\n  Cache-Control: public, max-age=0, must-revalidate\n\n"
+        "/*.webp\n  Cache-Control: public, max-age=0, must-revalidate\n")
 
     # report
     before = sum(a for a, _ in sizes); after = sum(b for _, b in sizes)
