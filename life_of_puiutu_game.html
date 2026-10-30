@@ -749,31 +749,29 @@
   #gachaCard.r-legendary{box-shadow:0 0 48px 14px rgba(255,200,70,.9);animation:gPop .4s cubic-bezier(.2,1.4,.5,1),gGlow 1s ease-in-out infinite alternate;}
   @keyframes gGlow{from{box-shadow:0 0 40px 10px rgba(255,200,70,.7)}to{box-shadow:0 0 64px 20px rgba(255,140,200,.95)}}
   #gcIcon{font-size:80px;position:relative;z-index:2;}
-  /* rotating ray burst behind a cat reveal */
+  /* rotating ray burst behind a reveal. The effects are white pixel-art masks (ui/fx/) painted in
+     the rarity colour (--ray / --sc), so every rarity gets its own colour from the same sprites */
   #gcRays{position:absolute;left:50%;top:46%;width:560px;height:560px;margin:-280px 0 0 -280px;pointer-events:none;display:none;z-index:0;
-    background:repeating-conic-gradient(from 0deg, var(--ray,#ffd24a) 0deg 3deg, transparent 3deg 14deg);
-    -webkit-mask:radial-gradient(circle, transparent 15%, #000 33%, #000 58%, transparent 78%);
-            mask:radial-gradient(circle, transparent 15%, #000 33%, #000 58%, transparent 78%);}
+    background:var(--ray,#ffd24a);-webkit-mask:url('ui/fx/rays.png') center/contain no-repeat;mask:url('ui/fx/rays.png') center/contain no-repeat;}
   #gachaCard.skin-reveal #gcRays{display:block;opacity:.5;animation:gRays 14s linear infinite, gRayFade .7s ease-out;}
   @keyframes gRays{to{transform:rotate(360deg)}}
   @keyframes gRayFade{from{opacity:0}to{opacity:.5}}
   /* SUSPENSE buildup: a charging orb of light grows and spins faster, then bursts */
-  #gcCharge{position:absolute;left:50%;top:44%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;display:none;z-index:3;pointer-events:none;
-    background:radial-gradient(circle,#fff 0%,var(--ray,#ffd24a) 45%,rgba(255,255,255,0) 72%);}
+  #gcCharge{position:absolute;left:50%;top:44%;width:60px;height:60px;margin:-30px 0 0 -30px;display:none;z-index:3;pointer-events:none;
+    background:radial-gradient(circle,#fff 0%,#fff 16%,var(--ray,#ffd24a) 40%);-webkit-mask:url('ui/fx/orb.png') center/contain no-repeat;mask:url('ui/fx/orb.png') center/contain no-repeat;}
   #gachaCard.charging #gcCharge{display:block;animation:gCharge .8s ease-in forwards;}
   @keyframes gCharge{0%{transform:scale(.2);opacity:.3}70%{transform:scale(3);opacity:1}100%{transform:scale(6);opacity:0}}
   #gachaCard.charging #gcRays{animation:gRaysSpin 2.1s cubic-bezier(.4,0,.9,.6) forwards;opacity:.85;}
   @keyframes gRaysSpin{from{transform:rotate(0)}to{transform:rotate(560deg)}}
   /* expanding shockwave rings on detonation */
-  #gcShock,#gcShock2{position:absolute;left:50%;top:46%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;
-    display:none;z-index:4;pointer-events:none;border:7px solid var(--ray,#ffd24a);
-    box-shadow:0 0 34px 8px var(--ray,#ffd24a),inset 0 0 28px var(--ray,#ffd24a);}
+  #gcShock,#gcShock2{position:absolute;left:50%;top:46%;width:72px;height:72px;margin:-36px 0 0 -36px;
+    display:none;z-index:4;pointer-events:none;background:var(--ray,#ffd24a);-webkit-mask:url('ui/fx/ring.png') center/contain no-repeat;mask:url('ui/fx/ring.png') center/contain no-repeat;}
   #gachaCard.burst #gcShock{display:block;animation:gShock .85s ease-out forwards;}
-  #gachaCard.burst #gcShock2{display:block;animation:gShock 1.05s ease-out .12s forwards;border-color:#fff;}
-  @keyframes gShock{0%{transform:scale(.18);opacity:.95;border-width:11px}100%{transform:scale(10);opacity:0;border-width:1px}}
+  #gachaCard.burst #gcShock2{display:block;animation:gShock 1.05s ease-out .12s forwards;background:#fff;}
+  @keyframes gShock{0%{transform:scale(.18);opacity:.95}100%{transform:scale(9);opacity:0}}
   /* sparks flung outward from the detonation (created in JS) */
-  .gcSpark{position:absolute;left:50%;top:46%;width:7px;height:7px;border-radius:50%;z-index:6;pointer-events:none;
-    background:radial-gradient(circle,#fff,var(--sc,#ffd24a));box-shadow:0 0 8px 2px var(--sc,#ffd24a);
+  .gcSpark{position:absolute;left:50%;top:46%;width:22px;height:22px;z-index:6;pointer-events:none;
+    background:radial-gradient(circle,#fff 0%,#fff 18%,var(--sc,#ffd24a) 45%);-webkit-mask:url('ui/fx/spark.png') center/contain no-repeat;mask:url('ui/fx/spark.png') center/contain no-repeat;
     animation:gSpark var(--sd,.9s) ease-out forwards;}
   @keyframes gSpark{0%{transform:translate(-50%,-50%) scale(1);opacity:1;}
     100%{transform:translate(calc(-50% + var(--sx)),calc(-50% + var(--sy))) scale(.2);opacity:0;}}
@@ -15458,7 +15456,7 @@ function gachaSparks(rar){
     s.style.setProperty('--sy',(Math.sin(a)*dist).toFixed(0)+'px');
     s.style.setProperty('--sc', Math.random()<0.5?'#fff':col);
     s.style.setProperty('--sd',(0.7+Math.random()*0.6).toFixed(2)+'s');
-    const sz=(4+Math.random()*6).toFixed(0); s.style.width=sz+'px'; s.style.height=sz+'px';
+    const sz=(12+Math.random()*16).toFixed(0); s.style.width=sz+'px'; s.style.height=sz+'px';   // the 4-point star sprite needs room to read
     card.appendChild(s);
     setTimeout(()=>s.remove(),1400);
   }
