@@ -16513,11 +16513,12 @@ function buy(idv){
 // so the flow can be played end to end; turn it off and hand checkout to window.PuiutuPayments
 // (Stripe / App Store / Play Billing), which calls iapGrant(sku) once the money has cleared.
 const IAP_TEST_MODE=true;
+// 1 € buys 1 gold coin (10000 bronze); the bigger packs add bonus gold on top
 const IAP_GOLD=[
-  {sku:'gold_s',  coins:500,   price:'0,99 €',  name:['Pouch of Coins','Pungă de monede']},
-  {sku:'gold_m',  coins:1500,  price:'2,49 €',  name:['Sack of Coins','Sac de monede'], tag:['+20% bonus','+20% bonus']},
-  {sku:'gold_l',  coins:4000,  price:'5,99 €',  name:['Chest of Coins','Cufăr de monede'], tag:['+35% bonus','+35% bonus']},
-  {sku:'gold_xl', coins:10000, price:'12,99 €', name:['Royal Treasury','Tezaurul regal'], tag:['Best value','Cea mai bună ofertă']},
+  {sku:'gold_s',  coins:10000,  price:'0,99 €',  name:['Pouch of Coins','Pungă de monede']},
+  {sku:'gold_m',  coins:60000,  price:'4,99 €',  name:['Sack of Coins','Sac de monede'], tag:['+20% bonus','+20% bonus']},
+  {sku:'gold_l',  coins:130000, price:'9,99 €',  name:['Chest of Coins','Cufăr de monede'], tag:['+30% bonus','+30% bonus']},
+  {sku:'gold_xl', coins:280000, price:'19,99 €', name:['Royal Treasury','Tezaurul regal'], tag:['+40% · Best value','+40% · Cea mai bună ofertă']},
 ];
 const IAP_SKIN_PRICE={common:'0,99 €',rare:'1,99 €',epic:'3,99 €',legendary:'6,99 €'};
 function renderShop(){
@@ -16531,7 +16532,7 @@ function renderShop(){
   // the coin packs under the cards, one row of tiles
   h+=`<div class="wd-head wd-coins"><h3>${LT('Coins','Monede')}</h3></div><div class="gold-grid">`+IAP_GOLD.map(g=>`<div class="gold-tile">
       ${g.tag?`<div class="gold-tag">${LT(g.tag[0],g.tag[1])}</div>`:''}
-      <div class="gold-ico"><span style="${coinFaceStyle(g.coins>=10000?COIN_IMG.g:g.coins>=1500?COIN_IMG.s:COIN_IMG.b,46)}"></span></div>
+      <div class="gold-ico"><span style="${coinFaceStyle(COIN_IMG.g,46)}"></span></div>
       <div class="gold-nm">${LT(g.name[0],g.name[1])}</div><div class="gold-amt">${moneyHTML(g.coins)}</div>
       <button class="buy-btn iap" data-iap="${g.sku}">${g.price}</button></div>`).join('')+'</div>';
   h+=`<div class="iap-note">${LT('Potions, gear and spells are sold by NomNom at her forge in the slums.','Poțiunile, echipamentul și vrăjile le vinde NomNom, la forja ei din mahala.')}
