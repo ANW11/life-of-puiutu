@@ -16867,7 +16867,7 @@ function mcLoad(){ if(MC.loaded) return; MC.loaded=true;
   const f={barricade:'obstacle_trim',beam:'beam_clean',tnt:'tnt',hole:'hole',coinspin:'coin_spin'};   // (the old split cart and the 6.5 MB cave_rails backdrop are no longer drawn)
   for(const k in f){ const im=new Image(); im.src='cart_game/proc/'+f[k]+'.png'; MC.img[k]=im; }
   // parallax tunnel assets (live in cart_game/, not proc/): streaming arches + rock walls + floor + broken-rail obstacle
-  for(const [k,p] of [['arch','arch'],['archPlain','arch_plain'],['rocks','rocks'],['ground','ground'],['brail','rail_broken_seg'],['track','track_sym'],['trackB','rail_broken'],['cartL','left_v3'],['cartR','right_v3'],['cartF','middle_v3'],['lampPost','felinar'],['propCrates','prop_crates'],['propTools','prop_tools']]){ const im=new Image(); im.src='cart_game/'+p+'.png?v=2'; MC.img[k]=im; }   // ?v= busts the cache when a cart is repainted
+  for(const [k,p] of [['arch','arch'],['archPlain','arch_plain'],['rocks','rocks'],['ground','ground'],['brail','rail_broken_seg'],['track','track_sym'],['trackB','rail_broken'],['cartL','left_v3'],['cartR','right_v3'],['cartF','middle_v3'],['lampPost','felinar'],['propCrates','prop_crates'],['propTools','prop_tools'],['hudCart','hud_cart'],['hudFlag','hud_flag']]){ const im=new Image(); im.src='cart_game/'+p+'.png?v=2'; MC.img[k]=im; }   // ?v= busts the cache when a cart is repainted
 }
 // side-lane carts: right_v3.png, painted by GPT over a wireframe of the cart's volume drawn in the
 // game's own projection (cart_game/gpt_refs/4_guide_right_lane.png), and left_v3.png, its mirror.
@@ -17466,27 +17466,16 @@ function mcDrawLives(mg,s,cy){
       mg.beginPath(); mg.moveTo(x-r*0.55,cy-r*0.55); mg.lineTo(x+r*0.55,cy+r*0.45); mg.moveTo(x+r*0.55,cy-r*0.55); mg.lineTo(x-r*0.55,cy+r*0.45); mg.stroke(); } }
   mg.restore();
 }
-// the goal at the end of the progress bar: a little pixel-art pennant on a pole, drawn once
-let MC_FLAG=null;
-function mcFlagImg(){ if(MC_FLAG) return MC_FLAG;
-  const P=['....wwwwww....','..ww.rrrrrrr..','..ww.rrrrrrrr.','..ww.rrgrrrrrr','..ww.rrggrrrr.','..ww.rrrrrrr..','..ww.rrrrr....','..ww.rrr......','..ww..........','..ww..........','..ww..........','..ww..........','..ww..........','..ww..........','..ww..........','.wwww.........','wwwwww........'];
-  const C={w:'#6b4a2a',r:'#e23a3a',g:'#ffd24a'}, k=1, c=document.createElement('canvas'); c.width=14; c.height=P.length;
-  const x=c.getContext('2d'); P.forEach((row,j)=>[...row].forEach((ch,i)=>{ if(C[ch]){ x.fillStyle=C[ch]; x.fillRect(i,j,1,1);} }));
-  x.fillStyle='rgba(0,0,0,.35)'; for(let j=1;j<8;j++) x.fillRect(5,j,1,1);   // a shadow line where the cloth meets the pole
-  return MC_FLAG=c; }
-// Puiutu in a little cart, riding the progress bar. right_v3 has wide empty margins: draw only
-// the cart itself (box measured off the art), so its wheels sit on the bar
-const MC_CARTR_BOX=[309,171,1325,880];
+// the progress bar's two sprites (cart_game/hud_cart.png, hud_flag.png): Puiutu in a cart seen
+// from the side, riding the bar, and the goal flag planted at its end
 function mcMiniCart(mg,x,y,s){
-  const u=MC_U, im=MC.img.cartR, B=MC_CARTR_BOX, bw=B[2]-B[0], bh=B[3]-B[1], w=50*u, h=w*bh/bw;
-  const bob=s.mode==='run'?Math.abs(Math.sin(s.t*0.35))*1.2*u:0;
-  mg.save(); mg.translate(x,y-bob);
-  if(mcImgOk(im)) mg.drawImage(im,B[0],B[1],bw,bh,-w/2,-h,w,h);
-  // sits in the tub: drawn over the cart but clipped along the top of its front wall
-  mg.save(); mg.beginPath(); mg.moveTo(-w,-h*3); mg.lineTo(w,-h*3); mg.lineTo(w,-h*0.58); mg.lineTo(w*0.48,-h*0.58); mg.lineTo(-w*0.41,-h*0.65); mg.lineTo(-w,-h*0.65); mg.closePath(); mg.clip();
-  try{ drawCat(mg,w*0.02,-h*0.42,1,0,CATS.puiutu,{scale:0.5*u,moving:false}); }catch(_){}
-  mg.restore();
-  mg.restore(); }
+  const u=MC_U, im=MC.img.hudCart; if(!mcImgOk(im)) return;
+  const w=58*u, h=w*im.naturalHeight/im.naturalWidth, bob=s.mode==='run'?Math.abs(Math.sin(s.t*0.35))*1.2*u:0;
+  mg.drawImage(im,x-w/2,y-h-bob,w,h); }
+function mcGoalFlag(mg,x,y){
+  const u=MC_U, im=MC.img.hudFlag; if(!mcImgOk(im)) return;
+  const h=46*u, w=h*im.naturalWidth/im.naturalHeight;
+  mg.drawImage(im,x-w*0.2,y-h,w,h); }       // the pole stands about a fifth of the way across the art
 function mcDrawHUD(mg){
   const s=MC.st;
   mg.font='bold 18px Trebuchet MS'; mg.fillStyle='#ffe7b0'; mg.textAlign='right'; mg.fillText(''+s.coins,MC_W-16,34);
@@ -17494,8 +17483,7 @@ function mcDrawHUD(mg){
   mg.fillStyle='rgba(0,0,0,.5)'; mg.beginPath(); mg.roundRect(bx-3,by-3,bw+6,16,6); mg.fill();
   mg.fillStyle='#2a1e14'; mg.beginPath(); mg.roundRect(bx,by,bw,10,5); mg.fill();
   mg.fillStyle='#e8b53a'; mg.beginPath(); mg.roundRect(bx,by,bw*pct,10,5); mg.fill();
-  const fl=mcFlagImg(), fk=2.6*u; mg.imageSmoothingEnabled=false;
-  mg.drawImage(fl,bx+bw-2*fk,by+8-fl.height*fk,fl.width*fk,fl.height*fk); mg.imageSmoothingEnabled=true;
+  mcGoalFlag(mg,bx+bw,by+11*u);
   mcMiniCart(mg,bx+bw*pct,by+3*u,s);
   mcDrawLives(mg,s,by+34*u);
   if(s.mode==='ready') mcPanel(mg,'MINE-CART ESCAPE','change rail · duck · click / F to fight off rats\n(mobile: swipe sideways / down, tap = claw)\n\nRide the rails out of the Rat Warren mines!','Press an arrow to ride');
