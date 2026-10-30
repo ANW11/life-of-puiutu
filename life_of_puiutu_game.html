@@ -283,9 +283,11 @@
     background:rgba(255,248,235,.95);color:#3a2a18;outline:none;font-family:inherit;}
   #chatSend{border:2px solid #4d8a26;background:linear-gradient(#7ed957,#4d9a2a);color:#fff;
     width:40px;height:40px;border-radius:12px;font-size:16px;cursor:pointer;}
-  #chatToggle{position:absolute;right:14px;bottom:158px;z-index:7;width:50px;height:50px;border-radius:50%;
-    border:3px solid rgba(255,255,255,.35);background:rgba(40,28,14,.6);color:#fff;font-size:20px;
-    display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(3px);}
+  /* a speech-bubble gem in the same golden frame as the E button, right under it */
+  #chatToggle{position:absolute;right:17px;bottom:88px;z-index:7;width:58px;height:61px;border:0;padding:0;
+    background:url('ui/btn_chat.png') center/contain no-repeat;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5));
+    font-size:0;cursor:pointer;transition:transform .08s;}
+  #chatToggle:active{transform:scale(.94);}
 
   /* ---------- WORLD MAP (Witcher / Skyrim / Origins style) ---------- */
   /* the world map is an inked parchment: everything on it is drawn in the same brown ink */
