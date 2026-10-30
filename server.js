@@ -69,7 +69,7 @@ wss.on('connection', (ws) => {
       info.name = (m.name || 'Pisic').slice(0, 16);
     } else if (m.type === 'state') {
       info.name = (m.name || info.name).slice(0, 16);
-      info.last = { area: m.area, x: m.x, y: m.y, facing: m.facing, phase: m.phase, moving: m.moving, hat: m.hat };
+      info.last = { area: m.area, x: m.x, y: m.y, facing: m.facing, phase: m.phase, moving: m.moving, hat: m.hat, skin: m.skin, nx: m.nx, ny: m.ny };
       broadcast(Object.assign({ type: 'state', id: info.id, name: info.name }, info.last), ws);
     } else if (m.type === 'chat') {
       const text = String(m.text || '').slice(0, 120);

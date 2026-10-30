@@ -18056,6 +18056,7 @@ document.getElementById('fishhubLog').onclick=()=>openModal('fishlog');
 document.querySelectorAll('.sealRune').forEach(b=>b.onclick=()=>sealPress(+b.dataset.i));
 
 //═══════════════════════════════════════════════════════════════ MULTIPLAYER
+const NET_RELAY='puiutu-mp.life-of-puiutu.workers.dev';   // Cloudflare Worker + Durable Object (mp_worker/): nobody has to host
 const NET={
   ws:null, id:null, connected:false, players:{}, lastSend:0,
   name: localStorage.getItem('puiutu_name')||'',
@@ -18064,7 +18065,10 @@ const NET={
   connect(){
     if(!this.available()) return;            // needs hosting; offline when file://
     let url;
-    try{ const proto=location.protocol==='https:'?'wss':'ws'; url=proto+'://'+location.host+'/ws'; }
+    try{ const proto=location.protocol==='https:'?'wss':'ws', srv=new URLSearchParams(location.search).get('server');   // ?server=host: game files from here, players via that host
+      url=srv?'wss://'+srv.replace(/^\w+:\/\//,'').replace(/\/.*$/,'')+'/ws'
+        :location.hostname.endsWith('.pages.dev')?'wss://'+NET_RELAY+'/ws'   // the web version: the relay on Cloudflare (mp_worker/)
+        :proto+'://'+location.host+'/ws'; }
     catch(e){ return; }
     try{ this.ws=new WebSocket(url); }catch(e){ return; }
     this.ws.onopen=()=>{ this.connected=true; this.send({type:'hello',name:this.name}); document.getElementById('onlineChip').style.display='flex'; document.getElementById('chatToggle').style.display='flex'; };
@@ -18078,8 +18082,8 @@ const NET={
     if(m.type==='welcome'){ this.id=m.id; }
     else if(m.type==='state'){
       if(m.id===this.id) return;
-      let p=this.players[m.id]; if(!p){ p=this.players[m.id]={rx:m.x,ry:m.y}; }
-      p.x=m.x;p.y=m.y;p.facing=m.facing;p.phase=m.phase;p.moving=m.moving;p.hat=m.hat;p.area=m.area;p.tname=m.name;
+      let p=this.players[m.id]; if(!p){ p=this.players[m.id]={}; }
+      p.x=m.x;p.y=m.y;p.nx=m.nx;p.ny=m.ny;p.facing=m.facing;p.phase=m.phase;p.moving=m.moving;p.hat=m.hat;p.area=m.area;p.tname=m.name;
       p.skin=CAT_SKINS.some(c=>c.id===m.skin)?m.skin:null;   // only skins the game knows
       this.updateCount();
     }
@@ -18100,6 +18104,7 @@ const NET={
       const td = A && A.mode==='topdown';   // in the park we are HUB.cat, not P
       const c = td ? HUB.cat : P;
       this.send({type:'state',area:curArea,x:Math.round(c.x),y:Math.round(c.y),facing:c.facing,
+        nx:td&&HUB.worldW?+(c.x/HUB.worldW).toFixed(5):null, ny:td?+(c.y/VH).toFixed(5):null,   // top-down maps scale with each screen: send map fractions
         phase:+(c.phase||0).toFixed(2),moving: td?!!c.moving:!!(P.moving&&P.onGround),
         hat:(S.equipped&&isHat(S.equipped))?S.equipped:null,skin:S.equippedSkin||null,name:this.name});
     }
@@ -18110,6 +18115,8 @@ const NET={
     for(const id in this.players){
       const p=this.players[id];
       if(p.area!==curArea) continue;
+      if(topdown && p.nx!=null && HUB.worldW){ p.x=p.nx*HUB.worldW; p.y=p.ny*VH; }   // back to this screen's map size
+      if(p.rx==null){ p.rx=p.x; p.ry=p.y; }
       p.rx+=((p.x-p.rx))*0.25; p.ry+=((p.y-p.ry))*0.25;   // smooth interpolation
       const sx=p.rx-cam.x;
       if(sx<-90||sx>VW+90) continue;

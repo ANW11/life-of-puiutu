@@ -100,6 +100,7 @@ async def handler(ws):
                     'area': m.get('area'), 'x': m.get('x'), 'y': m.get('y'),
                     'facing': m.get('facing'), 'phase': m.get('phase'),
                     'moving': m.get('moving'), 'hat': m.get('hat'), 'skin': m.get('skin'),
+                    'nx': m.get('nx'), 'ny': m.get('ny'),   # top-down maps: position as a fraction of the map
                 }
                 await broadcast(json.dumps({'type': 'state', 'id': info['id'], 'name': info['name'], **info['last']}), ws)
             elif t == 'chat':

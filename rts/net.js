@@ -9,7 +9,9 @@ const NET = {
   status(text, ready) { if (this.onStatus) this.onStatus(text, ready); },
   connect(then) {
     if (this.ws && this.ws.readyState === 1) { then(); return; }
-    try { this.ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws'); }
+    // the web version (pages.dev) has no server of its own: rooms go through the relay on Cloudflare (mp_worker/)
+    const host = location.hostname.endsWith('.pages.dev') ? 'puiutu-mp.life-of-puiutu.workers.dev' : location.host;
+    try { this.ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + host + '/ws'); }
     catch (e) { this.status('Could not reach the server.'); return; }
     this.ws.onopen = () => then();
     this.ws.onerror = () => this.status('Could not reach the server.');

@@ -1,0 +1,11 @@
+name = "puiutu-mp"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[durable_objects.bindings]]
+name = "WORLD"
+class_name = "World"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["World"]   # the free plan only allows SQLite-backed Durable Objects

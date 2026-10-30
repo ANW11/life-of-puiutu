@@ -88,12 +88,8 @@ def main():
     with ThreadPoolExecutor(os.cpu_count() or 4) as ex:
         sizes = list(ex.map(build, files))
 
-    # the game page, with multiplayer off (there is no server on Pages)
+    # the game page: on pages.dev multiplayer goes through the Cloudflare relay (mp_worker/), see NET_RELAY
     html = texts[0]
-    html, n = re.subn(r"available\(\)\{ return location\.protocol==='http:'\|\|location\.protocol==='https:'; \}",
-                      "available(){ return false; }", html)
-    if n != 1:
-        sys.exit('could not switch multiplayer off: NET.available() changed')
     open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(html)
     shutil.copy2(os.path.join(SRC, 'rts.html'), OUT)
 
