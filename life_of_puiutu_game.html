@@ -15590,6 +15590,17 @@ const MG_SH=MG_SHAPES.map(cs=>{                       // centroid-relative circl
 });
 const MG={ active:false, W:360, H:540, ctx:null, bodies:[], cur:0, next:0, score:0, dropX:180, dropCD:0, overSince:0, gameOver:false, objective:5, raf:null };
 function mgRandType(){ return Math.floor(Math.random()*5); }     // only drop the 5 smallest
+// The play area is the inside of the barrel in fruitmerge/barrel_interior.jpg: MG_BARREL is the
+// inner edge of its stave rim, as a fraction of the width, at 65 even heights from top to bottom
+// (measured from the art). mgWall(y) gives both inside edges at a height and their slopes dx/dy,
+// so a fruit is pushed back along the curved wall's real normal; the floor is flat.
+const MG_BARREL=[0.1590,0.1502,0.1420,0.1344,0.1271,0.1204,0.1139,0.1079,0.1021,0.0966,0.0915,0.0865,0.0819,0.0774,0.0733,0.0693,0.0656,0.0621,0.0589,0.0559,0.0532,0.0507,0.0484,0.0464,0.0446,0.0431,0.0419,0.0408,0.0401,0.0400,0.0400,0.0400,0.0400,0.0400,0.0404,0.0412,0.0423,0.0435,0.0449,0.0465,0.0483,0.0503,0.0524,0.0547,0.0572,0.0598,0.0626,0.0656,0.0689,0.0723,0.0760,0.0800,0.0844,0.0891,0.0942,0.0999,0.1061,0.1129,0.1205,0.1290,0.1385,0.1490,0.1608,0.1741,0.1890];
+function mgWall(y){
+  const n=MG_BARREL.length-1, t=Math.max(0,Math.min(n,y/MG.H*n)), i=Math.min(n-1,Math.floor(t)), f=t-i;
+  const l=(MG_BARREL[i]+(MG_BARREL[i+1]-MG_BARREL[i])*f)*MG.W, sl=(MG_BARREL[i+1]-MG_BARREL[i])*MG.W/(MG.H/n);
+  return {l, r:MG.W-l, sl, sr:-sl};
+}
+function mgDropXClamp(x,r){ const w=mgWall(mgDropY()+r); return Math.max(w.l+r+2,Math.min(w.r-r-2,x)); }
 function mgDropY(){ return 46; }
 function mgCanDrop(){ return MG.active && !MG.gameOver && MG.dropCD<=0; }
 function mgReset(){
@@ -15611,7 +15622,7 @@ function mgOpen(){
 function mgClose(){ turnLandscape(); MG.active=false; if(MG.raf)cancelAnimationFrame(MG.raf); MG.raf=null; }
 function mgDrop(){
   if(!mgCanDrop()) return;
-  const t=MG.cur, r=MG_FRUITS[t].r, x=Math.max(r+2,Math.min(MG.W-r-2,MG.dropX));
+  const t=MG.cur, r=MG_FRUITS[t].r, x=mgDropXClamp(MG.dropX,r);
   MG.bodies.push(mgBody(t, x, mgDropY()+r));
   MG.cur=MG.next; MG.next=mgRandType(); MG.dropCD=22;
 }
@@ -15695,9 +15706,12 @@ function mgPhysics(){
   // contacts, circle against circle, solved a few times over
   for(let it=0;it<6;it++){
     for(const a of MG.bodies){ if(a.sleep) continue;
-      for(const c of mgCircles(a)){                     // the box
-        if(c.x<c.r)   mgImpulse(a,null,c.x-c.r,c.y,-1,0,c.r-c.x);
-        if(c.x>W-c.r) mgImpulse(a,null,c.x+c.r,c.y, 1,0,c.x-(W-c.r));
+      for(const c of mgCircles(a)){                     // the barrel: curved staves, flat floor
+        const w=mgWall(c.y);
+        let n=Math.hypot(1,w.sl), d=(c.x-w.l)/n;          // distance to the left stave, along its normal
+        if(d<c.r){ const nx=-1/n, ny=w.sl/n; mgImpulse(a,null,c.x+nx*c.r,c.y+ny*c.r,nx,ny,c.r-d); }
+        n=Math.hypot(1,w.sr); d=(w.r-c.x)/n;
+        if(d<c.r){ const nx=1/n, ny=-w.sr/n; mgImpulse(a,null,c.x+nx*c.r,c.y+ny*c.r,nx,ny,c.r-d); }
         if(c.y>H-c.r) mgImpulse(a,null,c.x,c.y+c.r, 0,1,c.y-(H-c.r));
       }
     }
@@ -15779,7 +15793,7 @@ function mgRender(){
   else ctx.strokeStyle='rgba(220,80,60,.5)', ctx.lineWidth=2;
   ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(0,line); ctx.lineTo(W,line); ctx.stroke(); ctx.setLineDash([]);
   if(!MG.gameOver){
-    const t=MG.cur, r=MG_FRUITS[t].r, x=Math.max(r+2,Math.min(W-r-2,MG.dropX));
+    const t=MG.cur, r=MG_FRUITS[t].r, x=mgDropXClamp(MG.dropX,r);
     ctx.strokeStyle='rgba(255,230,190,.35)'; ctx.lineWidth=2; ctx.setLineDash([4,8]);   // light guide on the dark barrel wood
     ctx.beginPath(); ctx.moveTo(x,mgDropY()+r); ctx.lineTo(x,H); ctx.stroke(); ctx.setLineDash([]);
     mgDrawFruit(ctx,x,mgDropY()+r,r,t);
