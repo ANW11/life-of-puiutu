@@ -17449,34 +17449,55 @@ function mcDrawCart(mg){
   }
   mg.restore();
 }
-// a cat has nine lives: six went on other adventures long ago, the three you ride with are the red ones
+// a cat has nine lives: six went on other adventures long ago, so you ride with three. All nine
+// are drawn red, the spent ones crossed out (the six long gone, then any lost on this ride)
 function mcHeart(mg,x,y,r){ mg.beginPath(); mg.moveTo(x,y+r*0.9);
   mg.bezierCurveTo(x-r*1.4,y-r*0.1,x-r*0.75,y-r*1.15,x,y-r*0.45);
   mg.bezierCurveTo(x+r*0.75,y-r*1.15,x+r*1.4,y-r*0.1,x,y+r*0.9); mg.closePath(); }
-function mcDrawLives(mg,s){
-  const u=MC_U, r=8*u, gap=21*u, x0=22*u, y0=MC_H-42*u, spent=9-3, hp=Math.max(0,s.hp);   // bottom-left: the modal's title bar covers the top-left
-  mg.save(); mg.fillStyle='rgba(0,0,0,.5)'; mg.beginPath(); mg.roundRect(8*u,y0-16*u,gap*9+10*u,48*u,9*u); mg.fill();
-  for(let i=0;i<9;i++){ const x=x0+i*gap;
-    const live=i<hp, lost=!live && i<9-spent;   // the 3 you ride with come first, then the 6 long gone
+function mcDrawLives(mg,s,cy){
+  const u=MC_U, r=9*u, gap=24*u, hp=Math.max(0,s.hp), x0=MC_W/2-gap*4;
+  mg.save();
+  for(let i=0;i<9;i++){ const x=x0+i*gap, live=i<hp;
     const beat=live && i===hp-1 ? 1+Math.sin(s.t*0.18)*0.08 : 1;   // the last one left beats
-    mcHeart(mg,x,y0,r*beat);
-    mg.fillStyle=live?'#ff4a5a':lost?'#5a2a2e':'#4a4a50'; mg.fill();
-    mg.lineWidth=1.6*u; mg.strokeStyle=live?'#ffd0d4':'rgba(0,0,0,.6)'; mg.stroke();
-    if(!live){ mg.strokeStyle=lost?'rgba(255,120,120,.75)':'rgba(200,200,210,.55)'; mg.lineWidth=1.8*u;
-      mg.beginPath(); mg.moveTo(x-r*0.5,y0-r*0.5); mg.lineTo(x+r*0.5,y0+r*0.4); mg.moveTo(x+r*0.5,y0-r*0.5); mg.lineTo(x-r*0.5,y0+r*0.4); mg.stroke(); } }
-  mg.textAlign='left'; mg.font='bold '+Math.round(12*u)+'px Trebuchet MS'; mg.fillStyle='#ffe7b0';
-  mg.fillText(LT('Lives '+hp+'/9 (6 already used)','Vieți '+hp+'/9 (6 deja consumate)'),x0-r,y0+24*u);
+    mcHeart(mg,x,cy,r*beat);
+    mg.fillStyle=live?'#ff4a5a':'#c8303c'; mg.fill();
+    mg.lineWidth=1.6*u; mg.strokeStyle=live?'#ffd0d4':'#5a1218'; mg.stroke();
+    if(!live){ mg.strokeStyle='#2a0608'; mg.lineWidth=2.6*u; mg.lineCap='round';
+      mg.beginPath(); mg.moveTo(x-r*0.55,cy-r*0.55); mg.lineTo(x+r*0.55,cy+r*0.45); mg.moveTo(x+r*0.55,cy-r*0.55); mg.lineTo(x-r*0.55,cy+r*0.45); mg.stroke(); } }
   mg.restore();
 }
+// the goal at the end of the progress bar: a little pixel-art pennant on a pole, drawn once
+let MC_FLAG=null;
+function mcFlagImg(){ if(MC_FLAG) return MC_FLAG;
+  const P=['....wwwwww....','..ww.rrrrrrr..','..ww.rrrrrrrr.','..ww.rrgrrrrrr','..ww.rrggrrrr.','..ww.rrrrrrr..','..ww.rrrrr....','..ww.rrr......','..ww..........','..ww..........','..ww..........','..ww..........','..ww..........','..ww..........','..ww..........','.wwww.........','wwwwww........'];
+  const C={w:'#6b4a2a',r:'#e23a3a',g:'#ffd24a'}, k=1, c=document.createElement('canvas'); c.width=14; c.height=P.length;
+  const x=c.getContext('2d'); P.forEach((row,j)=>[...row].forEach((ch,i)=>{ if(C[ch]){ x.fillStyle=C[ch]; x.fillRect(i,j,1,1);} }));
+  x.fillStyle='rgba(0,0,0,.35)'; for(let j=1;j<8;j++) x.fillRect(5,j,1,1);   // a shadow line where the cloth meets the pole
+  return MC_FLAG=c; }
+// Puiutu in a little cart, riding the progress bar. right_v3 has wide empty margins: draw only
+// the cart itself (box measured off the art), so its wheels sit on the bar
+const MC_CARTR_BOX=[309,171,1325,880];
+function mcMiniCart(mg,x,y,s){
+  const u=MC_U, im=MC.img.cartR, B=MC_CARTR_BOX, bw=B[2]-B[0], bh=B[3]-B[1], w=50*u, h=w*bh/bw;
+  const bob=s.mode==='run'?Math.abs(Math.sin(s.t*0.35))*1.2*u:0;
+  mg.save(); mg.translate(x,y-bob);
+  if(mcImgOk(im)) mg.drawImage(im,B[0],B[1],bw,bh,-w/2,-h,w,h);
+  // sits in the tub: drawn over the cart but clipped along the top of its front wall
+  mg.save(); mg.beginPath(); mg.moveTo(-w,-h*3); mg.lineTo(w,-h*3); mg.lineTo(w,-h*0.58); mg.lineTo(w*0.48,-h*0.58); mg.lineTo(-w*0.41,-h*0.65); mg.lineTo(-w,-h*0.65); mg.closePath(); mg.clip();
+  try{ drawCat(mg,w*0.02,-h*0.42,1,0,CATS.puiutu,{scale:0.5*u,moving:false}); }catch(_){}
+  mg.restore();
+  mg.restore(); }
 function mcDrawHUD(mg){
   const s=MC.st;
-  mcDrawLives(mg,s);
   mg.font='bold 18px Trebuchet MS'; mg.fillStyle='#ffe7b0'; mg.textAlign='right'; mg.fillText(''+s.coins,MC_W-16,34);
-  const bw=MC_W*0.5,bx=(MC_W-bw)/2,by=20,pct=Math.min(1,s.scroll/MC_TOTAL);
+  const u=MC_U, bw=MC_W*0.5,bx=(MC_W-bw)/2,by=74*u,pct=Math.min(1,s.scroll/MC_TOTAL);   // room above the bar for the cart riding it
   mg.fillStyle='rgba(0,0,0,.5)'; mg.beginPath(); mg.roundRect(bx-3,by-3,bw+6,16,6); mg.fill();
   mg.fillStyle='#2a1e14'; mg.beginPath(); mg.roundRect(bx,by,bw,10,5); mg.fill();
   mg.fillStyle='#e8b53a'; mg.beginPath(); mg.roundRect(bx,by,bw*pct,10,5); mg.fill();
-  mg.textAlign='center'; mg.font='bold 12px Trebuchet MS'; mg.fillText('',bx+bw+12,by+10); mg.fillText('',bx-12,by+10);
+  const fl=mcFlagImg(), fk=2.6*u; mg.imageSmoothingEnabled=false;
+  mg.drawImage(fl,bx+bw-2*fk,by+8-fl.height*fk,fl.width*fk,fl.height*fk); mg.imageSmoothingEnabled=true;
+  mcMiniCart(mg,bx+bw*pct,by+3*u,s);
+  mcDrawLives(mg,s,by+34*u);
   if(s.mode==='ready') mcPanel(mg,'MINE-CART ESCAPE','change rail · duck · click / F to fight off rats\n(mobile: swipe sideways / down, tap = claw)\n\nRide the rails out of the Rat Warren mines!','Press an arrow to ride');
   else if(s.mode==='crash') mcPanel(mg,'DERAILED!','The rats got you at '+Math.round(s.scroll/MC_TOTAL*100)+'% of the way out…','Tap / Enter to retry');
   else if(s.mode==='won') mcPanel(mg,'YOU ESCAPED!','You burst out of the mines with the loot!\nCoins grabbed: '+s.coins+'\n\nThe tunnel opens into the Rat King’s lair…','Tap / Enter to continue');
