@@ -2918,8 +2918,8 @@ const LIONI={};
 LIONI.throw=LIONI.roar; LIONI.def=LIONI.crack;          // aliases for the shared boss drawer
 const CKINGI={};
 ['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','stand','sit','wave','yell',
- 'point','command','hurt','down','pounce','cast','idle']
-  .forEach(k=>{ const im=new Image(); im.src='mobs/catking/'+k+'.png'; CKINGI[k]=im; });
+ 'point','command','hurt','down','pounce','cast','idle','windup','swipe']
+  .forEach(k=>{ const im=new Image(); im.src='mobs/catking/'+k+'.png?v=4'; CKINGI[k]=im; });   // v4: redrawn in the game's pixel style
 CKINGI.rear=CKINGI.pounce; CKINGI.throw=CKINGI.yell; CKINGI.dash=CKINGI.pounce; CKINGI.def=CKINGI.down;
 // ── Rattus Magnus — the exact inverse of the Cat King, and his sheet says so ──
 // No materialise frames, no shatter frames: nothing here is a projection. He starts on all fours,
@@ -2927,7 +2927,7 @@ CKINGI.rear=CKINGI.pounce; CKINGI.throw=CKINGI.yell; CKINGI.dash=CKINGI.pounce; 
 // power; this one's lie is about purpose, so he never gets smaller — he gets bigger.
 const RKINGI={};
 ['walk0','walk1','walk2','walk3','walk4','walk5','point','lunge','sit','crawl','low','stagger','risen','creep']
-  .forEach(k=>{ const im=new Image(); im.src='mobs/ratking/'+k+'.png'+(k==='point'?'?v=2':''); RKINGI[k]=im; });   // point: recut whole from army/rat_king.png
+  .forEach(k=>{ const im=new Image(); im.src='mobs/ratking/'+k+'.png?v=3'; RKINGI[k]=im; });   // v3: redrawn to match the Rat Federation commander
 RKINGI.rear=RKINGI.risen; RKINGI.throw=RKINGI.point; RKINGI.dash=RKINGI.lunge; RKINGI.def=RKINGI.stagger;
 // ── The Mech Boar — what the Organization built with the crystals you cleared out of the cave ──
 // Frames are cut from mobs/MechBoar/ (the 2400px originals) to one shared scale, centred on the
@@ -3463,8 +3463,8 @@ function thirdWayMissing(){
 
 //──────────────────────────────────────────────────────────────── SHOP DATA
 const SHOP=[
-  {id:'dbljump',emoji:'',name:'Double Jump',desc:'Jump again in mid-air (ability)',price:120,type:'ability'},
-  {id:'speed', emoji:'', name:'Fast Paws',desc:'Run faster (ability)',price:120,type:'ability'},
+  {id:'dbljump',emoji:'',img:'ui/forge/px/trick_dbljump.png',name:'Double Jump',desc:'Jump again in mid-air (ability)',price:120,type:'ability'},
+  {id:'speed', emoji:'',img:'ui/forge/px/trick_speed.png', name:'Fast Paws',desc:'Run faster (ability)',price:120,type:'ability'},
   // trophy — not sold; only dropped by Seby the Ancient One (hidden from the shop list)
   {id:'purplecrystal',emoji:'',img:'ui/purple_crystal.png',name:'Purple Crystal',desc:'Cut from the cave Queen Seby was guarding. The runes want one of these.',price:99999,type:'key',trophy:true},
   {id:'snoutbadge',emoji:'',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges"><path d="M6 3h20v14l-10 12L6 17z" fill="#3a2410"/><path d="M8 5h16v11l-8 10-8-10z" fill="#d8a93a"/><path d="M10 7h12v8l-6 8-6-8z" fill="#f2cf63"/><rect x="12" y="11" width="8" height="5" fill="#e6a0b6"/><rect x="14" y="13" width="1" height="2" fill="#7a3a50"/><rect x="17" y="13" width="1" height="2" fill="#7a3a50"/></svg>'),name:'Survey Badge',desc:'Agent Snout\'s badge. He said he would not be needing it on the way back up.',price:99999,type:'key',trophy:true},
@@ -9307,6 +9307,7 @@ function bossFrameH(sprites,key,base){
   if(!im||!ref||!im.naturalHeight||!ref.naturalHeight) return base;
   return base*(im.naturalHeight/ref.naturalHeight);
 }
+const CKING_FIGHT_H=82;   // one size for him everywhere, on the throne and on the floor: a small cat, smaller than the lion that fought for him
 function drawCatKing(g,b){
   if(!b.placed) return;                              // nothing to draw until the hall has a size
   const now=Date.now(), camx=HUB.camx;
@@ -9314,14 +9315,15 @@ function drawCatKing(g,b){
   const kingOnThrone = (stage==='idle'||stage==='talk'||stage==='summon'||stage==='lion'||stage==='crack'||stage==='down');
   // ── the King ──
   {
-    const sc=hubScale(b.throneY), sx=b.throneX-camx, ksz=118*sc;
+    const sc=hubScale(b.throneY), sx=b.throneX-camx, ksz=CKING_FIGHT_H*sc;
+    const face=(HUB.cat && HUB.cat.x>b.throneX) ? 1 : -1;     // he keeps his eyes on you from the throne
     if(kingOnThrone){
       const key = stage==='summon' ? 'cast'
                 : stage==='lion'   ? ((Math.floor(now/420)%2)?'command':'point')
                 : stage==='crack'  ? 'yell'
                 : stage==='down'   ? 'down'
                 : 'sit';
-      drawBossSprite(g, sx, b.throneY, -1, bossFrameH(CKINGI,key,ksz), key, false, 0, CKINGI, '255,190,80', 0);
+      drawBossSprite(g, sx, b.throneY, face, bossFrameH(CKINGI,key,ksz), key, false, 0, CKINGI, '255,190,80', 0);
       // the sceptre's orb throws light while he is summoning
       if(stage==='summon'){ const t=Math.min(1,(now-b.spawnT0)/1500);
         g.save(); g.globalCompositeOperation='lighter';
@@ -9352,13 +9354,16 @@ function drawCatKing(g,b){
   } else if(stage==='lion' || stage==='cat'){
     const lion=(stage==='lion');
     const sprites=lion?LIONI:CKINGI;
-    const key = b.state==='claw'   ? (lion?'rear':'pounce')
+    const key = b.state==='claw'   ? (lion?'rear':'swipe')
               : b.state==='roar'   ? 'roar'
-              : b.state==='windup' ? 'rear'
+              : b.state==='windup' ? (lion?'rear':'windup')
               : b.state==='dash'   ? (lion?'dash':'pounce')
-              : (Math.floor(b.phase*1.4)%2 ? 'walk1' : 'walk0');
-    const bsz=(lion?210:118)*sc;
-    const bob=b.moving?Math.abs(Math.sin(b.phase*Math.PI))*4:0;
+              : lion ? (Math.floor(b.phase*1.4)%2 ? 'walk1' : 'walk0')
+              : 'walk'+(Math.floor(b.phase*2)%8);           // the King has a whole 8-frame walk
+    const bsz=(lion?210:CKING_FIGHT_H)*sc;
+    let bob=b.moving?Math.abs(Math.sin(b.phase*Math.PI))*4:0;
+    if(!lion && b.state==='dash'){                    // the pounce leaves the floor: an arc, not a slide on his belly
+      const t=Math.max(0,Math.min(1,1-(b.dashUntil-now)/480)); bob=Math.sin(Math.PI*t)*bsz*0.55; }
     drawBossSprite(g, sx, b.y, b.facing, bossFrameH(sprites,key,bsz), key, !lion, bob, sprites, lion?'255,215,120':'255,150,60', 0);
     if(b.state==='roar' && lion){                     // the shockwave the roar frame is drawing
       const t=Math.min(1,1-(b.stateUntil-now)/820);
@@ -9370,7 +9375,7 @@ function drawCatKing(g,b){
   }
   // ── name plate + HP bar, anchored on whoever is actually fighting ──
   if(stage==='lion' || stage==='cat'){
-    const bsz=(stage==='lion'?210:118)*sc, topY=b.y-bsz-14;
+    const bsz=(stage==='lion'?210:CKING_FIGHT_H)*sc, topY=b.y-bsz-14;
     const label = stage==='lion' ? 'The Crown’s Lion' : 'The Cat King';
     drawBossPlate(sx, topY+4, label, b.hp/b.maxHp, stage==='lion'?'#ffd76a':'#ff9a4a', '#3a2a10');
   }
@@ -10810,8 +10815,9 @@ function updateForestSpirit(sp,b,now){
   // Its own ground: a spot beside the machine, picked again every few seconds — and now and then
   // on the far side, so the two of them turn round each other across the whole floor.
   const band=hubBand();
+  if(maskReady() && maskClassify(sp.x,sp.y)!=='walk'){ const p=nearestWalk(sp.x,sp.y); if(p){sp.x=p.x;sp.y=p.y;} }   // pushed off the floor (by the lift): back on it
   if(!sp.station || now>sp.stationAt){
-    let side = sp.x<b.x ? -1 : 1; if(Math.random()<0.45) side=-side;
+    let side = sp.x<b.x ? -1 : 1; if(sp.wallSide){ side=-sp.wallSide; sp.wallSide=0; } else if(Math.random()<0.45) side=-side;
     let x=b.x+side*(420+Math.random()*90)*sc, y=b.y+(Math.random()-0.5)*0.22*VH;
     if(x<140 || x>HUB.worldW-140){ side=-side; x=b.x+side*(420+Math.random()*90)*sc; }
     x=Math.max(140,Math.min(HUB.worldW-140,x)); y=Math.max(band.top+20,Math.min(band.bot-10,y));
@@ -10823,7 +10829,13 @@ function updateForestSpirit(sp,b,now){
   let tx=sp.station.x, ty=sp.station.y;
   if(crossing && Math.abs(dy)<150){ tx=sp.x; ty=b.y+((b.y-band.top)>(band.bot-b.y)?-1:1)*0.18*VH; }
   const mx=tx-sp.x, my=ty-sp.y, md=Math.hypot(mx,my);
-  if(md>12){ mechBoarStep(sp, mx/md*2.3, my/md*2.3); sp.phase+=0.06; sp.moving=true; } else sp.moving=false;
+  if(md>12){
+    // a wall in the way: slide along it, and if even that fails for a moment, go stand on the other side
+    const ok=mechBoarStep(sp, mx/md*2.3, my/md*2.3) || mechBoarStep(sp, Math.sign(mx)*2.3, 0) || mechBoarStep(sp, 0, Math.sign(my)*2.3);
+    if(ok) sp.blockedAt=0;
+    else if(!sp.blockedAt) sp.blockedAt=now;
+    else if(now-sp.blockedAt>500){ sp.blockedAt=0; sp.stationAt=0; sp.wallSide=Math.sign(sp.station.x-b.x)||1; }
+    sp.phase+=0.06; sp.moving=ok; } else sp.moving=false;
   if(!crossing && Math.abs(dx)<SEP && Math.abs(dy)<120) mechBoarStep(sp, -Math.sign(dx||1)*4, 0);   // never stand inside it
   if(now>sp.castCD){ sp.state='cast'; sp.hitDone=false; sp.hitAt=now+650; sp.stateUntil=now+1150; sp.moving=false; }
   else if(!crossing && Math.abs(dx)<SEP+190*sc && Math.abs(dy)<140 && now>sp.lungeCD){
@@ -13886,7 +13898,7 @@ function sayLines(name,lines,opt){
   sayArr=lines.slice(); sayIdx=0; sayThen=opt.then||null; sayPortrait=opt.portrait||null;
   setVoice(name);
   document.getElementById('dlgName').textContent=name;
-  if(opt.img) showPortrait(opt.img, opt.bg);
+  if(opt.img) showPortrait(opt.img, opt.bg, opt.item);
   else if(opt.portrait) drawPortrait(opt.portrait);
   else drawEmojiPortrait(opt.icon||'',opt.bg);
   showSayLine();
@@ -14322,8 +14334,8 @@ const PORTRAITS={
   'army/frames/snout_walk0.png':{ex:0.826,ey:0.329,vw:0.65},   // Agent Snout: the same sheet, recoloured
   'army/frames/rat_emissary_walk0.png':{ex:0.215,ey:0.25,vw:0.55},
   // the bosses and the pigs: head-and-shoulders, the crown kept inside the circle
-  'mobs/catking/sit.png':{ex:0.73,ey:0.30,vw:0.95},
-  'mobs/ratking/sit.png':{ex:0.79,ey:0.25,vw:0.64},          // the whole crown and his shoulders, not just the snout
+  'mobs/catking/sit.png':{ex:0.80,ey:0.25,vw:0.75},
+  'mobs/ratking/sit.png':{ex:0.74,ey:0.25,vw:0.62},          // the whole crown and his shoulders, not just the snout
   'mobs/seby/s1.png':{ex:0.70,ey:0.40,vw:0.62},
   'mobs/coon_walk0.png':{ex:0.84,ey:0.46,vw:0.5},
   'npcs/siroink.png':{ex:0.62,ey:0.21,vw:0.7},
@@ -14341,11 +14353,11 @@ function portraitRect(img){
 // the Friends badges go through this, so a face is framed identically wherever it appears —
 // drawing the sprite with its feet on the bottom edge instead is what left them sitting low
 // and off to one side inside the circle.
-function paintPortrait(pg,D,img,bg){
+function paintPortrait(pg,D,img,bg,item){
   pg.clearRect(0,0,D,D);
   pg.fillStyle=bg||'#cfe6a8'; pg.fillRect(0,0,D,D);
   if(!(img&&img.complete&&img.naturalWidth)) return;
-  const r=portraitRect(img), nW=img.naturalWidth, nH=img.naturalHeight;
+  const r=item?{vw:1.35,ex:0.5,ey:0.5}:portraitRect(img), nW=img.naturalWidth, nH=img.naturalHeight;   // an item (a bottle…) sits whole in the middle
   // scale the whole sprite, then slide it so the eyes sit dead centre — no source crop,
   // so anything that falls outside the circle simply isn't drawn
   const view=r?r.vw:1, ex=r?r.ex:0.5, ey=r?r.ey:0.26;
@@ -14353,12 +14365,12 @@ function paintPortrait(pg,D,img,bg){
   pg.imageSmoothingEnabled=true; pg.imageSmoothingQuality='high';
   pg.drawImage(img, D/2-ex*nW*s, D/2-ey*nH*s, nW*s, nH*s);
 }
-function showPortrait(img,bg){
+function showPortrait(img,bg,item){
   const pc=document.getElementById('dlgPortrait'); if(!pc) return;
-  paintPortrait(pc.getContext('2d'), 78, img, bg);
+  paintPortrait(pc.getContext('2d'), 78, img, bg, item);
   // not loaded yet: paint it the moment it arrives, as long as this face is still the one up
   if(img && !(img.complete&&img.naturalWidth)){ pc._want=img;
-    img.addEventListener('load', ()=>{ if(pc._want===img) paintPortrait(pc.getContext('2d'), 78, img, bg); }, {once:true}); }
+    img.addEventListener('load', ()=>{ if(pc._want===img) paintPortrait(pc.getContext('2d'), 78, img, bg, item); }, {once:true}); }
   else pc._want=img;
 }
 // NomNom gets her big face, and the grumpy one on the lines in NOMNOM_GRUMPY
@@ -15196,7 +15208,7 @@ function beachPick(it){
     SFX.seq&&SFX.seq([660,880],'square',0.05); }
   else { const left=BEACH_NOTES.map((_,i)=>i).filter(i=>!S.notes.includes(i)); if(left.length){ const i=left[Math.floor(Math.random()*left.length)]; S.notes.push(i);
       SFX.seq&&SFX.seq([523,659,784],'sine',0.05);
-      sayLines(LT('A note in a bottle','Un bilet într-o sticlă'), [LT(BEACH_NOTES[i][0],BEACH_NOTES[i][1])], {img:beachImg('bottle'), bg:'#20343a', tone:420}); } }
+      sayLines(LT('A note in a bottle','Un bilet într-o sticlă'), [LT(BEACH_NOTES[i][0],BEACH_NOTES[i][1])], {img:beachImg('bottle'), item:true, bg:'#20343a', tone:420}); } }
   save(); syncHUD();
 }
 function beachDraw(){
@@ -17023,7 +17035,8 @@ function renderShop(){
       <div class="wd-sub">${LT('Collected','Colecționate')} ${have} / ${n}</div>
       <div class="wd-bar"><i style="width:${Math.round(have/n*100)}%"></i></div></div>`;
   h+=skinDealHTML();
-  h+='<div class="wd-grid">'+skinsByRarity().filter(skinForSale).map(cs=>`<div class="skc-wrap">${skinCardHTML(cs)}${skinBtnHTML(cs)}</div>`).join('')+'</div>';
+  const deal=skinOfTheDay();                                  // the deal sits up top on its own, the rest below
+  h+='<div class="wd-grid">'+skinsByRarity().filter(cs=>skinForSale(cs) && cs!==deal).map(cs=>`<div class="skc-wrap">${skinCardHTML(cs)}${skinBtnHTML(cs)}</div>`).join('')+'</div>';
   // the coin packs under the cards, one row of tiles
   h+=`<div class="wd-head wd-coins"><h3>${LT('Coins','Monede')}</h3></div><div class="gold-grid">`+IAP_GOLD.map(g=>`<div class="gold-tile">
       ${g.tag?`<div class="gold-tag">${LT(g.tag[0],g.tag[1])}</div>`:''}
@@ -17043,7 +17056,8 @@ const SKIN_RARITY_ORDER=['legendary','epic','rare','common'];
 const SKIN_DEAL_OFF=0.30;
 function skinOfTheDay(){
   const d=new Date(), day=Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000);
-  const pool=CAT_SKINS.filter(c=>skinForSale(c) && !(S.catSkins||[]).includes(c.id));
+  const free=CAT_SKINS.filter(c=>skinForSale(c) && !(S.catSkins||[]).includes(c.id));
+  const leg=free.filter(c=>c.rarity==='legendary'), pool=leg.length?leg:free;   // a legendary while you are missing one
   return pool.length ? pool[(day*7)%pool.length] : null;     // a skin you already own is never the deal
 }
 function dealPrice(cs){
@@ -18503,7 +18517,7 @@ const MAP_LOCS=[
   {id:'cave',    name:'Crystal Cave',    x:35.9, y:17.5, ico:'cave',   reg:'forest', desc:'Closed for survey work, they said. There is a gate at the bottom, and something guarding it.'},
   {id:'library', name:'Library', dest:'towergarden', x:17.9, y:21.8, ico:'tower', reg:'hill', desc:'The old wizard\'s tower. The prophecy he keeps there is not very specific.'},
   {id:'beach',   name:'Beach',           x:19.1, y:42.5, ico:'anchor', reg:'coast', desc:'Sand, a pier, a fort, and a pig who will talk for five fish.'},
-  {id:'ocean1',  name:'Ocean Depths',    x:2.4,  y:21.0, ico:'wave',   reg:'coast', desc:'The shallows. Nobody breathes down there without a suit.'},
+  {id:'ocean1',  name:'Ocean Depths',    x:8.0,  y:47.5, ico:'wave',   reg:'coast', desc:'The shallows. Nobody breathes down there without a suit.'},
   {id:'ocean2',  name:'Sunken Sanctum',  x:12.6, y:75.5, ico:'pillar', reg:'deep',  desc:'Drowned ruins around a sealed portal. The runes want something violet.'},
   {id:'street',  name:'City',            x:58.6, y:60.0, clear:[[47,50],[44,62],[50,70]], ico:'town',   reg:'city',  desc:'The square. Union soldiers, a fountain, and the most elegant cat in town.'},
   {id:'bank',    name:'Whisker Savings Bank', x:63.6, y:48.2, ico:'coin', reg:'city', desc:'Every little fish counts. Neutral, they say. Very neutral.'},
