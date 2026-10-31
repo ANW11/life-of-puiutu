@@ -749,7 +749,7 @@
   /* potions, charms and coins are not cat cards: a square card, the picture in its upper part, name below */
   /* no black box: the prize floats big over the machine in a soft glow of its rarity colour, with its
      name on a small plaque underneath */
-  #gachaCard.skin-reveal.item-art{height:min(100%,92vw);aspect-ratio:1;background:none;box-shadow:none;padding-bottom:4%;isolation:isolate;}   /* isolate: the dimmer below stays inside the card's layer, over the machine */
+  #gachaCard.skin-reveal.item-art{top:36.5%;height:min(100%,92vw);aspect-ratio:1;background:none;box-shadow:none;padding-bottom:4%;isolation:isolate;}   /* top: the prize's picture is centred on the machine's globe */   /* isolate: the dimmer below stays inside the card's layer, over the machine */
   /* behind the prize the whole shop dims, with a pool of light in the rarity colour, so the prize pops */
   #gachaCard.skin-reveal.item-art::before{content:'';position:absolute;left:-150vw;right:-150vw;top:-150vh;bottom:-150vh;z-index:-1;
     pointer-events:none;animation:gDim .35s ease-out;
@@ -15331,7 +15331,7 @@ const SKIN_LINES={
 if(typeof S!=='undefined' && S.equippedSkin) loadSkinFrames(S.equippedSkin);   // resume the equipped skin
 // no hats: the capsule gives coins, cat skins, spells, potions (a small stack) and charms of the rolled rarity.
 // A charm the story has not unlocked yet (the Golden Banana) stays out until it has.
-const GACHA_COINS={common:200,rare:500,epic:1200,legendary:20000};   // round amounts: 2s, 5s, 12s, 2g — one coin sprite each on the card
+const GACHA_COINS={common:10000,rare:20000,epic:30000,legendary:50000};   // gold only, a roll costs 1g: 1g (your roll back), 2g, 3g, 5g, one gold coin sprite each
 const GACHA_SPELL={epic:'fishstorm',legendary:'ninelives'};
 const GACHA_STACK={common:3,rare:2,epic:1,legendary:1};
 function gachaPool(rar){
@@ -15403,13 +15403,13 @@ const GACHA={ cost:10000, busy:false, open:false, caps:[], raf:null, ctx:null, W
   capImg:{ normal:(()=>{const i=new Image();i.src='gacha/cap_normal.png';return i;})(),
            legendary:(()=>{const i=new Image();i.src='gacha/cap_legendary.png';return i;})() } };
 // swap in the pixel-art gacha machine (gacha/gacha_machine.png) as soon as it loads
-{ const m=new Image(); m.onload=()=>{ GACHA.img=m; GACHA.geo={ dome:[0.4677,0.2447,0.378,0.2275], base:0.47, hole:[0.474,0.76], tray:0.82, lip:0.882 }; };
+{ const m=new Image(); m.onload=()=>{ GACHA.img=m; GACHA.geo={ dome:[0.4677,0.2447,0.322,0.19], base:0.47, hole:[0.474,0.76], tray:0.82, lip:0.882 }; };
   m.src='gacha/gacha_machine.png';
   // where the cans may show: the red area of gacha_machine_NEW MASK.png, cut out once as an alpha mask
   const k=new Image(); k.onload=()=>{ GACHA.globeMask=k; }; k.src='gacha/gacha_globe_mask.png'; }
 // the globe is the round ball from the top of the glass down to the gold crown's rim (dome, and the same
 // ellipse in gacha_globe_mask.png): the cans fall under gravity and fill it all, over the crown's top
-const GACHA_CAP_R=28, GACHA_CAPS=19;
+const GACHA_CAP_R=28, GACHA_CAPS=14;   // the dome is inset from the glass so the cans keep a gap to its rim
 function gachaAddCap(type){ const d=GACHA.dome; GACHA.caps.push({x:d.cx+(Math.random()-0.5)*d.rx*1.2, y:d.cy-d.ry*0.6+Math.random()*d.ry*0.5, vx:(Math.random()-0.5)*2, vy:0, r:GACHA_CAP_R*(0.92+Math.random()*0.16), type}); }
 function gachaInitCaps(){ GACHA.caps=[]; GACHA.drop=null;
   const nLeg=Math.max(1,Math.min(3,S.legendaryCapsules||0));   // always at least one legendary on display
