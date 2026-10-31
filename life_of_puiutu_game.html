@@ -2918,8 +2918,8 @@ const LIONI={};
 LIONI.throw=LIONI.roar; LIONI.def=LIONI.crack;          // aliases for the shared boss drawer
 const CKINGI={};
 ['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','stand','sit','wave','yell',
- 'point','command','hurt','down','pounce','cast','idle','windup','swipe']
-  .forEach(k=>{ const im=new Image(); im.src='mobs/catking/'+k+'.png?v=4'; CKINGI[k]=im; });   // v4: redrawn in the game's pixel style
+ 'point','command','hurt','down','pounce','cast','idle','windup','swipe','land']
+  .forEach(k=>{ const im=new Image(); im.src='mobs/catking/'+k+'.png?v=5'; CKINGI[k]=im; });   // v4: redrawn in the game's pixel style
 CKINGI.rear=CKINGI.pounce; CKINGI.throw=CKINGI.yell; CKINGI.dash=CKINGI.pounce; CKINGI.def=CKINGI.down;
 // ── Rattus Magnus — the exact inverse of the Cat King, and his sheet says so ──
 // No materialise frames, no shatter frames: nothing here is a projection. He starts on all fours,
@@ -3029,7 +3029,8 @@ function drawBossSprite(ctx,sx,sy,facing,h,key,enraged,bob,sprites,aura,footPad)
   ctx.restore();
   // ground shadow — sized to the sprite's actual width so wide bosses read as grounded, not floating
   ctx.save();ctx.globalAlpha=0.28;ctx.fillStyle='#000';
-  ctx.beginPath();ctx.ellipse(sx,sy+1,w*0.40*(1-bob/26),h*0.07*(1-bob/26),0,0,7);ctx.fill();ctx.restore();
+  const shrink=Math.max(0.3,1-bob/26);   // a high jump (the Cat King's pounce) must not push the radius below zero
+  ctx.beginPath();ctx.ellipse(sx,sy+1,w*0.40*shrink,h*0.07*shrink,0,0,7);ctx.fill();ctx.restore();
   if(img&&img.complete&&img.naturalWidth){
     ctx.save();ctx.translate(sx,sy-bob);ctx.scale(Math.abs(facing)<1?facing:(facing<0?-1:1),1);   // fractional facing = mid-turn
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
@@ -9357,7 +9358,7 @@ function drawCatKing(g,b){
     const key = b.state==='claw'   ? (lion?'rear':'swipe')
               : b.state==='roar'   ? 'roar'
               : b.state==='windup' ? (lion?'rear':'windup')
-              : b.state==='dash'   ? (lion?'dash':'pounce')
+              : b.state==='dash'   ? (lion?'dash':(b.dashUntil-now>240?'pounce':'land'))   // up, then down to land
               : lion ? (Math.floor(b.phase*1.4)%2 ? 'walk1' : 'walk0')
               : 'walk'+(Math.floor(b.phase*2)%8);           // the King has a whole 8-frame walk
     const bsz=(lion?210:CKING_FIGHT_H)*sc;
