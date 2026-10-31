@@ -2637,6 +2637,140 @@ const RAT_MUSIC=Object.assign(Object.create(CAT_MUSIC),{
     this.timpani(c,t+1.65,65.41*2,0.28); this.choir(c,t+1.65,this.chords[0],3.6,0.035); this.bass(c,t+1.65,65.41,3.2,0.055);
   }
 });
+// ═══ The places' own sound ═══ (each area's hub says which with `music:`, see zoneMusic)
+// All of these borrow the Seby theme's instruments (and through it the slums' and the Hangar's),
+// each with its own bus so their levels are set here and nowhere else.
+const PLACE_SOUND=Object.assign(Object.create(SEBY_MUSIC),{
+  here(key){ return !!(A && A.hub && A.hub.music===key); },
+  // a stretch of wind: noise through a slowly sweeping band, faded in and out so the bars overlap
+  wind(c,t,dur,v,lo,hi){
+    const s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain();
+    s.buffer=this.noise; s.loop=true; f.type='bandpass'; f.Q.value=0.7;
+    const a=lo+Math.random()*(hi-lo), b=lo+Math.random()*(hi-lo);
+    f.frequency.setValueAtTime(a,t); f.frequency.linearRampToValueAtTime(b,t+dur);
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v,t+dur*0.4); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    s.connect(f); f.connect(g); g.connect(this.out(c)); s.start(t, Math.random()*0.8); s.stop(t+dur+0.05);
+  },
+  // a soft sine pad note (pads here go through the place's own bus, not SFX)
+  pad(c,t,fr,dur,v,type){ const o=c.createOscillator(), g=c.createGain(); o.type=type||'sine'; o.frequency.value=fr;
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v,t+dur*0.3); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(this.out(c)); o.start(t); o.stop(t+dur+0.05); },
+  // a plucked string: bright attack, a filter that closes, a short ring
+  pluck(c,t,fr,dur,v){ const f=c.createBiquadFilter(), g=this.env(c,t,v,0.004,dur); f.type='lowpass';
+    f.frequency.setValueAtTime(3200,t); f.frequency.exponentialRampToValueAtTime(500,t+dur*0.6);
+    f.connect(g); g.connect(this.out(c));
+    [['triangle',1],['sawtooth',2.001]].forEach(([ty,m],i)=>{ const o=c.createOscillator(); o.type=ty; o.frequency.value=fr*m;
+      const og=c.createGain(); og.gain.value=i?0.18:1; o.connect(og); og.connect(f); o.start(t); o.stop(t+dur+0.05); }); },
+  // a wooden flute: a sine with a breath of noise and a slow vibrato
+  flute(c,t,fr,dur,v){ const o=c.createOscillator(), lfo=c.createOscillator(), lg=c.createGain(), g=c.createGain();
+    o.type='sine'; o.frequency.value=fr; lfo.frequency.value=5; lg.gain.value=fr*0.006; lfo.connect(lg); lg.connect(o.frequency);
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v,t+0.12); g.gain.setValueAtTime(v,t+dur*0.7); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(this.out(c)); o.start(t); lfo.start(t); o.stop(t+dur+0.05); lfo.stop(t+dur+0.05);
+    this.hiss(c,t,v*0.25,0.08,'bandpass',fr*2,2); },
+  // a little bird: two or three quick upward chirps, sometimes a trill
+  bird(c,t,v){ const base=2400+Math.random()*1800, n=2+(Math.random()*3|0), trill=Math.random()<0.3;
+    for(let i=0;i<n;i++){ const tt=t+i*(trill?0.05:0.13), o=c.createOscillator(), g=this.env(c,tt,v,0.004,trill?0.04:0.07);
+      o.type='sine'; o.frequency.setValueAtTime(base*(0.85+Math.random()*0.1),tt); o.frequency.exponentialRampToValueAtTime(base*1.35,tt+(trill?0.04:0.06));
+      o.connect(g); g.connect(this.out(c)); o.start(tt); o.stop(tt+0.12); } },
+  // a gull: a falling "kyow", two or three times
+  gull(c,t,v){ const n=2+(Math.random()*2|0), hi=1500+Math.random()*300;
+    for(let i=0;i<n;i++){ const tt=t+i*0.32, o=c.createOscillator(), o2=c.createOscillator(), f=c.createBiquadFilter(), g=this.env(c,tt,v,0.02,0.26);
+      o.type='sawtooth'; o2.type='square'; f.type='bandpass'; f.frequency.value=hi*1.1; f.Q.value=3;
+      [o,o2].forEach((x,k)=>{ x.frequency.setValueAtTime(hi*(k?1.5:1),tt); x.frequency.exponentialRampToValueAtTime(hi*0.55*(k?1.5:1),tt+0.25); x.connect(f); x.start(tt); x.stop(tt+0.3); });
+      f.connect(g); g.connect(this.out(c)); } },
+  // a wave coming in over the sand and drawing back
+  wave(c,t,dur,v){ const s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain();
+    s.buffer=this.noise; s.loop=true; f.type='lowpass'; f.frequency.setValueAtTime(300,t); f.frequency.linearRampToValueAtTime(1400,t+dur*0.35); f.frequency.linearRampToValueAtTime(250,t+dur);
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v,t+dur*0.35); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    s.connect(f); f.connect(g); g.connect(this.out(c)); s.start(t, Math.random()*0.8); s.stop(t+dur+0.05); },
+  // a drop of water in a cave: a short high plip that falls
+  drip(c,t,v){ const o=c.createOscillator(), g=this.env(c,t,v,0.002,0.18), fr=1100+Math.random()*900;
+    o.type='sine'; o.frequency.setValueAtTime(fr,t); o.frequency.exponentialRampToValueAtTime(fr*0.45,t+0.12);
+    o.connect(g); g.connect(this.out(c)); o.start(t); o.stop(t+0.25); },
+  loop(key,barSec,fn){                             // one bar at a time while the player stays where this belongs
+    if(this.timer||!S.musicOn) return;
+    const bar=()=>{ if(!S.musicOn || !this.here(key)){ this.stop(); return; }
+      const c=SFX.ac(); if(!c || c.state!=='running') return; this.out(c);
+      fn.call(this,c,c.currentTime+0.05); this.step++; };
+    bar(); this.timer=setInterval(bar, barSec*1000);
+  },
+  stop(){ if(this.timer){ clearInterval(this.timer); this.timer=null; } }
+});
+
+// ── Castle Gate: no music at all, only the wind coming over the heights ──
+const WIND_SOUND=Object.assign(Object.create(PLACE_SOUND),{ timer:null, step:0, bus:null, noise:null, curve:null, gain:0.75,
+  start(){ this.loop('wind', 4, function(c,t){                // a soft, low wind: heard, not in your face
+    this.wind(c,t,7,0.045,180,450);                           // the steady wind, two low layers overlapping
+    this.wind(c,t+2,7,0.025,300,700);
+    if(Math.random()<0.2) this.wind(c,t+Math.random()*2,4.5,0.03,400,900);     // now and then a slow, gentle gust
+  }); } });
+
+// ── Garden and the Tower Garden: calm, outdoors — a soft pad, a wooden flute now and then, birds ──
+// F Lydian, slow: Fmaj7 · C/E · Dm7 · Bbmaj7, five seconds a chord.
+const NATURE_MUSIC=Object.assign(Object.create(PLACE_SOUND),{ timer:null, step:0, bus:null, noise:null, curve:null, gain:0.6,
+  chords:[[87.31,174.61,220.00,261.63,329.63],[82.41,130.81,196.00,261.63,329.63],[73.42,146.83,174.61,220.00,261.63],[58.27,116.54,174.61,220.00,293.66]],
+  tune:[[523.25,0,587.33,659.25],[659.25,0,587.33,523.25],[440.00,0,523.25,0],[587.33,523.25,440.00,0]],
+  start(){ this.loop('nature', 5, function(c,t){
+    const i=this.step%4, ch=this.chords[i];
+    ch.forEach((f,k)=>this.pad(c,t,f,5.6,k?0.012:0.022));
+    [1,2,3,4].forEach((k,n)=>{ if(Math.random()<0.7) this.pluck(c,t+n*1.25,ch[k]*2,1.6,0.012); });   // a slow harp under it
+    if(Math.floor(this.step/4)%2===1) this.tune[i].forEach((f,k)=>{ if(f) this.flute(c,t+k*1.25,f,1.2,0.022); });
+    this.wind(c,t,6,0.012,300,900);                                                          // a breeze in the leaves
+    for(let b=0;b<3;b++) if(Math.random()<0.55) this.bird(c,t+Math.random()*4.6,0.012+Math.random()*0.01);
+  }); } });
+
+// ── The Beach: wind and waves and gulls, and a gentle tune on a guitar under them ──
+// G major, unhurried: G · Em · C · D, a bar of four seconds.
+const BEACH_MUSIC=Object.assign(Object.create(PLACE_SOUND),{ timer:null, step:0, bus:null, noise:null, curve:null, gain:0.85,
+  chords:[[98.00,196.00,246.94,293.66],[82.41,164.81,196.00,246.94],[65.41,130.81,164.81,196.00],[73.42,146.83,185.00,220.00]],
+  tune:[[587.33,0,493.88,440.00],[392.00,0,493.88,0],[523.25,493.88,440.00,392.00],[440.00,0,0,0]],
+  start(){ this.loop('beach', 4, function(c,t){
+    const i=this.step%4, ch=this.chords[i];
+    ch.forEach((f,k)=>this.pad(c,t,f,4.4,k?0.008:0.014));
+    [0,1,2,3,2,1,2,3].forEach((k,n)=>this.pluck(c,t+n*0.5,ch[k]*(k?1:2),1.1,0.014));      // the strummed arpeggio
+    if(Math.floor(this.step/4)%2===1) this.tune[i].forEach((f,k)=>{ if(f) this.pluck(c,t+k,f,1.6,0.02); });
+    this.wave(c,t+Math.random()*0.6,4.6,0.05);                                               // the sea
+    this.wind(c,t,5.5,0.018,300,900);
+    if(Math.random()<0.45) this.gull(c,t+Math.random()*3,0.012);
+  }); } });
+
+// ── The Crystal Cave: the Ancient One's music before she wakes — her bells and her choir over a
+//    drone, slow, with water dripping in the dark. No drums: it is the same theme, holding its breath.
+const CAVE_MUSIC=Object.assign(Object.create(PLACE_SOUND),{ timer:null, step:0, bus:null, noise:null, curve:null, fuzz:null, gain:0.55,
+  start(){ const bl=60/80*4; this.loop('cave', bl, function(c,t){
+    const i=this.step%4, root=this.roots[i], ch=this.chords[i], x=bl/16;
+    const arp=[ch[0]*4, ch[1]*4, ch[2]*4, ch[0]*8];
+    this.bass(c,t,root,bl,0.04); this.choir(c,t,ch,bl,0.022);
+    [0,3,6,10,13].forEach((k,n)=>{ if(Math.random()<0.75) this.bell(c,t+k*x,arp[(this.step+n)%4],1.8,0.02); });
+    if(Math.floor(this.step/4)%2===1) this.melody[i].forEach((fr,k)=>{ if(fr) this.bell(c,t+k*(bl/4),fr*2,2.4,0.024); });
+    if(i===0 && this.step%8===0) this.timpani(c,t,root*2,0.12);                              // something very far down
+    for(let d=0;d<3;d++) if(Math.random()<0.6) this.drip(c,t+Math.random()*bl,0.02);
+  }); } });
+
+// ── The Rat Warren, the sewer tunnel and the sewer: rat country — dark, low and wary, not a party.
+//    C Phrygian at 96bpm: Cm · Db · Ab · G. A heavy kick on one and three, a fuzzed bass on the
+//    eighths, a dull metal clank, scurrying in the hats, a low choir and a creeping lead.
+//    In the mine-cart it runs at 132bpm with sixteenths and a snare, because now they are chasing you.
+const WARREN_MUSIC=Object.assign(Object.create(PLACE_SOUND),{ timer:null, step:0, bus:null, noise:null, curve:null, fuzz:null, gain:0.45,
+  roots:[65.41, 69.30, 51.91, 49.00],
+  chords:[[130.81,155.56,196.00],[138.59,174.61,207.65],[103.83,130.81,155.56],[98.00,123.47,146.83]],
+  creep:[[311.13,0,293.66,277.18],[277.18,0,261.63,0],[311.13,277.18,0,261.63],[246.94,0,0,0]],
+  here(){ return (typeof MC!=='undefined' && MC.on) || !!(A && A.hub && A.hub.music==='warren'); },
+  start(){ const chase=(typeof MC!=='undefined' && MC.on); this.chase=chase;
+    const B=60/(chase?132:96);
+    this.loop('warren', B*4, function(c,t){
+      if(((typeof MC!=='undefined' && MC.on))!==this.chase){ this.stop(); setTimeout(zoneMusic,0); return; }   // in or out of the cart: change tempo
+      const i=this.step%4, root=this.roots[i], ch=this.chords[i], e=B/2, x=B/4;
+      this.kick(c,t,0.26); this.kick(c,t+B*2,0.22);
+      if(chase){ this.kick(c,t+B*1.5,0.16); this.kick(c,t+B*3.5,0.16); this.snare(c,t+B,0.09); this.snare(c,t+B*3,0.09); }
+      for(let k=0;k<8;k++) this.bass(c,t+k*e,(k===7?root*2:root),e*0.85,0.05);
+      for(let k=0;k<16;k+=(chase?1:2)) if(chase || Math.random()<0.6) this.hiss(c,t+k*x,0.012+(k%4===2?0.008:0),0.03,'highpass',6500);   // claws on stone
+      if(i%2===0) this.clang(c,t+B*(chase?0:3),0.02);
+      this.choir(c,t,ch,B*4,0.022);
+      if(chase || Math.floor(this.step/4)%2===1) this.creep[i].forEach((fr,k)=>{ if(fr) this.tone(c,t+k*B,fr,B*0.9,chase?0.02:0.016); });
+      if(!chase && Math.random()<0.4) this.drip(c,t+Math.random()*B*4,0.015);
+    }); } });
+
 
 //──────────────────────────────────────────────────────────────── CAT PALETTES
 // matched to reference photos
@@ -3483,6 +3617,7 @@ function buildAreas(){
       //    walk far right -> City, interact with the cave (left) -> Crystal Cave ──
       mode:'topdown',
       hub:{
+        music:'nature',     // calm, outdoors: pad, flute, birds
         // ── the garden, redrawn: no floating ledges any more. The Glow stands on the ground in a
         //    clearing in the middle, under a shaft of light. The stones by the cave, the two in front
         //    of the clearing and the bridge's near railing are cut out in the occ mask, so you walk
@@ -3557,6 +3692,7 @@ function buildAreas(){
     towergarden:{
       name:'Tower Garden', theme:'garden', mode:'topdown',
       hub:{
+        music:'nature',
         img:'maps/tower garden.jpg', mask:'maps/mask tower garden.png',
         occ:'maps/tower_garden_occ.png',     // pink in the mask = walk behind the fountain; the occluder follows the fountain's outline (spout, tiers, jets)
         maskWalk:['green','red','purple'], mob:'pigeon',    // green courtyard = walkable; purple = the wooden gate (pink counts as purple)
@@ -3627,6 +3763,7 @@ function buildAreas(){
     beach:{
       name:'Beach', theme:'beach', mode:'topdown',
       hub:{
+        music:'beach',      // wind, waves, gulls and a guitar
         img:'maps/beach final.png', mask:'maps/beach_walk.png', maskWalk:'green',
         occ:'maps/beach_occ.png',                // painted in 'beach final_mask.png': teal walk, red walk + occlusion
                                                  // (the palms on their island, the log, the turtle — cut on the art's outline)
@@ -3743,6 +3880,7 @@ function buildAreas(){
     cave:{
       name:'Crystal Cave', theme:'cave', mode:'topdown',
       hub:{
+        music:'cave',       // the Ancient One's bells, before she wakes
         // the red tunnel stays shut behind the conduit gate in the art: the puzzle has to be powered every
         // time you go in, so the gate never stands open (maps/crystalcave.png is the old open-tunnel version)
         img:'maps/crystalcave_sealed.png', mask:'maps/crystalcavemask.png',
@@ -3763,6 +3901,7 @@ function buildAreas(){
     sebyboss:{
       name:"Queen Seby's Lair", theme:'cave', mode:'topdown',
       hub:{
+        music:'cave',       // and again once she has fallen
         img:'maps/sebybossfight.png', mask:'maps/sebybossfightmask.png',
         sebyMusic:true,                            // the Ancient One's theme while she stands
         maskWalk:'green',
@@ -3796,6 +3935,7 @@ function buildAreas(){
     street:{
       name:'City', theme:'street', mode:'topdown',
       hub:{
+        slumMusic:true,    // the city keeps the slums' street groove
         img:'maps/city_final.png', mask:'maps/city_final_mask.png',
         occ:'maps/city_final_occ.png',             // painted green in city_final_mask.png: walk + occlusion (fountain, the bridge post; the stall roof is walk only)
         maskWalk:['purple','green'],             // purple = the cobblestone plaza, green = behind the fountain
@@ -3921,7 +4061,7 @@ function buildAreas(){
       hub:{
         img:'maps/slum2.png', mask:'maps/slum2mask.png', maskWalk:['green','blue'],
         occ:'maps/slum2_occ.png',                  // painted blue in slum2mask.png: walk + occlusion (the broken fence in the foreground)
-        slumMusic:true,                            // the street groove carries on up into rat territory
+        music:'warren',                            // rat country: dark and wary, not the street groove
         walkTop:0.44, walkBot:1.00, scaleFar:0.5, scaleNear:1.04,
         spawn:{xf:0.13, yf:0.88},                  // arrive at the foot of the path (from the Slums, bottom-left)
         mob:'rat', mobXf:[0.34,0.44,0.54,0.62,0.68],   // hostile Rat Federation soldiers guard the climb to the fortress
@@ -3978,7 +4118,7 @@ function buildAreas(){
       name:'Sewer Tunnel', theme:'cave', mode:'topdown',
       hub:{
         img:'maps/sewerentrance.png', mask:'maps/sewer entrance mask.png', maskWalk:'purple',
-        slumMusic:true,
+        music:'warren',
         walkTop:0.60, walkBot:0.93, scaleFar:0.6, scaleNear:0.98,
         spawn:{xf:0.244, yf:0.657},                 // arrive from the slum alley (left)
         // a top-down battle by the central bridge. Units stream in one at a time:
@@ -3997,6 +4137,7 @@ function buildAreas(){
     sewer:{
       name:'The Sewers', theme:'cave', mode:'topdown',
       hub:{
+        music:'warren',     // rat country
         img:'maps/sewer.png', mask:'maps/sewer mask.png', maskWalk:'orange', sewerChase:true,   // the old horror drone, not the street groove
         walkTop:0.10, walkBot:0.92, scaleFar:0.66, scaleNear:0.92,
         spawn:{xf:0.74, yf:0.30},                 // drop in on the upper-right ledge
@@ -4052,6 +4193,7 @@ function buildAreas(){
     castleentrance:{
       name:'Castle Gate', theme:'street', mode:'topdown',
       hub:{
+        music:'wind',       // no music at the gate: only the wind over the heights
         img:'maps/castleentrance.png', mask:'maps/castleentrance_walk.png', maskWalk:'green',
         occ:'maps/castleentrance_occ.png',   // painted in castleentrance new mask.png: green walk, red walk + occlusion (the bridge's near railing)
         walkTop:0.66, walkBot:1.00, scaleFar:0.55, scaleNear:1.04,
@@ -5997,7 +6139,7 @@ function enterArea(id,fromRight,toX){
   if(id==='sewerentrance' && !S.sewerSeen) S.sewerSeen=true;   // The Glow asks about this later
   save();
   // platformer areas (e.g. House) get the calm theme; hub music is handled in enterHub
-  if(A && A.mode!=='topdown'){ OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); RAT_MUSIC.stop(); if(S.musicOn) MUSIC.start(); }
+  if(A && A.mode!=='topdown') zoneMusic();
   // coins now spawn over time on the walkable platforms (see updateGroundCoins)
   groundCoins=[]; coinSpawnAt=0;
   // build enemies for this area
@@ -6670,7 +6812,7 @@ function sebyDefeated(b,now){
   S.coins+=k.coins; addXP(k.xp); S.totalDefeats=(S.totalDefeats||0)+1;
   S.sebyDefeated=true; storySet('seby');
   SEBY_MUSIC.finale();                                     // the bells come down; then the cave is quiet
-  setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.sebyMusic) MUSIC.start(); }, 4200);
+  setTimeout(()=>{ if(S.musicOn && A && A.hub && A.hub.sebyMusic) zoneMusic(); }, 4200);   // back to the cave's own theme
   HUB.pigletIn={phase:'wait', motes:[]};   // on his way already — so the parked cart is not drawn before he arrives
   setTimeout(pigletEntrance, 300);   // he does not wait for you to leave — he wheels his cart in over her body
   // the crystal is NOT loot. The piglet by the portal hands you one, and that is the point.
@@ -8691,19 +8833,7 @@ function enterHub(fromRight){
   } else { if(HUB.abyss) document.body.classList.remove('cinema'); HUB.abyss=null; }
   if(H.sewerChase) sewerInit(); else SEWER.on=false;
   startBossOpening();                                // Seby / the Coon / both kings: a scene first
-  // music per zone: octopus arena / sewer horror / underwater ambient / calm elsewhere
-  const mechOn = H.mechboar && HUB.boss && !HUB.boss.defeated;
-  // every theme but the one this zone wants goes quiet first
-  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC].forEach(m=>m.stop());
-  if(H.abyssBoss) BOSS_MUSIC.start();
-  else if(mechOn) MECH_MUSIC.start();
-  else if(H.sebyMusic && HUB.boss && !HUB.boss.defeated) SEBY_MUSIC.start();
-  else if(H.catMusic && HUB.boss && !HUB.boss.defeated) CAT_MUSIC.start();
-  else if(H.ratking && HUB.boss && !HUB.boss.defeated) RAT_MUSIC.start();
-  else if(H.slumMusic) SLUM_MUSIC.start();          // the slums, rat territory and the sewers under it
-  else if(H.sewerChase) SEWER_MUSIC.start();
-  else if(H.underwater) OCEAN_MUSIC.start();
-  else if(S.musicOn) MUSIC.start();
+  zoneMusic();                                       // the room's own theme (one place decides: zoneMusic)
   HUB.inited=true;
   if(SQUARE_PENDING && curArea==='street'){ SQUARE_PENDING=false; runSquareScene(); }   // the true ending
 }
@@ -11069,7 +11199,7 @@ function updateHubBoss(now){
       spawnSebyCrystals();   // her barrier reforms when she rises again
       refreshGarrison();     // and the piglet stops celebrating
       toast('Queen Seby gathers her shattered crystals… she rises again!');
-      if(S.musicOn){ MUSIC.stop(); SEBY_MUSIC.start(); }
+      if(S.musicOn){ MUSIC.stop(); CAVE_MUSIC.stop(); SEBY_MUSIC.start(); }
     }
     return;
   }
@@ -14431,15 +14561,22 @@ function showScreen(id){
 }
 // Start whichever theme belongs on screen now (and silence the rest): the menu's, or the room's.
 function zoneMusic(){
-  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC,MENU_MUSIC].forEach(m=>m.stop());
+  [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC,MENU_MUSIC,
+   WIND_SOUND,NATURE_MUSIC,BEACH_MUSIC,CAVE_MUSIC,WARREN_MUSIC].forEach(m=>m.stop());
   if(!S.musicOn) return;
   const menu=document.getElementById('menu'); if(menu && menu.classList.contains('active')){ MENU_MUSIC.start(); return; }
   const H=A&&A.mode==='topdown'&&A.hub, live=HUB.boss&&!HUB.boss.defeated;
-  if(H&&H.abyssBoss) BOSS_MUSIC.start();
+  if(typeof MC!=='undefined' && MC.on) WARREN_MUSIC.start();   // the mine-cart: the warren theme, running
+  else if(H&&H.abyssBoss) BOSS_MUSIC.start();
   else if(H&&H.mechboar&&live) MECH_MUSIC.start();
   else if(H&&H.sebyMusic&&live) SEBY_MUSIC.start();
   else if(H&&H.catMusic&&live) CAT_MUSIC.start();
   else if(H&&H.ratking&&live) RAT_MUSIC.start();
+  else if(H&&H.music==='wind')   WIND_SOUND.start();
+  else if(H&&H.music==='nature') NATURE_MUSIC.start();
+  else if(H&&H.music==='beach')  BEACH_MUSIC.start();
+  else if(H&&H.music==='cave')   CAVE_MUSIC.start();
+  else if(H&&H.music==='warren') WARREN_MUSIC.start();
   else if(H&&H.slumMusic) SLUM_MUSIC.start();
   else if(H&&H.sewerChase) SEWER_MUSIC.start();
   else if(H&&H.underwater) OCEAN_MUSIC.start();
@@ -17441,9 +17578,9 @@ function mcReset(){
   }
   MC.st.obs.sort((a,b)=>b.z-a.z);
 }
-function mcOpen(){ mcLoad(); openModal('minecart'); MC.on=true; MC.lastT=0; mcResize(); mcReset();
+function mcOpen(){ mcLoad(); openModal('minecart'); MC.on=true; zoneMusic(); MC.lastT=0; mcResize(); mcReset();
   if(MC.raf) cancelAnimationFrame(MC.raf); MC.raf=requestAnimationFrame(mcFrame); }
-function mcClose(){ MC.on=false; if(MC.raf){cancelAnimationFrame(MC.raf); MC.raf=0;} }
+function mcClose(){ MC.on=false; if(MC.raf){cancelAnimationFrame(MC.raf); MC.raf=0;} zoneMusic(); }
 function mcLane(d){ const s=MC.st; if(s.mode==='ready'){s.mode='run';return;} if(s.mode!=='run')return;
   const n=Math.max(0,Math.min(2,s.lane+d)); if(n!==s.lane){ s.lane=n; SFX&&SFX.tone&&SFX.tone(430,0.06,'square',0.04); } }
 function mcSwipe(){ const s=MC.st; if(s.mode==='ready'){s.mode='run';return;} if(s.mode!=='run')return;
