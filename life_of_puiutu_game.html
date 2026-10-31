@@ -1250,11 +1250,11 @@
   @media (max-height:500px){ .icon-btn{width:36px;height:32px;} }
   /* settings: the moved language flags and mode buttons sit in normal flow there */
   /* one row per setting — the name on the left, its buttons beside it — so it all fits on one screen */
-  #settingsBody{padding:16px 20px;color:#ffe7b0;display:grid;grid-template-columns:max-content 1fr;
-    align-items:center;column-gap:24px;row-gap:12px;align-content:start;}
+  #settingsBody{padding:16px 20px;color:#ffe7b0;display:grid;grid-template-columns:max-content max-content;
+    align-items:center;column-gap:24px;row-gap:12px;align-content:center;justify-content:center;}
   .set-h{font-size:16px;margin:0;color:#ffd36b;}
   #settingsBody #langPick, #settingsBody #modePick, #settingsBody .set-pick{position:static;margin:0;}
-  #settingsBody #resetBtn{grid-column:1/-1;justify-self:start !important;margin:4px 0 0 !important;}
+  #settingsBody #resetBtn{grid-column:1/-1;justify-self:center !important;margin:4px 0 0 !important;}
   #settingsBody > div{display:flex;justify-content:flex-start;justify-self:start;margin:0 !important;}
   #settingsBody #langPick,#settingsBody #modePick{justify-content:flex-start;}
   .set-pick{display:flex;gap:8px;}
@@ -4163,9 +4163,9 @@ const QUESTS={
     done:['Go give that thieving raccoon what he deserves, Puiutu. I believe in you!'] },
   rocky:{ name:'Rocky', dog:true, goal:{type:'defeat', n:3}, reward:{coins:40, xp:60, gold:1, companion:true},
     offer:['Woof! Hey there, little cat! I’m Rocky the dog.',
-           'You look brave! Prove it and I’ll join your team.',
-           'Defeat 3 enemies and I’ll fight by your side! (quest accepted)'],
-    progress:['Woof! Go bonk 3 enemies. Press / F near them. Then come back!'],
+           'Those pigeons never knew what hit them. We make a good team!',
+           'Bonk 3 more baddies and I’ll come with you everywhere! (quest accepted)'],
+    progress:['Woof! Bonk 3 baddies, then come back to the fountain. Get close and right-click (on a phone, tap F).'],
     complete:['WOOF WOOF! You’re a real fighter!','I’m your buddy now. Let’s wreck some baddies together!'],
     done:['Woof! Right behind you, partner!'] },
 };
@@ -4482,8 +4482,8 @@ const RO = {
   "And if you need potions or sharper claws, this forge is mine. Coins on the anvil, any time.":"Și dacă ai nevoie de poțiuni sau gheare mai ascuțite, forja asta e a mea. Monedele pe nicovală, oricând.",
   "Store":"Magazin","Potions":"Poțiuni","Anvil":"Nicovala","Tricks":"Trucuri","Charms":"Amulete","Talk":"Vorbește","Leave":"Pleacă","Skins":"Skinuri",
   "Woof! Hey there, little cat! I’m Rocky the dog.":"Ham! Salut, pisicuțo! Eu sunt Rocky, câinele.",
-  "You look brave! Prove it and I’ll join your team.":"Pari curajos! Dovedește-o și mă alătur echipei tale.",
-  "Defeat 3 enemies and I’ll fight by your side! (quest accepted)":"Învinge 3 dușmani și lupt alături de tine! (misiune acceptată)",
+  "Those pigeons never knew what hit them. We make a good team!":"Porumbeii ăia n-au știut ce i-a lovit. Facem o echipă bună!",
+  "Bonk 3 more baddies and I’ll come with you everywhere! (quest accepted)":"Mai pocnește 3 răufăcători și vin cu tine peste tot! (misiune acceptată)",
   "WOOF WOOF! You’re a real fighter!":"HAM HAM! Ești un luptător adevărat!",
   "I’m your buddy now. Let’s wreck some baddies together!":"Acum sunt prietenul tău, hai să facem praf niște răufăcători!",
   "Woof! Right behind you, partner!":"Ham! Chiar în spatele tău, partenere!",
@@ -5077,7 +5077,7 @@ const RO = {
   "Neutral standing (currently ":"Poziție neutră (acum ",
   "One maker’s mark on both armies’ weapons.":"Un singur semn de producător pe armele ambelor armate.",
   "You still have enemies to deal with. Get close and right-click (or press F) to attack.":"Mai ai dușmani de rezolvat. Apropie-te și dă clic dreapta (sau apasă F) ca să ataci.",
-  "Woof! Go bonk 3 enemies. Press / F near them. Then come back!":"Ham! Du-te și pocnește 3 dușmani, apasă / F lângă ei. Apoi întoarce-te!",
+  "Woof! Bonk 3 baddies, then come back to the fountain. Get close and right-click (on a phone, tap F).":"Ham! Pocnește 3 răufăcători, apoi întoarce-te la fântână. Apropie-te și dă clic dreapta (pe telefon, apasă F).",
   "Rat Emissary: Away from the stand. That suit is not for cats who cannot pay for it.":"Emisar șobolan: Departe de stand. Costumul ăla nu e pentru pisici care nu-l pot plăti.",
   "Sir Oink":"Sir Oink",
   "Clownfish":"Pește-clovn",
@@ -5274,7 +5274,7 @@ const RO = {
   "The bank in the City pays you to leave it there. That is the only place in this world that gives you something for waiting.":"Banca din oraș te plătește să-i lași acolo. E singurul loc din lumea asta care îți dă ceva pentru că aștepți.",
   "That barrel on the pier is a fishing spot. Cast, then keep the marker over the fish while it runs.":"Butoiul de pe ponton e un loc de pescuit. Aruncă, apoi ține marcajul pe pește cât fuge.",
   "Fish are money, and some of them are worth telling people about.":"Peștii sunt bani, iar despre unii merită să le povestești și altora.",
-  "You have been to enough places to keep a map now. It is the button at the top.":"Ai fost în destule locuri ca să ai acum o hartă. E butonul de sus.",
+  "The old wizard gave you his map. It is the button at the top.":"Bătrânul vrăjitor ți-a dat harta lui. E butonul de sus.",
   "It only takes you where you have already walked. Nothing is skipped.":"Te duce doar unde ai mers deja. Nu sari peste nimic.",
   "You woke up. You always do. This world is not finished with you.":"Te-ai trezit. Mereu te trezești, lumea asta n-a terminat cu tine.",
   "You dropped some coins where you fell. Nothing else is lost.":"Ai scăpat niște monede unde ai căzut. Altceva nu s-a pierdut.",
@@ -14026,8 +14026,8 @@ const TUT_BEATS=[
    lines:['That barrel on the pier is a fishing spot. Cast, then keep the marker over the fish while it runs.',
           'Fish are money, and some of them are worth telling people about.']},
   // ── the map ──
-  {id:'map',     who:'glow', when:()=>(S.visited && Object.keys(S.visited).length>=3),
-   lines:['You have been to enough places to keep a map now. It is the button at the top.',
+  {id:'map',     who:'glow', when:()=>S.hasMap && (S.visited && Object.keys(S.visited).length>=3),
+   lines:['The old wizard gave you his map. It is the button at the top.',
           'It only takes you where you have already walked. Nothing is skipped.']},
   // ── taking damage / fainting ──
   {id:'faint',   who:'glow', lines:['You woke up. You always do. This world is not finished with you.',
@@ -16113,11 +16113,11 @@ function sortLoop(){
 function sortOpen(){
   SORT.ctx=document.getElementById('sortCanvas').getContext('2d');
   SORT.level=Math.min(Math.max(1,S.sortLevel||1),SORT.maxLevel);
-  turnPortrait(); openModal('sort'); sortBoard(); sortGen(SORT.level);
+  openModal('sort'); sortBoard(); sortGen(SORT.level);   // stays landscape: the board has a wide picture
   document.getElementById('sortLevel').textContent=SORT.level;
   SORT.active=true; if(SORT.raf)cancelAnimationFrame(SORT.raf); sortLoop();
 }
-function sortClose(){ turnLandscape(); SORT.active=false; if(SORT.raf)cancelAnimationFrame(SORT.raf); SORT.raf=null; }
+function sortClose(){ SORT.active=false; if(SORT.raf)cancelAnimationFrame(SORT.raf); SORT.raf=null; }
 function sortPointer(e){ const cv=document.getElementById('sortCanvas'), rc=cv.getBoundingClientRect();
   return { x:(e.clientX-rc.left)*(SORT.W/rc.width), y:(e.clientY-rc.top)*(SORT.H/rc.height) }; }
 
@@ -17002,14 +17002,15 @@ function buy(idv){
 // so the flow can be played end to end; turn it off and hand checkout to window.PuiutuPayments
 // (Stripe / App Store / Play Billing), which calls iapGrant(sku) once the money has cleared.
 const IAP_TEST_MODE=true;
-// 1 € buys 1 gold coin (10000 bronze); the bigger packs add bonus gold on top
+// 0,99 € buys 10 gold coins (a gold coin is 10000 bronze); the bigger packs add bonus gold on top
 const IAP_GOLD=[
-  {sku:'gold_s',  coins:10000,  price:'0,99 €',  name:['Pouch of Coins','Pungă de monede']},
-  {sku:'gold_m',  coins:60000,  price:'4,99 €',  name:['Sack of Coins','Sac de monede'], tag:['+20% bonus','+20% bonus']},
-  {sku:'gold_l',  coins:130000, price:'9,99 €',  name:['Chest of Coins','Cufăr de monede'], tag:['+30% bonus','+30% bonus']},
-  {sku:'gold_xl', coins:280000, price:'19,99 €', name:['Royal Treasury','Tezaurul regal'], tag:['+40% · Best value','+40% · Cea mai bună ofertă']},
+  {sku:'gold_s',  coins:100000,  price:'0,99 €',  name:['Pouch of Coins','Pungă de monede']},
+  {sku:'gold_m',  coins:600000,  price:'4,99 €',  name:['Sack of Coins','Sac de monede'], tag:['+20% bonus','+20% bonus']},
+  {sku:'gold_l',  coins:1500000, price:'9,99 €',  name:['Chest of Coins','Cufăr de monede'], tag:['+50% · Best value','+50% · Cea mai bună ofertă']},
 ];
-const IAP_SKIN_PRICE={common:'0,99 €',rare:'1,99 €',epic:'3,99 €',legendary:'6,99 €'};
+// only epic and legendary skins are sold; common and rare come from the Lucky Capsule
+const IAP_SKIN_PRICE={epic:'1,99 €',legendary:'3,99 €'};
+const skinForSale=cs=>!!IAP_SKIN_PRICE[cs.rarity];
 function renderShop(){
   const body=document.getElementById('shopBody'); if(!body) return;
   const have=(S.catSkins||[]).length, n=CAT_SKINS.length;
@@ -17017,7 +17018,7 @@ function renderShop(){
       <div class="wd-sub">${LT('Collected','Colecționate')} ${have} / ${n}</div>
       <div class="wd-bar"><i style="width:${Math.round(have/n*100)}%"></i></div></div>`;
   h+=skinDealHTML();
-  h+='<div class="wd-grid">'+skinsByRarity().map(cs=>`<div class="skc-wrap">${skinCardHTML(cs)}${skinBtnHTML(cs)}</div>`).join('')+'</div>';
+  h+='<div class="wd-grid">'+skinsByRarity().filter(cs=>skinForSale(cs)||(S.catSkins||[]).includes(cs.id)).map(cs=>`<div class="skc-wrap">${skinCardHTML(cs)}${skinBtnHTML(cs)}</div>`).join('')+'</div>';
   // the coin packs under the cards, one row of tiles
   h+=`<div class="wd-head wd-coins"><h3>${LT('Coins','Monede')}</h3></div><div class="gold-grid">`+IAP_GOLD.map(g=>`<div class="gold-tile">
       ${g.tag?`<div class="gold-tag">${LT(g.tag[0],g.tag[1])}</div>`:''}
@@ -17037,7 +17038,7 @@ const SKIN_RARITY_ORDER=['legendary','epic','rare','common'];
 const SKIN_DEAL_OFF=0.30;
 function skinOfTheDay(){
   const d=new Date(), day=Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000);
-  const pool=CAT_SKINS.filter(c=>!(S.catSkins||[]).includes(c.id));
+  const pool=CAT_SKINS.filter(c=>skinForSale(c) && !(S.catSkins||[]).includes(c.id));
   return pool.length ? pool[(day*7)%pool.length] : null;     // a skin you already own is never the deal
 }
 function dealPrice(cs){
@@ -17090,7 +17091,8 @@ function skinCardHTML(cs,big){
 function skinBtnHTML(cs){
   const owned=(S.catSkins||[]).includes(cs.id), eq=S.equippedSkin===cs.id;
   return owned?`<button class="buy-btn ${eq?'equipped':'owned'}" data-skineq="${cs.id}">${eq?LT('Equipped','Echipat'):LT('Equip','Echipează')}</button>`
-    :`<button class="buy-btn iap" data-iap="skin:${cs.id}">${IAP_SKIN_PRICE[cs.rarity]}</button>`;
+    :skinForSale(cs)?`<button class="buy-btn iap" data-iap="skin:${cs.id}">${IAP_SKIN_PRICE[cs.rarity]}</button>`
+    :`<button class="buy-btn owned" disabled>${LT('Lucky Capsule','Capsula norocoasă')}</button>`;
 }
 function wireSkinButtons(root){
   root.querySelectorAll('[data-iap]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); iapBuy(b.dataset.iap); });
