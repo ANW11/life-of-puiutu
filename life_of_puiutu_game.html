@@ -566,11 +566,14 @@
   .lang-btn:hover{opacity:.85;}
   .lang-btn.on{opacity:1;border-color:#ffd76a;transform:scale(1.06);}
   /* Color Sort minigame */
-  #sortWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px;min-height:0;}
-  #sortHud{color:#ffe7b0;font-weight:bold;font-size:19px;}
-  #sortCanvas.wide{background-image:url('colorsort/sort_bg_wide.jpg');}
-  #sortCanvas{background:#241a3e url('colorsort/sort_bg.jpg') center/cover;border:4px solid #6b4a1f;border-radius:14px;   /* the library's alchemy table up close (rose window, still, shelves), the middle kept calm for the flasks */
-    box-shadow:0 8px 24px rgba(0,0,0,.45);max-height:min(80vh, calc(100vh - 190px));max-width:96vw;height:auto;touch-action:none;cursor:pointer;}
+  /* Color Sort fills the screen: the canvas (the library's alchemy corner + the flasks) sits under
+     the title bar, the level and the buttons, which float on top of it */
+  #sort .modal-head{position:absolute;top:0;left:0;right:0;z-index:3;background:linear-gradient(rgba(30,20,10,.9),rgba(30,20,10,.55));}
+  #sortWrap{position:absolute;inset:0;}
+  #sortHud{position:absolute;top:70px;left:0;right:0;z-index:2;text-align:center;color:#ffe7b0;font-weight:bold;font-size:20px;
+    text-shadow:0 2px 0 #1a0f06,0 0 6px #000;pointer-events:none;}
+  #sortCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:#1c140c;touch-action:none;cursor:pointer;}
+  #sortBtns{position:absolute;left:0;right:0;bottom:16px;z-index:2;justify-content:center;}
   /* Fisher's Barrel hub (Fish / Fish Log) */
   #fishhubWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:18px;min-height:0;}
   #fishhubArt{height:58vh;max-width:94vw;width:auto;object-fit:contain;
@@ -863,7 +866,7 @@
   #fishCanvas{position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:0;
     box-shadow:none;max-width:none;max-height:none;touch-action:none;cursor:pointer;display:block;
     background:linear-gradient(#bfe9ff,#3f86c4 55%,#1f4f86);}
-  #sortBtns{display:flex;gap:10px;}
+  #sortBtns{display:flex;gap:10px;}   /* placed over the board in the Color Sort rules above */
   #sortBtns button{background:linear-gradient(#caa46a,#9c7233);border:2px solid #6b4a1f;color:#fff;font-weight:bold;
     font-size:14px;padding:8px 16px;border-radius:12px;cursor:pointer;}
   #sortNextBtn{background:linear-gradient(#7ed957,#4d9a2a)!important;border-color:#3a6f1c!important;}
@@ -15849,18 +15852,32 @@ function sortGen(lvl){
   sortLayout();
   const nb=document.getElementById('sortNextBtn'); if(nb)nb.style.display='none';
 }
-// Two boards: on a wide screen the library wall is widened (colorsort/sort_bg_wide.jpg), on a
-// narrow one it keeps its tall shape. `rect` is the plain dark stone wall in each picture, between
-// the shelves, the top shelf and the rug: the bottles are laid out only there.
+// The board fills the whole screen. The picture is drawn into the canvas to cover it (the wide
+// one on landscape screens, the tall one on phones), centred on its plain stone wall; `wall` is
+// that wall as fractions of the picture, between the shelves, the top shelf and the rug. The
+// flasks are laid out only on the part of the wall left clear of the title, level and buttons.
 const SORT_BOARDS={
-  wide:{W:754, H:720, rect:{x:119, y:185, w:513, h:447}},
-  tall:{W:542, H:720, rect:{x:118, y:185, w:306, h:447}},
+  wide:{src:'colorsort/sort_bg_wide.jpg', wall:{x0:0.114, y0:0.367, x1:0.891, y1:0.856}},   // 16:9, ChatGPT; y0 clears the ivy under the shelf
+  tall:{src:'colorsort/sort_bg.jpg',      wall:{x0:0.218, y0:0.257, x1:0.782, y1:0.879}},
 };
+function sortRefit(){ if(SORT.active){ sortBoard(); sortLayout(); } }
+for(const k in SORT_BOARDS){ const im=new Image(); im.onload=sortRefit; im.src=SORT_BOARDS[k].src; SORT_BOARDS[k].img=im; }
+window.addEventListener('resize', sortRefit);
 function sortBoard(){
-  const b=SORT_BOARDS[(innerWidth/innerHeight>0.8)?'wide':'tall'], cv=document.getElementById('sortCanvas');
-  SORT.W=b.W; SORT.H=b.H; SORT.rect=b.rect;
-  if(cv.width!==b.W) cv.width=b.W; if(cv.height!==b.H) cv.height=b.H;
-  cv.classList.toggle('wide', b===SORT_BOARDS.wide);
+  const cv=document.getElementById('sortCanvas'), cw=cv.clientWidth||innerWidth, ch=cv.clientHeight||innerHeight;
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(cw*dpr); cv.height=Math.round(ch*dpr);
+  SORT.W=cw; SORT.H=ch; SORT.dpr=dpr;
+  const b=SORT_BOARDS[(cw/ch>0.8)?'wide':'tall'], im=b.img, iw=im.naturalWidth||1600, ih=im.naturalHeight||900, w=b.wall;
+  const sc=Math.max(cw/iw, ch/ih), dw=iw*sc, dh=ih*sc;
+  // centre the wall, without letting the picture leave a gap at any edge
+  let dx=cw/2-(w.x0+w.x1)/2*dw, dy=ch/2-(w.y0+w.y1)/2*dh;
+  dx=Math.min(0,Math.max(cw-dw,dx)); dy=Math.min(0,Math.max(ch-dh,dy));
+  SORT.bg={im, dx, dy, dw, dh, board:b};
+  const TOP=112, BOT=78, SIDE=14;                                  // the title bar + level above, the buttons below
+  const x0=Math.max(SIDE, dx+w.x0*dw), x1=Math.min(cw-SIDE, dx+w.x1*dw);
+  const y0=Math.max(TOP, dy+w.y0*dh), y1=Math.min(ch-BOT, dy+w.y1*dh);
+  SORT.rect={x:x0, y:y0, w:Math.max(60,x1-x0), h:Math.max(60,y1-y0)};
 }
 function sortLayout(){
   const n=SORT.tubes.length, R=SORT.rect||{x:0,y:0,w:SORT.W,h:SORT.H}, W=R.w, H=R.h;
@@ -15868,7 +15885,7 @@ function sortLayout(){
   // the canvas's height: five bottles across left them 80px wide while six across two rows got
   // 128. Try every sensible row count and keep whichever makes the bottles biggest — the board
   // is tall, so more rows almost always beats more columns.
-  const GAP=8, VGAP=10, PAD=4, TOPBOT=8, CAPW=170;
+  const GAP=Math.max(8,R.w*0.02), VGAP=Math.max(10,R.h*0.025), PAD=4, TOPBOT=8, CAPW=240;
   let perRow=n, rows=1, bw=0;
   for(let r=1; r<=4; r++){
     const pr=Math.ceil(n/r);
@@ -15985,7 +16002,10 @@ function sortDrawTube(L, baseSegs, extraColIdx, extraH, sel){
 }
 function sortDraw(){
   const ctx=SORT.ctx,W=SORT.W,H=SORT.H; if(!ctx)return;
+  ctx.setTransform(SORT.dpr||1,0,0,SORT.dpr||1,0,0);
   ctx.clearRect(0,0,W,H);
+  const bg=SORT.bg; if(bg && bg.im.complete && bg.im.naturalWidth) ctx.drawImage(bg.im, bg.dx, bg.dy, bg.dw, bg.dh);
+  else ctx.fillStyle='#1c140c', ctx.fillRect(0,0,W,H);
   const a=SORT.anim, prog = a ? Math.min(1,(performance.now()-a.t0)/a.dur) : 0;
   for(let i=0;i<SORT.tubes.length;i++){
     const tb=SORT.tubes[i];
