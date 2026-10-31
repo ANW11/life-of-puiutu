@@ -1146,30 +1146,27 @@
   /* ── 📱 Phone overlay ── */
   .phone-modal{background:rgba(8,5,3,.82);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
   #phoneClose{position:absolute;top:14px;right:14px;z-index:5;}
-  /* the phone fills the window top to bottom, centred: only a sliver of the wooden frame's top and bottom
-     edge runs off, evenly, so the gold corners, the status bar and the paw Home button all stay in view */
+  /* the cat tablet (Phone/cattablet.png, landscape) fills the window, centred, as big as it fits.
+     On a screen held upright it turns on its side, so it always stays wide. */
   .phone-modal{overflow:hidden;}
-  .phone-frame{position:relative;flex:0 0 auto;height:104vh;aspect-ratio:1632/2604;
-    background:url('Phone/catphone.png') center/contain no-repeat;}
-  /* a tall, narrow window (a phone held upright): the whole phone, as big as it fits */
-  @media (orientation:portrait){ .phone-frame{height:min(98vh,150vw);transform:none;} }
-  /* a real phone held sideways: the cat phone turns on its side to fill the screen —
-     turn your phone upright and it stands up full size (the portrait rule above) */
-  @media (orientation:landscape) and (max-height:520px), (pointer:coarse) and (orientation:landscape){
-    .phone-frame{height:min(96vw,154vh);transform:rotate(-90deg);} }
-  .phone-status{position:absolute;top:18.3%;transform:translateY(-50%);left:0;right:0;text-align:center;color:#fff;
-    font-family:'Trebuchet MS',sans-serif;font-weight:bold;font-size:min(2.2vh,14px);
+  .phone-frame{position:relative;flex:0 0 auto;width:min(96vw,170vh);aspect-ratio:1432/792;
+    background:url('Phone/cattablet.png') center/contain no-repeat;}
+  @media (orientation:portrait){ .phone-frame{width:min(96vh,170vw);transform:rotate(90deg);} }
+  /* measured on cattablet.png: screen 7.9% / 89.3% across, status bar 10.1% (middle 14.1%), screen bottom 88.4% */
+  .phone-status{position:absolute;top:14.1%;transform:translateY(-50%);left:7.9%;right:10.7%;text-align:center;color:#fff;
+    font-family:'Trebuchet MS',sans-serif;font-weight:bold;font-size:min(2.4vh,16px);
     letter-spacing:.5px;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none;}
-  .phone-clock{position:absolute;left:0;right:0;top:21%;text-align:center;color:#4a3320;
+  .phone-clock{position:absolute;left:44%;right:12%;top:25%;text-align:center;color:#4a3320;
     text-shadow:0 1px 0 rgba(255,255,255,.5);font-family:'Trebuchet MS',sans-serif;pointer-events:none;}
   .phone-clock .pTime{font-size:min(11vh,62px);font-weight:900;line-height:1;letter-spacing:1px;
     font-variant-numeric:tabular-nums;}
-  .phone-clock .pDate{font-size:min(3.6vh,24px);font-weight:bold;margin-top:6px;opacity:.85;}
-  .phone-apps{position:absolute;left:22%;right:21%;top:63%;display:grid;grid-template-columns:repeat(3,1fr);row-gap:min(1.6vh,12px);}
+  .phone-clock .pDate{font-size:min(4.4vh,30px);font-weight:bold;margin-top:6px;opacity:.85;}
+  /* the sleeping cat lies on the left of the wallpaper; the apps sit on the right */
+  .phone-apps{position:absolute;left:46%;right:14%;top:44%;display:grid;grid-template-columns:repeat(3,1fr);row-gap:min(1.6vh,12px);}
   .phone-apps .pa-ico{width:76%;}
   .pa-art{background-size:contain;background-color:#f6e7c8;}
-  /* apps run ON the phone: the screen area of catphone.png (measured: 20.2% / 79.2% down, 21% / 79.8% across) */
-  #phoneScreen{position:absolute;left:21%;right:20.2%;top:20.2%;bottom:20.8%;display:none;flex-direction:column;
+  /* apps run ON the tablet: its screen area, from the status bar down (measured on cattablet.png) */
+  #phoneScreen{position:absolute;left:7.9%;right:10.7%;top:10.1%;bottom:11.6%;display:none;flex-direction:column;
     background:#f6ead0;border-radius:2px;overflow:hidden;z-index:4;}
   #phoneScreen.on{display:flex;}
   .ps-bar{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:5px 6px;background:#4a3320;color:#ffe7b0;
@@ -1179,14 +1176,14 @@
   #phoneBack:active{transform:scale(.92);}
   #phoneTitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #phoneApp{flex:1;min-height:0;position:relative;}
-  /* the paw button painted at the bottom of the phone is its Home button */
-  #phoneHome{position:absolute;left:50%;top:92.6%;width:22%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  /* the paw button painted on the tablet's right edge is its Home button */
+  #phoneHome{position:absolute;left:94.9%;top:51.9%;width:8%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
     background:none;border:0;cursor:pointer;z-index:5;}
   #phoneHome:active{background:rgba(255,231,176,.18);}
   /* a game window moved onto the phone: no fullscreen backdrop, no own header, content scaled to the small screen */
   #phoneApp > .modal{position:absolute;inset:0;z-index:1;background:#2a1d10;backdrop-filter:none;}
   #phoneApp > .modal > .modal-head{display:none;}
-  #phoneApp > .modal .modal-body{zoom:.78;overflow:auto;}
+  #phoneApp > .modal .modal-body{zoom:.9;overflow:auto;}
   /* the flat pixel app icons: the tile is the icon itself (its own rounded edge), crisp at any size */
   .pa-px{background-size:100% 100%;border-radius:0;box-shadow:none;filter:drop-shadow(0 3px 3px rgba(0,0,0,.3));image-rendering:pixelated;}
   .pa-flags{display:flex;align-items:center;justify-content:center;background:#f6e7c8;}
