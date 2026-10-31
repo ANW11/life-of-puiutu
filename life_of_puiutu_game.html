@@ -568,7 +568,8 @@
   /* Color Sort minigame */
   #sortWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px;min-height:0;}
   #sortHud{color:#ffe7b0;font-weight:bold;font-size:19px;}
-  #sortCanvas{background:linear-gradient(#3a2c5a,#241a3e);border:4px solid #6b4a1f;border-radius:14px;
+  #sortCanvas.wide{background-image:url('colorsort/sort_bg_wide.jpg');}
+  #sortCanvas{background:#241a3e url('colorsort/sort_bg.jpg') center/cover;border:4px solid #6b4a1f;border-radius:14px;   /* the library's alchemy table up close (rose window, still, shelves), the middle kept calm for the flasks */
     box-shadow:0 8px 24px rgba(0,0,0,.45);max-height:min(80vh, calc(100vh - 190px));max-width:96vw;height:auto;touch-action:none;cursor:pointer;}
   /* Fisher's Barrel hub (Fish / Fish Log) */
   #fishhubWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:18px;min-height:0;}
@@ -15848,13 +15849,26 @@ function sortGen(lvl){
   sortLayout();
   const nb=document.getElementById('sortNextBtn'); if(nb)nb.style.display='none';
 }
+// Two boards: on a wide screen the library wall is widened (colorsort/sort_bg_wide.jpg), on a
+// narrow one it keeps its tall shape. `rect` is the plain dark stone wall in each picture, between
+// the shelves, the top shelf and the rug: the bottles are laid out only there.
+const SORT_BOARDS={
+  wide:{W:754, H:720, rect:{x:119, y:185, w:513, h:447}},
+  tall:{W:542, H:720, rect:{x:118, y:185, w:306, h:447}},
+};
+function sortBoard(){
+  const b=SORT_BOARDS[(innerWidth/innerHeight>0.8)?'wide':'tall'], cv=document.getElementById('sortCanvas');
+  SORT.W=b.W; SORT.H=b.H; SORT.rect=b.rect;
+  if(cv.width!==b.W) cv.width=b.W; if(cv.height!==b.H) cv.height=b.H;
+  cv.classList.toggle('wide', b===SORT_BOARDS.wide);
+}
 function sortLayout(){
-  const n=SORT.tubes.length, W=SORT.W, H=SORT.H;
+  const n=SORT.tubes.length, R=SORT.rect||{x:0,y:0,w:SORT.W,h:SORT.H}, W=R.w, H=R.h;
   // The row count used to be fixed (all in one row up to five, otherwise two), which threw away
   // the canvas's height: five bottles across left them 80px wide while six across two rows got
   // 128. Try every sensible row count and keep whichever makes the bottles biggest — the board
   // is tall, so more rows almost always beats more columns.
-  const GAP=12, VGAP=30, PAD=28, TOPBOT=56, CAPW=170;
+  const GAP=8, VGAP=10, PAD=4, TOPBOT=8, CAPW=170;
   let perRow=n, rows=1, bw=0;
   for(let r=1; r<=4; r++){
     const pr=Math.ceil(n/r);
@@ -15872,8 +15886,8 @@ function sortLayout(){
     const r=Math.floor(i/perRow), c=i%perRow;
     const rowCount=Math.min(perRow, n-r*perRow);
     const rowW=rowCount*(bw+GAP)-GAP;
-    const x=(W-rowW)/2 + c*(bw+GAP);
-    const y=(H-rowAreaH)/2 + r*(bh+VGAP) + 10;
+    const x=R.x+(W-rowW)/2 + c*(bw+GAP);
+    const y=R.y+(H-rowAreaH)/2 + r*(bh+VGAP);
     SORT.layout.push({x, y, w:bw, h:bh});
   }
 }
@@ -16003,7 +16017,7 @@ function sortLoop(){
 function sortOpen(){
   SORT.ctx=document.getElementById('sortCanvas').getContext('2d');
   SORT.level=Math.min(Math.max(1,S.sortLevel||1),SORT.maxLevel);
-  turnPortrait(); openModal('sort'); sortGen(SORT.level);
+  turnPortrait(); openModal('sort'); sortBoard(); sortGen(SORT.level);
   document.getElementById('sortLevel').textContent=SORT.level;
   SORT.active=true; if(SORT.raf)cancelAnimationFrame(SORT.raf); sortLoop();
 }
