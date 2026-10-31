@@ -722,8 +722,16 @@
   .lkRefCell{aspect-ratio:1;border-radius:3px;background:rgba(60,44,17,.22);}
   #lockTurns{color:#b39457;font-size:13px;}
   /* Gacha — Lucky Capsule */
-  #gacha{background:linear-gradient(160deg,#2a1640ee,#160a26f4);}
-  #gacha .modal-head{background:linear-gradient(#3a2360,#22113e);border-bottom:3px solid #7a4ad0;}
+  /* a cat toy shop at night (ChatGPT): prize shelves of cans, plushies and capsules, the machine on the rug */
+  #gacha{background:#160a26 url('gacha/gacha_bg.png') center/cover;image-rendering:pixelated;}   /* pixelated to a 3px grid, kept crisp when scaled */
+  /* no title bar: just the coins and the close button over the shop, top right */
+  #gacha .modal-head{position:absolute;top:0;left:0;right:0;z-index:6;background:none;border:0;}
+  #gacha .modal-head h2{display:none;}
+  /* the machine stands on the shop's round rug and the roll button sits on the rug in front of it (gachaPlace) */
+  #gacha #gachaWrap{position:absolute;inset:0;display:block;padding:0;}
+  #gacha #gachaStage{position:absolute;}
+  #gachaUI{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:3;}
+  #gachaUI #gachaMsg,#gachaUI #gachaPity{text-shadow:0 2px 0 #1a0b2a,0 0 6px #000;}
   #gachaWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px;min-height:0;}
   #gachaStage{position:relative;display:flex;align-items:center;justify-content:center;}
   /* leave room for the header, message, buttons and pity line on short (landscape phone) screens */
@@ -739,10 +747,23 @@
     background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.38) 20%, rgba(0,0,0,0) 40%);}
   #gachaCard.skin-reveal.charging::after{display:none;}
   /* potions, charms and coins are not cat cards: a square card, the picture in its upper part, name below */
-  #gachaCard.skin-reveal.item-art{height:min(80%,88vw);aspect-ratio:1;}
-  #gachaCard.skin-reveal.spell-art.item-art #gcArtCanvas{top:9%;height:52%;}
+  /* no black box: the prize floats big over the machine in a soft glow of its rarity colour, with its
+     name on a small plaque underneath */
+  #gachaCard.skin-reveal.item-art{height:min(100%,92vw);aspect-ratio:1;background:none;box-shadow:none;padding-bottom:4%;isolation:isolate;}   /* isolate: the dimmer below stays inside the card's layer, over the machine */
+  /* behind the prize the whole shop dims, with a pool of light in the rarity colour, so the prize pops */
+  #gachaCard.skin-reveal.item-art::before{content:'';position:absolute;left:-150vw;right:-150vw;top:-150vh;bottom:-150vh;z-index:-1;
+    pointer-events:none;animation:gDim .35s ease-out;
+    background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--ray,#ffd24a) 42%,transparent) 0,
+      color-mix(in srgb,var(--ray,#ffd24a) 16%,rgba(12,5,24,.55)) 16vmin,rgba(12,5,24,.82) 42vmin);}
+  @keyframes gDim{from{opacity:0}to{opacity:1}}
+  #gachaCard.skin-reveal.item-art::after{display:none;}
+  #gachaCard.skin-reveal.item-art.r-legendary{animation:gPop .4s cubic-bezier(.2,1.4,.5,1);}
+  #gachaCard.skin-reveal.spell-art.item-art #gcArtCanvas{top:0;height:76%;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55)) drop-shadow(0 0 14px var(--ray,#ffd24a));}
+  #gachaCard.skin-reveal.item-art #gcName{background:rgba(22,10,38,.88);border:2px solid var(--ray,#ffd24a);border-radius:12px;
+    padding:4px 16px;font-size:clamp(14px,3.6vh,24px);box-shadow:0 4px 12px rgba(0,0,0,.5);}
+  #gachaCard.skin-reveal.item-art #gcRarity{text-shadow:0 2px 0 #000,0 0 6px #000;}
   /* coins: exactly as many coin sprites as dropped, in rows — the amount (in coin icons) underneath */
-  #gachaCard.skin-reveal.coin-art #gcIcon{position:absolute;left:8%;right:8%;top:9%;height:56%;display:flex;flex-wrap:wrap;align-content:center;
+  #gachaCard.skin-reveal.coin-art #gcIcon{position:absolute;left:4%;right:4%;top:2%;height:72%;display:flex;flex-wrap:wrap;align-content:center;
     align-items:center;justify-content:center;gap:4px;font-size:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));}
   #gachaCard.skin-reveal.coin-art:not(.charging) #gcIcon{animation:gArtPop .95s cubic-bezier(.16,1.7,.34,1);}
   #gachaCard.charging #gcIcon{visibility:hidden;}
@@ -809,15 +830,21 @@
   /* a cat skin comes out in the same rarity frame the Wardrobe shows it in */
   #gcFrame{display:none;}
   #gachaCard.framed{aspect-ratio:523/881;background:transparent;padding:0;}
+  /* a cat skin comes out big, over the dimmed shop like the other prizes */
+  #gachaCard.skin-reveal.framed{isolation:isolate;}
+  #gachaCard.skin-reveal.framed::before{content:'';position:absolute;left:-150vw;right:-150vw;top:-150vh;bottom:-150vh;z-index:-1;
+    pointer-events:none;animation:gDim .35s ease-out;
+    background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--ray,#ffd24a) 40%,transparent) 0,
+      color-mix(in srgb,var(--ray,#ffd24a) 14%,rgba(12,5,24,.55)) 20vmin,rgba(12,5,24,.82) 50vmin);}
   #gachaCard.framed::after{display:none;}
   #gachaCard.framed.r-common,#gachaCard.framed.r-rare,#gachaCard.framed.r-epic,#gachaCard.framed.r-legendary{box-shadow:none;animation:gPop .4s cubic-bezier(.2,1.4,.5,1);}
   #gachaCard.framed #gcFrame{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;
     filter:drop-shadow(0 0 18px var(--ray,#ffd24a));}
   #gachaCard.framed.charging #gcFrame{visibility:hidden;}
   #gachaCard.framed:not(.charging) #gcFrame{animation:gArtPop .95s cubic-bezier(.16,1.7,.34,1);}
-  /* the framed card is taller than the machine: it grows into the empty space above the stage */
-  #gachaCard.skin-reveal.framed{--gx:clamp(0px,calc((100vh - 640px)*.35),76px);   /* short phones have no room above, so it grows less */
-    height:min(calc(100% + var(--gx)),calc(94vw*881/523));top:calc(50% - var(--gx)*.47);}
+  /* a won cat skin comes out big: nearly the screen's height, its bottom on the machine's feet so the
+     message and Roll button stay visible below it */
+  #gachaCard.skin-reveal.framed{--ch:min(calc(100vh - 160px),calc(94vw*881/523));height:var(--ch);top:calc(100% - var(--ch)/2 - 14px);}
   /* frame, art and text pop in as ONE piece, so the name never slides out of its plate */
   #gachaCard.framed:not(.charging){animation:gFramePop .7s cubic-bezier(.2,1.3,.4,1);}
   #gachaCard.framed:not(.charging) #gcFrame,#gachaCard.framed:not(.charging) #gcArtCanvas{animation:none;}
@@ -1783,12 +1810,14 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
         <div id="gcFlash"></div>
         <div id="gachaCard"><div id="gcRays"></div><div id="gcCharge"></div><div id="gcShock"></div><div id="gcShock2"></div><canvas id="gcArtCanvas" width="196" height="196"></canvas><img id="gcFrame" alt=""><div id="gcIcon"></div><div id="gcName">???</div><div id="gcRarity"></div></div>
       </div>
+      <div id="gachaUI">
       <div id="gachaMsg">Turn the crank for a surprise!</div>
       <div id="gachaBtns">
         <button id="gachaRoll">Roll · 1</button>
         <button id="gachaLegend" style="display:none;"> Open Legendary Capsule</button>
       </div>
       <div id="gachaPity"></div>
+      </div>
     </div>
   </div>
 
@@ -15374,14 +15403,17 @@ const GACHA={ cost:10000, busy:false, open:false, caps:[], raf:null, ctx:null, W
   capImg:{ normal:(()=>{const i=new Image();i.src='gacha/cap_normal.png';return i;})(),
            legendary:(()=>{const i=new Image();i.src='gacha/cap_legendary.png';return i;})() } };
 // swap in the pixel-art gacha machine (gacha/gacha_machine.png) as soon as it loads
-{ const m=new Image(); m.onload=()=>{ GACHA.img=m; GACHA.geo={ dome:[0.473,0.244,0.353,0.205], base:0.45, hole:[0.47,0.78], tray:0.83 }; };
+{ const m=new Image(); m.onload=()=>{ GACHA.img=m; GACHA.geo={ dome:[0.4677,0.2447,0.378,0.2275], base:0.47, hole:[0.474,0.76], tray:0.82, lip:0.882 }; };
   m.src='gacha/gacha_machine.png';
   // where the cans may show: the red area of gacha_machine_NEW MASK.png, cut out once as an alpha mask
   const k=new Image(); k.onload=()=>{ GACHA.globeMask=k; }; k.src='gacha/gacha_globe_mask.png'; }
-function gachaAddCap(type){ const d=GACHA.dome; GACHA.caps.push({x:d.cx+(Math.random()-0.5)*d.rx, y:d.cy-d.ry*0.5+Math.random()*d.ry*0.4, vx:(Math.random()-0.5)*2, vy:0, r:28*(0.92+Math.random()*0.16), type}); }
+// the globe is the round ball from the top of the glass down to the gold crown's rim (dome, and the same
+// ellipse in gacha_globe_mask.png): the cans fall under gravity and fill it all, over the crown's top
+const GACHA_CAP_R=28, GACHA_CAPS=19;
+function gachaAddCap(type){ const d=GACHA.dome; GACHA.caps.push({x:d.cx+(Math.random()-0.5)*d.rx*1.2, y:d.cy-d.ry*0.6+Math.random()*d.ry*0.5, vx:(Math.random()-0.5)*2, vy:0, r:GACHA_CAP_R*(0.92+Math.random()*0.16), type}); }
 function gachaInitCaps(){ GACHA.caps=[]; GACHA.drop=null;
   const nLeg=Math.max(1,Math.min(3,S.legendaryCapsules||0));   // always at least one legendary on display
-  for(let i=0;i<11-nLeg;i++) gachaAddCap('normal'); for(let i=0;i<nLeg;i++) gachaAddCap('legendary'); }
+  for(let i=0;i<GACHA_CAPS-nLeg;i++) gachaAddCap('normal'); for(let i=0;i<nLeg;i++) gachaAddCap('legendary'); }
 // pull a capsule out of the dome: it falls to the dome base, vanishes INSIDE the machine,
 // then pops out of the dispenser hole into the tray (so it never floats over the wooden body)
 function gachaStartDrop(type,from){ GACHA.drop={x:from?from.x:GACHA.dome.cx, y:from?from.y:GACHA.dome.cy, vy:1.5, type, t:Date.now(), phase:'enter', hideAt:0}; }
@@ -15423,12 +15455,31 @@ function gachaDraw(){ let g2=GACHA.ctx; if(!g2) return; g2.clearRect(0,0,GACHA.W
     g2.save();
     if(dp.phase==='enter'){ g2.globalAlpha=Math.max(0,Math.min(1,(GACHA.geo.base*GACHA.H-dp.y)/40+0.3)); }   // fade as it sinks into the machine
     if(dp.type==='legendary'){ g2.shadowColor='#ffd24a'; g2.shadowBlur=14; }
+    if(dp.phase==='exit'){ const gg=GACHA.geo; g2.beginPath(); g2.rect(0,(gg.hole[1]-0.03)*GACHA.H,GACHA.W,((gg.lip||1)-gg.hole[1]+0.03)*GACHA.H); g2.clip(); }   // out of the hole and down into the tray, behind its front lip
     if(im&&im.complete&&im.naturalWidth) g2.drawImage(im,dp.x-s/2,dp.y-s/2,s,s);
     else { g2.fillStyle=dp.type==='legendary'?'#ffd24a':'#7fd0d0'; g2.beginPath(); g2.arc(dp.x,dp.y,30,0,7); g2.fill(); }
     g2.restore(); }
 }
 function gachaLoop(){ if(!GACHA.open) return; gachaStep(); gachaDraw(); GACHA.raf=requestAnimationFrame(gachaLoop); }
+// stand the machine on the rug painted in gacha/gacha_bg.png (centre 50% / 87% of the picture), whatever
+// the screen: the picture covers the window, so the rug moves with how it is cropped
+const GACHA_BG={w:1671, h:939, rugX:0.5, rugY:0.872, winY:0.335};   // winY: the bottom of the round window
+function gachaPlace(){
+  const m=document.getElementById('gacha'); if(!m||!m.classList.contains('active')) return;
+  const W=m.clientWidth, H=m.clientHeight, s=Math.max(W/GACHA_BG.w, H/GACHA_BG.h);
+  const rx=(W-GACHA_BG.w*s)/2+GACHA_BG.rugX*GACHA_BG.w*s, ry=(H-GACHA_BG.h*s)/2+GACHA_BG.rugY*GACHA_BG.h*s;
+  const cv=document.getElementById('gachaCanvas'), st=document.getElementById('gachaStage'), ui=document.getElementById('gachaUI');
+  const ar=cv.width/cv.height, BASE=0.962, BODY=GACHA.geo?GACHA.geo.hole[0]:0.474;   // feet at 96% of the canvas; the body's middle (the crank sticks out right)
+  const uiH=ui.offsetHeight||96, foot=Math.min(ry, H-uiH-12);   // the feet on the rug, the roll button always below them
+  const winBot=(H-GACHA_BG.h*s)/2+GACHA_BG.winY*GACHA_BG.h*s;   // keep the globe clear of the round window above
+  let h=Math.min(GACHA_BG.h*s*0.6, foot-60, (foot-winBot-18)/(BASE-0.016)); h=Math.min(h, (W*0.92)/ar/1);
+  cv.style.height=h+'px'; cv.style.width=(h*ar)+'px'; cv.style.maxHeight='none'; cv.style.maxWidth='none';
+  st.style.left=(rx-h*ar*BODY)+'px'; st.style.top=(foot-h*BASE)+'px';
+  ui.style.left=rx+'px'; ui.style.top=(foot+6)+'px';
+}
+window.addEventListener('resize', gachaPlace);
 function gachaOpen(){ openModal('gacha'); GACHA.open=true; GACHA.busy=false;
+  requestAnimationFrame(gachaPlace);
   GACHA.ctx=document.getElementById('gachaCanvas').getContext('2d');
   const gd=GACHA.geo.dome; GACHA.dome={cx:gd[0]*GACHA.W, cy:gd[1]*GACHA.H, rx:gd[2]*GACHA.W, ry:gd[3]*GACHA.H};
   gachaInitCaps(); document.getElementById('gachaCard').className='';
@@ -15549,7 +15600,7 @@ function gachaReveal(rar,pick,gotCap){
 
   if(coinArt){
     // coins get the same rays and burst as the items, with the coin sprite as the art
-    const n=coinArt.length, box=n<=2?110:n<=4?76:n<=6?62:n<=12?46:30;
+    const n=coinArt.length, box=n<=2?150:n<=4?104:n<=6?84:n<=12?60:40;   // big: the coins are the whole prize
     document.getElementById('gcIcon').innerHTML=coinArt.map(src=>`<span style="${coinFaceStyle(src,box)}"></span>`).join('');
     card.style.setProperty('--ray', RAR_COL[rar]);
     card.classList.add('skin-reveal','item-art','coin-art','r-'+rar,'show','charging');
