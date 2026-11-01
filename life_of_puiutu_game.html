@@ -896,6 +896,17 @@
     font-size:28px;color:#fff;background:rgba(20,30,50,.45);border:3px solid rgba(255,255,255,.45);
     backdrop-filter:blur(3px);user-select:none;touch-action:none;}
   #fishPad>div.held{background:rgba(110,200,120,.6);transform:scale(.94);}
+  #fishAct{position:absolute;right:22px;bottom:22px;z-index:5;min-width:150px;height:84px;padding:0 26px;border-radius:44px;
+    font:900 26px/1 Trebuchet MS,sans-serif;letter-spacing:2px;color:#2a1a06;cursor:pointer;touch-action:none;user-select:none;
+    background:linear-gradient(#ffe27a,#f0a52a);border:4px solid #7a4a10;box-shadow:0 6px 0 #7a4a10,0 10px 18px rgba(0,0,0,.45);
+    transition:transform .08s,opacity .2s,filter .2s;}
+  #fishAct:active{transform:translateY(4px);box-shadow:0 2px 0 #7a4a10,0 6px 12px rgba(0,0,0,.45);}
+  #fishAct.wait{opacity:.55;filter:saturate(.3);cursor:default;}
+  #fishAct.bite{background:linear-gradient(#ff8a6a,#e0342a);color:#fff;border-color:#7a1410;box-shadow:0 6px 0 #7a1410,0 0 0 6px rgba(255,90,60,.35),0 10px 18px rgba(0,0,0,.45);
+    animation:fishBite .35s ease-in-out infinite alternate;}
+  #fishAct.hide{display:none;}
+  @keyframes fishBite{from{transform:scale(1);}to{transform:scale(1.12);}}
+  @media (max-height:500px){ #fishAct{height:66px;min-width:120px;font-size:21px;right:16px;bottom:16px;} }
   #fishCanvas{position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:0;
     box-shadow:none;max-width:none;max-height:none;touch-action:none;cursor:pointer;display:block;
     background:linear-gradient(#bfe9ff,#3f86c4 55%,#1f4f86);}
@@ -1863,6 +1874,8 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
       <div id="fishHint"><b>↑ / ↓</b> move the bar to keep it on the fish · <b>Space</b> or tap when it bites</div>
       <!-- touch screens: hold to move the green bar -->
       <div id="fishPad"><div id="fishUpBtn">▲</div><div id="fishDownBtn">▼</div></div>
+      <!-- the one big button: cast, then hook when it bites (mouse and touch alike) -->
+      <button id="fishAct" type="button">CAST</button>
     </div>
   </div>
 
@@ -4193,7 +4206,7 @@ function buildAreas(){
     castleentrance:{
       name:'Castle Gate', theme:'street', mode:'topdown',
       hub:{
-        music:'wind',       // no music at the gate: only the wind over the heights
+        music:'none',       // the gate is quiet: no music, no wind
         img:'maps/castleentrance.png', mask:'maps/castleentrance_walk.png', maskWalk:'green',
         occ:'maps/castleentrance_occ.png',   // painted in castleentrance new mask.png: green walk, red walk + occlusion (the bridge's near railing)
         walkTop:0.66, walkBot:1.00, scaleFar:0.55, scaleNear:1.04,
@@ -4704,6 +4717,9 @@ const RO = {
   "Board the airship down":"Coboară cu aeronava",
   "The Great Door":"Marea Poartă",
   "Secret Lift":"Liftul secret",
+  "CAST":"ARUNCĂ",
+  "WAIT…":"AȘTEAPTĂ…",
+  "HOOK!":"AGAȚĂ!",
   "Whisker Savings Bank":"Banca Whisker Savings",
   "The Slums":"Mahalaua",
   "Up to the Rat Warren":"Sus spre Vizuina Șobolanilor",
@@ -14572,6 +14588,7 @@ function zoneMusic(){
   else if(H&&H.sebyMusic&&live) SEBY_MUSIC.start();
   else if(H&&H.catMusic&&live) CAT_MUSIC.start();
   else if(H&&H.ratking&&live) RAT_MUSIC.start();
+  else if(H&&H.music==='none')   {}                  // a quiet place: nothing plays
   else if(H&&H.music==='wind')   WIND_SOUND.start();
   else if(H&&H.music==='nature') NATURE_MUSIC.start();
   else if(H&&H.music==='beach')  BEACH_MUSIC.start();
@@ -16558,7 +16575,7 @@ function fishLoop(){
   if(!FISH.active) return;
   const now=performance.now(); let dt=(now-FISH.lastT)/1000; FISH.lastT=now;
   if(dt>0.05)dt=0.05;
-  fishStep(dt); fishDraw();
+  fishStep(dt); fishDraw(); fishActSync();
   FISH.raf=requestAnimationFrame(fishLoop);
 }
 // draw one frame of the 4-frame splash sheet (or a vector fallback)
@@ -16726,6 +16743,13 @@ function fishDraw(){
     }
     g.restore();
   }
+}
+// the big button says what a tap will do right now
+function fishActSync(){
+  const b=document.getElementById('fishAct'); if(!b) return;
+  const st = FISH.phase==='ready' ? ['CAST',''] : FISH.phase==='waiting' ? ['WAIT…','wait'] : FISH.phase==='bite' ? ['HOOK!','bite'] : ['','hide'];
+  const lbl=T(st[0]); if(b._st===st[1]+lbl) return; b._st=st[1]+lbl;
+  b.textContent=lbl; b.className=st[1];
 }
 function fishTap(){
   if(!FISH.active) return;
@@ -19240,6 +19264,7 @@ setInterval(()=>{ const el=document.getElementById('mktTimer'), m=document.getEl
     document.querySelectorAll('#fishPad>div').forEach(b=>b.classList.remove('held')); };
   window.addEventListener('pointerup',releaseAll);
   cv.addEventListener('pointercancel',releaseAll);
+  document.getElementById('fishAct').addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); fishTap(); fishActSync(); });
   // keyboard: ↑/↓ move the green bar; Space/Enter cast & hook
   window.addEventListener('keydown',e=>{
     if(!FISH.active) return;
