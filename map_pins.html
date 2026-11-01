@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Map Pins</title>
+<style>
+  :root{--bg:#1b1410;--panel:#2a1f17;--ink:#f3e6cc;--muted:#bba98a;--accent:#e2a84b;--pin:#fff8e6;--pinb:#3a2a1a;--sel:#d6452f;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,sans-serif;display:flex;flex-direction:column;height:100vh}
+  header{display:flex;gap:12px;align-items:center;padding:8px 16px;background:var(--panel);flex-wrap:wrap}
+  header h1{font-size:16px;margin:0 8px 0 0}
+  header span{color:var(--muted)}
+  button{background:var(--accent);color:#2a1a06;border:0;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--muted)}
+  main{flex:1;display:flex;min-height:0}
+  #wrap{flex:1;overflow:auto;padding:16px}
+  #map{position:relative;display:inline-block;user-select:none}
+  #map img{display:block;max-width:none}
+  .pin{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:var(--pin);border:3px solid var(--pinb);
+       cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+  .pin.moved{border-color:var(--sel)}
+  .pin:active{cursor:grabbing}
+  .pin b{position:absolute;left:50%;top:34px;transform:translateX(-50%);white-space:nowrap;background:rgba(40,25,10,.85);color:#fff;
+         font-size:12px;padding:1px 6px;border-radius:4px;pointer-events:none}
+  aside{width:340px;background:var(--panel);padding:12px;display:flex;flex-direction:column;gap:8px}
+  textarea{flex:1;width:100%;background:#120c08;color:var(--ink);border:1px solid #4a3a2a;border-radius:6px;font:12px/1.5 ui-monospace,monospace;padding:8px;resize:none}
+  .zoom{display:flex;gap:6px;align-items:center}
+  @media (max-width:700px){main{flex-direction:column}aside{width:auto;height:40vh}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Map Pins</h1>
+  <span>Drag the icons. The moved ones turn red. Then press Copy and paste the text into the chat.</span>
+</header>
+<main>
+  <div id="wrap"><div id="map"><img id="img" src="maps/worldmap_parchment_torn.png" alt="world map" draggable="false"></div></div>
+  <aside>
+    <div class="zoom">Zoom <input id="zoom" type="range" min="0.4" max="1.6" step="0.05" value="0.8"> <span id="zv">80%</span></div>
+    <div style="display:flex;gap:6px">
+      <button id="copy">Copy</button>
+      <button class="ghost" id="all">Show all</button>
+      <button class="ghost" id="reset">Reset</button>
+    </div>
+    <textarea id="out" readonly placeholder="Move an icon and the new positions show up here."></textarea>
+  </aside>
+</main>
+<script>
+// Reads the pins straight from the game's MAP_LOCS, so the tool always starts from what the game has now.
+const img=document.getElementById('img'), map=document.getElementById('map'), out=document.getElementById('out');
+let pins=[], showAll=false;
+async function load(){
+  let src='';
+  for(const f of ['index.html','life_of_puiutu_game.html']){
+    try{ const r=await fetch(f,{cache:'no-store'}); if(r.ok){ src=await r.text(); if(src.includes('const MAP_LOCS')) break; } }catch(e){}
+  }
+  const block=src.slice(src.indexOf('const MAP_LOCS'), src.indexOf('];', src.indexOf('const MAP_LOCS')));
+  const re=/\{id:'([^']+)',\s*name:'((?:[^'\\]|\\.)*)'[^}]*?x:\s*([\d.]+),\s*y:\s*([\d.]+)/g; let m;
+  while((m=re.exec(block))) pins.push({id:m[1], name:m[2].replace(/\\'/g,"'"), x:+m[3], y:+m[4], x0:+m[3], y0:+m[4]});
+  pins.forEach(addPin); render();
+}
+function addPin(p){
+  const el=document.createElement('div'); el.className='pin'; el.innerHTML='<b></b>'; el.querySelector('b').textContent=p.name;
+  map.appendChild(el); p.el=el;
+  el.addEventListener('pointerdown',e=>{
+    el.setPointerCapture(e.pointerId);
+    const move=ev=>{ const r=img.getBoundingClientRect();
+      p.x=Math.round(Math.min(100,Math.max(0,(ev.clientX-r.left)/r.width*100))*10)/10;
+      p.y=Math.round(Math.min(100,Math.max(0,(ev.clientY-r.top)/r.height*100))*10)/10; render(); };
+    const up=()=>{ el.removeEventListener('pointermove',move); el.removeEventListener('pointerup',up); };
+    el.addEventListener('pointermove',move); el.addEventListener('pointerup',up);
+  });
+}
+function render(){
+  for(const p of pins){ p.el.style.left=p.x+'%'; p.el.style.top=p.y+'%'; p.el.classList.toggle('moved', p.x!==p.x0||p.y!==p.y0); }
+  const list=pins.filter(p=>showAll||p.x!==p.x0||p.y!==p.y0);
+  out.value=list.length ? 'map pins:\n'+list.map(p=>`${p.id} (${p.name}): x:${p.x}, y:${p.y}`).join('\n') : '';
+}
+const zoom=document.getElementById('zoom'), zv=document.getElementById('zv');
+function applyZoom(){ img.style.width=(img.naturalWidth*zoom.value)+'px'; zv.textContent=Math.round(zoom.value*100)+'%'; }
+zoom.oninput=applyZoom; img.onload=applyZoom; if(img.complete) applyZoom();
+document.getElementById('copy').onclick=async()=>{ if(!out.value) return;
+  try{ await navigator.clipboard.writeText(out.value); }catch(e){ out.select(); document.execCommand('copy'); }
+  const b=document.getElementById('copy'); b.textContent='Copied'; setTimeout(()=>b.textContent='Copy',1200); };
+document.getElementById('all').onclick=e=>{ showAll=!showAll; e.target.textContent=showAll?'Only moved':'Show all'; render(); };
+document.getElementById('reset').onclick=()=>{ pins.forEach(p=>{p.x=p.x0;p.y=p.y0;}); render(); };
+load();
+</script>
+</body>
+</html>
