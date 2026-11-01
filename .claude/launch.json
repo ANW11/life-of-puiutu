@@ -138,6 +138,60 @@
         "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/a0a5a194-ebb1-4fcd-b530-e2b0d329c947/scratchpad/www/ && exec python3 -m http.server 8806 --bind 127.0.0.1"
       ],
       "port": 8806
+    },
+    {
+      "name": "puiutu-fly",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/62e464ab-2705-4e8a-97bb-0160a3ce6b01/scratchpad/www && exec python3 -m http.server 8807 --bind 127.0.0.1"
+      ],
+      "port": 8807
+    },
+    {
+      "name": "puiutu-web",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/a0a5a194-ebb1-4fcd-b530-e2b0d329c947/scratchpad/web && exec python3 -m http.server 8808 --bind 127.0.0.1"
+      ],
+      "port": 8808
+    },
+    {
+      "name": "puiutu-gold",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/16688400-eb5e-4842-9464-043dcd89275a/scratchpad/www && exec python3 -m http.server 8809 --bind 127.0.0.1"
+      ],
+      "port": 8809
+    },
+    {
+      "name": "puiutu-barrel",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/cc6419f3-4012-459a-b49d-2b2da9e5605c/scratchpad/www/ && exec python3 -m http.server 8810 --bind 127.0.0.1"
+      ],
+      "port": 8810
+    },
+    {
+      "name": "puiutu-shop",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/368e44f8-0585-45ba-829f-38eca7cab05b/scratchpad/www && exec python3 -m http.server 8811 --bind 127.0.0.1"
+      ],
+      "port": 8811
+    },
+    {
+      "name": "puiutu-maps",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/2bd11696-106c-4191-83a6-395e37403f7a/scratchpad/www && exec python3 -m http.server 8812 --bind 127.0.0.1"
+      ],
+      "port": 8812
     }
   ]
 }
