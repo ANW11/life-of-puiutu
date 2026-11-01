@@ -9162,12 +9162,106 @@ function rightmostWalkX(){
   return HUB.worldW-14;
 }
 // Click-to-move. A click on a wall or on painted scenery used to set a target the cat could
-// never reach: the path assist kept turning it along the edge, and it ran and jittered there on
-// its own until you pressed a key. Now the target is the nearest ground you can stand on, and
-// a walk that stops getting closer gives up (see the stuck check in the hub update).
+// never reach, and a straight walk toward a spot behind a railing ran the cat into the railing.
+// Now the click is pathfound: A* over a coarse grid of the walk mask (the layer the cat is on),
+// to the clicked spot or, if that cannot be reached from here, the nearest spot that can. The
+// cell path is then pulled taut (straight runs wherever the mask allows) and walked waypoint by
+// waypoint; a walk that stops getting closer replans, and after a couple of tries gives up.
+const PATH_CELL=6;
+function pathGrid(onPlat){
+  if(!maskReady()) return null;
+  const key=(HUB._maskSrc||'')+'|'+Math.round(HUB.worldW)+'|'+Math.round(VH)+'|'+(onPlat?1:0);
+  HUB._pathGrids=HUB._pathGrids||{};
+  if(HUB._pathGrids[key]) return HUB._pathGrids[key];
+  if(Object.keys(HUB._pathGrids).length>3) HUB._pathGrids={};
+  const C=PATH_CELL, GW=Math.ceil(HUB.worldW/C), GH=Math.ceil(VH/C), N=GW*GH, ok=new Uint8Array(N);
+  for(let gy=0;gy<GH;gy++) for(let gx=0;gx<GW;gx++) ok[gy*GW+gx]=hubStand(gx*C+C/2, gy*C+C/2, onPlat)?1:0;
+  // cells touching a wall cost a little more, so the route keeps off the ragged edges
+  const edge=new Uint8Array(N), lab=new Int32Array(N);
+  for(let gy=0;gy<GH;gy++) for(let gx=0;gx<GW;gx++){ const i=gy*GW+gx; if(!ok[i]) continue;
+    for(let dy=-1;dy<=1&&!edge[i];dy++) for(let dx=-1;dx<=1;dx++){ const X=gx+dx, Y=gy+dy;
+      if(X<0||Y<0||X>=GW||Y>=GH||!ok[Y*GW+X]){ edge[i]=1; break; } } }
+  // connected patches, so an unreachable click can be turned into the nearest reachable spot
+  let id=0; const st=[];
+  for(let i=0;i<N;i++){ if(!ok[i]||lab[i]) continue; id++; lab[i]=id; st.push(i);
+    while(st.length){ const k=st.pop(), x=k%GW;
+      if(x>0&&ok[k-1]&&!lab[k-1]){ lab[k-1]=id; st.push(k-1); }
+      if(x<GW-1&&ok[k+1]&&!lab[k+1]){ lab[k+1]=id; st.push(k+1); }
+      if(k>=GW&&ok[k-GW]&&!lab[k-GW]){ lab[k-GW]=id; st.push(k-GW); }
+      if(k+GW<N&&ok[k+GW]&&!lab[k+GW]){ lab[k+GW]=id; st.push(k+GW); } } }
+  const G={GW,GH,C,ok,edge,lab,onPlat, g:new Float32Array(N), f:new Float32Array(N), from:new Int32Array(N), seen:new Uint32Array(N), stamp:0};
+  HUB._pathGrids[key]=G; return G;
+}
+// the walkable cell nearest to (x,y), optionally only in patch `want`
+function pathCellNear(G,x,y,want){
+  const cx=Math.max(0,Math.min(G.GW-1,Math.floor(x/G.C))), cy=Math.max(0,Math.min(G.GH-1,Math.floor(y/G.C)));
+  const good=i=>G.ok[i] && (!want || G.lab[i]===want);
+  if(good(cy*G.GW+cx)) return cy*G.GW+cx;
+  const R=Math.max(G.GW,G.GH);
+  for(let r=1;r<R;r++){ let best=-1, bd=Infinity;
+    for(let dy=-r;dy<=r;dy++){ const Y=cy+dy; if(Y<0||Y>=G.GH) continue;
+      const step=(dy===-r||dy===r)?1:2*r;
+      for(let dx=-r;dx<=r;dx+=step){ const X=cx+dx; if(X<0||X>=G.GW) continue;
+        const i=Y*G.GW+X; if(good(i)){ const d=dx*dx+dy*dy; if(d<bd){ bd=d; best=i; } } } }
+    if(best>=0) return best; }
+  return -1;
+}
+// a straight walk from a to b stays on the layer the whole way
+function pathClear(a,b,onPlat){
+  const L=Math.hypot(b.x-a.x,b.y-a.y), n=Math.ceil(L/3);
+  for(let s=1;s<=n;s++){ const t=s/n; if(!hubStand(a.x+(b.x-a.x)*t, a.y+(b.y-a.y)*t, onPlat)) return false; }
+  return true;
+}
+const PATH_NB=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.4142],[1,-1,1.4142],[-1,1,1.4142],[-1,-1,1.4142]];
+function hubFindPath(sx,sy,tx,ty,onPlat){
+  const G=pathGrid(onPlat); if(!G) return null;
+  const s=pathCellNear(G,sx,sy); if(s<0) return null;
+  const want=G.lab[s];
+  let t=pathCellNear(G,tx,ty,want); if(t<0) return null;
+  const C=G.C, GW=G.GW, tgx=t%GW, tgy=(t/GW)|0;
+  // the exact clicked spot when it is on this patch, else the centre of the nearest reachable cell
+  const exact=G.lab[pathCellNear(G,tx,ty)]===want && hubStand(tx,ty,onPlat) && Math.floor(tx/C)===tgx && Math.floor(ty/C)===tgy;
+  const end=exact?{x:tx,y:ty}:{x:tgx*C+C/2, y:tgy*C+C/2};
+  const cells=[];
+  if(s!==t){
+    const stamp=++G.stamp, g=G.g, f=G.f, from=G.from, seen=G.seen, ok=G.ok, edge=G.edge;
+    const hOf=i=>{ const dx=Math.abs(i%GW-tgx), dy=Math.abs(((i/GW)|0)-tgy); return (dx+dy)+(1.4142-2)*Math.min(dx,dy); };
+    const heap=[];   // binary heap of cell indices by f
+    const push=i=>{ heap.push(i); let k=heap.length-1; while(k>0){ const p=(k-1)>>1; if(f[heap[p]]<=f[i]) break; heap[k]=heap[p]; k=p; } heap[k]=i; };
+    const pop=()=>{ const top=heap[0], last=heap.pop(); if(heap.length){ let k=0; const n=heap.length;
+      for(;;){ let c=2*k+1; if(c>=n) break; if(c+1<n && f[heap[c+1]]<f[heap[c]]) c++; if(f[heap[c]]>=f[last]) break; heap[k]=heap[c]; k=c; } heap[k]=last; } return top; };
+    // seen: stamp*2 = open, stamp*2+1 = closed
+    const O=stamp*2, CL=O+1;
+    g[s]=0; f[s]=hOf(s); from[s]=-1; seen[s]=O; push(s);
+    let found=false;
+    while(heap.length){ const k=pop(); if(seen[k]===CL) continue; seen[k]=CL;
+      if(k===t){ found=true; break; }
+      const x=k%GW, y=(k/GW)|0;
+      for(const [dx,dy,w] of PATH_NB){ const X=x+dx, Y=y+dy; if(X<0||Y<0||X>=GW||Y>=G.GH) continue;
+        const q=Y*GW+X; if(!ok[q]||seen[q]===CL) continue;
+        if(dx&&dy && (!ok[y*GW+X]||!ok[Y*GW+x])) continue;   // no cutting a wall's corner
+        const ng=g[k]+w*(edge[q]?1.6:1);
+        if(seen[q]!==O || ng<g[q]){ g[q]=ng; f[q]=ng+hOf(q); from[q]=k; seen[q]=O; push(q); } } }
+    if(!found) return null;
+    for(let k=from[t]; k>=0 && k!==s; k=from[k]) cells.push({x:(k%GW)*C+C/2, y:((k/GW)|0)*C+C/2});
+    cells.reverse();
+  }
+  // pull it taut: from each anchor, jump to the furthest following point in a clear straight line
+  const pts=[{x:sx,y:sy}, ...cells, end], out=[];
+  let i=0;
+  while(i<pts.length-1){ let j=i+1;
+    while(j+1<pts.length && pathClear(pts[i],pts[j+1],onPlat)) j++;
+    out.push(pts[j]); i=j; }
+  return out.length?out:[end];
+}
 function hubClick(px,py){
+  const c=HUB.cat, onPlat=!!(c&&c.onPlat);
   let t={x:px+HUB.camx, y:py};
-  if(maskReady() && !hubStand(t.x,t.y,HUB.cat&&HUB.cat.onPlat)){ const p=nearestWalk(t.x,t.y); if(p) t={x:p.x, y:p.y}; else return; }
+  if(maskReady()){
+    const pts=hubFindPath(c.x,c.y,t.x,t.y,onPlat);
+    if(pts){ const e=pts[pts.length-1]; HUB.target={x:e.x, y:e.y, pts, idx:0, tx:t.x, ty:t.y, replans:0, best:Infinity, since:Date.now()}; return; }
+    if(!hubStand(t.x,t.y,onPlat)){ const p=nearestWalk(t.x,t.y); if(p) t={x:p.x, y:p.y}; else return; }
+  }
   t.best=Infinity; t.since=Date.now(); HUB.target=t;
 }
 // Move along the path, smoothly. The masks are hand-painted, so their edges are ragged pixel by
@@ -11294,6 +11388,7 @@ function updateHub(){
   buildMaskData();
   // after a seal morph, wait for the opened mask to load, then move the deep-sea creatures in
   if(HUB._needSolvedMobs && maskReady()){ HUB._needSolvedMobs=false; spawnHubMobs(); }
+  if(maskReady()) pathGrid(!!HUB.cat.onPlat);   // build the click-to-move grid now, not on the first click
   const c=HUB.cat, now=Date.now(); let sp=3.6*charmSpeed();
   // nothing lands on you while you are reading or a scene is playing, nor in the moment after
   if(dialogueActive || HUB.cine) P.iframe=Math.max(P.iframe||0, now+900);
@@ -11318,10 +11413,21 @@ function updateHub(){
   if(input.joy){ mvx=input.jx; mvy=input.jy; }     // the analog stick: direction AND how far it is pushed
   let dx=0,dy=0;
   if(mvx||mvy){ HUB.target=null; const l=Math.hypot(mvx,mvy)||1, k=Math.min(1,l); dx=mvx/l*sp*k; dy=mvy/l*sp*k; c.moving=true; if(mvx)c.facing=mvx<0?-1:1; c.phase+=0.16; }
-  else if(HUB.target){ const T=HUB.target, tx=T.x-c.x,ty=T.y-c.y,d=Math.hypot(tx,ty), now=Date.now();
-    // no closer for 0.6 s (a wall in the way, a ledge, a bend the assist cannot take): stop
+  else if(HUB.target){ const T=HUB.target, now=Date.now();
+    // a pathfound walk: head for the current waypoint; once there (or once the one after it is in
+    // plain sight) move on to the next
+    if(T.pts){
+      let W=T.pts[T.idx];
+      while(T.idx<T.pts.length-1 && (Math.hypot(W.x-c.x,W.y-c.y)<=sp*1.5 || (c.z<=0.5 && pathClear(c,T.pts[T.idx+1],c.onPlat)))){
+        T.idx++; W=T.pts[T.idx]; T.best=Infinity; T.since=now; }
+      T.x=W.x; T.y=W.y; }
+    const tx=T.x-c.x,ty=T.y-c.y,d=Math.hypot(tx,ty);
+    // no closer for 0.6 s (pushed off the route, a ledge): find the way again, then give up
     if(T.best==null || d<T.best-4){ T.best=d; T.since=now; }
-    if(now-T.since>600){ c.moving=false; HUB.target=null; }
+    if(now-T.since>600){
+      const pts=(T.pts && T.replans<2 && c.z<=0.5) ? hubFindPath(c.x,c.y,T.tx,T.ty,c.onPlat) : null;
+      if(pts){ T.pts=pts; T.idx=0; T.replans++; T.best=Infinity; T.since=now; }
+      else { c.moving=false; HUB.target=null; } }
     else if(d>sp){ dx=tx/d*sp; dy=ty/d*sp; c.moving=true; if(Math.abs(tx)>1)c.facing=tx<0?-1:1; c.phase+=0.16; } else { c.moving=false; HUB.target=null; } }
   else c.moving=false;
   // apply movement (free while airborne; constrained to current layer while grounded)
