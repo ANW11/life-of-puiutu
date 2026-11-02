@@ -3260,7 +3260,9 @@ const SEA_IMG={};
 // the Dreamer's tentacles, in its waking and in the fight: a sheet of square frames (writhing,
 // reared on the last one), recoloured to its dark green with warm orange suckers
 const ABYSS_TENT=new Image(); ABYSS_TENT.src='mobs/tentacle_green.png?v=3';   // ?v: recoloured, so nobody keeps the old one cached
-function tentFrames(){ const fh=ABYSS_TENT.naturalHeight, n=Math.max(1,Math.round(ABYSS_TENT.naturalWidth/fh)); return {fh, n, fw:ABYSS_TENT.naturalWidth/n}; }
+// the same frames with no rubble, cut flat at the foot: for its waking, where they rise out of the dark
+const ABYSS_TENT_BARE=new Image(); ABYSS_TENT_BARE.src='mobs/tentacle_green_bare.png';
+function tentFrames(im){ im=im||ABYSS_TENT; const fh=im.naturalHeight, n=Math.max(1,Math.round(im.naturalWidth/fh)); return {fh, n, fw:im.naturalWidth/n}; }
 // the Dreamer's eyes out in the dark during its waking: a fixed layout, framing the face and never
 // over it. fx/fy: place on screen; cut: which of the arena's small painted eyes (wakeEyes 0-3) it
 // copies; k: its size against that eye; at: when it opens (ms into the intro), a ripple outward.
@@ -12965,24 +12967,35 @@ function drawAbyssBoss(){
       g.globalAlpha=0.25*(1-k); g.strokeStyle='#9fc7ff'; g.lineWidth=1;
       g.beginPath(); g.arc(bx, VH*(1.05-k*1.1), 2+(i%3), 0, 7); g.stroke(); }
     g.globalAlpha=1;
-    // its tentacles: two huge ones rise slowly behind as dark shapes while it speaks, then on the
-    // roar two more burst up out of the bottom corners and lean in over the dark
-    if(ABYSS_TENT.complete && ABYSS_TENT.naturalWidth){
-      const {fh,n,fw}=tentFrames();
+    // its tentacles, rising out of the dark in three layers: two huge ones far behind while it
+    // speaks, two more closer as the small eyes shut, then on the roar two burst up out of the bottom
+    // corners, lit red from below, and lean in over everything
+    const TB=ABYSS_TENT_BARE;
+    if(TB.complete && TB.naturalWidth){
+      const {fh,n,fw}=tentFrames(TB);
       const tent=(x,baseY,h,rot,flip,fi)=>{ const w=h*fw/fh;
         g.save(); g.translate(x,baseY); g.rotate(rot); if(flip) g.scale(-1,1);
-        g.drawImage(ABYSS_TENT, (fi%n)*fw,0,fw,fh, -w/2,-h, w,h); g.restore(); };
-      const back=sm(7400,9800), bk=back*back*(3-2*back);
-      if(bk>0) [[0.13,false],[0.87,true]].forEach(([fx,fl],i)=>{ const h=VH*1.5;
-        g.filter='brightness(0.35)';
-        tent(fx*VW, VH+h*0.7*(1-bk)+h*0.06, h, (fl?-1:1)*0.06+Math.sin(now*0.0011+i*2)*0.05, fl, Math.floor(now*0.0016+i*2));
+        g.drawImage(TB, (fi%n)*fw,0,fw,fh, -w/2,-h, w,h); g.restore(); };
+      const ease=k=>k*k*(3-2*k);
+      // far: huge, slow, almost black
+      const back=ease(sm(7200,9800));
+      if(back>0) [[0.12,false],[0.88,true]].forEach(([fx,fl],i)=>{ const h=VH*1.6;
+        g.filter='brightness(0.28)';
+        tent(fx*VW, VH+h*0.75*(1-back)+h*0.08, h, (fl?-1:1)*0.05+Math.sin(now*0.0009+i*2)*0.05, fl, Math.floor(now*0.0012+i*2));
         g.filter='none'; });
-      const fr=sm(8900,9450), pop=fr<=0?0:1+2.2*Math.pow(fr-1,3)+1.2*Math.pow(fr-1,2);   // out fast, a little past, back
-      if(fr>0) [[0.05,false],[0.95,true]].forEach(([fx,fl],i)=>{ const h=VH*1.25;
-        g.filter='brightness(0.85)';
-        tent(fx*VW, VH+h*(1-pop)*0.95+h*0.05, h, (fl?-1:1)*0.14+Math.sin(now*0.0024+i*1.3)*0.06, fl, Math.floor(now*0.003+i));
+      // middle: as the small eyes close, a little nearer and lighter
+      const mid=ease(sm(8500,9300));
+      if(mid>0) [[0.30,true],[0.70,false]].forEach(([fx,fl],i)=>{ const h=VH*1.05;
+        g.filter='brightness(0.5)';
+        tent(fx*VW, VH+h*(1-mid)+h*0.08, h, (fl?-1:1)*0.10+Math.sin(now*0.0017+i*1.7)*0.06, fl, Math.floor(now*0.002+i*3+1));
+        g.filter='none'; });
+      // near: out fast on the roar, a little past, back
+      const fr=sm(8900,9450), pop=fr<=0?0:1+2.2*Math.pow(fr-1,3)+1.2*Math.pow(fr-1,2);
+      if(fr>0) [[0.04,false],[0.96,true]].forEach(([fx,fl],i)=>{ const h=VH*1.3;
+        g.filter='brightness(0.9)';
+        tent(fx*VW, VH+h*(1-pop)*0.95+h*0.08, h, (fl?-1:1)*0.15+Math.sin(now*0.0024+i*1.3)*0.06, fl, Math.floor(now*0.003+i));
         g.filter='none';
-        const gl=g.createRadialGradient(fx*VW,VH,10,fx*VW,VH,VW*0.25);                  // lit red from below
+        const gl=g.createRadialGradient(fx*VW,VH,10,fx*VW,VH,VW*0.25);
         gl.addColorStop(0,'rgba(255,60,30,'+0.28*fr+')'); gl.addColorStop(1,'rgba(255,40,20,0)');
         g.globalCompositeOperation='lighter'; g.fillStyle=gl; g.fillRect(0,0,VW,VH); g.globalCompositeOperation='source-over'; });
     }
