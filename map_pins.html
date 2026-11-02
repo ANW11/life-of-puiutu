@@ -78,7 +78,7 @@ function render(){
   out.value=list.length ? 'map pins:\n'+list.map(p=>`${p.id} (${p.name}): x:${p.x}, y:${p.y}`).join('\n') : '';
 }
 const zoom=document.getElementById('zoom'), zv=document.getElementById('zv');
-function applyZoom(){ img.style.width=(img.naturalWidth*zoom.value)+'px'; zv.textContent=Math.round(zoom.value*100)+'%'; }
+function applyZoom(){ img.style.width=(1672*zoom.value)+'px';   /* the map's page size; the picture is a 2x upscale */ zv.textContent=Math.round(zoom.value*100)+'%'; }
 zoom.oninput=applyZoom; img.onload=applyZoom; if(img.complete) applyZoom();
 document.getElementById('copy').onclick=async()=>{ if(!out.value) return;
   try{ await navigator.clipboard.writeText(out.value); }catch(e){ out.select(); document.execCommand('copy'); }

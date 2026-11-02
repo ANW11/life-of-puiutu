@@ -1572,7 +1572,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
   <div id="mapModal">
     <div id="wmView">
       <div id="wmWorld">
-        <img id="wmImg" src="maps/worldmap_parchment_torn.png" alt="Puiutu Land" draggable="false">
+        <img id="wmImg" src="maps/worldmap_parchment_torn.png?v=2" alt="Puiutu Land" draggable="false">
         <canvas id="wmFog" width="1672" height="941"></canvas>
         <img id="wmBurn" src="maps/worldmap_torn_burn.png" alt="" draggable="false">
         <div id="wmRegions"></div>
@@ -18889,7 +18889,9 @@ function wmBuild(){
 // the whole map fills the screen edge to edge (a sliver of the long side is trimmed rather than showing black bands)
 function wmFit(){
   const view=document.getElementById('wmView'), img=document.getElementById('wmImg');
-  const iw=img.naturalWidth||1536, ih=img.naturalHeight||1024, vw=view.clientWidth, vh=view.clientHeight;
+  // the map's own size on the page is 1672x941 (pins, ship and labels are laid out on it); the picture is
+  // a 2x upscale of that, drawn into the same box, so it stays sharp on a Retina screen and when zoomed
+  const iw=1672, ih=941, vw=view.clientWidth, vh=view.clientHeight;
   const cover=Math.max(vw/iw, vh/ih), contain=Math.min(vw/iw, vh/ih);
   // the whole parchment always fits, with a little table showing round it: filling the screen
   // instead cut off the castles and the warren at the edges on 16:10 screens
@@ -18980,9 +18982,7 @@ function openMap(){
   mapOpen=true; wmBuild();
   const m=document.getElementById('mapModal'); m.classList.add('show');
   const img=document.getElementById('wmImg');
-  const go=()=>{ const fc=document.getElementById('wmFog');   // the fog at the parchment's own resolution, so the torn edge stays crisp
-    if(fc.width!==img.naturalWidth){ fc.width=img.naturalWidth; fc.height=img.naturalHeight; }
-    wmFit(); wmRender(); cancelAnimationFrame(WM.raf); WM.raf=requestAnimationFrame(wmFogTick); };
+  const go=()=>{ wmFit(); wmRender(); cancelAnimationFrame(WM.raf); WM.raf=requestAnimationFrame(wmFogTick); };
   if(img.complete && img.naturalWidth) go(); else img.onload=go;
   SFX.tone&&SFX.tone(220,0.18,'sine',0.04); SFX.tone&&SFX.tone(330,0.22,'sine',0.03,0.06);
 }
