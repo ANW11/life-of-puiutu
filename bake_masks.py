@@ -65,8 +65,9 @@ def main():
     occs = sorted(set(re.findall(r"occ:'([^']+)'", src)))
     oparts = []
     for o in occs:
-        if not os.path.isfile(o): print('  ! lipseste fisierul:', o); continue
-        gw, gh, rle = bake_occ(o)
+        f = o.split('?')[0]                       # 'x.png?v=3': the ?v= only busts the browser cache
+        if not os.path.isfile(f): print('  ! lipseste fisierul:', o); continue
+        gw, gh, rle = bake_occ(f)
         oparts.append(json.dumps(o) + ':{gw:%d,gh:%d,rle:%s}' % (gw, gh, json.dumps(rle)))
         print('  baked occ %-24s %5d chars' % (o, len(rle)))
     src, n = re.subn(r'const OCC_BAKED=\{.*?\};', lambda m: 'const OCC_BAKED={' + ', '.join(oparts) + '};', src, count=1)
@@ -76,9 +77,10 @@ def main():
         print('Nu am gasit nicio masca in HTML.'); return
     parts = []
     for m in masks:
-        if not os.path.isfile(m):
+        f = m.split('?')[0]
+        if not os.path.isfile(f):
             print('  ! lipseste fisierul:', m); continue
-        rle = bake(m)
+        rle = bake(f)
         parts.append(json.dumps(m) + ':{w:%d,h:%d,rle:%s}' % (GW, GH, json.dumps(rle)))
         print('  baked %-26s %5d chars' % (m, len(rle)))
     const = 'const MASK_BAKED={' + ', '.join(parts) + '};'
