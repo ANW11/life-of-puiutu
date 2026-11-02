@@ -3259,7 +3259,7 @@ const SEA_IMG={};
 // abyss_tentacle.png = a horizontal sprite-sheet of square frames; abyss_core.png = a single frame.
 // the Dreamer's tentacles, in its waking and in the fight: a sheet of square frames (writhing,
 // reared on the last one), recoloured to its dark green with warm orange suckers
-const ABYSS_TENT=new Image(); ABYSS_TENT.src='mobs/tentacle_green.png';
+const ABYSS_TENT=new Image(); ABYSS_TENT.src='mobs/tentacle_green.png?v=2';   // ?v: recoloured, so nobody keeps the old one cached
 function tentFrames(){ const fh=ABYSS_TENT.naturalHeight, n=Math.max(1,Math.round(ABYSS_TENT.naturalWidth/fh)); return {fh, n, fw:ABYSS_TENT.naturalWidth/n}; }
 // the Dreamer's eyes out in the dark during its waking: a fixed layout, framing the face and never
 // over it. fx/fy: place on screen; cut: which of the arena's small painted eyes (wakeEyes 0-3) it
