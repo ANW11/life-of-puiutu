@@ -137,7 +137,17 @@
   }
   #padLeft{left:14px;}
   #padRight{right:14px;}
-  #padLeftBtn:active,#padRightBtn:active,#jumpBtn:active,#actBtn:active{background:rgba(120,90,40,.7);transform:scale(.94);}
+  #padLeftBtn:active,#padRightBtn:active{background:rgba(120,90,40,.7);transform:scale(.94);}
+  /* phone jump + melee: the E button's gold frame with a blue (jump) and a red (claws) gem.
+     They sit above the HP/mana orbs and the spell bar, so nothing covers them; the E button,
+     when it shows, stays just under the claws. */
+  #jumpBtn,#actBtn{border:none;border-radius:0;backdrop-filter:none;background:center/contain no-repeat;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.5));font-size:0;}
+  #actBtn{width:80px;height:85px;background-image:url('ui/btn_melee.png');}
+  #jumpBtn{width:70px;height:74px;background-image:url('ui/btn_jump.png');}
+  #actCtrl{right:8px;bottom:240px;}
+  #jumpCtrl{right:92px;bottom:196px;}
+  #jumpBtn:active,#actBtn:active{background-color:transparent;transform:scale(.92);}
   /* 4-way dpad (top-down park) */
   #dpad{position:absolute;left:18px;bottom:16px;z-index:6;width:156px;height:156px;display:none;}
   #dpad>div{position:absolute;width:50px;height:50px;border-radius:13px;border:3px solid rgba(255,255,255,.35);
@@ -1552,8 +1562,8 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
     </div>
     <!-- analog stick, replaces the arrows on touch screens -->
     <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
-    <div class="touch-ctrl" id="jumpCtrl" style="right:88px;bottom:90px;"><div id="jumpBtn">⤒</div></div>
-    <div class="touch-ctrl" id="actCtrl" style="right:14px;bottom:90px;"><div id="actBtn">F</div></div>
+    <div class="touch-ctrl" id="jumpCtrl"><div id="jumpBtn" aria-label="Jump"></div></div>
+    <div class="touch-ctrl" id="actCtrl"><div id="actBtn" aria-label="Attack"></div></div>
     <!-- contextual interact button (enter cave / talk) — appears when something is nearby -->
     <div id="interactBtn">E</div>
 
@@ -3247,7 +3257,23 @@ const SEA_IMG={};
 ['angler','jelly','isopod','smallfish'].forEach(k=>{ const im=new Image(); im.src='mobs/deepsea_'+k+(k==='isopod'?'_flat':'')+'.png'; SEA_IMG[k]=im; });   // the isopod's art is turned level (−23°) so it lies flat on the stone
 // abyss boss art (optional — procedural fallback used until these load).
 // abyss_tentacle.png = a horizontal sprite-sheet of square frames; abyss_core.png = a single frame.
-const ABYSS_TENT=new Image(); ABYSS_TENT.src='mobs/tentacle.png?v=2';
+// the Dreamer's tentacles, in its waking and in the fight: a sheet of square frames (writhing,
+// reared on the last one), recoloured to its dark green with warm orange suckers
+const ABYSS_TENT=new Image(); ABYSS_TENT.src='mobs/tentacle_green.png';
+function tentFrames(){ const fh=ABYSS_TENT.naturalHeight, n=Math.max(1,Math.round(ABYSS_TENT.naturalWidth/fh)); return {fh, n, fw:ABYSS_TENT.naturalWidth/n}; }
+// the Dreamer's eyes out in the dark during its waking: a fixed layout, framing the face and never
+// over it. fx/fy: place on screen; cut: which of the arena's small painted eyes (wakeEyes 0-3) it
+// copies; k: its size against that eye; at: when it opens (ms into the intro), a ripple outward.
+const ABYSS_DARK_EYES=[
+  {fx:0.10, fy:0.18, cut:0, k:1.3, at:4300}, {fx:0.06, fy:0.38, cut:2, k:1.0, at:4520},
+  {fx:0.16, fy:0.50, cut:1, k:1.5, at:4700}, {fx:0.09, fy:0.66, cut:3, k:1.1, at:4950},
+  {fx:0.22, fy:0.28, cut:2, k:0.8, at:5150}, {fx:0.25, fy:0.62, cut:0, k:0.9, at:5400},
+  {fx:0.31, fy:0.12, cut:3, k:0.7, at:5650}, {fx:0.30, fy:0.44, cut:1, k:0.6, at:5850},
+  {fx:0.90, fy:0.20, cut:1, k:1.3, at:4400}, {fx:0.94, fy:0.40, cut:3, k:1.0, at:4620},
+  {fx:0.84, fy:0.52, cut:0, k:1.5, at:4800}, {fx:0.91, fy:0.68, cut:2, k:1.1, at:5050},
+  {fx:0.78, fy:0.30, cut:3, k:0.8, at:5250}, {fx:0.75, fy:0.64, cut:1, k:0.9, at:5500},
+  {fx:0.69, fy:0.12, cut:2, k:0.7, at:5750}, {fx:0.70, fy:0.46, cut:0, k:0.6, at:5950},
+];
 const ABYSS_CORE=new Image(); ABYSS_CORE.src='mobs/core.png?v=2';
 // the pig bankers of Whisker Savings Bank
 const PIG_IMG={}; ['siroink','misterpig','piggyjunior'].forEach(k=>{ const im=new Image(); im.src='npcs/'+k+'.png'; PIG_IMG[k]=im; });
@@ -12928,9 +12954,9 @@ function drawAbyssBoss(){
     // roar, tentacles rising at the edges, and white.
     const el=now-ab.introT0, H=A.hub, cam=HUB.camx;
     const sm=(a,b)=>Math.max(0,Math.min(1,(el-a)/(b-a)));               // 0→1 between two times
-    if(!ab.smallEyes){ ab.camx0=cam; ab.smallEyes=[];
-      for(let i=0;i<16;i++) ab.smallEyes.push({x:cam+(0.04+Math.random()*0.92)*VW, y:VH*(0.10+Math.random()*0.62),
-        r:4+Math.random()*7, at:4300+Math.random()*1700, tilt:(Math.random()-0.5)*0.5}); }
+    // the small eyes out in the dark: always the same ones in the same places (ABYSS_DARK_EYES),
+    // each a copy of one of the Dreamer's own small eyes cut from the art
+    if(!ab.smallEyes){ ab.camx0=cam; ab.smallEyes=ABYSS_DARK_EYES.map(e=>Object.assign({x:cam+e.fx*VW, y:VH*e.fy}, e)); }
     g.save();
     // the dark comes in fast and stays
     g.globalAlpha=Math.min(0.93, 0.25+0.68*sm(0,1600)); g.fillStyle='#03050b'; g.fillRect(0,0,VW,VH); g.globalAlpha=1;
@@ -12939,30 +12965,27 @@ function drawAbyssBoss(){
       g.globalAlpha=0.25*(1-k); g.strokeStyle='#9fc7ff'; g.lineWidth=1;
       g.beginPath(); g.arc(bx, VH*(1.05-k*1.1), 2+(i%3), 0, 7); g.stroke(); }
     g.globalAlpha=1;
-    // tentacles rising at the edges — drawn OVER the dark (under it they were all but invisible),
-    // dimmed so they still belong to the deep, with a red rim from the eyes
-    if(el>8700 && ABYSS_TENT.complete && ABYSS_TENT.naturalWidth){
-      const fh=ABYSS_TENT.naturalHeight, frames=Math.max(1,Math.round(ABYSS_TENT.naturalWidth/fh)), fw=ABYSS_TENT.naturalWidth/frames;
-      const rise=sm(8700,10000), dh=VH*1.15, dw=dh*fw/fh;
-      [[0.05,1],[0.19,-1],[0.81,1],[0.95,-1]].forEach(([fx,fl],i)=>{
-        const fi=Math.floor(now*0.003+i)%frames, sway=Math.sin(now*0.0016+i*1.7)*0.05;
-        g.save(); g.translate(fx*VW, VH+dh*(1-rise)*0.9); g.rotate(fl*0.12+sway); if(fl<0) g.scale(-1,1);
-        g.shadowColor='rgba(255,60,30,.75)'; g.shadowBlur=22;
-        g.filter='brightness(0.72) saturate(1.1)';
-        g.drawImage(ABYSS_TENT, fi*fw,0,fw,fh, -dw/2,-dh, dw,dh);
-        g.filter='none'; g.restore(); });
+    // its tentacles: two huge ones rise slowly behind as dark shapes while it speaks, then on the
+    // roar two more burst up out of the bottom corners and lean in over the dark
+    if(ABYSS_TENT.complete && ABYSS_TENT.naturalWidth){
+      const {fh,n,fw}=tentFrames();
+      const tent=(x,baseY,h,rot,flip,fi)=>{ const w=h*fw/fh;
+        g.save(); g.translate(x,baseY); g.rotate(rot); if(flip) g.scale(-1,1);
+        g.drawImage(ABYSS_TENT, (fi%n)*fw,0,fw,fh, -w/2,-h, w,h); g.restore(); };
+      const back=sm(7400,9800), bk=back*back*(3-2*back);
+      if(bk>0) [[0.13,false],[0.87,true]].forEach(([fx,fl],i)=>{ const h=VH*1.5;
+        g.filter='brightness(0.35)';
+        tent(fx*VW, VH+h*0.7*(1-bk)+h*0.06, h, (fl?-1:1)*0.06+Math.sin(now*0.0011+i*2)*0.05, fl, Math.floor(now*0.0016+i*2));
+        g.filter='none'; });
+      const fr=sm(8900,9450), pop=fr<=0?0:1+2.2*Math.pow(fr-1,3)+1.2*Math.pow(fr-1,2);   // out fast, a little past, back
+      if(fr>0) [[0.05,false],[0.95,true]].forEach(([fx,fl],i)=>{ const h=VH*1.25;
+        g.filter='brightness(0.85)';
+        tent(fx*VW, VH+h*(1-pop)*0.95+h*0.05, h, (fl?-1:1)*0.14+Math.sin(now*0.0024+i*1.3)*0.06, fl, Math.floor(now*0.003+i));
+        g.filter='none';
+        const gl=g.createRadialGradient(fx*VW,VH,10,fx*VW,VH,VW*0.25);                  // lit red from below
+        gl.addColorStop(0,'rgba(255,60,30,'+0.28*fr+')'); gl.addColorStop(1,'rgba(255,40,20,0)');
+        g.globalCompositeOperation='lighter'; g.fillStyle=gl; g.fillRect(0,0,VW,VH); g.globalCompositeOperation='source-over'; });
     }
-    // one eye: a slit that opens; `open` 0..1, `heat` how hot it burns
-    // the small eyes all over the dark: a glowing slit with a black snake's pupil
-    const eye=(ex,ey,R,open,heat,tilt)=>{ if(open<=0.01) return;
-      const gr=g.createRadialGradient(ex,ey,1,ex,ey,R*3.2*(0.6+heat*0.6));
-      gr.addColorStop(0,'rgba(255,70,30,'+(0.75*open*heat)+')'); gr.addColorStop(1,'rgba(255,40,20,0)');
-      g.globalCompositeOperation='lighter'; g.fillStyle=gr; g.beginPath(); g.arc(ex,ey,R*3.2*(0.6+heat*0.6),0,7); g.fill();
-      g.globalCompositeOperation='source-over';
-      g.fillStyle='rgba(255,'+Math.round(90+120*heat)+',60,'+open+')';
-      g.beginPath(); g.ellipse(ex,ey,R*1.25,Math.max(0.6,R*0.62*open),tilt||0,0,7); g.fill();
-      g.fillStyle='rgba(20,0,0,'+(0.9*open)+')';                       // the slit pupil
-      g.beginPath(); g.ellipse(ex,ey,Math.max(0.6,R*0.16),Math.max(0.6,R*0.55*open),tilt||0,0,7); g.fill(); };
     // The two great eyes are not drawn at all — they are cut straight out of the arena art
     // (maps/abyssboss.png), so the eyes that open in the dark are the ones you then fight.
     const bossIm=decorImg(H.imgBoss||'maps/abyssboss.png');
@@ -12997,11 +13020,10 @@ function drawAbyssBoss(){
     const blink=(t)=>{ const d=Math.abs(el-t); return d<160 ? d/160 : 1; };
     const blinkAll=Math.min(blink(6550), blink(8050));
     // the small eyes: open in a ripple, shut together before the flare
-    const shut=1-sm(8800,9100);
+    const shut=1-sm(8800,9100), nBig=(H.eyes&&H.eyes.length)||1;
     for(const e of ab.smallEyes){ const o=sm(e.at,e.at+450)*shut*blinkAll;
-      eye(e.x-cam, e.y, e.r, o, 0.55+0.45*Math.sin(now*0.004+e.x), e.tilt); }
+      bigEye(nBig+e.cut, e.x-cam, e.y, o, e.k*1.5, 0.7+0.2*Math.sin(now*0.004+e.fx*40)); }
     // the rest of its painted eyes, one after another once the great two are open
-    const nBig=(H.eyes&&H.eyes.length)||1;
     (H.wakeEyes||[]).forEach((e,j)=>{ const t0=3900+j*170, o=sm(t0,t0+320)*shut*blinkAll;
       bigEye(nBig+j, e.xf*HUB.worldW-cam, e.yf*VH, o, 1, 0.6+0.2*Math.sin(now*0.004+j)); });
     // the two great eyes
@@ -13044,12 +13066,13 @@ function drawAbyssBoss(){
       g.beginPath(); g.ellipse(tgx,t.ty,64*sc,22*sc,0,0,7); g.stroke(); g.restore(); }
     // tentacle body, rotated about its base toward the lash
     g.save(); g.translate(sx,sy); g.rotate(lean);
+    // the same tentacles that rise in its waking: a slow writhe, reared on the telegraph
     if(ABYSS_TENT.complete && ABYSS_TENT.naturalWidth){
-      const fh=ABYSS_TENT.naturalHeight, frames=Math.max(1,Math.round(ABYSS_TENT.naturalWidth/fh)), fw=ABYSS_TENT.naturalWidth/frames;
-      const fi=(t.slamAt? frames-1 : Math.floor(now*0.0022+t.born)%frames);   // slow writhe; reared on the telegraph
+      const {fh,n,fw}=tentFrames();
+      const fi=(t.slamAt? n-1 : Math.floor(now*0.0022+t.born)%n);
       const dh=H0*3.0, dw=dh*(fw/fh);
-      if(now-t.hitFlash<110) g.globalAlpha=0.9;
-      g.drawImage(ABYSS_TENT, fi*fw,0,fw,fh, -dw/2, -dh, dw, dh); g.globalAlpha=1;
+      if(now-t.hitFlash<110) g.filter='brightness(1.8)';
+      g.drawImage(ABYSS_TENT, fi*fw,0,fw,fh, -dw/2, -dh, dw, dh); g.filter='none';
     } else {
       const w=22*sc, sway=Math.sin(now*0.004+t.born)*10*sc;
       g.fillStyle=(now-t.hitFlash<110)?'#e8c0d0':'#5b4150';
