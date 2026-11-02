@@ -3276,7 +3276,7 @@ const ABYSS_DARK_EYES=[
   {fx:0.78, fy:0.30, cut:3, k:0.8, at:5250}, {fx:0.75, fy:0.64, cut:1, k:0.9, at:5500},
   {fx:0.69, fy:0.12, cut:2, k:0.7, at:5750}, {fx:0.70, fy:0.46, cut:0, k:0.6, at:5950},
 ];
-const ABYSS_CORE=new Image(); ABYSS_CORE.src='mobs/core.png?v=2';
+const ABYSS_CORE=new Image(); ABYSS_CORE.src='mobs/core_trapezohedron.png';   // its core: the Shining Trapezohedron, held in its frame by seven supports
 // the pig bankers of Whisker Savings Bank
 const PIG_IMG={}; ['siroink','misterpig','piggyjunior'].forEach(k=>{ const im=new Image(); im.src='npcs/'+k+'.png'; PIG_IMG[k]=im; });
 // the Evil Coon stalker (4-frame sheet) that hunts you in the sewers
@@ -13119,7 +13119,7 @@ function drawAbyssBoss(){
   }
   if(ab.state==='exposed'){ const cx=A.hub.coreXf*HUB.worldW-HUB.camx, cy=A.hub.coreYf*VH, pr=0.5+0.5*Math.sin(now*0.012);
     g.save();
-    const gr=g.createRadialGradient(cx,cy,6,cx,cy,96); gr.addColorStop(0,'rgba(255,120,60,'+(0.6*pr+0.3)+')'); gr.addColorStop(1,'rgba(255,120,60,0)');
+    const gr=g.createRadialGradient(cx,cy,6,cx,cy,96); gr.addColorStop(0,'rgba(190,20,25,'+(0.5*pr+0.25)+')'); gr.addColorStop(1,'rgba(150,10,20,0)');   // the stone's deep red, breathing
     g.fillStyle=gr; g.beginPath(); g.arc(cx,cy,96,0,7); g.fill();
     if(ABYSS_CORE.complete && ABYSS_CORE.naturalWidth){
       const dh=130*(0.96+0.08*pr), dw=dh*(ABYSS_CORE.naturalWidth/ABYSS_CORE.naturalHeight);
