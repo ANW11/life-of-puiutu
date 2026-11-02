@@ -3131,15 +3131,15 @@ const MBOARD=[null,1,2,3].map(n=>{ if(!n) return null; const o={};
 const MBOAR_EYE3={idle:[0.827,0.287], walk1:[0.853,0.288], walk2:[0.853,0.290], attack:[0.747,0.314]};   // forehead, as frame fractions
 const MBOAR_MUZZLE=[0.97,0.544];                            // tip of the painted bolt in `attack`
 const MBOAR_H=290;                                          // a war machine: about three cats tall
-// ── The Glow, risen — the forest spirit that fights the machine in the Hangar ──
+// ── The Ancient Mushroom, risen — the forest spirit that fights the machine in the Hangar ──
 // Cut from mobs/guardianspirit/ (the 1205×1306 originals) to one shared scale, centred on the
 // body. Side view, every pose facing right — the glow, rune ring and roots are drawn in code.
 const SPIRITI={};
 ['stand','calm','walk0','walk1','lunge','cast','hurt','kneel','broken']
   .forEach(k=>{ const im=new Image(); im.src='mobs/forestspirit/'+k+'.png'; SPIRITI[k]=im; });
 const SPIRIT_H=320;                                         // a little taller than the machine
-// the sporelings: little mushroom folk the Glow sends up through the floor for the cat to carry
-// the Glow's ability: roots erupting under the machine, the binding vine, the punch landing
+// the sporelings: little mushroom folk the Ancient Mushroom sends up through the floor for the cat to carry
+// the Ancient Mushroom's ability: roots erupting under the machine, the binding vine, the punch landing
 const SPIRITFX={}; ['roots0','roots1','roots2','roots3','vine','impact0','impact1','impact2']
   .forEach(k=>{ const im=new Image(); im.src='mobs/forestspirit/fx_'+k+'.png'; SPIRITFX[k]=im; });
 const fxReady=im=>im&&im.complete&&im.naturalWidth;
@@ -3671,7 +3671,7 @@ function buildAreas(){
       mode:'topdown',
       hub:{
         music:'nature',     // calm, outdoors: pad, flute, birds
-        // ── the garden, redrawn: no floating ledges any more. The Glow stands on the ground in a
+        // ── the garden, redrawn: no floating ledges any more. The Ancient Mushroom stands on the ground in a
         //    clearing in the middle, under a shaft of light. The stones by the cave, the two in front
         //    of the clearing and the bridge's near railing are cut out in the occ mask, so you walk
         //    behind them. ──
@@ -3703,8 +3703,8 @@ function buildAreas(){
               requires:'caveOpen',
               lockedMsg:'Agent Snout: Closed for excavation, sorry. Survey work. Come back later.', speaker:'snout'},  // interact to enter
         merge:{xf:0.742, yf:0.674, r:95, label:'Fruit Merge'},   // fruit barrel by the orange tree
-        // ── The Glow: the big painted mushroom in the clearing. Walk up to its mound to talk. ──
-        shroom:{xf:0.472, yf:0.725, r:120, glowXf:0.472, glowYf:0.620, glowR:118, baseYf:0.70},   // baseYf: foot of the stem (the Glow rises there in its cutscene)
+        // ── The Ancient Mushroom: the big painted mushroom in the clearing. Walk up to its mound to talk. ──
+        shroom:{xf:0.472, yf:0.725, r:120, glowXf:0.472, glowYf:0.620, glowR:118, baseYf:0.70},   // baseYf: foot of the stem (the Ancient Mushroom rises there in its cutscene)
         // the stone tower (top-left): glows when you're near, E -> Tower Garden (arrive by the gate)
         doors:[{xf:0.076, yf:0.355, r:42, to:'towergarden', label:'Tower Garden', icon:'', glowXf:0.0666, glowYf:0.2938, glowR:142,
                 requires:'towerOpen',
@@ -4100,7 +4100,7 @@ function buildAreas(){
         doors:[{xf:0.0561, yf:0.7527, r:148, glowXf:0.0351, glowYf:0.7582, glowR:84, glowRGB:'255,210,120', to:'street', label:'Back to the City', icon:'', toSpawn:{xf:0.895, yf:0.700}},
                {xf:0.7615, yf:0.444, r:95, glowXf:0.7687, glowYf:0.3959, glowR:91, glowRGB:'130,170,255', to:'slum2', label:'Up to the Rat Warren', icon:'',
                 requires:'warrenOpen',
-                lockedMsg:'The Glow: Neither of them is winning. Neither of them is losing. You are not getting past.',
+                lockedMsg:'The Ancient Mushroom: Neither of them is winning. Neither of them is losing. You are not getting past.',
                 toSpawn:{xf:0.13, yf:0.88}},
                {xf:0.9421, yf:0.4593, r:74, glowXf:0.9409, glowYf:0.4094, glowR:118, glowRGB:'120,40,40', to:'sewerentrance', label:'Into the sewers…', icon:'', toSpawn:{xf:0.244, yf:0.657}}],
       },
@@ -4159,7 +4159,7 @@ function buildAreas(){
         warn:'Concrete, rust, and the crystals from the cave, caged and wired into the walls.',
         mechboar:true,
         boss:{xf:0.497, yf:0.745},               // standing in the purple circle in the middle of the floor
-        spirit:{xf:0.680, yf:0.800},             // where the Glow comes up through the floor
+        spirit:{xf:0.680, yf:0.800},             // where the Ancient Mushroom comes up through the floor
         doors:[{xf:0.8042, yf:0.7387, r:70, glowXf:0.835, glowYf:0.700, glowR:62, glowRGB:'255,170,80',
                 to:'bank', label:'Back up the lift', icon:'', toSpawn:{xf:0.62, yf:0.95}}],
       },
@@ -4845,7 +4845,7 @@ const RO = {
   "The sea takes the weak. I am doing you a kindness.":"Marea îi ia pe cei slabi. Îți fac un bine.",
   "Come back when something has taught you to fight.":"Revino când te-a învățat ceva să lupți.",
   "Away from the stand. That suit is not for cats who cannot pay for it.":"Departe de stand. Costumul ăla nu e pentru pisici care nu-l pot plăti.",
-  "The Glow remembers. Come back when you have seen something.":"Licărul ține minte. Revino când ai văzut ceva.",
+  "The Ancient Mushroom remembers. Come back when you have seen something.":"Ciuperca Străveche ține minte. Revino când ai văzut ceva.",
   "Something is glowing in the garden.":"Ceva strălucește în grădina.",
   "“You were invited. That is not the same as being welcome.”":"„Ai fost invitat. Nu e același lucru cu a fi binevenit.”",
   "“…Fine. FINE. I will do it myself.”":"„…Bine. BINE. O fac eu însumi.”",
@@ -4909,7 +4909,7 @@ const RO = {
   "Press E: Descend into the Abyss":"Apasă E. Coboară în abis",
   "Press E: Bank with Sir Oink":"Apasă E. Banca la Sir Oink",
   "Press E: Open the vault":"Apasă E. Deschide seiful",
-  "Press E: The Glow":"Apasă E. Licărul",
+  "Press E: The Ancient Mushroom":"Apasă E. Ciuperca Străveche",
   "Type a message…":"Scrie un mesaj…",
   "Tap a pipe to rotate it. Connect the source to all 3 sockets.":"Apasă o țeavă ca s-o rotești. Conectează sursa la toate cele 3 prize.",
   "Reroute the conduit to power all 3 sockets.":"Redirecționează conducta, alimentează toate cele 3 prize.",
@@ -5070,7 +5070,7 @@ const RO = {
   "The Crown’s Lion":"Leul Coroanei",
   "The Dreamer in the Deep":"Visătorul din Adânc",
   "Queen Seby, the Ancient One":"Regina Seby, Cea Străveche",
-  "The Glow":"Licărul",
+  "The Ancient Mushroom":"Ciuperca Străveche",
   "The tiles seat themselves. Something heavy turns behind the door.":"Plăcuțele se așază la locul lor. Ceva greu se rotește în spatele ușii.",
   "“Enough crawling.”":"„Gata cu târâtul.”",
   "STRIKE THE CORE!":"LOVEȘTE MIEZUL!",
@@ -5459,27 +5459,27 @@ const RO = {
   "Agent Snout scurries off behind the cradle, ledger under his arm.":"Agentul Râtan o ia la fugă în spatele leagănului, cu registrul sub braț.",
   "Not with what you tore out of my ground.":"Nu cu ce ai smuls din pământul meu.",
   "Meanwhile, in the garden…":"Între timp, în grădină…",
-  "The plating holds. The crystal on its back is keeping it going. Bring the Glow sporelings, then climb.":"Blindajul ține. Cristalul de pe spate îl ține în mișcare, adu-i Licărului spori, apoi cațără-te.",
+  "The plating holds. The crystal on its back is keeping it going. Bring the Ancient Mushroom sporelings, then climb.":"Blindajul ține. Cristalul de pe spate îl ține în mișcare, adu-i Ciupercii Străvechi spori, apoi cațără-te.",
   "Somewhere above you, a ledger closes. The machine in front of the cradle wakes up.":"Undeva deasupra ta, un registru se închide. Mașinăria din fața leagănului se trezește.",
   "The crystals on its back flare white. It stops holding anything back.":"Cristalele de pe spatele lui strălucesc alb. Nu se mai abține deloc.",
   "A third eye opens on its forehead. Get off the line.":"Un al treilea ochi i se deschide în frunte. Ieși din linia lui.",
-  "Take it to the Glow.":"Du-l la Licăr.",
+  "Take it to the Ancient Mushroom.":"Du-l la Ciuperca Străveche.",
   "Hammer attack! Tear the crystal out before the roots give!":"Atac cu ciocanul, smulge cristalul înainte să cedeze rădăcinile!",
-  "The roots snap and it throws you off. Bring the Glow more sporelings.":"Rădăcinile se rup și te aruncă jos. Adu-i Licărului mai mulți spori.",
-  "The roots snap. Bring the Glow more sporelings.":"Rădăcinile se rup. Adu-i Licărului mai mulți spori.",
+  "The roots snap and it throws you off. Bring the Ancient Mushroom more sporelings.":"Rădăcinile se rup și te aruncă jos. Adu-i Ciupercii Străvechi mai mulți spori.",
+  "The roots snap. Bring the Ancient Mushroom more sporelings.":"Rădăcinile se rup. Adu-i Ciupercii Străvechi mai mulți spori.",
   "One crystal out. It screams like a gearbox. Two left.":"Un cristal scos. Urlă ca o cutie de viteze. Mai sunt două.",
   "Two out. One left, and it has stopped holding anything back.":"Două scoase. Mai e unul, și nu se mai abține deloc.",
-  "The Glow sinks back into the floor. It is regrowing. Keep the machine busy.":"Licărul se scufundă înapoi în podea. Crește la loc, ține mașinăria ocupată.",
+  "The Ancient Mushroom sinks back into the floor. It is regrowing. Keep the machine busy.":"Ciuperca Străveche se scufundă înapoi în podea. Crește la loc, ține mașinăria ocupată.",
   "Hold still, little one. This part is mine.":"Stai liniștit, micuțule. Partea asta e a mea.",
-  "The Glow grows back out of the floor.":"Licărul crește din nou din podea.",
+  "The Ancient Mushroom grows back out of the floor.":"Ciuperca Străveche crește din nou din podea.",
   "Don't come closer. It is only roots, coming apart.":"Nu te apropia. Sunt doar rădăcini care se desfac.",
   "They dug me out of the ground to run their machine. I am putting it back.":"M-au scos din pământ ca să le meargă mașinăria. Eu o pun la loc.",
   "Both flags will say they won today. Let them.":"Ambele steaguri vor spune că au câștigat azi. Lasă-le.",
   "Go up, little one. Tell them what you saw down here.":"Urcă, micuțule. Spune-le ce ai văzut aici jos.",
   "Now. I have it. Climb!":"Acum, îl țin. Cațără-te!",
-  "The Glow, regrowing":"Licărul, crește la loc",
+  "The Ancient Mushroom, regrowing":"Ciuperca Străveche, crește la loc",
   "The crystals go grey and the machine sits down. The ones who paid for it were never in the room.":"Cristalele se fac gri și mașinăria se lasă jos. Cei care au plătit-o n-au fost niciodată în cameră.",
-  "Your claws skid off the plating. Carry sporelings to the Glow. Its roots can hold this thing still.":"Ghearele îți alunecă pe blindaj. Du-i spori Licărului, rădăcinile lui pot ține namila pe loc.",
+  "Your claws skid off the plating. Carry sporelings to the Ancient Mushroom. Its roots can hold this thing still.":"Ghearele îți alunecă pe blindaj. Du-i spori Ciupercii Străvechi, rădăcinile ei pot ține namila pe loc.",
   "You came down so far…":"Ai coborât atât de departe…",
   "…to wake me.":"…ca să mă trezești.",
   "They will ask you to choose. They always ask. Remember that I was here before there was anything to choose between.":"Îți vor cere să alegi. Mereu cer. Ține minte că eu eram aici înainte să existe ceva între care să alegi.",
@@ -5985,7 +5985,7 @@ function doInteract(){
       // the surveyor home — Agent Snout leaves because `caveOpen` is granted by this step, not
       // because anyone tells him to.
       if(!hasPurpleCrystal()){
-        sayLines('The Glow', [
+        sayLines('The Ancient Mushroom', [
           'The runes are cold. There is a socket in the middle of them, and it is empty.',
           'Something violet went in there. A crystal, cut, about the size of your head.',
           'Those do not grow in water. They grow in caves.',
@@ -6208,7 +6208,7 @@ function enterArea(id,fromRight,toX){
   curArea=id;A=AREAS[id];
   S.visited[id]=true;
   try{ mapNoteArea(id); }catch(e){}
-  if(id==='sewerentrance' && !S.sewerSeen) S.sewerSeen=true;   // The Glow asks about this later
+  if(id==='sewerentrance' && !S.sewerSeen) S.sewerSeen=true;   // The Ancient Mushroom asks about this later
   save();
   // platformer areas (e.g. House) get the calm theme; hub music is handled in enterHub
   if(A && A.mode!=='topdown') zoneMusic();
@@ -6808,7 +6808,7 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
     if(!b.defeated && (b.stage==='fight'||b.stage==='bound') && near(b.x,b.y,64)){
       hits++; b.hitFlash=now; floatText(b.x,b.y-110,'ARMORED','#bda8ff');
       SFX.tone&&SFX.tone(180,0.08,'square',0.04);
-      if(!b.armorHint){ b.armorHint=true; toast('Your claws skid off the plating. Carry sporelings to the Glow. Its roots can hold this thing still.'); }
+      if(!b.armorHint){ b.armorHint=true; toast('Your claws skid off the plating. Carry sporelings to the Ancient Mushroom. Its roots can hold this thing still.'); }
     }
     return hits;
   }
@@ -8043,7 +8043,7 @@ function drawOccOutline(box,over,drawFn){
 const HUB_ROCKY_NPC={id:'rocky', dog:true};   // for openDialogue (recruit quest)
 // Merlin the wizard-dog (Library NPC) + the alchemy potions
 const MERLIN_IMG=new Image(); MERLIN_IMG.src='npcs/merlin_npc.png?v=4';   // v4: pixel-art blue Amstaff in his wizard clothes, neutral mouth
-// The Glow's portrait. Until the art exists the dialogue box falls back to a plain circle,
+// The Ancient Mushroom's portrait. Until the art exists the dialogue box falls back to a plain circle,
 // so this is safe to ship before the file is dropped in.
 const GLOW_IMG=new Image(); GLOW_IMG.src='npcs/Voice_of_the_forest_icon.jpeg';
 const MERLIN_LINES=[
@@ -8140,7 +8140,7 @@ function hubScale(y){ const b=hubBand(); const t=Math.max(0,Math.min(1,(y-b.top)
 function hubCave(){ const H=A.hub; return H.cave?{x:H.cave.xf*HUB.worldW, y:H.cave.yf*VH}:null; }
 function hubMerge(){ const H=A.hub; return H.merge?{x:H.merge.xf*HUB.worldW, y:H.merge.yf*VH}:null; }
 function hubShroom(){ const H=A.hub; return H.shroom?{x:H.shroom.xf*HUB.worldW, y:H.shroom.yf*VH}:null; }
-// The stepping mushrooms that bridge the painted ledges on the way up to The Glow.
+// The stepping mushrooms that bridge the painted ledges on the way up to The Ancient Mushroom.
 // Drawn rather than painted into the background so they can pulse — the light is what
 // tells the player these are footholds and not scenery.
 let _climbHinted=false;
@@ -8162,7 +8162,7 @@ function drawClimbStones(){
     g.save();
     if(img){
       const h=w*(img.naturalHeight/img.naturalWidth);
-      // a soft spore-light under each one, so the route still reads as The Glow's doing
+      // a soft spore-light under each one, so the route still reads as The Ancient Mushroom's doing
       const gr=g.createRadialGradient(x,y,4,x,y,w*0.62);
       gr.addColorStop(0,'rgba(255,222,150,'+(0.20*pr+0.08)+')');
       gr.addColorStop(1,'rgba(190,240,190,0)');
@@ -8847,7 +8847,7 @@ function enterHub(fromRight){
              : rk ? {hp:460, cdmg:[11,17], xp:480, coins:170}   // one bar, no second entity
              : mb ? {hp:640, cdmg:[12,18], xp:650, coins:260}
              : {hp:420, cdmg:[10,16], xp:350, coins:120};
-    // the Mech Boar's health is the Glow's fight, not yours — only its damage scales (in hubHurtPlayer)
+    // the Mech Boar's health is the Ancient Mushroom's fight, not yours — only its damage scales (in hubHurtPlayer)
     const bhp = mb ? sk.hp : Math.round(sk.hp*HUB.lvBoss.hp);
     sk.xp=Math.round(sk.xp*HUB.lvBoss.hp);
     HUB.boss={x:bx, y:by, homeX:bx, homeY:by, kind:sk, hp:bhp, maxHp:bhp,
@@ -9910,7 +9910,7 @@ const COON_SFX={
     const n=this.noise(c,0.5), g=c.createGain(); g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.45); n.connect(g); g.connect(dst); n.start(t); },
 };
 //──────── THE OUTRO — what happens after the Hangar ────────────────────────────────────────
-// Not a victory. The machine is down and the Glow is gone, and then the world goes on: a few
+// Not a victory. The machine is down and the Ancient Mushroom is gone, and then the world goes on: a few
 // short scenes of what each path actually changed, and the screen from the lore doc — white on
 // black, no music. The true path ends on the one line in the game spoken to the player. The
 // two pledged paths and the half-way one each end by pointing, quietly, at what was missed.
@@ -10813,7 +10813,7 @@ function updateHangarIntro(b,now){
       sayLines('Agent Bristle', SNOUT_SPEECH, {img:ARMY_SPR.pig_agent.walk[0], bg:'#1b2433', tone:260, then:()=>{
         const t=Date.now(); H.phase='order'; H.t0=t; ag.facing = b.x<ag.x ? -1 : 1;
         npcBark('Agent Bristle','Wake it.',{img:ARMY_SPR.pig_agent.walk[0], bg:'#1b2433', tone:260});
-        b.stage='wake'; b.stageUntil=Infinity;       // it stays waking until the Glow arrives
+        b.stage='wake'; b.stageUntil=Infinity;       // it stays waking until the Ancient Mushroom arrives
         b.facing = c.x<b.x ? -1 : 1;                 // and the first thing it looks at is you
         SFX.seq&&SFX.seq([55,65,82,110],'sawtooth',0.10);
       }});
@@ -10836,13 +10836,13 @@ function updateHangarIntro(b,now){
   if(H.phase==='cut'){
     const cut=HUB.cut, t=now-cut.t0;
     if(!cut.said && t>1800 && !sayActive && !choiceActive){ cut.said=true;   // never start over another open dialogue
-      sayLines('The Glow', GLOW_SENSE, {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300,
+      sayLines('The Ancient Mushroom', GLOW_SENSE, {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300,
         then:()=>{ cut.transformAt=Date.now(); SFX.seq&&SFX.seq([196,262,330,392,523],'triangle',0.06); }}); }
     if(cut.transformAt && now-cut.transformAt>3000){  // the white-out ends in the hangar
       HUB.cut=null; HUB.flashAt=now; H.phase='arrive'; H.t0=now;
       const sp=HUB.spirit; if(sp){ sp.stage='rise'; sp.t0=now; }
       b.stageUntil=now+2600;
-      npcBark('The Glow','Not with what you tore out of my ground.',{img:GLOW_IMG, bg:'#1d3328', tone:600});
+      npcBark('The Ancient Mushroom','Not with what you tore out of my ground.',{img:GLOW_IMG, bg:'#1d3328', tone:600});
       SFX.tone&&SFX.tone(110,0.6,'sawtooth',0.07);
     }
     return;
@@ -10884,7 +10884,7 @@ function drawGlowCutscene(){
     const scale=VH/im.naturalHeight*zoom, w=im.naturalWidth*scale, h=VH*zoom;
     const gx=(sh.glowXf!=null?sh.glowXf:sh.xf)*w, gy=(sh.glowYf!=null?sh.glowYf:sh.yf)*h;
     g.drawImage(im, px-gx, py-gy, w, h);
-    const by=sh.baseYf!=null ? py-gy+sh.baseYf*h : py+24*zoom;   // the stem's foot: roots and the Glow come up from here
+    const by=sh.baseYf!=null ? py-gy+sh.baseYf*h : py+24*zoom;   // the stem's foot: roots and the Ancient Mushroom come up from here
     g.fillStyle='rgba(12,16,34,'+(0.38-(tr?Math.min(0.3,tr/3000*0.3):0))+')'; g.fillRect(0,0,VW,VH);   // dusk
     // the mushroom's spore-light, breathing faster as it understands
     const inten=Math.min(1,t/2500)*(1+(tr?tr/700:0)), pr=0.55+0.45*Math.sin(now*(0.003+inten*0.002));
@@ -10898,7 +10898,7 @@ function drawGlowCutscene(){
       g.globalAlpha=(1-k)*0.6; g.fillStyle=i%3?'#ffeeb8':'#b8ffe0';
       g.beginPath(); g.arc(px+Math.cos(a)*R*0.5, py-k*R*1.4, 2.4, 0, 7); g.fill(); }
     g.globalAlpha=1;
-    if(tr){                                            // roots break the ground; the Glow stands up out of it
+    if(tr){                                            // roots break the ground; the Ancient Mushroom stands up out of it
       const k=Math.min(1,tr/2200), e=1-Math.pow(1-k,3);
       g.lineCap='round';
       for(let i=0;i<10;i++){ const a=Math.PI+(i/9)*Math.PI, L=(40+160*e)*zoom*(0.6+0.4*Math.sin(i*1.7));
@@ -10919,13 +10919,13 @@ function drawGlowCutscene(){
   g.restore();
 }
 function mechBoarCatLift(){ return 26*hubScale(HUB.cat.y); }   // cat's body centre above its feet
-// who the machine is fighting: the Glow while it stands, the cat whenever it does not
+// who the machine is fighting: the Ancient Mushroom while it stands, the cat whenever it does not
 function mechBoarTarget(){
   const sp=HUB.spirit, c=HUB.cat;
   if(sp && sp.stage==='fight') return {x:sp.x, y:sp.y, lift:SPIRIT_H*hubScale(sp.y)*0.5, spirit:true};
   return {x:c.x, y:c.y, lift:mechBoarCatLift(), spirit:false};
 }
-// Its health comes in three segments, one per crystal on its back. The Glow can wear a segment
+// Its health comes in three segments, one per crystal on its back. The Ancient Mushroom can wear a segment
 // down, but the plating holds at the line — only tearing the crystal out takes it past.
 function mechBoarFloor(b){ return Math.max(1, b.maxHp*(2-(b.torn||0))/3); }
 function mechBoarHurt(b,dmg,now){
@@ -10934,7 +10934,7 @@ function mechBoarHurt(b,dmg,now){
   if(b.hp<=fl+0.5){                                  // at the line: it shrugs the blow off
     b.hitFlash=now; floatText(b.x, b.y-MBOAR_H*hubScale(b.y)*0.85, 'HOLDS', '#a99cc0');
     if(!b.floorHint){ b.floorHint=true;
-      toast('The plating holds. The crystal on its back is keeping it going. Bring the Glow sporelings, then climb.'); }
+      toast('The plating holds. The crystal on its back is keeping it going. Bring the Ancient Mushroom sporelings, then climb.'); }
     return;
   }
   const d=Math.max(1,Math.round(Math.min(dmg, b.hp-fl)));
@@ -11039,7 +11039,7 @@ function updateMechBoar(b,now){
   // walking: heavy and slow, and it would rather shoot from across the room than chase
   const spd=b.phase2?1.9:1.35;
   if(T.spirit){
-    // It does not chase the Glow. It takes up ground somewhere across the floor, plants itself
+    // It does not chase the Ancient Mushroom. It takes up ground somewhere across the floor, plants itself
     // and shoots, then moves again — so the whole hangar gets used, not one corner of it.
     const sp=HUB.spirit, ssc=hubScale(sp.y), band=hubBand();
     if(!b.wander || now>b.wanderAt || Math.hypot(b.wander.x-b.x,b.wander.y-b.y)<14){
@@ -11072,17 +11072,17 @@ function updateMechBoar(b,now){
   } else if(((T.spirit && Math.abs(tdx)<420*hubScale(b.y) && Math.abs(tdy)<130) || dist<160) && now>b.stompCD){
     b.state='stomp'; b.meleeDone=false; b.meleeAt=now+420; b.stateUntil=now+760; b.moving=false;
   } else if(now>b.fireCD && tdist>180 && !b.moving){
-    // two volleys at the Glow, then one at you — it knows who is feeding the Glow
+    // two volleys at the Ancient Mushroom, then one at you — it knows who is feeding the Ancient Mushroom
     b.volleys=(b.volleys||0)+1;
     b.aimT = (T.spirit && b.volleys%3!==0) ? T : {x:c.x, y:c.y, lift:mechBoarCatLift()};
     b.state='aim'; b.fired=false; b.fireAt=now+380; b.stateUntil=now+700; b.moving=false;
   }
 }
 // ── The cat's half of the duel ─────────────────────────────────────────────────────────────
-// 1. Sporelings come up through the floor. Carry one at a time to the Glow (under fire).
-// 2. Three of them and the Glow can hold the machine down with its roots for a few seconds.
+// 1. Sporelings come up through the floor. Carry one at a time to the Ancient Mushroom (under fire).
+// 2. Three of them and the Ancient Mushroom can hold the machine down with its roots for a few seconds.
 // 3. While it is held, climb its back and tear a crystal out — hammer attack, it bucks to throw
-//    you. Three crystals, three segments of its health. The last one is where the Glow finishes it.
+//    you. Three crystals, three segments of its health. The last one is where the Ancient Mushroom finishes it.
 const MBOAR_HOLD_MS=7000, MBOAR_PULLS=7;
 function updateSporelings(b,now){
   const c=HUB.cat, sp=HUB.spirit; if(!sp) return;
@@ -11102,7 +11102,7 @@ function updateSporelings(b,now){
     for(let i=0;i<HUB.spores.length;i++){ const s=HUB.spores[i];
       if(Math.hypot(c.x-s.x,c.y-s.y)<44 && c.z<6){ HUB.spores.splice(i,1); HUB.carry={kind:s.kind};
         SFX.tone&&SFX.tone(660,0.08,'triangle',0.05);
-        if(!HUB.carryHint){ HUB.carryHint=true; toast('Take it to the Glow.'); }
+        if(!HUB.carryHint){ HUB.carryHint=true; toast('Take it to the Ancient Mushroom.'); }
         break; } }
   } else if(sp.stage==='fight' && sp.state!=='hold' && Math.hypot(c.x-sp.x,c.y-sp.y)<170){   // hand it over
     HUB.carry=false; sp.charge=Math.min(3,(sp.charge||0)+1); sp.hp=Math.min(sp.maxHp, sp.hp+60);
@@ -11133,8 +11133,8 @@ function mechBoarHeld(b,now){
   }
   if(now>b.boundUntil){                              // the roots give way
     b.stage='fight'; b.bindKind=null; b.fireCD=now+900; b.stompCD=now+600;
-    if(HUB.ride){ mechRideEnd(now,true); toast('The roots snap and it throws you off. Bring the Glow more sporelings.'); }
-    else toast('The roots snap. Bring the Glow more sporelings.');
+    if(HUB.ride){ mechRideEnd(now,true); toast('The roots snap and it throws you off. Bring the Ancient Mushroom more sporelings.'); }
+    else toast('The roots snap. Bring the Ancient Mushroom more sporelings.');
   }
 }
 // where the cat sits: on the next crystal to come out
@@ -11172,7 +11172,7 @@ function mechTear(b,now){
   toast(b.torn===1 ? 'One crystal out. It screams like a gearbox. Two left.'
                    : 'Two out. One left, and it has stopped holding anything back.');
 }
-// ── The Glow, risen ────────────────────────────────────────────────────────────────────────
+// ── The Ancient Mushroom, risen ────────────────────────────────────────────────────────────────────────
 // The mushroom in the garden was never only a mushroom: it is the mycelium under the whole
 // map, the honest version of what the Organization pretends to be. When the machine built from
 // crystals ripped out of the ground wakes up, the ground stands up too. This is its fight, not
@@ -11189,7 +11189,7 @@ function spiritHurt(sp,dmg,now){
   floatText(sp.x, sp.y-SPIRIT_H*hubScale(sp.y)*0.9, '-'+dmg, '#ffb08a');
   if(sp.hp<=0){
     sp.hp=0; sp.stage='rooted'; sp.stageUntil=now+9000; sp.state='walk'; sp.moving=false;
-    toast('The Glow sinks back into the floor. It is regrowing. Keep the machine busy.');
+    toast('The Ancient Mushroom sinks back into the floor. It is regrowing. Keep the machine busy.');
     SFX.seq&&SFX.seq([330,262,196],'triangle',0.05);
   }
 }
@@ -11202,7 +11202,7 @@ function spiritSacrifice(b,now){
   HUB.spores.length=0; HUB.carry=false;
   sp.stage='sacrifice'; sp.t0=now; sp.state='walk'; sp.downDone=false; sp.said=false;
   sp.facing = b.x<sp.x ? -1 : 1;
-  npcBark('The Glow','Hold still, little one. This part is mine.',{img:GLOW_IMG, bg:'#1d3328', tone:600});
+  npcBark('The Ancient Mushroom','Hold still, little one. This part is mine.',{img:GLOW_IMG, bg:'#1d3328', tone:600});
   SFX.seq&&SFX.seq([392,330,262,196],'triangle',0.06);
 }
 function updateForestSpirit(sp,b,now){
@@ -11216,7 +11216,7 @@ function updateForestSpirit(sp,b,now){
     vx:(Math.random()-.5)*1.2, vy:-(0.6+Math.random()*1.6), life:1, c:cols[i%cols.length]}); };
   if(sp.stage==='hidden'){
     if(b.stage==='wake' && !HUB.hangar){ sp.stage='rise'; sp.t0=now;
-      setTimeout(()=>npcBark('The Glow','Not with what you tore out of my ground.',{img:GLOW_IMG, bg:'#1d3328', tone:600}), 1300);
+      setTimeout(()=>npcBark('The Ancient Mushroom','Not with what you tore out of my ground.',{img:GLOW_IMG, bg:'#1d3328', tone:600}), 1300);
       SFX.seq&&SFX.seq([196,262,330,392],'triangle',0.05); }
     return;
   }
@@ -11228,7 +11228,7 @@ function updateForestSpirit(sp,b,now){
   if(sp.stage==='rooted'){
     if(Math.random()<0.2) spores(1,['#9fffd8']);
     if(now>sp.stageUntil){ sp.stage='rise'; sp.t0=now; sp.hp=Math.round(sp.maxHp*0.5);
-      toast('The Glow grows back out of the floor.'); }
+      toast('The Ancient Mushroom grows back out of the floor.'); }
     return;
   }
   if(sp.stage==='sacrifice'){
@@ -11237,7 +11237,7 @@ function updateForestSpirit(sp,b,now){
     if(t>2400 && Math.random()<0.7) spores(3,['#9fffd8','#ffd59a','#e8f5e0']);   // coming apart
     if(t>5400 && !sp.said){ sp.said=true; sp.stage='gone';
       if(!freeMode()){ S.glowGone=true; save(); }
-      sayLines('The Glow', [
+      sayLines('The Ancient Mushroom', [
         "Don't come closer. It is only roots, coming apart.",
         "They dug me out of the ground to run their machine. I am putting it back.",
         "Both flags will say they won today. Let them.",
@@ -11271,7 +11271,7 @@ function updateForestSpirit(sp,b,now){
   }
   if(sp.charge>=3){                                  // fed enough: the big one — hold it down
     sp.state='cast'; sp.binding=true; sp.hitDone=false; sp.hitAt=now+700; sp.stateUntil=now+1200; sp.moving=false;
-    npcBark('The Glow','Now. I have it. Climb!',{img:GLOW_IMG, bg:'#1d3328', tone:600});
+    npcBark('The Ancient Mushroom','Now. I have it. Climb!',{img:GLOW_IMG, bg:'#1d3328', tone:600});
     return;
   }
   // Its own ground: a spot beside the machine, picked again every few seconds — and now and then
@@ -11374,7 +11374,7 @@ function drawForestSpirit(g,sp){
   if(sp.stage==='fight' || sp.stage==='rooted'){
     const topY=sp.y-base*grow-16;
     const pct = sp.stage==='rooted' ? 1-Math.max(0,sp.stageUntil-now)/9000 : Math.max(0,sp.hp/sp.maxHp);
-    const {by,bh}=drawBossPlate(sx, topY+4, 'The Glow', pct, sp.stage==='rooted'?'#4f9c7c':'#7dffcf', '#10261c');   // a dim bar refilling = regrowing
+    const {by,bh}=drawBossPlate(sx, topY+4, 'The Ancient Mushroom', pct, sp.stage==='rooted'?'#4f9c7c':'#7dffcf', '#10261c');   // a dim bar refilling = regrowing
     g.save();
     // sporelings delivered toward the next hold
     for(let i=0;i<3;i++){ const cx=sx+(i-1)*16, cy=by+bh+10, on=i<(sp.charge||0);
@@ -11420,7 +11420,7 @@ function drawMechBoar(g,b){
 
   drawBossSprite(g, sx, b.y, b.facing, h, key, !!b.phase2 && !b.defeated, bob, spr, '190,80,255', 0);
 
-  // the Glow's cast: roots and spore-light bursting out of the floor under it
+  // the Ancient Mushroom's cast: roots and spore-light bursting out of the floor under it
   if(b.rootFx && now-b.rootFx<750 && fxReady(SPIRITFX.roots2)){
     const t=(now-b.rootFx)/750, fr=t<0.15?0:t<0.3?1:t<0.7?2:3;
     drawFxFoot(g, SPIRITFX['roots'+fr], sx, b.y+10*sc, 200*sc, b.facing<0, t>0.85?(1-t)/0.15:1);
@@ -11434,7 +11434,7 @@ function drawMechBoar(g,b){
     g.restore();
   }
 
-  // where the Glow's fist lands
+  // where the Ancient Mushroom's fist lands
   if(b.punchFx && now-b.punchFx.t0<380){
     const t=(now-b.punchFx.t0)/380, im=SPIRITFX['impact'+Math.min(2,Math.floor(t*3))];
     if(fxReady(im)){ const hh=150*sc*(0.8+0.4*t), w=im.naturalWidth/im.naturalHeight*hh;
@@ -12831,9 +12831,9 @@ function drawHub(){
     drawCueMotes(g, sx, cy, R, '150,210,255', HUB.nearCave);
     if(HUB.nearCave) drawPressE(g, sx, cvM.y-101, A.hub.cave.label, '150,210,255', false);
   }
-  // ── the climb: stepping mushrooms sprouted by The Glow, plus the nudge to jump ──
+  // ── the climb: stepping mushrooms sprouted by The Ancient Mushroom, plus the nudge to jump ──
   if(A.hub.stones) drawClimbStones();
-  // ── The Glow: a soft spore-light on the mushroom itself, and the prompt down on the path ──
+  // ── The Ancient Mushroom: a soft spore-light on the mushroom itself, and the prompt down on the path ──
   // (gone after the Hangar — what is left in the garden is just a mushroom)
   if(A.hub.shroom && !S.glowGone){
     const H=A.hub.shroom, now=Date.now();
@@ -12857,12 +12857,10 @@ function drawHub(){
     if(HUB.nearShroom){
       const sx=hubShroom().x-HUB.camx, sy=hubShroom().y;
       g.textAlign='center'; g.font='bold 14px Trebuchet MS';
-      const lbl='Press E: The Glow', tw=g.measureText(lbl).width+18;
+      const lbl='Press E: The Ancient Mushroom', tw=g.measureText(lbl).width+18;
       g.globalAlpha=0.6+0.4*pr; g.fillStyle='rgba(24,20,8,.85)';
       roundRectPath(sx-tw/2,sy-116,tw,24,8); g.fill();
       g.fillStyle='#ffeeb8'; g.fillText(lbl,sx,sy-99);
-      g.strokeStyle='rgba(255,226,150,'+pr+')'; g.lineWidth=3;
-      g.beginPath(); g.ellipse(sx,sy,46,20,0,0,7); g.stroke();
     }
     g.restore();
   }
@@ -14298,7 +14296,7 @@ const NOMNOM_NEWS=[
 // You should be able to tell who is talking with your eyes shut. Every speaker types with their own
 // little blip: a wave, a pitch, how much it wobbles, and how often it sounds (every Nth letter).
 const VOICES={
-  'The Glow':        {w:'sine',     f:520, v:0.04, n:3, vol:0.022},
+  'The Ancient Mushroom':        {w:'sine',     f:520, v:0.04, n:3, vol:0.022},
   'Agent Snout':     {w:'triangle', f:175, v:0.07, n:2, vol:0.035},
   'Agent Bristle':   {w:'triangle', f:140, v:0.05, n:2, vol:0.035},
   'Agent Trotter':   {w:'triangle', f:205, v:0.06, n:2, vol:0.033},
@@ -14371,7 +14369,7 @@ function advanceDialogue(){
 }
 
 //──────── plain speech (no quest attached) ─────────────────────────────────
-// Used by The Glow, the intro, and every story beat that isn't an NPC quest.
+// Used by The Ancient Mushroom, the intro, and every story beat that isn't an NPC quest.
 let sayActive=false, sayArr=[], sayIdx=0, sayThen=null, sayPortrait=null;
 function drawEmojiPortrait(emoji,bg){
   const pc=document.getElementById('dlgPortrait'); if(!pc) return; pc._want=null;
@@ -14499,9 +14497,9 @@ function shroomTalk(){
   if(!S.metGlow && !(S.tut&&S.tut.training) && !testMode()){ toast('The mushroom is quiet. Tomy is still talking to you.'); return; }
   storySet('seek_wizard');            // the mushroom is the only thing that opens the west road
   const first=!S.metGlow;
-  sayLines('The Glow', glowLines(), {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300, then:()=>{
+  sayLines('The Ancient Mushroom', glowLines(), {img:GLOW_IMG, icon:'', bg:'#1d2416', tone:300, then:()=>{
     if(first){ S.metGlow=true; save();
-      toast('The Glow remembers. Come back when you have seen something.'); }
+      toast('The Ancient Mushroom remembers. Come back when you have seen something.'); }
   }});
 }
 
@@ -14509,7 +14507,7 @@ function shroomTalk(){
 //──────── TUTORIAL — one lesson per mechanic, at the moment it first matters ────────────────
 // Not a wall of instructions at the start. Each beat waits for the situation that makes it
 // useful and fires once, then never again. Tomy teaches the controls in the garden before anything
-// else; Rocky talks you through the first real fight; the Glow teaches the rest.
+// else; Rocky talks you through the first real fight; the Ancient Mushroom teaches the rest.
 const TUT_BEATS=[
   // ── fighting ──
   {id:'open',    who:'rocky', lines:['Heads up! They have seen you.',
@@ -14546,7 +14544,7 @@ const TUT_BEATS=[
 ];
 function tutSpeaker(who){
   if(who==='rocky') return {name:'Rocky', opt:{img:ROCKY.idle, bg:'#2b2a20', tone:380}};
-  return {name:'The Glow', opt:{img:(typeof GLOW_IMG!=='undefined')?GLOW_IMG:null,
+  return {name:'The Ancient Mushroom', opt:{img:(typeof GLOW_IMG!=='undefined')?GLOW_IMG:null,
                                 icon:'', bg:'#1d2416', tone:300}};
 }
 function tutorialFire(id){
@@ -14561,7 +14559,7 @@ function tutorialFire(id){
 //──────── TOMY'S LESSONS — the controls, taught one key at a time ─────────────────────────────
 // The very first thing in the game: Tomy, dozing in his sunbeam in the garden, wakes up and walks you
 // through every control. Each step waits until you have actually done it — walked, jumped, clawed the
-// straw dummy, cast, drunk — before the next one. Only then does the Glow answer. A panel at the top
+// straw dummy, cast, drunk — before the next one. Only then does the Ancient Mushroom answer. A panel at the top
 // always shows the step and its keys. (The garden's ducks wait outside until class is over.)
 const TRAIN={on:false, step:-1, hits:0, jumped:false, cast:false, drank:false, talked:false, dummy:null, wob:0, waiting:false};
 function trainTouch(){ return matchMedia('(pointer:coarse)').matches; }
@@ -14810,7 +14808,7 @@ const PORTRAITS={
   'npcs/rocky_idle.png':{ex:0.761,ey:0.3,vw:0.6545},
   'npcs/rocky_new/idle.png':{ex:0.70,ey:0.34,vw:0.88},
   'npcs/merlin_npc.png':{ex:0.80,ey:0.27,vw:0.55},   // v3 pixel-art Merlin: the whole hat inside the circle
-  // The Glow's eyes sit low, under the cap. Framing dead-centre on them would crop off the
+  // The Ancient Mushroom's eyes sit low, under the cap. Framing dead-centre on them would crop off the
   // cap, which is the whole silhouette — so the face rides a little below centre instead.
   // measured off the art: the mushroom's own bounding box is x 0.055-0.944, y 0.165-1.000, so
   // its visual centre is (0.500, 0.582) and it needs a 0.98 view to sit inside the circle whole
