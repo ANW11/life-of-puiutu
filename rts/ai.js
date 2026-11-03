@@ -294,7 +294,7 @@ const AI = {
     if (G.time < 480 || pl.fish < 600) return;
     const ex = G.ents.find(e => !e.dead && e.kind === 'exchange'); if (!ex) return;
     const near = this.mine(e => e.isUnit && dist(e, ex) < 7); if (!near.length) return;
-    const kind = pl.wood > 200 && ex.stock.mechboar ? 'mechboar' : ex.stock.merlin && pl.wood > 80 && Math.random() < 0.6 ? 'merlin' : ex.stock.snout ? 'snout' : null;
+    const kind = pl.wood > 200 && ex.stock.mechboar ? 'mechboar' : ex.stock.snout ? 'snout' : null;
     if (kind) { const u = hireMerc(ex, kind, this.p); if (u && this.state === 'attack') { this.attackForce.add(u.id); const t = this.enemyTarget(); if (t) orderAMove(u, t.x, t.y); } }
   },
 };

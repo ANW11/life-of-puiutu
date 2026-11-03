@@ -75,7 +75,7 @@ const EV = {
   // ── Snout's special offer: one mercenary at half price, for whoever gets there first ──
   dealStart() {
     const ex = G.ents.find(e => !e.dead && e.kind === 'exchange'); if (!ex) return;
-    const kind = Math.random() < 0.6 ? 'mechboar' : Math.random() < 0.5 ? 'merlin' : 'snout', c = UNITS[kind].cost;
+    const kind = Math.random() < 0.6 ? 'mechboar' : 'snout', c = UNITS[kind].cost;
     ex.deal = { kind, f: Math.round(c.f / 2), w: Math.round(c.w / 2), until: G.time + 75 };
     this.both('Agent Snout has a special offer at the Pig Exchange: ' + UNITS[kind].name + ' at half price. First come, first served!', '#f2b8c6', ex);
   },

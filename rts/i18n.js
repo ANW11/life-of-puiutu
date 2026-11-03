@@ -138,7 +138,6 @@ const RO_DATA = {
   'Agent Snout': 'Agentul Râtan', 'Mercenary. Sees far; his invoices slow what they hit.': 'Mercenar. Vede departe; facturile lui încetinesc ce lovesc.',
   'Mech Boar': 'Mistrețul Mecanic', 'Mercenary siege engine. The third eye on its forehead fires a violet beam that burns through everything in its line.':
     'Mașină de asediu mercenară. Al treilea ochi din frunte trage o rază violet care arde tot ce îi stă în cale.',
-  'Merlin': 'Merlin', 'Mercenary wizard. Throws spells, and every few seconds heals the most hurt ally near him.': 'Vrăjitor mercenar. Aruncă vrăji și, la câteva secunde, vindecă cel mai rănit aliat din apropiere.',
   'Swarm Rat': 'Șobolan din roi', 'Summoned. Gone in a while.': 'Chemat. Dispare după un timp.',
   'Pigeon': 'Porumbel', 'Bruiser Pigeon': 'Porumbel bătăuș', 'Elder Pigeon': 'Porumbel bătrân', 'Angry Duck': 'Rață furioasă',
   'Wild Raccoon': 'Raton sălbatic', 'Deep Isopod': 'Izopod de adânc',
@@ -218,7 +217,7 @@ const RO_PAT = [
   [/^Carrying (\d+) (fish|wood)$/, m => 'Cară ' + m[1] + ' ' + _MS[m[2]]],
   [/^Under construction — (\d+)%$/, m => 'În construcție — ' + m[1] + '%'],
   [/^Provides (\d+) supply$/, m => 'Oferă ' + m[1] + ' provizii'],
-  [/^In stock: Agent Snout (.), Mech Boar (.), Merlin (.)$/, m => 'În stoc: Agentul Râtan ' + m[1] + ', Mistrețul Mecanic ' + m[2] + ', Merlin ' + m[3]],
+  [/^In stock: Agent Snout (.), Mech Boar (.)$/, m => 'În stoc: Agentul Râtan ' + m[1] + ', Mistrețul Mecanic ' + m[2]],
   [/^Your record — (.+)$/, m => 'Recordul tău — ' + m[1].replace(/vs friends/g, 'contra prietenilor').replace(/(\d+)W \/ (\d+)L/g, '$1V / $2Î')],
   [/^Opponent: (.+)\. Good luck\.$/, m => 'Adversar: ' + T(m[1]) + '. Baftă.'],
   [/^(.*?)\s*The field is yours\.$/, m => (m[1] ? T(m[1]) + ' ' : '') + 'Câmpul e al tău.'],

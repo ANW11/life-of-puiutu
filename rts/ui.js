@@ -251,7 +251,7 @@ const UI = {
     // prices with the same pictures as the top bar: a fish and a log
     const costTip = c => (c.f ? '<img class="ci" src="rts/art/res_fish.png">' + c.f + ' fish' : '') + (c.w ? (c.f ? ' &nbsp;' : '') + '<img class="ci" src="rts/art/res_wood.png">' + c.w + ' wood' : '');
     if (p.kind === 'exchange') {
-      ['snout', 'mechboar', 'merlin'].forEach((k, i) => { const d = UNITS[k], deal = p.deal && p.deal.kind === k ? p.deal : null, c = deal ? { f: deal.f, w: deal.w } : d.cost;
+      ['snout', 'mechboar'].forEach((k, i) => { const d = UNITS[k], deal = p.deal && p.deal.kind === k ? p.deal : null, c = deal ? { f: deal.f, w: deal.w } : d.cost;
         put(i, { key: 'QWE'[i], img: unitPic(k), title: 'Hire ' + d.name, tip: d.desc, cost: costTip(c) + ', ' + d.sup + ' supply', n: deal ? '½' : p.stock[k] ? '' : 'out', on: true, off: !(p.stock[k] || deal) || !canAfford(ME, c), act: () => CMD.exec({ t: 'hire', ex: p.id, kind: k }) && sfx('done') }); });
       return slots; }
     if (p.isUnit) {
@@ -357,7 +357,7 @@ const UI = {
       if (e.kind === 'nest' && e.built && e.owner === ME) h += '<div style="color:#bfe8a8">In the tunnels: ' + this.inNet() + '</div>';
       if (e.def.desc) h += '<div class="sub">' + e.def.desc + '</div>';
       if (e.kind === 'exchange' && e.deal) h += '<div style="color:#ffd36b">Special offer: ' + UNITS[e.deal.kind].name + ' at half price — ' + Math.max(0, Math.ceil(e.deal.until - G.time)) + 's left</div>';
-      if (e.kind === 'exchange') h += '<div class="sub">In stock: Agent Snout ' + (e.stock.snout ? '✓' : '—') + ', Mech Boar ' + (e.stock.mechboar ? '✓' : '—') + ', Merlin ' + (e.stock.merlin ? '✓' : '—') + '</div>';
+      if (e.kind === 'exchange') h += '<div class="sub">In stock: Agent Snout ' + (e.stock.snout ? '✓' : '—') + ', Mech Boar ' + (e.stock.mechboar ? '✓' : '—') + '</div>';
       // what's being made sits on the right, big, with a proper progress bar; the rest of the queue waits under it
       if (e.prodQ && e.prodQ.length && e.owner === ME) {
         const qPic = q => q.unit ? unitPic(q.unit) : q.revive ? 'rts/art/item_heart.png' : { weap: 'rts/art/item_claws.png', arm: 'rts/art/item_collar.png', catnip: 'spells/catnip.png', scurry: 'spells/zoomies.png' }[q.up];

@@ -14,7 +14,6 @@ const SPR = {
   rat_soldier:   { walk: [0,1,2,3].map(i => `army/frames/rat_soldier_walk${i}.png?v=2`), atk: 'army/frames/rat_soldier_atk.png?v=2', h: 30, faceLeft: true, atkFaceRight: true },
   rat_bandit:    { walk: ['mobs/coon_walk0.png', 'mobs/coon_walk1.png'], atk: 'mobs/coon_throw.png', h: 36 },
   rat_lobster:   { walk: [0,1,2,3,4,5].map(i => `mobs/seby/anim/walk${i}.png`), atk: 'mobs/seby/anim/claw1.png', h: 112 },   // Seby's brood — the main game's 6-frame scuttle; these frames stand on the canvas floor
-  merlin:        { walk: ['npcs/merlin_npc.png'], h: 46, wobble: true },
   rat_commander: { walk: [0,1,2,3,4,5].map(i => `army/frames/rat_commander_walk${i}.png?v=3`), atk: 'army/frames/rat_commander_atk.png?v=3', h: 34 },
   cat_herald:    { walk: [0,1,2,3,4,5].map(i => `army/frames/cat_emissary_walk${i}.png?v=2`), atk: 'army/frames/cat_emissary_atk.png?v=2', h: 36 },
   rat_saboteur:  { walk: [0,1,2,3,4,5].map(i => `army/frames/rat_emissary_walk${i}.png?v=2`), atk: 'army/frames/rat_emissary_atk.png?v=2', h: 36, faceLeft: true },
@@ -68,7 +67,6 @@ const UNITS = {
   // mercenaries (the Organization) — hired at the Pig Exchange
   snout:     { name: 'Agent Snout', faction: 'pigs', spr: 'pig_snout', hp: 520, armor: 1, dmg: [18, 22], range: 4.5, cd: 1.5, speed: 2.9, sight: 12, cost: { f: 200, w: 40 }, sup: 3, time: 0, r: 0.4, proj: 'coin', atk: 'pierce', arm: 'medium', desc: 'Mercenary. Sees far; his invoices slow what they hit.', slowOnHit: true },
   mechboar:  { name: 'Mech Boar', faction: 'pigs', spr: 'mech_boar', hp: 1900, armor: 4, dmg: [52, 62], range: 6, cd: 2.6, speed: 1.9, sight: 9, cost: { f: 600, w: 240 }, sup: 7, time: 0, r: 0.75, atk: 'siege', arm: 'heavy', beam: true, desc: 'Mercenary siege engine. The third eye on its forehead fires a violet beam that burns through everything in its line.' },
-  merlin:    { name: 'Merlin', faction: 'pigs', spr: 'merlin', hp: 480, armor: 1, dmg: [14, 18], range: 5, cd: 1.7, speed: 2.6, sight: 10, cost: { f: 240, w: 80 }, sup: 4, time: 0, r: 0.4, proj: 'magic', healer: true, atk: 'magic', arm: 'light', desc: 'Mercenary wizard. Throws spells, and every few seconds heals the most hurt ally near him.' },
   swarmrat:  { name: 'Swarm Rat', faction: 'rats', spr: 'rat_soldier', hp: 180, armor: 0, dmg: [8, 10], range: 1, cd: 1.0, speed: 3.2, sight: 7, cost: { f: 0, w: 0 }, sup: 0, time: 0, r: 0.3, summon: true, desc: 'Summoned. Gone in a while.' },
   // neutral creeps
   pigeon:    { name: 'Pigeon', faction: 'creep', spr: 'cr_pigeon', hp: 200, armor: 0, dmg: [7, 9], range: 1, cd: 1.2, speed: 2.6, sight: 6, r: 0.3, bounty: 12, xp: 25 },

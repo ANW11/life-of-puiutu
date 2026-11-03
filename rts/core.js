@@ -37,7 +37,7 @@ function newGame(opt) {
   // expansions and their fish
   for (const e of map.expos) spawnFish(e.x - 1, e.y - 1, 5000);
   // the Exchange
-  spawnBuilding('exchange', P_NEUTRAL, map.center.x - 1, map.center.y - 1, true).stock = { snout: 1, mechboar: 1, merlin: 1 };
+  spawnBuilding('exchange', P_NEUTRAL, map.center.x - 1, map.center.y - 1, true).stock = { snout: 1, mechboar: 1 };
   // creep camps (mirrored pairs get the same camp so it stays fair)
   const pick = {}; for (const site of map.creepSites) {
     const key = site.tier + ':' + Math.round(Math.min(site.x, G.n - 1 - site.x)) + Math.round(Math.min(site.y, G.n - 1 - site.y));
@@ -349,7 +349,8 @@ function hit(src, t, dmg, atype) {
   // being hit wakes up idle units, and creeps call their camp
   if (t.isUnit && src && !src.dead && src.owner !== t.owner) {
     if (!t.order && !t.def.worker) setOrder(t, { type: 'attack', target: src.id, auto: true });
-    if (t.owner === P_CREEP) for (const e of G.ents) if (!e.dead && e.camp === t.camp && !e.order) setOrder(e, { type: 'attack', target: src.id, auto: true });
+    // only a creep that has a camp calls it (the Coon has none, and no camp must not mean everyone)
+    if (t.owner === P_CREEP && t.camp) for (const e of G.ents) if (!e.dead && e.owner === P_CREEP && e.camp === t.camp && !e.order) setOrder(e, { type: 'attack', target: src.id, auto: true });
   }
   G.lastAlert = G.lastAlert || [-99, -99];
   if ((t.owner === 0 || t.owner === 1) && G.time - G.lastAlert[t.owner] > 10 && src && src.owner !== t.owner) {
@@ -519,11 +520,6 @@ function updateUnit(u, dt) {
   if (u.buffs.ward) u.hp = Math.min(u.maxHp, u.hp + 12 * dt);
   if (u.items.length) { const rg = itemBonus(u, 'regen'); if (rg) u.hp = Math.min(u.maxHp, u.hp + rg * dt); }
   if (u.buffs.stun) { u.moving = false; return; }
-  // Merlin: every few seconds, mend the most hurt friend nearby
-  if (u.def.healer) { u.healT = (u.healT || 0) - dt; if (u.healT <= 0) { u.healT = 0.5; let best = null, bd = 0;
-      for (const e of G.ents) if (!e.dead && e.isUnit && e.owner === u.owner && dist(e, u) < 6 && e.maxHp - e.hp > 25) { const lack = (e.maxHp - e.hp) / e.maxHp; if (lack > bd) { bd = lack; best = e; } }
-      if (best) { const amt = Math.min(55, best.maxHp - best.hp); best.hp += amt; u.healT = 3.5; u.swing = u.swingDur = 0.4; u.swingRanged = true; faceTo(u, best);
-        G.fx.push({ k: 'ring', x: best.x, y: best.y, t: G.time, r: 0.9, col: '120,255,150' }, { k: 'txt', x: best.x, y: best.y - 1.2, t: G.time, text: '+' + Math.round(amt), col: '#9cff9c' }); } } }
   // creeps: back to camp when they stray, and heal there
   if (u.owner === P_CREEP) {
     if (u.home && Math.hypot(u.x - u.home.x, u.y - u.home.y) > 8 && !(u.order && u.order.leash)) { setOrder(u, { type: 'move', x: u.home.x, y: u.home.y, leash: true }); }

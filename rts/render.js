@@ -430,8 +430,6 @@ const R = {
       g.save(); g.translate(x, y); g.rotate(t); g.drawImage(im, -sz / 2, -sz / 2, sz, sz * im.naturalHeight / im.naturalWidth); g.restore(); return; }
     // Agent Snout throws the game's own spinning gold coin
     if (p.kind === 'coin') { const sh = img('rts/art/coin_spin.png'); if (ready(sh)) { this.sheet(g, sh, 5, Math.floor(performance.now() / 70) % 5, x, y, 13); return; } }
-    // Merlin's spell: a little bubble of light
-    if (p.kind === 'magic') { const b = img('fx/bubble.png'); if (ready(b)) { g.save(); g.globalAlpha = 0.9; g.filter = 'hue-rotate(200deg) saturate(2)'; g.drawImage(b, x - 7, y - 7, 14, 14); g.restore(); return; } }
     // spike towers and elder pigeons fling a crystal shard
     const sh = img('fx/crystal_shard.png');
     if (ready(sh)) { g.save(); g.translate(x, y); g.rotate((p.ang || 0) + Math.PI / 2); g.drawImage(sh, -4, -6, 8, 12); g.restore(); return; }
