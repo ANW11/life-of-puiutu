@@ -53,6 +53,6 @@ for f in ['hero.png', 'secret.png']:
     put(os.path.join('site', 'art_src', f), os.path.splitext(f)[0] + '.webp', 2000, q=86)
 
 # animated sprite sheets
-for script in ['make_puiutu_crisp.py', 'make_coin_spin.py', 'make_walk_sheets.py', 'make_seby_sheet.py']:
+for script in ['make_skin_cards.py', 'make_puiutu_crisp.py', 'make_coin_spin.py', 'make_walk_sheets.py', 'make_seby_sheet.py']:
     exec(open(os.path.join(R, 'site', script)).read())
 print(len(os.listdir(A)), 'files in site/art')
