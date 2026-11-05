@@ -41,3 +41,19 @@ def hd_cutout(src, name, h=700):
 
 
 hd_cutout('site/art_src/puiutu_hd.png', 'puiutu.webp')
+
+
+def card_cutout(src, name, w=360):
+    """Regenerated skin card: drop faint alpha, crop to content, resize to the other cards' width."""
+    im = np.array(Image.open(os.path.join(R, src)).convert('RGBA'))
+    im[..., 3] = np.where(im[..., 3] > 30, im[..., 3], 0)
+    out = Image.fromarray(im)
+    out = out.crop(out.getbbox())
+    out = out.resize((w, round(out.height * w / out.width)), Image.LANCZOS)
+    out.save(os.path.join(R, 'site/art', name), 'WEBP', quality=90)
+    print(name, out.size)
+
+
+for _card in ['scottish', 'ragdoll']:
+    if os.path.exists(os.path.join(R, f'site/art_src/skin_{_card}.png')):
+        card_cutout(f'site/art_src/skin_{_card}.png', f'skin_{_card}.webp')
