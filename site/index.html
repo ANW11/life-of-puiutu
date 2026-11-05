@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life of Puiutu · Coming Soon</title>
+<meta name="description" content="A cute little cat. Two kings who want him to fight. And a bank that pays for both sides. Life of Puiutu, coming soon to Steam.">
+<meta property="og:title" content="Life of Puiutu · Coming Soon">
+<meta property="og:description" content="Two kings want you to fight. Someone wants you to say yes.">
+<meta property="og:image" content="art/hero.webp">
+<link rel="icon" href="art/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="motes" aria-hidden="true"></canvas>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="hero-art" style="background-image:url(art/hero.webp)"></div>
+  <div class="hero-shade"></div>
+  <div class="hero-inner">
+    <img class="logo" src="art/logo.webp" alt="Life of Puiutu">
+    <p class="tagline">Two kings want you to fight. <span>Someone wants you to say yes.</span></p>
+    <div class="cta">
+      <a class="btn btn-gold" href="#wishlist">Wishlist on Steam <small>soon</small></a>
+      <a class="btn btn-ghost" href="https://puiutu.pages.dev" target="_blank" rel="noopener">Play the early build</a>
+    </div>
+    <div class="soon-pill">COMING SOON</div>
+  </div>
+  <a class="scroll-hint" href="#story" aria-label="Scroll down"><span></span></a>
+</header>
+
+<!-- running strip -->
+<div class="runway" aria-hidden="true">
+  <div class="runner">
+    <i class="puiutu-run"></i>
+  </div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="story" id="story">
+  <div class="wrap narrow reveal">
+    <p class="kicker">This is Puiutu.</p>
+    <h2>A small tabby cat.<br>No army. No flag. No opinion on taxes.</h2>
+    <p class="lead">He likes fish, naps in the sun and his best friend Rocky. Then the war reaches his town square,
+      and suddenly everyone wants something from a cat who just wanted lunch.</p>
+  </div>
+  <div class="puiutu-real reveal">
+    <img src="art/puiutu.webp" alt="Puiutu sitting" class="bob">
+    <div class="note">Puiutu is a real cat.<br><span>He has no idea he is in a video game.</span></div>
+  </div>
+</section>
+
+<!-- ============ REAL CAST ============ -->
+<section class="real" id="real">
+  <div class="wrap">
+    <p class="kicker center reveal">Not made up.</p>
+    <h2 class="center reveal">They are all real.</h2>
+    <p class="lead center narrow-lead reveal">Every main character in the game is a real animal from the developer's life.
+      Same stripes, same faces, same opinions about dinner.</p>
+    <div class="cast">
+      <figure class="who reveal">
+        <div class="stack">
+          <img class="polaroid back" src="art/real_puiutu_kitten.webp" alt="Puiutu as a kitten">
+          <img class="polaroid front" src="art/real_puiutu.webp" alt="Puiutu, the real cat">
+          <img class="ingame px" src="art/puiutu.webp" alt="Puiutu in the game">
+        </div>
+        <figcaption><b>Puiutu</b><span>Plays himself. Did not read the script.</span></figcaption>
+      </figure>
+      <figure class="who reveal">
+        <div class="stack">
+          <img class="polaroid back" src="art/real_nomnom_nap.webp" alt="NomNom asleep on the rug">
+          <img class="polaroid front" src="art/real_nomnom.webp" alt="NomNom, the real cat">
+          <img class="ingame" src="art/nomnom.webp" alt="NomNom in the game">
+        </div>
+        <figcaption><b>NomNom</b><span>Runs the forge in the game. Runs the rug at home.</span></figcaption>
+      </figure>
+      <figure class="who reveal">
+        <div class="stack">
+          <img class="polaroid front" src="art/real_tomy.webp" alt="Tomy, the real white cat, lying on a car">
+          <img class="ingame px" src="art/tomy.webp" alt="Tomy in the game">
+        </div>
+        <figcaption><b>Tomy</b><span>Wants eight fish. Settles for a warm car.</span></figcaption>
+      </figure>
+      <figure class="who reveal">
+        <div class="stack">
+          <img class="polaroid front" src="art/real_seby.webp" alt="Seby, a real blue crayfish in her tank">
+          <div class="ingame seby-real" role="img" aria-label="Seby in the game"></div>
+        </div>
+        <figcaption><b>Seby</b><span>A real crayfish. Yes, really. Much friendlier than her boss fight.</span></figcaption>
+      </figure>
+    </div>
+    <figure class="dev reveal">
+      <img class="polaroid front" src="art/real_dev.webp" alt="The developer holding Puiutu and NomNom">
+      <figcaption><b>The developer</b><span>and the two leads, on set.</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ SIDES ============ -->
+<section class="sides" id="sides">
+  <h2 class="center reveal">Pick a side.</h2>
+  <div class="vs">
+    <article class="side union reveal">
+      <div class="poster">
+        <div class="shadow-lion">
+          <img src="art/lion.webp" alt="A shadow shaped like a lion">
+          <i class="eye e1"></i><i class="eye e2"></i>
+        </div>
+      </div>
+      <h3>The Feline Union</h3>
+      <p class="motto">"Freedom. Unity. Summits."</p>
+      <p>Its king is a lion. Everybody says so. Nobody you know has ever actually seen him up close.</p>
+      <blockquote>"Fight for us, little one."</blockquote>
+    </article>
+    <div class="vs-mark reveal"><span>VS</span></div>
+    <article class="side federation reveal">
+      <div class="poster">
+        <div class="shadow-rat">
+          <img src="art/ratking.webp" alt="A shadow wearing a crown">
+          <i class="eye r1"></i>
+        </div>
+      </div>
+      <h3>The Rat Federation</h3>
+      <p class="motto">"This land was always ours."</p>
+      <p>Rattus Magnus. His portrait hangs on every wall in the Warren. Every portrait looks a little different.</p>
+      <blockquote>"Fight for us, little one."</blockquote>
+    </article>
+  </div>
+  <p class="or-dont reveal">Same words. Same mouths. <strong>Or don't.</strong></p>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="features" id="features">
+  <div class="wrap">
+    <h2 class="center reveal">A cozy little life.<br><span class="soft">Mostly.</span></h2>
+    <div class="grid">
+      <div class="card reveal">
+        <div class="pic"><div class="rig"><img src="art/fisher.webp" alt="Puiutu fishing"><div class="line"><img src="art/parrotfish.webp" alt="A parrotfish on the hook"></div></div></div>
+        <h4>Fish it.</h4>
+        <p>From clownfish to great whites. Some of them are bigger than you. Reel anyway.</p>
+      </div>
+      <div class="card reveal">
+        <div class="pic"><div class="seby" role="img" aria-label="Seby the crayfish boss"></div></div>
+        <h4>Fight it.</h4>
+        <p>Crayfish queens, guardian spirits, things in the deep with too many eyes.</p>
+      </div>
+      <div class="card reveal">
+        <div class="pic coins"><i class="coin c1"></i><i class="coin c2"></i><i class="coin c3"></i></div>
+        <h4>Get rich. Or don't.</h4>
+        <p>Trade, dig, sort, solve. The bank is always happy to see you. Suspiciously happy.</p>
+      </div>
+      <div class="card reveal">
+        <div class="pic friends"><div class="pair"><i class="rocky small" role="img" aria-label="Rocky the dog"></i><i class="snout" role="img" aria-label="Agent Snout"></i></div></div>
+        <h4>Make friends.</h4>
+        <p>A loyal Westie, a pig with a badge, a rat who stopped marching. They walk with you and they talk back.</p>
+      </div>
+      <div class="card reveal">
+        <div class="pic"><img src="art/nomnom.webp" alt="NomNom the cat" class="bob"></div>
+        <h4>Play together.</h4>
+        <p>Meet other players in the town square, fish side by side, or wage a tiny cat and rat war in Border War.</p>
+      </div>
+      <div class="card reveal">
+        <div class="pic"><img src="art/crystal.webp" alt="" class="glow"></div>
+        <h4>Three endings.</h4>
+        <p>Serve the cats. Serve the rats. Or find out who serves whom.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SKINS ============ -->
+<section class="skins" id="skins">
+  <h2 class="center reveal">Be any cat you want.</h2>
+  <div class="deck reveal">
+    <img src="art/skin_calico.webp" alt="Calico" title="Calico">
+    <img src="art/skin_abyssinian.webp" alt="Abyssinian" title="Abyssinian">
+    <img src="art/skin_siamese.webp" alt="Siamese" title="Siamese">
+    <img src="art/skin_british.webp" alt="British Shorthair" title="British Shorthair">
+    <img src="art/skin_mainecoon.webp" alt="Maine Coon" title="Maine Coon">
+    <img src="art/skin_angora.webp" alt="Turkish Angora" title="Turkish Angora">
+    <img src="art/skin_sphynx.webp" alt="Sphynx" title="Sphynx">
+    <img src="art/skin_russianblue.webp" alt="Russian Blue" title="Russian Blue">
+    <img src="art/skin_american.webp" alt="American Shorthair" title="American Shorthair">
+    <img src="art/skin_goldbengal.webp" alt="Golden Bengal" title="Golden Bengal">
+    <img src="art/skin_silvbengal.webp" alt="Silver Bengal" title="Silver Bengal">
+    <img src="art/skin_scottish.webp" alt="Scottish Fold" title="Scottish Fold">
+    <img src="art/skin_ragdoll.webp" alt="Ragdoll" title="Ragdoll">
+  </div>
+  <p class="center small">Thirteen breeds, each with its own special move. Collected with coins you earn in game, never with real money.</p>
+</section>
+
+<!-- ============ WORLD ============ -->
+<section class="world" id="world">
+  <h2 class="center reveal">A whole world to wander.</h2>
+  <div class="strip" data-speed="-0.15"><img src="art/w_city.webp" alt="The town square"><img src="art/w_garden.webp" alt="Tower garden"><img src="art/w_beach.webp" alt="The beach"><img src="art/w_library.webp" alt="The library"><img src="art/w_castle.webp" alt="Castle gate"></div>
+  <div class="strip" data-speed="0.15"><img src="art/w_slum.webp" alt="The slums"><img src="art/w_seby.webp" alt="Seby's lair"><img src="art/w_throne.webp" alt="Throne room"><img src="art/w_ratking.webp" alt="Rat King's hall"><img src="art/w_abyss.webp" alt="The abyss"></div>
+</section>
+
+<!-- ============ SECRET ============ -->
+<section class="secret" id="secret">
+  <div class="secret-art" style="background-image:url(art/secret.webp)"></div>
+  <div class="secret-shade"></div>
+  <div class="wrap narrow secret-text">
+    <p class="kicker red reveal">Confidential</p>
+    <h2 class="reveal">Somebody is paying for both sides.</h2>
+    <p class="lead reveal">Same weapons. Same crates. Same little seal stamped on every one of them.
+      <span class="redact" tabindex="0">The war is not a war.</span>
+      <span class="redact" tabindex="0">It is a business.</span></p>
+    <div class="seals reveal">
+      <figure><img src="art/seal_union.webp" alt=""><figcaption>Union</figcaption></figure>
+      <figure><img src="art/seal_rats.webp" alt=""><figcaption>Federation</figcaption></figure>
+      <figure class="odd"><img src="art/seal_pigs.webp" alt=""><figcaption>?</figcaption></figure>
+    </div>
+    <p class="whisper reveal">Animals who fight each other never look up.</p>
+  </div>
+</section>
+
+<!-- ============ WISHLIST ============ -->
+<section class="wishlist" id="wishlist" style="background-image:url(art/sunset.webp)">
+  <div class="wishlist-shade"></div>
+  <div class="wrap narrow center reveal">
+    <img class="logo small-logo" src="art/logo.webp" alt="Life of Puiutu">
+    <h2>Coming soon to Steam.</h2>
+    <p class="lead">The store page is on its way. Until then, the early build runs right in your browser.</p>
+    <div class="cta center-cta">
+      <span class="btn btn-gold disabled">Wishlist <small>soon</small></span>
+      <a class="btn btn-ghost" href="https://puiutu.pages.dev" target="_blank" rel="noopener">Play the early build</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Life of Puiutu · Made by ANW · Starring one real, very spoiled cat.</p>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>
