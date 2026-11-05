@@ -2,7 +2,7 @@
 <html lang="ro">
 <head>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Life of Puiutu</title>
@@ -26,7 +26,7 @@
   html,body{height:100%;}
   body{
     background:#1a1410;
-    font-family:'Jersey 10','Trebuchet MS',sans-serif;
+    font-family:'Nunito','Trebuchet MS',sans-serif;
     display:flex;align-items:center;justify-content:center;
     overflow:hidden;color:#3a2a18;
     user-select:none;-webkit-user-select:none;
@@ -178,7 +178,7 @@
   #lowHpVignette.on{animation:lowHpPulse 1.2s ease-in-out infinite;}
   @keyframes lowHpPulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.5);}}
   #uiOrbs{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:7;pointer-events:none;
-    display:flex;align-items:flex-end;gap:8px;font-family:'Jersey 10','Trebuchet MS',sans-serif;}
+    display:flex;align-items:flex-end;gap:8px;font-family:'Nunito','Trebuchet MS',sans-serif;}
   /* narrow screens: the spell bar (bottom-right) reaches the middle, so the orbs ride above it */
   @media (max-width:700px){ #uiOrbs{bottom:86px;} }
   #uiHpOrb{position:relative;width:92px;height:92px;flex:none;
@@ -233,7 +233,7 @@
   .spIcoEmoji{line-height:1;}
   .spIcoImg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
   .spellSlot .sKey{position:absolute;left:4px;top:2px;font-size:10px;font-weight:bold;color:#ffe7b0;
-    text-shadow:0 1px 2px #000;font-family:'Jersey 10','Trebuchet MS',sans-serif;}
+    text-shadow:0 1px 2px #000;font-family:'Nunito','Trebuchet MS',sans-serif;}
   /* empty slot: dashed outline, no icon */
   .spellSlot.empty{border-style:dashed;border-color:#8a6a3f;background:rgba(58,42,22,.45);}
   #spellBar .spellSlot.empty{padding:0;}   /* the generic `.empty` (empty lists) pads 30px — not in a hotbar slot */
@@ -241,7 +241,7 @@
   .spellSlot.nomana .sIco{opacity:.35;filter:grayscale(1);}
   .spellSlot .sCd{position:absolute;inset:0;border-radius:10px;background:rgba(10,6,2,.72);
     display:none;align-items:center;justify-content:center;color:#ffe7b0;font-weight:bold;font-size:15px;
-    font-family:'Jersey 10','Trebuchet MS',sans-serif;text-shadow:0 1px 2px #000;}
+    font-family:'Nunito','Trebuchet MS',sans-serif;text-shadow:0 1px 2px #000;}
   .spellSlot.cooling .sCd{display:flex;}
   @media(max-width:520px){ .spellSlot{width:46px;height:46px;} .spellSlot .sIco{font-size:22px;}
     .spellSlot .spIcoWrap{width:34px !important;height:34px !important;} }
@@ -267,7 +267,7 @@
   #faintScreen.show .dsBar{animation:dsBar 3s ease forwards;}
   @keyframes dsBar{0%{transform:translateY(-50%) scaleX(0);opacity:0;}
     20%{transform:translateY(-50%) scaleX(1);opacity:1;}80%{opacity:1;}100%{opacity:0;}}
-  #faintScreen .dsText{position:relative;color:#c0241c;font-family:'Jersey 10','Trebuchet MS',sans-serif;
+  #faintScreen .dsText{position:relative;color:#c0241c;font-family:'Jersey 10','Nunito',sans-serif;
     font-weight:bold;font-style:italic;font-size:min(58px,9vw);letter-spacing:.18em;
     text-shadow:0 0 18px rgba(180,0,0,.55),0 2px 4px #000;
     transform:scale(.82);opacity:0;white-space:nowrap;}
@@ -330,7 +330,7 @@
   #wmRegions,#wmIcons{position:absolute;inset:0;pointer-events:none;}
   /* region names: wide spaced capitals laid on the land */
   .wm-region{position:absolute;transform:translate(-50%,-50%) scale(var(--inv)) rotate(var(--rot,-3deg));opacity:0;transition:opacity .4s;
-    font:400 30px 'Jersey 10','Trebuchet MS',sans-serif;letter-spacing:.06em;white-space:nowrap;
+    font:400 30px 'Jersey 10','Nunito',sans-serif;letter-spacing:.06em;white-space:nowrap;
     color:rgba(52,30,12,.86);text-shadow:0 0 3px rgba(241,226,191,.95),0 0 8px rgba(241,226,191,.7);}
   .wm-region.on{opacity:1;}
   #wmRegions{display:none;}   /* the map is just the drawing: no region names written over it */
@@ -342,7 +342,7 @@
     background:radial-gradient(circle at 40% 35%,#f6ead0,#d9bf8a);border:2px solid var(--ink);color:var(--ink);
     box-shadow:0 1px 0 rgba(255,245,220,.6) inset,0 2px 5px rgba(40,22,8,.45);transition:transform .15s, border-color .15s, color .15s;}
   .wm-badge svg{width:20px;height:20px;}
-  .wm-name{font:600 17px 'Jersey 10','Trebuchet MS',sans-serif;letter-spacing:.04em;color:var(--ink);white-space:nowrap;
+  .wm-name{font:600 17px 'Jersey 10','Nunito',sans-serif;letter-spacing:.04em;color:var(--ink);white-space:nowrap;
     background:rgba(241,226,191,.92);border:1px solid rgba(58,36,16,.45);border-radius:6px;padding:0 7px;
     box-shadow:0 2px 6px rgba(40,22,8,.35);opacity:0;transition:opacity .15s;}   /* a little parchment tag: readable over the sea, the fog or the torn edge */
   .wm-pin.hot .wm-badge{transform:scale(1.18);border-color:var(--wax);color:var(--wax);}
@@ -359,14 +359,14 @@
   #wmVignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 110px 18px rgba(48,26,8,.55);}
   #wmTop{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:18px;padding:14px 64px 26px 24px;pointer-events:none;
     background:linear-gradient(rgba(8,6,4,.85),rgba(8,6,4,0));}
-  #wmTitle{font:700 23px 'Jersey 10','Trebuchet MS',sans-serif;letter-spacing:.35em;color:#f3e2b4;text-transform:uppercase;}
-  #wmObj{display:flex;align-items:center;gap:8px;font:16px 'Jersey 10','Trebuchet MS',sans-serif;color:#e8dcc0;min-width:0;}
+  #wmTitle{font:700 23px 'Jersey 10','Nunito',sans-serif;letter-spacing:.35em;color:#f3e2b4;text-transform:uppercase;}
+  #wmObj{display:flex;align-items:center;gap:8px;font:16px 'Nunito','Trebuchet MS',sans-serif;color:#e8dcc0;min-width:0;}
   #wmObj i{width:9px;height:9px;background:#ffd46b;transform:rotate(45deg);flex:none;box-shadow:0 0 8px rgba(255,212,107,.8);}
   #wmObj span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #wmCard{position:absolute;right:22px;top:72px;width:min(340px,calc(100% - 44px));padding:16px 18px 14px;
     background:radial-gradient(ellipse at 30% 20%,rgba(255,250,235,.55),rgba(255,250,235,0) 60%),linear-gradient(var(--paper),var(--paper2));
     border:1px solid #8a6a3a;border-top:2px solid var(--ink);border-radius:3px;
-    box-shadow:0 10px 30px rgba(0,0,0,.55),inset 0 0 28px rgba(120,80,30,.35);color:var(--ink);font-family:'Jersey 10','Trebuchet MS',sans-serif;
+    box-shadow:0 10px 30px rgba(0,0,0,.55),inset 0 0 28px rgba(120,80,30,.35);color:var(--ink);font-family:'Nunito','Trebuchet MS',sans-serif;
     opacity:0;transform:translateX(12px);transition:opacity .18s, transform .18s;pointer-events:none;}
   #wmCard.on{opacity:1;transform:none;pointer-events:auto;}
   #wmCard.flip{right:auto;left:22px;transform:translateX(-12px);}   /* the place is under the card's usual corner */
@@ -382,17 +382,17 @@
     background:#2f6fb5;border:1.5px solid #dff0ff;color:#fff;font:900 12px/15px Georgia,serif;text-align:center;
     box-shadow:0 0 8px rgba(80,170,255,.8);animation:wmObj 1.4s ease-in-out infinite;}
   .wm-pin.qready::after{content:'✔';background:#3f8f3f;border-color:#e4ffe0;box-shadow:0 0 8px rgba(120,230,120,.8);font-size:10px;}
-  #wmLegend b.q{border:1.5px solid #dff0ff;background:#2f6fb5;color:#fff;font:900 9px/9px 'Jersey 10','Trebuchet MS',sans-serif;text-align:center;}
-  #wmTravel{width:100%;padding:9px;font:600 15px 'Jersey 10','Trebuchet MS',sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+  #wmLegend b.q{border:1.5px solid #dff0ff;background:#2f6fb5;color:#fff;font:900 9px/9px 'Nunito','Trebuchet MS',sans-serif;text-align:center;}
+  #wmTravel{width:100%;padding:9px;font:600 15px 'Jersey 10','Nunito',sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
     color:#1b140b;background:linear-gradient(#f0d58e,#c9a456);border:1px solid #7a5f2e;}
-  #wmTravel{font-family:'Jersey 10','Trebuchet MS',sans-serif;color:#f6ead0;background:linear-gradient(#a8331d,#7c1c10);border:1px solid #4e1008;border-radius:3px;}
+  #wmTravel{font-family:'Jersey 10','Nunito',sans-serif;color:#f6ead0;background:linear-gradient(#a8331d,#7c1c10);border:1px solid #4e1008;border-radius:3px;}
   #wmTravel:disabled{cursor:default;color:#8a7350;background:rgba(120,90,50,.18);border-color:rgba(58,36,16,.35);}
-  #wmLegend{position:absolute;left:22px;bottom:18px;display:flex;gap:16px;font:16px 'Jersey 10','Trebuchet MS',sans-serif;color:var(--paper);pointer-events:none;
+  #wmLegend{position:absolute;left:22px;bottom:18px;display:flex;gap:16px;font:16px 'Nunito','Trebuchet MS',sans-serif;color:var(--paper);pointer-events:none;
     padding:6px 12px;border-radius:3px;background:rgba(34,23,12,.62);}
   #wmLegend span{display:flex;align-items:center;gap:6px;}
   #wmLegend b{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--paper);background:#a8331d;}
   #wmLegend b.k{background:var(--paper2);border-color:var(--ink);} #wmLegend b.o{border:0;border-radius:0;width:9px;height:9px;background:#c4422a;transform:rotate(45deg);}
-  #wmHint{position:absolute;right:22px;bottom:18px;font:14px 'Jersey 10','Trebuchet MS',sans-serif;color:#a89a7c;pointer-events:none;text-shadow:0 1px 2px #000;}
+  #wmHint{position:absolute;right:22px;bottom:18px;font:14px 'Nunito','Trebuchet MS',sans-serif;color:#a89a7c;pointer-events:none;text-shadow:0 1px 2px #000;}
   #mapClose{position:absolute;top:12px;right:16px;width:36px;height:36px;border-radius:50%;padding:0;cursor:pointer;z-index:3;
     background:linear-gradient(var(--paper),var(--paper2));border:1.5px solid var(--ink);color:var(--ink);font-size:20px;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.45);}
   @media (max-width:640px){ #wmCard{top:auto;bottom:52px;right:12px;left:12px;width:auto;} #wmCard.flip{top:72px;bottom:auto;left:12px;right:12px;} #wmHint{display:none;} #wmTitle{font-size:15px;} }
@@ -509,17 +509,17 @@
   #outroScreen{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;
     justify-content:center;background:#000;padding:0 28px;overflow-y:auto;}
   #outroScreen.show{display:flex;}
-  #outroLines{font-family:'Trebuchet MS','Segoe UI',sans-serif;color:#f2f0ea;font-size:clamp(15px,3vw,21px);
+  #outroLines{font-family:'Nunito','Trebuchet MS',sans-serif;color:#f2f0ea;font-size:clamp(15px,3vw,21px);
     line-height:1.85;text-align:center;max-width:28em;}
   #outroLines div{opacity:0;transition:opacity 1.4s ease;min-height:1.85em;}
   #outroLines div.in{opacity:1;}
   #outroLines div.last{color:#d9ae52;font-style:italic;margin-top:.7em;font-size:1.1em;}
-  #outroCredits{margin-top:2.6em;opacity:0;transition:opacity 1.6s;text-align:center;font-family:'Jersey 10','Trebuchet MS',sans-serif;
+  #outroCredits{margin-top:2.6em;opacity:0;transition:opacity 1.6s;text-align:center;font-family:'Nunito','Trebuchet MS',sans-serif;
     color:#8c887e;letter-spacing:.14em;font-size:13px;text-transform:uppercase;}
   #outroCredits b{display:block;color:#e8e6e1;font-size:24px;letter-spacing:.04em;text-transform:none;margin-bottom:.35em;}
   #outroCredits.in{opacity:1;}
   #outroBtn{margin-top:1.8em;opacity:0;pointer-events:none;transition:opacity 1.2s;background:none;cursor:pointer;
-    border:1px solid #6a6862;color:#e8e6e1;font-family:'Jersey 10','Trebuchet MS',sans-serif;font-size:13px;letter-spacing:.16em;
+    border:1px solid #6a6862;color:#e8e6e1;font-family:'Jersey 10','Nunito',sans-serif;font-size:13px;letter-spacing:.16em;
     text-transform:uppercase;padding:10px 22px;border-radius:8px;}
   #outroBtn.in{opacity:1;pointer-events:auto;}
   /* the true ending's epilogue: animated scenes behind one line of text at a time */
@@ -528,7 +528,7 @@
   #outroScreen.epi{overflow:hidden;}
   #outroLines,#outroCredits,#outroBtn{position:relative;z-index:1;}
   #epiText{position:absolute;left:50%;transform:translateX(-50%);z-index:1;width:min(30em,88%);text-align:center;pointer-events:none;
-    font-family:'Jersey 10','Trebuchet MS',sans-serif;font-weight:bold;color:#ffe7b0;font-size:clamp(16px,3.2vw,23px);line-height:1.5;
+    font-family:'Nunito','Trebuchet MS',sans-serif;font-weight:bold;color:#ffe7b0;font-size:clamp(16px,3.2vw,23px);line-height:1.5;
     bottom:9%;opacity:0;}
   #epiText span{background:rgba(0,0,0,.62);padding:4px 14px;border-radius:10px;box-decoration-break:clone;-webkit-box-decoration-break:clone;}
   #epiText.sky{bottom:auto;top:34%;font-size:clamp(19px,4vw,30px);}
@@ -540,11 +540,11 @@
   #introScreen{position:absolute;inset:0;z-index:60;display:none;flex-direction:column;
     align-items:center;justify-content:center;background:#0b0c0e;padding:0 28px;cursor:pointer;}
   #introScreen.show{display:flex;}
-  #introText{font-family:'Trebuchet MS','Segoe UI',sans-serif;color:#e8e6e1;font-size:clamp(17px,3.6vw,24px);
+  #introText{font-family:'Nunito','Trebuchet MS',sans-serif;color:#e8e6e1;font-size:clamp(17px,3.6vw,24px);
     line-height:1.6;text-align:center;max-width:24em;opacity:0;transition:opacity .7s ease;}
   #introText.in{opacity:1;}
   #introText .accent{color:#d9ae52;}
-  #introSkip{position:absolute;bottom:26px;font-family:'Jersey 10','Trebuchet MS',sans-serif;font-size:12px;
+  #introSkip{position:absolute;bottom:26px;font-family:'Nunito','Trebuchet MS',sans-serif;font-size:12px;
     letter-spacing:.14em;text-transform:uppercase;color:#6a6862;animation:blink 2.2s infinite;}
   /* ---------- journal (profile) ---------- */
   .jbox{background:#fffaf0;border:3px solid #6b4a1f;border-radius:12px;padding:11px 13px;margin-top:6px;text-align:left;}
@@ -590,7 +590,7 @@
   /* story / free-play picker on the menu */
   #modePick{position:absolute;left:12px;top:12px;display:flex;gap:8px;z-index:6;}
   .mode-btn{padding:6px 12px;border:2px solid #6b4a1f;border-radius:8px;cursor:pointer;
-    background:rgba(20,14,8,.62);color:#e8d2a0;font:bold 12px 'Jersey 10','Trebuchet MS',sans-serif;letter-spacing:.5px;
+    background:rgba(20,14,8,.62);color:#e8d2a0;font:bold 12px 'Nunito','Trebuchet MS',sans-serif;letter-spacing:.5px;
     opacity:.6;transition:opacity .15s,transform .1s,border-color .15s,color .15s;}
   .mode-btn:hover{opacity:.9;}
   .mode-btn.on{opacity:1;border-color:#ffd76a;color:#ffe7b0;transform:scale(1.05);}
@@ -933,7 +933,7 @@
   /* round wood-and-iron sprite (one per state: cast, wait, hook); the label is text under it */
   #fishAct{--fs:136px;position:absolute;right:22px;bottom:16px;z-index:5;width:var(--fs);height:calc(var(--fs) + 26px);
     padding:var(--fs) 0 0;border:0;border-radius:0;background:url('fishing/btn_cast.png') top center/var(--fs) var(--fs) no-repeat;
-    font:900 20px/26px 'Jersey 10','Trebuchet MS',sans-serif;letter-spacing:1.5px;white-space:nowrap;color:#ffe7b0;
+    font:900 20px/26px 'Jersey 10','Nunito',sans-serif;letter-spacing:1.5px;white-space:nowrap;color:#ffe7b0;
     text-shadow:0 2px 0 #2a1a0e,0 0 3px #2a1a0e,0 0 3px #2a1a0e;cursor:pointer;touch-action:none;user-select:none;
     filter:drop-shadow(0 5px 0 rgba(0,0,0,.4));transform-origin:50% 42%;transition:transform .08s,opacity .2s,filter .2s;}
   #fishAct:hover{filter:drop-shadow(0 5px 0 rgba(0,0,0,.4)) brightness(1.1);}
@@ -981,7 +981,7 @@
      strip left over shows a blurred copy of the same painting, so there are never black bars. The
      signs, the purse and the price card sit on the screen edges, outside the painting. */
   .forge-scene{background:#0b0704;align-items:center;justify-content:flex-end;overflow:hidden;container-type:size;
-    --fs:min(1.25cqw,2.2cqh);font-family:'Jersey 10','Trebuchet MS',sans-serif;}
+    --fs:min(1.25cqw,2.2cqh);font-family:'Nunito','Trebuchet MS',sans-serif;}
   #forge{--scene-bg:url('ui/forge/street_bg.jpg');} #tailor{--scene-bg:url('ui/tailor/salon_bg.jpg?v=2');} #museum{--scene-bg:url('ui/beach/museum_bg.jpg?v=2');}
   .forge-scene::before{content:'';position:absolute;inset:-30px;background:var(--scene-bg) center/cover;
     filter:blur(14px) brightness(.55);}
@@ -1023,7 +1023,7 @@
   /* pixel-art boxes: square ink outline with notched corners (four edge shadows, corners left empty),
      a light top edge and a dark bottom edge on the inside, and a hard drop shadow. --p = one "pixel". */
   .px-box{--p:max(3px,.24em);border:none;border-radius:0;background:#f6e6be;color:#3a2410;
-    font-family:'Jersey 10','Trebuchet MS',sans-serif;font-weight:400;letter-spacing:.02em;
+    font-family:'Jersey 10','Nunito',sans-serif;font-weight:400;letter-spacing:.02em;
     box-shadow:0 calc(-1*var(--p)) 0 #3a2410, 0 var(--p) 0 #3a2410, calc(-1*var(--p)) 0 0 #3a2410, var(--p) 0 0 #3a2410,
       inset 0 var(--p) 0 #fffaf0, inset 0 calc(-1*var(--p)) 0 #d6ba82,
       var(--p) calc(2*var(--p)) 0 rgba(20,10,0,.45), 0 calc(2*var(--p)) 0 rgba(20,10,0,.45);}
@@ -1165,33 +1165,33 @@
   .spellSlot.potSlot{border-color:#3d6fa8;background:rgba(22,36,58,.82);}
   .spellSlot.potSlot.none{opacity:.38;}
   .spellSlot.potSlot .pCnt{position:absolute;right:3px;bottom:1px;font-size:11px;font-weight:bold;color:#fff;
-    text-shadow:0 1px 2px #000;font-family:'Jersey 10','Trebuchet MS',sans-serif;}
+    text-shadow:0 1px 2px #000;font-family:'Nunito','Trebuchet MS',sans-serif;}
   .spellSlot.potSlot svg,.spellSlot.potSlot .forgeArt{width:38px;height:38px;object-fit:contain;}
   #spellBar .barGap{width:6px;}
   /* the companion's special: fills from the bottom as you fight beside them */
   .spellSlot.buddySlot{border-color:#a8577a;background:rgba(58,22,40,.82);overflow:hidden;}
   .spellSlot.buddySlot .bFill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(#ffb0cf,#c2507f);opacity:.55;transition:height .2s;}
-  .spellSlot.buddySlot .bIco{position:relative;font:900 24px 'Jersey 10','Trebuchet MS',sans-serif;color:#ffe7b0;text-shadow:0 2px 0 #3a1424;}
+  .spellSlot.buddySlot .bIco{position:relative;font:900 24px 'Jersey 10','Nunito',sans-serif;color:#ffe7b0;text-shadow:0 2px 0 #3a1424;}
   .spellSlot.buddySlot.ready{box-shadow:0 0 14px 3px #ffb0cf,0 3px 0 #3a2a16;animation:buddyPulse 1s ease-in-out infinite;}
   @keyframes buddyPulse{50%{transform:scale(1.07);}}
   /* Tomy's lessons: the current step and the key to press, top centre */
   #trainPanel{position:absolute;left:50%;top:58px;transform:translate(-50%,-8px);z-index:9;min-width:250px;max-width:min(92vw,420px);
     padding:9px 16px 10px;border-radius:14px;background:rgba(28,20,10,.9);border:2px solid #b89a5e;color:#ffe7b0;text-align:center;
-    font-family:'Jersey 10','Trebuchet MS',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;opacity:0;transition:opacity .25s, transform .25s;}
+    font-family:'Nunito','Trebuchet MS',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;opacity:0;transition:opacity .25s, transform .25s;}
   #trainPanel.on{opacity:1;transform:translate(-50%,0);}
   #trainPanel.flash{border-color:#8be08b;box-shadow:0 0 18px rgba(139,224,139,.7);}
   #trainPanel .tp-step{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#b89a5e;}
   #trainPanel .tp-task{font-size:17px;font-weight:bold;margin:3px 0 6px;}
   #trainPanel .tp-keys{font-size:12px;color:#d8ccb0;display:flex;gap:7px;justify-content:center;align-items:center;flex-wrap:wrap;}
   #trainPanel kbd{display:inline-block;min-width:26px;padding:3px 9px;border-radius:6px;background:#f6e6be;color:#3a2410;
-    font:bold 14px 'Jersey 10','Trebuchet MS',sans-serif;box-shadow:0 3px 0 #8a6a3a;}
+    font:bold 14px 'Nunito','Trebuchet MS',sans-serif;box-shadow:0 3px 0 #8a6a3a;}
   #trainPanel .tp-dots{display:flex;gap:5px;justify-content:center;margin-top:7px;}
   #trainPanel .tp-dots i{width:8px;height:8px;border-radius:50%;background:#4a3a24;}
   #trainPanel .tp-dots i.done{background:#8be08b;} #trainPanel .tp-dots i.cur{background:#ffd46b;box-shadow:0 0 6px #ffd46b;}
   body.cinema #trainPanel{display:none;}
   #buffRow{position:absolute;left:50%;transform:translateX(-50%);bottom:122px;z-index:8;display:flex;gap:6px;pointer-events:none;}
   #buffRow .bf{display:flex;align-items:center;gap:4px;padding:2px 8px 2px 3px;border-radius:12px;
-    background:rgba(20,14,8,.75);border:2px solid #6b4a1f;color:#ffe7b0;font:bold 11px 'Jersey 10','Trebuchet MS',sans-serif;}
+    background:rgba(20,14,8,.75);border:2px solid #6b4a1f;color:#ffe7b0;font:bold 11px 'Nunito','Trebuchet MS',sans-serif;}
   #buffRow .bf svg,#buffRow .bf .forgeArt{width:20px;height:20px;object-fit:contain;}
   .profile-card{background:linear-gradient(#fff6e2,#f0ddb6);border:3px solid #6b4a1f;border-radius:18px;padding:18px;text-align:center;}
   .profile-card h3{color:#5a3d18;font-size:20px;margin-bottom:4px;}
@@ -1246,10 +1246,10 @@
   @media (orientation:portrait){ .phone-frame{width:min(96vh,170vw);transform:rotate(90deg);} }
   /* measured on cattablet.png: screen 7.9% / 89.3% across, status bar 10.1% (middle 14.1%), screen bottom 88.4% */
   .phone-status{position:absolute;top:15.3%;transform:translateY(-50%);left:0;right:0;text-align:center;color:#fff;   /* centred under the camera */
-    font-family:'Jersey 10','Trebuchet MS',sans-serif;font-weight:bold;font-size:min(4vh,28px);line-height:1;
+    font-family:'Nunito','Trebuchet MS',sans-serif;font-weight:bold;font-size:min(4vh,28px);line-height:1;
     letter-spacing:.5px;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none;}
   .phone-clock{position:absolute;left:44%;right:12%;top:25%;text-align:center;color:#4a3320;
-    text-shadow:0 1px 0 rgba(255,255,255,.5);font-family:'Jersey 10','Trebuchet MS',sans-serif;pointer-events:none;}
+    text-shadow:0 1px 0 rgba(255,255,255,.5);font-family:'Jersey 10','Nunito',sans-serif;pointer-events:none;}
   .phone-clock .pTime{font-size:min(11vh,62px);font-weight:900;line-height:1;letter-spacing:1px;
     font-variant-numeric:tabular-nums;}
   .phone-clock .pDate{font-size:min(4.4vh,30px);font-weight:bold;margin-top:6px;opacity:.85;}
@@ -1262,7 +1262,7 @@
     background:#f6ead0;border-radius:2px;overflow:hidden;z-index:4;}
   #phoneScreen.on{display:flex;}
   .ps-bar{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:5px 6px;background:#4a3320;color:#ffe7b0;
-    font-family:'Jersey 10','Trebuchet MS',sans-serif;font-weight:bold;font-size:min(2.8vh,19px);}
+    font-family:'Nunito','Trebuchet MS',sans-serif;font-weight:bold;font-size:min(2.8vh,19px);}
   #phoneBack{background:#6b4a1f;color:#ffe7b0;border:0;border-radius:8px;width:2em;height:1.7em;font-size:1.15em;font-weight:900;
     line-height:1;cursor:pointer;flex:0 0 auto;}
   #phoneBack:active{transform:scale(.92);}
@@ -1380,7 +1380,7 @@
   #btnMenuSettings{right:2.5%;bottom:5%;width:clamp(78px,9%,120px);}
   #btnMenuSettings img{width:100%;display:block;}
   #btnMenuSettings span{position:absolute;left:8%;right:8%;bottom:7%;height:17%;display:flex;align-items:center;justify-content:center;
-    font:bold clamp(10px,1.3vw,15px) 'Jersey 10','Trebuchet MS',sans-serif;color:#fff1d0;text-shadow:0 1px 0 #3a1f0c,0 0 3px #3a1f0c;pointer-events:none;}
+    font:bold clamp(10px,1.3vw,15px) 'Nunito','Trebuchet MS',sans-serif;color:#fff1d0;text-shadow:0 1px 0 #3a1f0c,0 0 3px #3a1f0c;pointer-events:none;}
   #btnMenuSettings:active{transform:scale(.95);}
   @media (orientation:portrait){ #menu .title-img{width:88%;top:6%;} #menu #btnPlay{width:60%;bottom:10%;} .menu-bg{background-position:30% center;} }
   #menu .top::after{content:'';position:absolute;inset:0;pointer-events:none;
@@ -1473,7 +1473,8 @@
   #gameCanvas{transform-origin:50% 55%;}
   #gameCanvas.push{transform:scale(1.16);transition:transform 7s linear;}
   #gameCanvas.pushfast{transform:scale(1.22);transition:transform 2.2s cubic-bezier(.2,.7,.4,1);}
-  .dlg-text,#loreBody,#loreBody p,#chatInput,#chatLog,textarea{font-family:'Trebuchet MS','Segoe UI',sans-serif;}   /* long reading text stays on Trebuchet */
+    /* fonts: Nunito for reading and UI (body), Jersey 10 for titles and display text */
+  .title,.modal-head h2,.wd-head h3,#phoneTitle,#wmCardName,h1,h2{font-family:'Jersey 10','Nunito',sans-serif;font-weight:400;}
 </style>
 </head>
 <body>
@@ -2878,7 +2879,7 @@ function drawHat(ctx,type,x,y,bob){
     ctx.fillStyle='#e53';ctx.beginPath();ctx.arc(0,-15,2.5,0,7);ctx.fill();
   }else if(type==='wizard'){
     ctx.fillStyle='#5a3d96';ctx.beginPath();ctx.moveTo(-15,-9);ctx.lineTo(15,-9);ctx.lineTo(3,-42);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#ffd86b';ctx.font='12px Jersey 10';ctx.fillText('',-6,-20);
+    ctx.fillStyle='#ffd86b';ctx.font='12px "Nunito"';ctx.fillText('',-6,-20);
     ctx.fillStyle='#cdbcf0';ctx.fillRect(-16,-11,32,5);
   }else if(type==='bow'){
     ctx.fillStyle='#ff5d8f';
@@ -3436,7 +3437,7 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     const lvColor=lv>=10?'#dd88ff':lv>=8?'#ff6666':lv>=6?'#ffcc44':lv>=4?'#88ccff':'#ffffff';
     const labelY=sy-h-(opt.moving?Math.abs(Math.sin((opt.phase||0)*Math.PI*2))*3:0)-6;
     ctx.save();
-    ctx.font=`bold ${lv10?12:11}px Jersey 10`;
+    ctx.font=`bold ${lv10?12:11}px "Nunito"`;
     ctx.textAlign='center';
     // shadow text
     ctx.fillStyle='rgba(0,0,0,0.7)';
@@ -3444,7 +3445,7 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     ctx.fillStyle=lvColor;
     ctx.fillText(`Pigeon  Lv.${lv}`,sx,labelY);
     if(lv10){
-      ctx.font='bold 9px Jersey 10';
+      ctx.font='bold 9px "Nunito"';
       ctx.fillStyle='#dd88ff';
       ctx.fillText('LEGENDARY',sx,labelY-13);
     }
@@ -3455,14 +3456,14 @@ function drawEnemy(ctx,sx,sy,facing,type,opt={}){
     const lv=opt.clobsterLevel, lv10=lv===10, lvColor=levelTierColor(lv);
     const labelY=sy-h-(opt.moving?Math.abs(Math.sin((opt.phase||0)*Math.PI*2))*3:0)-6;
     ctx.save();
-    ctx.font=`bold ${lv10?12:11}px Jersey 10`;
+    ctx.font=`bold ${lv10?12:11}px "Nunito"`;
     ctx.textAlign='center';
     ctx.fillStyle='rgba(0,0,0,0.7)';
     ctx.fillText(`Crystal Lobster  Lv.${lv}`,sx+1,labelY+1);
     ctx.fillStyle=lvColor;
     ctx.fillText(`Crystal Lobster  Lv.${lv}`,sx,labelY);
     if(lv10){
-      ctx.font='bold 9px Jersey 10'; ctx.fillStyle='#dd88ff';
+      ctx.font='bold 9px "Nunito"'; ctx.fillStyle='#dd88ff';
       ctx.fillText('LEGENDARY',sx,labelY-13);
     }
     ctx.restore();
@@ -7699,7 +7700,7 @@ function drawEnemies(){
 }
 //──────── floating combat numbers
 function drawFloats(){
-  g.save();g.textAlign='center';g.font='bold 15px Jersey 10';
+  g.save();g.textAlign='center';g.font='bold 15px "Nunito"';
   for(const f of floats){
     g.globalAlpha=Math.max(0,f.life);
     g.fillStyle=f.color;g.shadowColor='#000';g.shadowBlur=4;
@@ -9169,7 +9170,7 @@ function drawSewer(){
       else if(!CN.eyesAt || now-CN.eyesAt<260) lr*=0.02; } }
   // the way out: lit only once the Coon is beaten
   if(SEWER.mode==='cleared' && H.exit){ const exx=H.exit.xf*HUB.worldW-HUB.camx, exy=H.exit.yf*VH, pr=0.6+0.4*Math.sin(now*0.004);
-    if(HUB.nearSewerExit){ g.save(); g.textAlign='center'; g.font='bold 14px Jersey 10';
+    if(HUB.nearSewerExit){ g.save(); g.textAlign='center'; g.font='bold 14px "Nunito"';
       const lbl='Press E: Climb out', tw=g.measureText(lbl).width+18;
       g.fillStyle='rgba(10,16,30,.85)'; roundRectPath(exx-tw/2,exy-96,tw,24,8); g.fill();
       g.fillStyle='#cfe6ff'; g.fillText(lbl,exx,exy-79); g.restore(); }
@@ -9181,7 +9182,7 @@ function drawSewer(){
     const gr=g.createRadialGradient(lx,ly-18,3,lx,ly-18,48); gr.addColorStop(0,'rgba(255,210,90,'+(0.55*pr)+')'); gr.addColorStop(1,'rgba(255,210,90,0)');
     g.fillStyle=gr; g.beginPath(); g.arc(lx,ly-18,48,0,7); g.fill();
     const im=LOOT_IMG[l.img]; if(im&&im.complete&&im.naturalWidth){ const h=46, w=im.naturalWidth/im.naturalHeight*h; g.imageSmoothingEnabled=true; g.drawImage(im, lx-w/2, ly-h, w, h); }
-    else { g.textAlign='center'; g.font='22px Jersey 10'; g.fillText('',lx,ly+2); }
+    else { g.textAlign='center'; g.font='22px "Jersey 10"'; g.fillText('',lx,ly+2); }
     g.restore(); }
   // darkness everywhere except a light circle around Puiutu — lifts (map lights up) once the Coon is cleared
   const darkA = SEWER.mode==='cleared' ? Math.max(0, 1-(now-(SEWER.clearedAt||now))/1500) : 1;
@@ -9231,7 +9232,7 @@ function drawSewer(){
   if(boss){ // boss HP bar
     drawBossPlate(VW/2, 72, 'Evil Coon', SEWER.bossHp/SEWER.bossMax, '#e0402a', '#3a1010');
   } else if(SEWER.mode!=='cleared'){ // treasure counter (hidden once the Coon is beaten)
-    g.font='bold 14px Jersey 10'; g.fillStyle='rgba(10,8,6,.7)'; const t=''+SEWER.got+' / '+SEWER.loot.length, tw=g.measureText(t).width+18;
+    g.font='bold 14px "Nunito"'; g.fillStyle='rgba(10,8,6,.7)'; const t=''+SEWER.got+' / '+SEWER.loot.length, tw=g.measureText(t).width+18;
     roundRectPath(VW/2-tw/2,12,tw,24,8); g.fill(); g.fillStyle='#ffe7b0'; g.fillText(t, VW/2, 29);
   }
   g.restore();
@@ -10471,13 +10472,13 @@ function drawCine(){
     g.restore(); }
   if(C && C.card) drawEvidenceCard(C.card.id, C.card.t0);
   if(C && C.sub){ const t=now-C.sub.t0, a=Math.min(1,t/500);
-    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='bold 22px Jersey 10';
+    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='bold 22px "Nunito"';
     const j=C.sub.shake?(Math.random()-0.5)*3:0, y=VH*(C.subY||0.80), tw=g.measureText(C.sub.text).width;
     // yellow on a soft rounded dark box, like every line the game speaks over the picture
     g.fillStyle='rgba(0,0,0,.62)'; roundRectPath(VW/2-tw/2-20+j, y-27+j, tw+40, 40, 10); g.fill();
     g.fillStyle='#ffe7b0'; g.fillText(C.sub.text, VW/2+j, y+j); g.restore(); }
   if(C && C.title){ const t=now-C.title.t0, a=Math.min(1,t/350)*(Math.random()<0.08?0.35:1);   // it flickers like a bad bulb
-    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='bold 34px Jersey 10'; g.fillStyle='#e9e2d6';
+    g.save(); g.globalAlpha=a; g.textAlign='center'; g.font='bold 34px "Jersey 10"'; g.fillStyle='#e9e2d6';
     g.shadowColor='#5a0000'; g.shadowBlur=18; g.fillText(C.title.text, VW/2+(Math.random()-0.5)*2, VH*0.46); g.restore(); }
   if(C && C.fadeAt){ g.save(); g.fillStyle='rgba(0,0,0,'+Math.min(1,(now-C.fadeAt)/1600)+')'; g.fillRect(0,0,VW,VH); g.restore(); }
   const fl=C ? C.flashAt : HUB.cineFlashAt;
@@ -10507,7 +10508,7 @@ function drawCut(cut){
     }
   }
   if(cut.caption && t<5200){ g.globalAlpha=Math.min(1,t/600)*Math.min(1,(5200-t)/800);
-    g.font='bold 18px Jersey 10'; g.textAlign='center'; const cw=g.measureText(cut.caption).width, cy=VH*0.09+30;
+    g.font='bold 18px "Nunito"'; g.textAlign='center'; const cw=g.measureText(cut.caption).width, cy=VH*0.09+30;
     g.fillStyle='rgba(0,0,0,.62)'; roundRectPath(VW/2-cw/2-16, cy-23, cw+32, 34, 10); g.fill();   // yellow on a soft rounded dark box
     g.fillStyle='#ffe7b0'; g.fillText(cut.caption, VW/2, cy); g.globalAlpha=1; }
   if(t<600){ g.fillStyle='rgba(0,0,0,'+(1-t/600)+')'; g.fillRect(0,0,VW,VH); }
@@ -10900,7 +10901,7 @@ function drawSnout(g,ag){
     g.drawImage(img,-w/2,-h,w,h); }
   g.restore();
   if(HUB.hangar && HUB.hangar.phase==='await'){
-    g.save(); g.textAlign='center'; g.font='bold 12px Jersey 10'; g.fillStyle='rgba(255,231,176,.95)';
+    g.save(); g.textAlign='center'; g.font='bold 12px "Nunito"'; g.fillStyle='rgba(255,231,176,.95)';
     g.fillText(T('Agent Bristle'), sx, ag.y-h-8); g.restore();
   }
 }
@@ -10951,7 +10952,7 @@ function drawGlowCutscene(){
   }
   g.globalCompositeOperation='source-over';
   if(t<5000){ g.globalAlpha=Math.min(1,t/600)*Math.min(1,(5000-t)/800);
-    g.font='italic 17px Jersey 10'; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=6;
+    g.font='italic 17px "Nunito"'; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=6;
     g.fillStyle='#efe6cc'; g.fillText('Meanwhile, in the garden…', VW/2, VH*0.09+30); g.shadowBlur=0; g.globalAlpha=1; }
   if(t<700){ g.fillStyle='rgba(0,0,0,'+(1-t/700)+')'; g.fillRect(0,0,VW,VH); }        // fade in
   if(tr>2200){ g.fillStyle='rgba(225,255,240,'+Math.min(1,(tr-2200)/700)+')'; g.fillRect(0,0,VW,VH); }   // and gone
@@ -11508,8 +11509,8 @@ function drawMechBoar(g,b){
     if(HUB.ride){ const n=HUB.ride.pulls, bw2=90, by2=py-h*0.22;
       g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(px-bw2/2-2,by2-2,bw2+4,12);
       g.fillStyle='#f2b8ff'; g.fillRect(px-bw2/2,by2,bw2*n/MBOAR_PULLS,8);
-      g.font='bold 12px Jersey 10'; g.textAlign='center'; g.fillStyle='#fff'; g.fillText('PULL!', px, by2-6); }
-    else if(Math.hypot(HUB.cat.x-b.x,HUB.cat.y-b.y)>140){ g.font='bold 13px Jersey 10'; g.textAlign='center';
+      g.font='bold 12px "Nunito"'; g.textAlign='center'; g.fillStyle='#fff'; g.fillText('PULL!', px, by2-6); }
+    else if(Math.hypot(HUB.cat.x-b.x,HUB.cat.y-b.y)>140){ g.font='bold 13px "Nunito"'; g.textAlign='center';
       g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(px-52,py-h*0.3-14,104,20); g.fillStyle='#9fffd8'; g.fillText('CLIMB IT!', px, py-h*0.3); }
     g.restore();
   }
@@ -12340,7 +12341,7 @@ function huntDraw(){
     else { g.fillStyle='#3a2a1a'; g.fillRect(lx-5,ly-9,10,13); g.fillStyle=waxK>0?'#ffd27a':'#555'; g.fillRect(lx-3,ly-7,6,8); }
     g.restore(); }
   for(const f of HUNT.fx){ const k2=(now-f.at)/1600, x=f.x-HUB.camx;
-    if(f.t==='text'){ g.save(); g.globalAlpha=1-k2; g.textAlign='center'; g.font='bold 18px Jersey 10'; g.fillStyle=f.col||'#e8dcff'; g.shadowColor='#000'; g.shadowBlur=6; g.fillText(f.s,x,f.y-k2*30); g.restore(); }
+    if(f.t==='text'){ g.save(); g.globalAlpha=1-k2; g.textAlign='center'; g.font='bold 18px "Jersey 10"'; g.fillStyle=f.col||'#e8dcff'; g.shadowColor='#000'; g.shadowBlur=6; g.fillText(f.s,x,f.y-k2*30); g.restore(); }
     else if(f.t==='catch'||f.t==='crystal'){ g.save(); g.globalAlpha=Math.max(0,1-k2*1.4); g.strokeStyle=f.t==='crystal'?'#a8b8ff':'#ffe08a'; g.lineWidth=4; g.beginPath(); g.arc(x,f.y,10+k2*(f.big?160:80),0,7); g.stroke(); g.restore(); } }
   huntDrawHUD(now);
 }
@@ -12349,16 +12350,16 @@ function huntDrawHUD(now){
   // wax bar and the ghost count, top centre under the top bar
   const y=112, bw=Math.min(240,VW*0.5);
   g.fillStyle='rgba(10,8,20,.7)'; roundRectPath(cx-bw/2-12,y-24,bw+24,52,10); g.fill();
-  g.font='bold 13px Jersey 10'; g.fillStyle='#e8dcff';
+  g.font='bold 13px "Nunito"'; g.fillStyle='#e8dcff';
   g.fillText(HUNT.phase==='boss'?LT('The Librarian','Bibliotecarul'):LT('Ghosts ','Fantome ')+HUNT.caught+'/6', cx, y-8);
   g.fillStyle='#2a1e14'; roundRectPath(cx-bw/2,y,bw,10,5); g.fill();
   g.fillStyle=HUNT.wax<25?(Math.floor(now/250)%2?'#ff7a5a':'#ffb07a'):'#ffd27a'; roundRectPath(cx-bw/2,y,Math.max(0,bw*HUNT.wax/100),10,5); g.fill();
   if(HUNT.phase==='boss'){ const bs=HUNT.ghosts.find(x=>x.kind==='boss'); if(bs) for(let i=0;i<3;i++){ g.fillStyle=i<bs.hp?'#b8a8ff':'rgba(184,168,255,.2)'; g.beginPath(); g.arc(cx+bw/2+24+i*14,y-8,5,0,7); g.fill(); } }
-  if(HUNT.nearCandle && HUNT.wax<100){ g.font='12px Jersey 10'; g.fillStyle='#ffd27a'; g.fillText(LT('the candle tops up your wax','lumânarea îți umple ceara'), cx, y+26); }
+  if(HUNT.nearCandle && HUNT.wax<100){ g.font='12px "Nunito"'; g.fillStyle='#ffd27a'; g.fillText(LT('the candle tops up your wax','lumânarea îți umple ceara'), cx, y+26); }
   const panel=(t,b,f)=>{ g.fillStyle='rgba(6,6,16,.82)'; roundRectPath(cx-190,VH/2-90,380,180,14); g.fill();
-    g.fillStyle='#e8dcff'; g.font='bold 22px Jersey 10'; g.fillText(t,cx,VH/2-48);
-    g.font='14px Jersey 10'; g.fillStyle='#cfc6e8'; b.split('\n').forEach((ln,i)=>g.fillText(ln,cx,VH/2-16+i*20));
-    g.font='bold 13px Jersey 10'; g.fillStyle='#ffd27a'; g.fillText(f,cx,VH/2+70); };
+    g.fillStyle='#e8dcff'; g.font='bold 22px "Jersey 10"'; g.fillText(t,cx,VH/2-48);
+    g.font='14px "Nunito"'; g.fillStyle='#cfc6e8'; b.split('\n').forEach((ln,i)=>g.fillText(ln,cx,VH/2-16+i*20));
+    g.font='bold 13px "Nunito"'; g.fillStyle='#ffd27a'; g.fillText(f,cx,VH/2+70); };
   if(HUNT.phase==='intro') panel(LT('LANTERN HUNT','VÂNĂTOAREA CU FELINARUL'),
     LT('Walk to aim the lantern at a ghost.\nKeep it in the light until it gets dizzy,\nthen pounce: E or F.\nCandles top up your wax.','Mergi ca să îndrepți felinarul spre o fantomă.\nȚine-o în lumină până amețește,\napoi sari pe ea: E sau F.\nLumânările îți umplu ceara.'),
     LT('Press E to start','Apasă E ca să începi'));
@@ -12394,9 +12395,9 @@ function drawAreaLoading(underwater){
   const cx=VW/2, cy=VH/2, fs=Math.max(22,Math.min(VW,VH)*0.07);
   g.save(); g.textAlign='center'; g.textBaseline='middle';
   g.shadowColor='rgba(0,0,0,.6)'; g.shadowBlur=8;
-  g.fillStyle='#ffe7b0'; g.font=`bold ${fs}px 'Jersey 10',sans-serif`;
+  g.fillStyle='#ffe7b0'; g.font=`bold ${fs}px 'Nunito',sans-serif`;
   if(name) g.fillText(name, cx, cy-fs*0.9);
-  g.font=`${fs*0.45}px 'Jersey 10',sans-serif`; g.fillStyle='rgba(255,231,176,.75)';
+  g.font=`${fs*0.45}px 'Nunito',sans-serif`; g.fillStyle='rgba(255,231,176,.75)';
   g.fillText(LT('Loading','Se încarcă'), cx, cy+fs*0.15);
   g.shadowBlur=0;
   // four paw prints walking left to right, each lighting up in turn
@@ -12486,7 +12487,7 @@ function drawHub(){
         g.drawImage(BARRELIMG, sx-bw/2, it.p.y-h, bw, h);
       }
       if(HUB.nearMerge){ const pr=0.6+0.4*Math.sin(Date.now()*0.006);
-        g.save();g.globalAlpha=0.55+0.45*pr;g.font='bold 14px Jersey 10';g.textAlign='center';
+        g.save();g.globalAlpha=0.55+0.45*pr;g.font='bold 14px "Nunito"';g.textAlign='center';
         const lbl='Press E: '+A.hub.merge.label, tw=g.measureText(lbl).width+18;
         g.fillStyle='rgba(20,14,8,.85)';roundRectPath(sx-tw/2,it.p.y-118*sc-22,tw,24,8);g.fill();
         g.fillStyle='#ffe7b0';g.fillText(lbl,sx,it.p.y-118*sc-5);g.restore();
@@ -12497,10 +12498,10 @@ function drawHub(){
       if(MERLIN_IMG.complete&&MERLIN_IMG.naturalWidth){ const h=150*sc, w=MERLIN_IMG.naturalWidth/MERLIN_IMG.naturalHeight*h;
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,w*0.42,9*sc,0,0,7);g.fill();g.restore();
         g.drawImage(MERLIN_IMG, sx-w/2, it.p.y-h, w, h); }
-      if(!tagOff){ g.save();g.textAlign='center';g.font='bold 12px Jersey 10';
+      if(!tagOff){ g.save();g.textAlign='center';g.font='bold 12px "Nunito"';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText('Merlin',sx+1,it.p.y-152*sc+1);
       g.fillStyle='rgba(255,231,176,.96)';g.fillText('Merlin',sx,it.p.y-152*sc);g.restore(); }
-      if(HUB.nearMerlin){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Jersey 10';g.fillText('',sx,it.p.y-166*sc);g.restore(); }
+      if(HUB.nearMerlin){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px "Jersey 10"';g.fillText('',sx,it.p.y-166*sc);g.restore(); }
       continue;
     }
     if(it.t==='tomy'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
@@ -12511,25 +12512,25 @@ function drawHub(){
       // gentle drifting hearts
       g.save(); g.textAlign='center';
       for(let k=0;k<3;k++){ const tt=((now*0.0006)+k*0.34)%1, hy=it.p.y-22*sc-tt*56*sc, hx=sx+Math.sin(now*0.002+k*2)*10*sc;
-        g.globalAlpha=(1-tt)*0.7; g.font=Math.round((9+6*(1-tt))*sc)+'px Jersey 10'; g.fillText('',hx,hy); }
+        g.globalAlpha=(1-tt)*0.7; g.font=Math.round((9+6*(1-tt))*sc)+'px "Jersey 10"'; g.fillText('',hx,hy); }
       g.restore();
       // shadow + Tomy, dozing
       g.save();g.globalAlpha=0.18;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,15*sc,5*sc,0,0,7);g.fill();g.restore();
       drawCat(g, sx, it.p.y, 1, now*0.0018, CATS.tomy, {scale:sc});
-      if(!CINE.hideLabels && !tagOff){ g.save();g.textAlign='center';g.font='bold 12px Jersey 10';
+      if(!CINE.hideLabels && !tagOff){ g.save();g.textAlign='center';g.font='bold 12px "Nunito"';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText('Tomy',sx+1,it.p.y-72*sc+1);
       g.fillStyle='rgba(255,231,176,.97)';g.fillText('Tomy',sx,it.p.y-72*sc);g.restore(); }
-      if(HUB.nearTomy){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Jersey 10';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
+      if(HUB.nearTomy){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px "Jersey 10"';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
       continue;
     }
     if(it.t==='hubnpc'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
       const npc=A.hub.npc, cat=CATS[npc.cat]||CATS.lucian;
       g.save();g.globalAlpha=0.18;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,15*sc,5*sc,0,0,7);g.fill();g.restore();
       drawCat(g, sx, it.p.y, -1, now*0.0018, cat, {scale:sc});
-      if(!CINE.hideLabels && !tagOff){ g.save();g.textAlign='center';g.font='bold 12px Jersey 10';
+      if(!CINE.hideLabels && !tagOff){ g.save();g.textAlign='center';g.font='bold 12px "Nunito"';
       g.fillStyle='rgba(0,0,0,.6)';g.fillText(cat.name,sx+1,it.p.y-72*sc+1);
       g.fillStyle='rgba(255,231,176,.97)';g.fillText(cat.name,sx,it.p.y-72*sc);g.restore(); }
-      if(HUB.nearHubNpc){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px Jersey 10';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
+      if(HUB.nearHubNpc){ const pr=0.5+0.5*Math.sin(now*0.006); g.save();g.globalAlpha=0.5+0.5*pr;g.textAlign='center';g.font='18px "Jersey 10"';g.fillText('',sx,it.p.y-86*sc);g.restore(); }
       continue;
     }
     if(it.t==='fishbarrel'){ const sc=hubScale(it.p.y), sx=it.p.x-HUB.camx, now=Date.now();
@@ -12538,7 +12539,7 @@ function drawHub(){
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,w*0.4,8*sc,0,0,7);g.fill();g.restore();
         g.drawImage(barImg, sx-w/2, it.p.y-h, w, h); }
       if(HUB.nearFishbarrel){ const pr=0.6+0.4*Math.sin(now*0.006);
-        g.save();g.globalAlpha=0.55+0.45*pr;g.font='bold 14px Jersey 10';g.textAlign='center';
+        g.save();g.globalAlpha=0.55+0.45*pr;g.font='bold 14px "Nunito"';g.textAlign='center';
         const lbl='Press E: Go Fishing', tw=g.measureText(lbl).width+18;
         g.fillStyle='rgba(20,14,8,.85)';roundRectPath(sx-tw/2,it.p.y-92*sc-22,tw,24,8);g.fill();
         g.fillStyle='#ffe7b0';g.fillText(lbl,sx,it.p.y-92*sc-5);g.restore(); }
@@ -12559,9 +12560,9 @@ function drawHub(){
         g.drawImage(img, sx-w/2, top, w, h);
       } else {   // fallback until the sprite is added
         g.save();g.globalAlpha=0.2;g.fillStyle='#000';g.beginPath();g.ellipse(sx,it.p.y,26*sc,8*sc,0,0,7);g.fill();g.restore();
-        g.font=Math.round(46*sc)+'px Jersey 10';g.textAlign='center';g.fillText(fb,sx,it.p.y-10*sc); }
+        g.font=Math.round(46*sc)+'px "Jersey 10"';g.textAlign='center';g.fillText(fb,sx,it.p.y-10*sc); }
       if(HUB.nearDivesuit){ const pr=0.6+0.4*Math.sin(now*0.006);
-        g.save();g.globalAlpha=0.55+0.45*pr;g.font='bold 14px Jersey 10';g.textAlign='center';
+        g.save();g.globalAlpha=0.55+0.45*pr;g.font='bold 14px "Nunito"';g.textAlign='center';
         const lbl=owned?'Press E: Dive into the Ocean':'Press E: Examine', tw=g.measureText(lbl).width+18;
         g.fillStyle='rgba(20,14,8,.85)';roundRectPath(sx-tw/2,it.p.y-124*sc-22,tw,24,8);g.fill();
         g.fillStyle=owned?'#bfe6ff':'#e8d2a0';g.fillText(lbl,sx,it.p.y-124*sc-5);g.restore(); }
@@ -12588,7 +12589,7 @@ function drawHub(){
         g.save(); g.translate(sx,y); if(s.face<0)g.scale(-1,1);
         g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
         g.drawImage(im, 0,0, im.naturalWidth, im.naturalHeight*cut, -w/2, -h*cut, w, h*cut); g.restore(); }   // top `cut` of the body; cropped edge sits at the counter line
-      if(HUB.nearStaff===s){ const now=Date.now(), pr=0.6+0.4*Math.sin(now*0.006); g.save(); g.textAlign='center'; g.font='bold 13px Jersey 10';
+      if(HUB.nearStaff===s){ const now=Date.now(), pr=0.6+0.4*Math.sin(now*0.006); g.save(); g.textAlign='center'; g.font='bold 13px "Nunito"';
         const lbl='Press E: Talk', tw=g.measureText(lbl).width+18, ly=y-(s.h*(s.cut||1))-8;
         g.globalAlpha=0.55+0.45*pr; g.fillStyle='rgba(20,14,8,.85)'; roundRectPath(sx-tw/2,ly-18,tw,24,8); g.fill();
         g.fillStyle='#ffe7b0'; g.fillText(lbl,sx,ly-1); g.restore(); }
@@ -12598,7 +12599,7 @@ function drawHub(){
       if(im&&im.complete&&im.naturalWidth){ const h=bd.h, w=im.naturalWidth/im.naturalHeight*h;
         g.save(); g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
         g.drawImage(im, 0,0, im.naturalWidth, im.naturalHeight*cut, sx-w/2, y-h*cut, w, h*cut); g.restore(); }
-      if(HUB.nearBankdesk){ g.save(); g.textAlign='center'; g.font='bold 14px Jersey 10';
+      if(HUB.nearBankdesk){ g.save(); g.textAlign='center'; g.font='bold 14px "Nunito"';
         const lbl='Press E: Bank with Sir Oink', tw=g.measureText(lbl).width+18, ly=y-bd.h*cut-10;
         g.globalAlpha=0.6+0.4*pr; g.fillStyle='rgba(20,14,8,.85)'; roundRectPath(sx-tw/2,ly-18,tw,24,8); g.fill();
         g.fillStyle='#ffe7b0'; g.fillText(lbl,sx,ly-1); g.restore(); }
@@ -12608,7 +12609,7 @@ function drawHub(){
       g.save(); const gr=g.createRadialGradient(sx,it.p.y-30,4,sx,it.p.y-30,62);
       gr.addColorStop(0,'rgba(150,235,180,'+(HUB.nearPotions?0.55:0.18)*pr+')'); gr.addColorStop(1,'rgba(150,235,180,0)');
       g.fillStyle=gr; g.beginPath(); g.arc(sx,it.p.y-30,62,0,7); g.fill(); g.restore();
-      if(HUB.nearPotions){ g.save();g.textAlign='center';g.font='bold 14px Jersey 10';
+      if(HUB.nearPotions){ g.save();g.textAlign='center';g.font='bold 14px "Nunito"';
         const lbl='Press E: Color Sort', tw=g.measureText(lbl).width+18;
         g.globalAlpha=0.6+0.4*pr; g.fillStyle='rgba(20,14,8,.85)';roundRectPath(sx-tw/2,it.p.y-98,tw,24,8);g.fill();
         g.fillStyle='#d6f3d0';g.fillText(lbl,sx,it.p.y-81);g.restore(); }
@@ -12641,14 +12642,14 @@ function drawHub(){
       }
       if(!CINE.hideLabels && !tagOff){
         const nm=garrisonName(u), ny=u.y-h-10;
-        g.save(); g.textAlign='center'; g.font='bold 12px Jersey 10';
+        g.save(); g.textAlign='center'; g.font='bold 12px "Nunito"';
         g.fillStyle='rgba(0,0,0,.6)'; g.fillText(nm,sx+1,ny+1);
         g.fillStyle=u.key.endsWith('emissary')?'rgba(198,214,255,.97)':'rgba(255,231,176,.97)';
         g.fillText(nm,sx,ny); g.restore();
       }
       if(HUB.nearGarrison===u){                       // "talk to me" nudge
         const pr=0.6+0.4*Math.sin(now*0.006);
-        g.save(); g.globalAlpha=0.55+0.45*pr; g.textAlign='center'; g.font='16px Jersey 10';
+        g.save(); g.globalAlpha=0.55+0.45*pr; g.textAlign='center'; g.font='16px "Nunito"';
         g.fillText('', sx, u.y-h-26); g.restore();
       }
       continue;
@@ -12688,7 +12689,7 @@ function drawHub(){
       const nm=FACTIONS[u.team].adj+' '+(isCmd?'Commander':'Soldier');
       const col=u.team==='cat'?'#8fc4ff':'#ff9a9a';
       if(!CINE.hideLabels && !tagOff){
-      g.save(); g.textAlign='center'; g.font='bold '+(isCmd?11:9)+'px Jersey 10';
+      g.save(); g.textAlign='center'; g.font='bold '+(isCmd?11:9)+'px "Nunito"';
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, sx+1, topY+1);
       g.fillStyle=col; g.fillText(nm, sx, topY); g.restore(); }
       const bw=(isCmd?52:38)*Math.max(0.8,sc), bh=isCmd?6:4, by=topY+4, pct=Math.max(0,u.hp/u.maxHp);
@@ -12710,23 +12711,23 @@ function drawHub(){
       else if(d.sea){
         {   // schooling fish get a smaller tag so a shoal isn't a wall of labels
           const nm=d.kind.name, col=d.kind.big?'#dd88ff':'#9fe6ff';
-          g.save(); g.textAlign='center'; g.font=d.schoolRef?'bold 9px Jersey 10':'bold 10px Jersey 10';
+          g.save(); g.textAlign='center'; g.font=d.schoolRef?'bold 9px "Nunito"':'bold 10px "Nunito"';
           g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, dsx+1, topY+1);
           g.fillStyle=col; g.fillText(nm, dsx, topY);
-          if(d.kind.big){ g.font='bold 8px Jersey 10'; g.fillStyle='#dd88ff'; g.fillText(''+(d.kind.tag||'APEX PREDATOR')+'', dsx, topY-11); }
+          if(d.kind.big){ g.font='bold 8px "Nunito"'; g.fillStyle='#dd88ff'; g.fillText(''+(d.kind.tag||'APEX PREDATOR')+'', dsx, topY-11); }
           g.restore();
         }
       } else if(d.type==='rat'){
       const nm=FACTIONS.rat.adj+(d.rank==='commander'?' Commander':' Soldier');
-      g.save(); g.textAlign='center'; g.font='bold 10px Jersey 10';
+      g.save(); g.textAlign='center'; g.font='bold 10px "Nunito"';
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm, dsx+1, topY+1);
       g.fillStyle='#ff9a9a'; g.fillText(nm, dsx, topY); g.restore();
       } else {
       const lv=d.level||1, shown=lv+((HUB.lvMob&&HUB.lvMob.bonus)||0), lvCol=levelTierColor(lv), nm=(d.type==='pigeon'?'Pigeon':d.type==='clobster'?'Crystal Lobster':'Duck');
-      g.save(); g.textAlign='center'; g.font=`bold ${lv===10?11:10}px Jersey 10`;
+      g.save(); g.textAlign='center'; g.font=`bold ${lv===10?11:10}px "Nunito"`;
       g.fillStyle='rgba(0,0,0,0.7)'; g.fillText(nm+'  Lv.'+shown, dsx+1, topY+1);
       g.fillStyle=lvCol; g.fillText(nm+'  Lv.'+shown, dsx, topY);
-      if(lv===10){ g.font='bold 8px Jersey 10'; g.fillStyle='#dd88ff'; g.fillText('LEGENDARY', dsx, topY-11); }
+      if(lv===10){ g.font='bold 8px "Nunito"'; g.fillStyle='#dd88ff'; g.fillText('LEGENDARY', dsx, topY-11); }
       g.restore();
       }
       // hp bar (schooling fish get a slimmer one so a shoal isn't a wall of bars; cinematic hides untouched mobs' bars)
@@ -12787,9 +12788,9 @@ function drawHub(){
       const key=HUB.square ? (r.moving ? 'walk'+(Math.floor(r.phase*2)%4) : 'sit') : rockyPose(r, now, S.companion?'idle':'sit');
       drawDogSprite(g,sx,r.y,r.facing,86*sc,key);
       if(occNow) occNow.draw=ctx=>drawDogSprite(ctx,sx,r.y,r.facing,86*sc,key,true);
-      if(!tagOff && !HUB.square){ g.save(); g.textAlign='center'; g.font='bold 11px Jersey 10'; g.fillStyle='rgba(255,231,176,.92)';
+      if(!tagOff && !HUB.square){ g.save(); g.textAlign='center'; g.font='bold 11px "Nunito"'; g.fillStyle='rgba(255,231,176,.92)';
       g.fillText(COMP.staying&&S.companion?'Rocky':'Rocky', sx, r.y-88*sc); g.restore(); }
-      if(HUB.nearRocky){ g.save(); g.globalAlpha=0.5+0.5*Math.abs(Math.sin(now*0.006)); g.textAlign='center'; g.font='18px Jersey 10'; g.fillText('',sx,r.y-80*sc); g.restore(); }
+      if(HUB.nearRocky){ g.save(); g.globalAlpha=0.5+0.5*Math.abs(Math.sin(now*0.006)); g.textAlign='center'; g.font='18px "Jersey 10"'; g.fillText('',sx,r.y-80*sc); g.restore(); }
     } else {
       // platLift raises the cat so she reads as standing ON a raised ledge. It's tuned per
       // area: the library's stairs are chunky, the garden's floating platforms are thin.
@@ -12811,7 +12812,7 @@ function drawHub(){
   if(catTag){ const {sx,y,sc}=catTag;
     // your own name above your cat
     const myName=(NET.name&&NET.connected)?NET.name:'Puiutu';
-    g.font='bold 11px Jersey 10'; g.textAlign='center'; g.fillStyle='rgba(255,231,176,.95)';
+    g.font='bold 11px "Nunito"'; g.textAlign='center'; g.fillStyle='rgba(255,231,176,.95)';
     if(!CINE.hideCat && !CINE.hideLabels && !HUB.square && !(HUB.cine && HUB.cine.catHidden)) g.fillText(myName, sx, y-86*sc);
     if(NET.myBubble && Date.now()-NET.myBubble.t<4000) drawChatBubble(sx, y-98*sc, NET.myBubble.text);
   }
@@ -12895,7 +12896,7 @@ function drawHub(){
     g.globalAlpha=1;
     if(HUB.nearShroom){
       const sx=hubShroom().x-HUB.camx, sy=hubShroom().y;
-      g.textAlign='center'; g.font='bold 14px Jersey 10';
+      g.textAlign='center'; g.font='bold 14px "Nunito"';
       const lbl='Press E: The Ancient Mushroom', tw=g.measureText(lbl).width+18;
       g.globalAlpha=0.6+0.4*pr; g.fillStyle='rgba(24,20,8,.85)';
       roundRectPath(sx-tw/2,sy-116,tw,24,8); g.fill();
@@ -12937,7 +12938,7 @@ function drawHub(){
           g.stroke(); }
       }
       if(HUB.nearSeal){
-        g.globalAlpha=0.55+0.45*pr; g.textAlign='center'; g.font='bold 14px Jersey 10';
+        g.globalAlpha=0.55+0.45*pr; g.textAlign='center'; g.font='bold 14px "Nunito"';
         const lbl=solved?'Press E: Descend into the Abyss':'Press E: Break the Seal', tw=g.measureText(lbl).width+18;
         g.fillStyle='rgba(10,16,34,.85)'; roundRectPath(sx-tw/2,sy-118,tw,24,8); g.fill();
         g.fillStyle=solved?'#bfeeff':'#ffd0d0'; g.fillText(lbl,sx,sy-101);
@@ -13059,12 +13060,12 @@ function drawAbyssBoss(){
     const line=(txt,a,b,y,size,col)=>{ const t=sm(a,a+500)*(1-sm(b-500,b)); if(t<=0) return;
       g.globalAlpha=t; g.textAlign='center'; g.font=size; g.fillStyle=col; g.shadowColor='#000'; g.shadowBlur=14;
       g.fillText(txt, VW/2, y); g.shadowBlur=0; g.globalAlpha=1; };
-    line('Something stirs in the deep…', 300, 2900, VH*0.82, 'italic 22px Jersey 10', '#b9c8dc');
-    line('You came down so far…', 6300, 7800, VH*0.80, 'bold 30px Jersey 10', '#ffb39a');
-    line('…to wake me.', 7800, 9000, VH*0.80, 'bold 38px Jersey 10', '#ff6a4a');
+    line('Something stirs in the deep…', 300, 2900, VH*0.82, 'italic 22px "Jersey 10"', '#b9c8dc');
+    line('You came down so far…', 6300, 7800, VH*0.80, 'bold 30px "Jersey 10"', '#ffb39a');
+    line('…to wake me.', 7800, 9000, VH*0.80, 'bold 38px "Jersey 10"', '#ff6a4a');
     if(el>9400){ const t=sm(9400,9900)*(1-sm(11400,11900));
       g.globalAlpha=t; g.textAlign='center'; g.shadowColor='#000'; g.shadowBlur=18;
-      g.font='bold 46px Jersey 10'; g.fillStyle='#ffd9c8'; g.fillText('THE DREAMER IN THE DEEP', VW/2, VH*0.78);
+      g.font='bold 46px "Jersey 10"'; g.fillStyle='#ffd9c8'; g.fillText('THE DREAMER IN THE DEEP', VW/2, VH*0.78);
       g.fillStyle='#ff6a4a'; g.fillRect(VW/2-170*t, VH*0.80, 340*t, 2); g.shadowBlur=0; g.globalAlpha=1; }
     // and white
     if(el>11300){ g.globalAlpha=Math.min(1,(el-11300)/700); g.fillStyle='#fff'; g.fillRect(0,0,VW,VH); g.globalAlpha=1; }
@@ -13147,7 +13148,7 @@ function drawAbyssBoss(){
     g.save();
     // the call to strike sits right under the Dreamer's own bar, not over the core
     if(ab.state==='exposed'){ const pr=0.5+0.5*Math.sin(now*0.012);
-      g.textAlign='center'; g.font='bold 26px Jersey 10'; g.fillStyle='rgba(0,0,0,.7)'; g.fillText('STRIKE THE CORE!', VW/2+2, y+46);
+      g.textAlign='center'; g.font='bold 26px "Jersey 10"'; g.fillStyle='rgba(0,0,0,.7)'; g.fillText('STRIKE THE CORE!', VW/2+2, y+46);
       g.globalAlpha=0.75+0.25*pr; g.fillStyle='#ffd0b0'; g.fillText('STRIKE THE CORE!', VW/2, y+44); }
     g.restore();
   }
@@ -13159,7 +13160,7 @@ function drawAbyssBoss(){
     g.fillStyle=gr; g.fillRect(0,0,VW,VH);
     g.globalAlpha=Math.max(0,1-k); g.fillStyle='rgba(150,210,255,0.7)';
     for(let i=0;i<40;i++){ const px=(i*97%VW), py=VH - ((now*0.25 + i*60)%(VH*1.2)); g.beginPath(); g.arc(px,py,1.5+ (i%3),0,7); g.fill(); }
-    g.globalAlpha=1; g.textAlign='center'; g.font='bold 20px Jersey 10'; g.fillStyle='#bcd4e8';
+    g.globalAlpha=1; g.textAlign='center'; g.font='bold 20px "Nunito"'; g.fillStyle='#bcd4e8';
     g.globalAlpha=Math.sin(k*Math.PI); g.fillText('It flees into the deep…', VW/2, VH*0.28);
     g.restore();
   }
@@ -13184,12 +13185,12 @@ function drawHubSpots(){
     g.fillStyle=gr; g.beginPath(); g.arc(sx,sy,R+22,0,7); g.fill();
     // icon
     g.textAlign='center'; g.textBaseline='middle';
-    g.font=(sp.type==='chest'?'30px':'26px')+' Jersey 10';
+    g.font=(sp.type==='chest'?'30px':'26px')+' "Jersey 10"';
     const icon = sp.type==='lever' ? (sp.glyph||'') : sp.type==='chest' ? (opened?'':'') : sp.type==='lights' ? (opened?'':'') : (sp.icon||'');
     g.globalAlpha=opened&&sp.type!=='lever'?0.7:1; g.fillText(icon, sx, sy-2);
     g.globalAlpha=1; g.textBaseline='alphabetic';
     if(near){
-      g.font='bold 14px Jersey 10';
+      g.font='bold 14px "Nunito"';
       const label = sp.type==='merchant' ? T('Press E: The Merchant') : sp.type==='museum' ? T('Press E: Old Shelly') : sp.type==='tablet' ? 'Press E: Read' : sp.type==='lever' ? 'Press E: Touch the glyph'
                   : sp.type==='lights' ? (opened?'Already lit':'Press E: Crystal Array')
                   : (S.oceanFlags[sp.requires]||!sp.requires) ? 'Press E: Open the vault' : 'Locked';
@@ -13205,7 +13206,7 @@ function roundRectPath(x,y,w,h,r){ g.beginPath(); g.roundRect(x,y,w,h,r); }
 // barY is the bar's top edge; returns the bar box so a boss can add its own marks under it.
 function drawBossPlate(cx,barY,name,pct,fill,track){
   const bw=200, bh=10, bx=cx-bw/2;
-  g.save(); g.textAlign='center'; g.font='bold 15px Jersey 10';
+  g.save(); g.textAlign='center'; g.font='bold 15px "Nunito"';
   const pw=Math.max(bw,g.measureText(name).width)+20;
   g.fillStyle='rgba(10,8,6,.7)'; roundRectPath(cx-pw/2,barY-25,pw,bh+33,8); g.fill();
   g.fillStyle='#ffe7b0'; g.fillText(name,cx,barY-7);
@@ -13476,7 +13477,7 @@ function drawPortals(){
     // label when standing in front of it
     if(nearPortal===pt){
       const ly=gy-(pt.exit?160:120);
-      g.save(); g.font='bold 13px Jersey 10'; g.textAlign='center';
+      g.save(); g.font='bold 13px "Nunito"'; g.textAlign='center';
       const tw=g.measureText(pt.label).width+18;
       g.globalAlpha=0.55+0.45*pulse;
       g.fillStyle='rgba(10,16,34,.85)'; g.beginPath(); g.roundRect(sx-tw/2,ly-14,tw,20,7); g.fill();
@@ -13580,7 +13581,7 @@ function drawNPCs(){
     else { drawCat(g,sx,n.y-FOOT_LIFT,n.facing,Date.now()*.003,CATS[n.cat],{tphase:n.x}); nm=CATS[n.cat].name; }
     // name tag
     if(!CINE.hideLabels){
-      g.font='bold 12px Jersey 10';g.textAlign='center';
+      g.font='bold 12px "Nunito"';g.textAlign='center';
       const tw=g.measureText(nm).width+16;
       g.fillStyle='rgba(20,14,8,.8)';g.beginPath();g.roundRect(sx-tw/2,n.y-96,tw,18,6);g.fill();
       g.fillStyle='#ffe7b0';g.fillText(nm,sx,n.y-83);
@@ -13588,7 +13589,7 @@ function drawNPCs(){
     // bubble
     if(nearNpc===n){
       const pulse=.5+Math.abs(Math.sin(Date.now()*.006))*.5;
-      g.globalAlpha=pulse;g.font='bold 18px Jersey 10';g.fillStyle='#ffd86b';
+      g.globalAlpha=pulse;g.font='bold 18px "Jersey 10"';g.fillStyle='#ffd86b';
       g.fillText('',sx,n.y-104);g.globalAlpha=1;
     }
   }
@@ -13611,7 +13612,7 @@ function drawPlayer(){
   if(P.iframe && now<P.iframe && Math.floor(now/100)%2===0){ /* skip frame = blink */ }
   else
   drawCat(g,sx,P.y-FOOT_LIFT,P.facing,P.phase,CATS.puiutu,Object.assign({moving:P.moving&&P.onGround,highlight:true,hat:S.equipped&&isHat(S.equipped)?S.equipped:null},puiPose()));
-  g.font='bold 11px Jersey 10';g.textAlign='center';g.fillStyle='rgba(255,231,176,.95)';
+  g.font='bold 11px "Nunito"';g.textAlign='center';g.fillStyle='rgba(255,231,176,.95)';
   const myName=(NET.name&&NET.connected)?NET.name:'Puiutu';
   g.fillText(myName,sx,P.y-90);
   if(NET.myBubble && Date.now()-NET.myBubble.t<4000) drawChatBubble(sx,P.y-100,NET.myBubble.text);
@@ -13675,7 +13676,7 @@ function drawCompanion(){
   const sx=COMP.x-cam.x; if(sx<-90||sx>VW+90) return;
   const key=rockyPose(COMP, now, COMP.staying?'sit':'idle');
   drawDogSprite(g,sx,COMP.y-FOOT_LIFT,COMP.facing,64,key);
-  g.font='bold 10px Jersey 10';g.textAlign='center';g.fillStyle='rgba(255,231,176,.9)';
+  g.font='bold 10px "Nunito"';g.textAlign='center';g.fillStyle='rgba(255,231,176,.9)';
   g.fillText(COMP.staying?'Rocky':'Rocky',sx,COMP.y-FOOT_LIFT-66);
 }
 // ── the piglet's entrance: Seby is barely down when he comes out of the tunnel behind you,
@@ -13997,7 +13998,7 @@ function drawBuddySnout(g,opt={}){
     g.save(); g.translate(sx,s.y-bob); if(s.facing!==ARMY_NATIVE.snout) g.scale(-1,1);
     g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(img,-iw/2,-h,iw,h); g.restore(); }
   if(opt.body){ g.restore(); return; }
-  if(!CINE.hideLabels && !opt.noTag){ g.textAlign='center'; g.font='bold 11px Jersey 10';
+  if(!CINE.hideLabels && !opt.noTag){ g.textAlign='center'; g.font='bold 11px "Nunito"';
     g.fillStyle='rgba(0,0,0,.6)'; g.fillText(T('Agent Snout'),sx+1,s.y-h-7);
     g.fillStyle='rgba(255,214,226,.95)'; g.fillText(T('Agent Snout'),sx,s.y-h-8); }
   g.restore();
@@ -14005,7 +14006,7 @@ function drawBuddySnout(g,opt={}){
 }
 // a small pixel-ish speech bubble, wrapped to a few words a line, kept on screen
 function drawBuddyBubble(g, x, y, text){
-  g.save(); g.font='bold 12px Jersey 10'; g.textAlign='center'; g.textBaseline='alphabetic';
+  g.save(); g.font='bold 12px "Nunito"'; g.textAlign='center'; g.textBaseline='alphabetic';
   const maxW=210, words=text.split(' '), lines=[]; let cur='';
   for(const w of words){ const t=cur?cur+' '+w:w; if(g.measureText(t).width>maxW && cur){ lines.push(cur); cur=w; } else cur=t; }
   if(cur) lines.push(cur);
@@ -14030,11 +14031,11 @@ function drawBuddyOverlay(g){
     g.fillStyle='#6b4a1f'; g.fillRect(sx-3*sc, py-70*sc, 6*sc, 70*sc);
     g.fillStyle='#ffd24a'; g.strokeStyle='#3a2410'; g.lineWidth=2.5;
     g.beginPath(); g.roundRect(sx-48*sc, py-104*sc, 96*sc, 40*sc, 4); g.fill(); g.stroke();
-    g.fillStyle='#3a2410'; g.textAlign='center'; g.font='bold '+Math.round(12*sc)+'px Jersey 10';
+    g.fillStyle='#3a2410'; g.textAlign='center'; g.font='bold '+Math.round(12*sc)+'px "Nunito"';
     g.fillText(T('CLOSED FOR'), sx, py-87*sc); g.fillText(T('SURVEY'), sx, py-72*sc);
     g.restore(); } }
   const mark=(x,y)=>{ const sx=x-HUB.camx; g.save(); g.globalAlpha=0.6+0.4*Math.sin(now*0.012);
-    g.fillStyle='#ffd86b'; g.font='bold 16px Jersey 10'; g.textAlign='center'; g.fillText('?', sx, y); g.restore(); };
+    g.fillStyle='#ffd86b'; g.font='bold 16px "Nunito"'; g.textAlign='center'; g.fillText('?', sx, y); g.restore(); };
   for(const d of HUB.ducks){ if(!d.dead && d.stunUntil>now) mark(d.x, d.y-48); }
   const b=HUB.boss; if(b && !b.defeated && b.stunUntil>now) mark(b.x, b.y-150);
   const sn=HUB.snout; if(BUDDY.bubble && !dialogueActive && !HUB.cine && sn.on && sn.alpha>0.5 && sn.bubbleAt) drawBuddyBubble(g, sn.bubbleAt.x, sn.bubbleAt.y, T(BUDDY.bubble.text));
@@ -14120,7 +14121,7 @@ function drawPlayerHP(){
   const pct=Math.max(0,P.hp/P.maxHp);
   g.fillStyle=pct>0.5?'#5fce4a':pct>0.22?'#e8b53a':'#e0533a';
   g.beginPath();g.roundRect(x,y,w*pct,h,4);g.fill();
-  g.fillStyle='#fff';g.font='bold 11px Jersey 10';g.textAlign='center';g.shadowColor='#000';g.shadowBlur=3;
+  g.fillStyle='#fff';g.font='bold 11px "Nunito"';g.textAlign='center';g.shadowColor='#000';g.shadowBlur=3;
   g.fillText(''+Math.ceil(P.hp)+' / '+P.maxHp, x+w/2, y+11);
   g.restore();
   updateUIBar();   // keep the bottom HUD orb in sync with live HP
@@ -14129,7 +14130,7 @@ function drawPlayerHP(){
 // speech bubble above a cat
 function drawChatBubble(sx,sy,text){ RO_RAW=true; try{ drawChatBubble_(sx,sy,text); } finally { RO_RAW=false; } }
 function drawChatBubble_(sx,sy,text){
-  g.font='12px Jersey 10';g.textAlign='center';
+  g.font='12px "Nunito"';g.textAlign='center';
   const tw=Math.min(180,g.measureText(text).width)+16;
   g.save();
   g.fillStyle='rgba(255,252,245,.96)';g.strokeStyle='#6b4a1f';g.lineWidth=2;
@@ -14422,7 +14423,7 @@ function drawEmojiPortrait(emoji,bg){
   const pc=document.getElementById('dlgPortrait'); if(!pc) return; pc._want=null;
   const pg=pc.getContext('2d');
   pg.clearRect(0,0,78,78); pg.fillStyle=bg||'#241c10'; pg.fillRect(0,0,78,78);
-  pg.font='44px Jersey 10'; pg.textAlign='center'; pg.textBaseline='middle';
+  pg.font='44px "Jersey 10"'; pg.textAlign='center'; pg.textBaseline='middle';
   pg.fillText(emoji,39,43);
 }
 function sayLines(name,lines,opt){
@@ -16446,19 +16447,19 @@ function mgRender(){
     mgDrawFruit(ctx,x,mgDropY()+r,r,t);
   }
   for(const b of MG.bodies) mgDrawFruit(ctx,b.x,b.y,b.r,b.type,b);
-  ctx.fillStyle='rgba(255,231,176,.75)'; ctx.font='11px Jersey 10'; ctx.textAlign='right';
+  ctx.fillStyle='rgba(255,231,176,.75)'; ctx.font='11px "Nunito"'; ctx.textAlign='right';
   const nx=mgWall(18).r-16; ctx.fillText('next', nx-14, 16); mgDrawFruit(ctx, nx, 18, 11, MG.next);   // tucked inside the barrel's rim
   // overflow countdown — drawn on top, top-left so a fruit can't hide it
-  if(danger){ ctx.save(); ctx.fillStyle='#ff4a4a'; ctx.textAlign='left'; ctx.font='bold 16px Jersey 10';
+  if(danger){ ctx.save(); ctx.fillStyle='#ff4a4a'; ctx.textAlign='left'; ctx.font='bold 16px "Nunito"';
     ctx.shadowColor='#000'; ctx.shadowBlur=4; ctx.fillText(''+left.toFixed(1)+'s', 10, 20); ctx.restore(); }
   if(MG.gameOver){
     const bp=new Path2D(); for(let i=0;i<=40;i++){ const y=H*i/40; i?bp.lineTo(mgWall(y).l,y):bp.moveTo(mgWall(y).l,y); }
     for(let i=40;i>=0;i--){ const y=H*i/40; bp.lineTo(mgWall(y).r,y); }
     ctx.fillStyle='rgba(20,14,8,.72)'; ctx.fill(bp);            // darken the barrel only, not a box around it
-    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='bold 30px Jersey 10';
+    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='bold 30px "Jersey 10"';
     ctx.fillText('Game Over', W/2, H/2-20);
-    ctx.font='bold 20px Jersey 10'; ctx.fillText('Score: '+MG.score, W/2, H/2+14);
-    ctx.font='14px Jersey 10'; ctx.fillStyle='#ffe7b0'; ctx.fillText('press Restart', W/2, H/2+46);
+    ctx.font='bold 20px "Jersey 10"'; ctx.fillText('Score: '+MG.score, W/2, H/2+14);
+    ctx.font='14px "Nunito"'; ctx.fillStyle='#ffe7b0'; ctx.fillText('press Restart', W/2, H/2+46);
   }
 }
 function mgLoop(){ if(!MG.active)return; if(!MG.gameOver)mgPhysics(); mgRender(); MG.raf=requestAnimationFrame(mgLoop); }
@@ -16659,9 +16660,9 @@ function sortDraw(){
   }
   if(SORT.won){
     ctx.fillStyle='rgba(20,14,30,.72)'; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#ffe066'; ctx.textAlign='center'; ctx.font='bold 30px Jersey 10';
+    ctx.fillStyle='#ffe066'; ctx.textAlign='center'; ctx.font='bold 30px "Jersey 10"';
     ctx.fillText('Level '+SORT.level+' done!', W/2, H/2-10);
-    ctx.fillStyle='#fff'; ctx.font='15px Jersey 10';
+    ctx.fillStyle='#fff'; ctx.font='15px "Nunito"';
     ctx.fillText(SORT.level<SORT.maxLevel?'press Next':'All levels complete!', W/2, H/2+24);
   }
 }
@@ -17016,7 +17017,7 @@ function fishDraw(){
     g.rotate((p-0.5)*1.2);              // nose-up rising, nose-down falling (arc)
     const sp=SPECIES_BY_KEY[j.key]; const lp=(sp&&sp.leap)||1;   // per-species leap size (big game leaps much bigger)
     const sw=72*lp, sh=48*lp;
-    if(!fishSprite(g,j.key,0,0,sw,sh)){ g.font=Math.round(28*lp)+'px Jersey 10'; g.textAlign='center'; g.fillText('',0,10); }
+    if(!fishSprite(g,j.key,0,0,sw,sh)){ g.font=Math.round(28*lp)+'px "Jersey 10"'; g.textAlign='center'; g.fillText('',0,10); }
     g.restore();
   }
   // ── splashes ──
@@ -17053,7 +17054,7 @@ function fishDraw(){
     const cs=FISH.catSize;
     g.save(); g.strokeStyle='rgba(255,255,255,.6)'; g.lineWidth=2;
     g.beginPath(); g.moveTo(cx+cs*0.5, cy-cs*0.6); g.lineTo(FISH.bobX, FISH.bobY); g.stroke(); g.restore();
-    g.font=Math.round(cs*0.6)+'px Jersey 10'; g.textAlign='center'; g.fillText('',cx+cs*0.3,cy-cs*0.1);
+    g.font=Math.round(cs*0.6)+'px "Jersey 10"'; g.textAlign='center'; g.fillText('',cx+cs*0.3,cy-cs*0.1);
   }
   // ── bobber on the water (dips during waiting/bite) ──
   const dipping=(FISH.phase==='bite')||(FISH.phase==='waiting'&&Math.sin(now*0.006)>0.6);
@@ -17069,7 +17070,7 @@ function fishDraw(){
     }
     g.restore();
     const BOBSZ=56;   // bigger bobber
-    if(!drawFit(g,bob,FISH.bobX,bobY,BOBSZ,BOBSZ)){ g.font='30px Jersey 10'; g.textAlign='center';
+    if(!drawFit(g,bob,FISH.bobX,bobY,BOBSZ,BOBSZ)){ g.font='30px "Jersey 10"'; g.textAlign='center';
       g.fillStyle=dipping?'#c83a3a':'#e8483a'; g.fillText('',FISH.bobX,bobY+9); }
   }
 
@@ -17091,10 +17092,10 @@ function fishDraw(){
     const pcy=cy0-cardH*0.05;
     // fish fills the parchment width-wide; every species fits the SAME height so
     // wide ones (puffer/barracuda) and narrow ones (parrotfish) look consistent
-    if(!fishSprite(g,f.key,W/2,pcy-cardH*0.05,cardW*0.50,cardH*0.30)){ g.font='52px Jersey 10'; g.fillStyle='#5a3a18'; g.fillText('',W/2,pcy); }
+    if(!fishSprite(g,f.key,W/2,pcy-cardH*0.05,cardW*0.50,cardH*0.30)){ g.font='52px "Jersey 10"'; g.fillStyle='#5a3a18'; g.fillText('',W/2,pcy); }
     g.fillStyle=f.legendary?'#b8860b':'#5a3a18';
-    g.font='bold '+Math.round(cardH*0.13)+'px Jersey 10'; g.fillText(f.name,W/2,pcy+cardH*0.18);
-    g.font=Math.round(cardH*0.09)+'px Jersey 10'; g.fillText(FISH.len+' cm   +'+moneyText(f.coins)+'  +'+f.xp+' XP',W/2,pcy+cardH*0.30);
+    g.font='bold '+Math.round(cardH*0.13)+'px "Nunito"'; g.fillText(f.name,W/2,pcy+cardH*0.18);
+    g.font=Math.round(cardH*0.09)+'px "Nunito"'; g.fillText(FISH.len+' cm   +'+moneyText(f.coins)+'  +'+f.xp+' XP',W/2,pcy+cardH*0.30);
   }
   if(FISH.msg && FISH.phase==='ready' && now<FISH.msgUntil){
     fishPill(FISH.msg, FISH.waterTop-20, Math.round(H*0.04));
@@ -18059,7 +18060,7 @@ function mcDrawChasers(mg, nearer){
       for(let i=0;i<MC_RAT_HP;i++){ mg.fillStyle=i<n?'#ff6a5a':'rgba(0,0,0,.45)'; mg.fillRect(p.x-(MC_RAT_HP*gap)/2+i*gap, y0, gap-3, 6*MC_U); }
       const k=1-c.sideT/MC_RAT_RAM; mg.fillStyle='rgba(0,0,0,.5)'; mg.fillRect(p.x-(MC_RAT_HP*gap)/2, y0+9*MC_U, MC_RAT_HP*gap-3, 4*MC_U);
       mg.fillStyle=k>0.35?'#ffd86b':'#ff6a5a'; mg.fillRect(p.x-(MC_RAT_HP*gap)/2, y0+9*MC_U, (MC_RAT_HP*gap-3)*Math.max(0,k), 4*MC_U);
-      mg.fillStyle='#ffe7b0'; mg.font='bold '+Math.round(15*MC_U)+'px Jersey 10'; mg.textAlign='center';
+      mg.fillStyle='#ffe7b0'; mg.font='bold '+Math.round(15*MC_U)+'px "Nunito"'; mg.textAlign='center';
       mg.fillText(T(IS_TOUCH?'TAP TAP TAP!':'CLICK CLICK!'), p.x, y0-8*MC_U); }
   }
 }
@@ -18330,7 +18331,7 @@ function mcDraw(mg){
   mcDrawCart(mg);
   mcDrawChasers(mg,true);    // …one still coming up from behind is in front of it
   for(const p of s.parts){ mg.globalAlpha=Math.max(0,p.life); mg.fillStyle=p.c; mg.fillRect(p.x-2,p.y-2,4,4);} mg.globalAlpha=1;
-  for(const f of s.floats){ mg.globalAlpha=Math.max(0,f.life); mg.font='bold 20px Jersey 10'; mg.textAlign='center';
+  for(const f of s.floats){ mg.globalAlpha=Math.max(0,f.life); mg.font='bold 20px "Jersey 10"'; mg.textAlign='center';
     mg.fillStyle='rgba(0,0,0,.6)'; mg.fillText(T(f.txt),f.x+1,f.y+1); mg.fillStyle=f.col; mg.fillText(T(f.txt),f.x,f.y);} mg.globalAlpha=1;
   const vg=mg.createRadialGradient(MC_W/2,MC_H/2,MC_H*0.42,MC_W/2,MC_H/2,MC_H*0.9);
   vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.6)'); mg.fillStyle=vg; mg.fillRect(0,0,MC_W,MC_H);
@@ -18386,7 +18387,7 @@ function mcDrawObs(mg,o,zz){
       if(mcImgOk(rim)){ const rh=MC_XSPR*0.48*sc*MC_CART_K, rw=rim.naturalWidth/rim.naturalHeight*rh, bob=Math.sin(MC.st.t*0.16+o.ph)*2*sc;
         mg.save(); mg.translate(cx, cy-rh*0.12+bob);   // seat is on the tub floor: the rat stands up to show over the back wall if(wx<0) mg.scale(-1,1);     // the art faces left
         mg.drawImage(rim,-rw/2,-rh,rw,rh); mg.restore(); } }, ga);
-    if(r && zz<2.4 && zz>0.4){ mg.globalAlpha=ga; mg.fillStyle='#ff9a9a'; mg.font='bold '+Math.round(11*sc+4)+'px Jersey 10'; mg.textAlign='center'; mg.fillText('SWIPE!',p.x,r.seatY-MC_XSPR*0.36*sc*MC_CART_K); } }
+    if(r && zz<2.4 && zz>0.4){ mg.globalAlpha=ga; mg.fillStyle='#ff9a9a'; mg.font='bold '+Math.round(11*sc+4)+'px "Nunito"'; mg.textAlign='center'; mg.fillText('SWIPE!',p.x,r.seatY-MC_XSPR*0.36*sc*MC_CART_K); } }
   else { // barricade / tnt / hole / broken-rail billboards
     const im=MC.img[o.k]; const bw=(o.k==='tnt'?MC_H*0.66:o.k==='hole'?MC_H*0.62:o.k==='brail'?MC_H*0.82:MC_H*0.55)*sc;
     if(mcImgOk(im)){ const h=bw*im.naturalHeight/im.naturalWidth;
@@ -18542,7 +18543,7 @@ function mcGoalFlag(mg,x,y){
   mg.drawImage(im,x-w*0.2,y-h,w,h); }       // the pole stands about a fifth of the way across the art
 function mcDrawHUD(mg){
   const s=MC.st;
-  mg.font='bold 18px Jersey 10'; mg.fillStyle='#ffe7b0'; mg.textAlign='right'; mg.fillText(''+s.coins,MC_W-16,34);
+  mg.font='bold 18px "Nunito"'; mg.fillStyle='#ffe7b0'; mg.textAlign='right'; mg.fillText(''+s.coins,MC_W-16,34);
   const u=MC_U, bw=MC_W*0.5,bx=(MC_W-bw)/2,by=74*u,pct=Math.min(1,s.scroll/MC_TOTAL);   // room above the bar for the cart riding it
   mg.fillStyle='rgba(0,0,0,.5)'; mg.beginPath(); mg.roundRect(bx-3,by-3,bw+6,16,6); mg.fill();
   mg.fillStyle='#2a1e14'; mg.beginPath(); mg.roundRect(bx,by,bw,10,5); mg.fill();
@@ -18555,9 +18556,9 @@ function mcDrawHUD(mg){
   else if(s.mode==='won') mcPanel(mg,'YOU ESCAPED!','You burst out of the mines with the loot!\nCoins grabbed: '+s.coins+'\n\nThe tunnel opens into the Rat King’s lair…','Tap / Enter to continue');
 }
 function mcPanel(mg,t,b,f){ mg.save(); mg.fillStyle='rgba(6,6,12,.72)'; mg.fillRect(0,0,MC_W,MC_H); mg.textAlign='center';
-  mg.fillStyle='#ffe7b0'; mg.font='bold 34px Jersey 10'; mg.fillText(t,MC_W/2,MC_H/2-56);
-  mg.font='16px Jersey 10'; mg.fillStyle='#e8dfc8'; b.split('\n').forEach((l,i)=>mg.fillText(l,MC_W/2,MC_H/2-10+i*22));
-  mg.font='bold 18px Jersey 10'; mg.fillStyle='#8fe08a'; mg.fillText(f,MC_W/2,MC_H/2+94); mg.restore(); }
+  mg.fillStyle='#ffe7b0'; mg.font='bold 34px "Jersey 10"'; mg.fillText(t,MC_W/2,MC_H/2-56);
+  mg.font='16px "Nunito"'; mg.fillStyle='#e8dfc8'; b.split('\n').forEach((l,i)=>mg.fillText(l,MC_W/2,MC_H/2-10+i*22));
+  mg.font='bold 18px "Nunito"'; mg.fillStyle='#8fe08a'; mg.fillText(f,MC_W/2,MC_H/2+94); mg.restore(); }
 function mcFrame(ts){
   if(!MC.on) return;
   const el=document.getElementById('minecart');
@@ -18836,7 +18837,7 @@ const NET={
       if(sx<-90||sx>VW+90) continue;
       const sc = topdown ? hubScale(p.ry) : 1;
       drawCat(g,sx,p.ry,p.facing||1,p.phase||0,CATS.puiutu,{moving:p.moving,hat:p.hat,skin:p.skin,tphase:id.length*7,scale:sc});
-      g.font='bold 11px Jersey 10';g.textAlign='center';
+      g.font='bold 11px "Nunito"';g.textAlign='center';
       const nm=p.tname||'Pisic'; const tw=g.measureText(nm).width+12;
       g.fillStyle='rgba(20,14,8,.72)';g.beginPath();g.roundRect(sx-tw/2,p.ry-92*sc,tw,16,5);g.fill();
       g.fillStyle='#9fe6ff';g.fillText(nm,sx,p.ry-80*sc);
@@ -19366,7 +19367,7 @@ function drawCueMotes(g, gx, gy, R, rgb, near){
 }
 function drawPressE(g, cx, ly, label, rgb, below){
   const now=Date.now(), pr=0.6+0.4*Math.sin(now*0.005);
-  g.save(); g.textAlign='left'; g.textBaseline='middle'; g.font='bold 14px Jersey 10';
+  g.save(); g.textAlign='left'; g.textBaseline='middle'; g.font='bold 14px "Nunito"';
   const key=trainTouch()?'Tap':'E', name=T(label);
   const kw=Math.max(22, g.measureText(key).width+12), tw=g.measureText(name).width, w=kw+8+tw+20, x0=cx-w/2, y0=ly-19;
   g.globalAlpha=0.75+0.25*pr; g.fillStyle='rgba(20,14,8,.88)'; roundRectPath(x0,y0,w,26,9); g.fill();
