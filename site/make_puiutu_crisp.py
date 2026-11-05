@@ -58,4 +58,4 @@ def card_cutout(src, name, w=360):
 for _card in ['scottish', 'ragdoll']:
     _im = Image.open(os.path.join(R, f'skins/cards/skin_{_card}_big.webp')).convert('RGBA')
     _im = _im.crop(_im.getbbox())
-    _im.resize((360, round(_im.height * 360 / _im.width)), Image.NEAREST).save(os.path.join(R, 'site/art', f'skin_{_card}.webp'), 'WEBP', lossless=True)
+    _im.resize((360, round(_im.height * 360 / _im.width)), Image.LANCZOS).save(os.path.join(R, 'site/art', f'skin_{_card}.webp'), 'WEBP', quality=90)
