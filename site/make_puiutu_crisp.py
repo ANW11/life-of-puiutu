@@ -22,5 +22,22 @@ def crisp(src, name, light_cut=150):
     print(name, out.size)
 
 
-crisp('puiutu/sprite_puiutu.png', 'puiutu.webp')
 crisp('npcs/sprite_tomy.png', 'tomy.webp', light_cut=250)
+
+
+def hd_cutout(src, name, h=700):
+    """ChatGPT redraw at higher res: keep only the main shape, crop, save."""
+    from scipy import ndimage as nd
+    im = np.array(Image.open(os.path.join(R, src)).convert('RGBA'))
+    m = im[..., 3] > 40
+    lab, n = nd.label(nd.binary_dilation(m, iterations=2))
+    keep = lab == (np.argmax(nd.sum(m, lab, range(1, n + 1))) + 1)
+    im[..., 3] = np.where(keep & m, im[..., 3], 0)
+    out = Image.fromarray(im)
+    out = out.crop(out.getbbox())
+    out = out.resize((round(out.width * h / out.height), h), Image.LANCZOS)
+    out.save(os.path.join(R, 'site/art', name), 'WEBP', quality=92)
+    print(name, out.size)
+
+
+hd_cutout('site/art_src/puiutu_hd.png', 'puiutu.webp')

@@ -49,7 +49,7 @@ for src, name in [
 put('ui/menu_sunset.jpg', 'sunset.webp', 1920, q=82)
 
 # ChatGPT key art: hero.png (shadow kings poster), secret.png (the lab under the bank)
-for f in os.listdir(os.path.join(R, 'site', 'art_src')):
+for f in ['hero.png', 'secret.png']:
     put(os.path.join('site', 'art_src', f), os.path.splitext(f)[0] + '.webp', 2000, q=86)
 
 # animated sprite sheets
