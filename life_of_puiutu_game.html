@@ -17064,8 +17064,11 @@ function fishDraw(){
   // ── centered phase prompts / caught banner ──
   g.textAlign='center';
   if(FISH.phase==='bite'){
-    g.font='bold '+Math.round(H*0.05)+'px Trebuchet MS'; g.fillStyle='#ffe24a';
-    g.fillText('TAP!', W*0.46, FISH.waterTop-20);
+    const fs=Math.round(H*0.05), ty=FISH.waterTop-20;
+    g.font='bold '+fs+'px Trebuchet MS';
+    const tw=g.measureText('TAP!').width, px=fs*0.5, py=fs*0.28;
+    g.fillStyle='rgba(0,0,0,.62)'; roundRectPath(W/2-tw/2-px, ty-fs*0.85-py, tw+px*2, fs+py*2, 10); g.fill();
+    g.fillStyle='#ffe7b0'; g.fillText('TAP!', W/2, ty);
   }
   if(FISH.phase==='caught'){ const f=FISH.fish;
     const cardW=Math.min(W*0.56, H*0.64), cardH=cardW*0.57, cy0=H*0.40;
