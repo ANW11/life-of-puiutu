@@ -17074,7 +17074,7 @@ function fishDraw(){
   const fishPill=(txt,ty,fs)=>{
     g.font='bold '+fs+'px Trebuchet MS';
     const tw=g.measureText(txt).width, px=fs, py=fs*0.32, bh=fs+py*2;
-    g.fillStyle='rgba(10,18,28,.62)'; roundRectPath(W/2-tw/2-px, ty-fs*0.82-py, tw+px*2, bh, bh/2); g.fill();
+    g.fillStyle='rgba(10,18,28,.42)'; roundRectPath(W/2-tw/2-px, ty-fs*0.82-py, tw+px*2, bh, bh/2); g.fill();
     g.save(); g.shadowColor='#000'; g.shadowBlur=6; g.shadowOffsetY=2;
     g.fillStyle='#ffe7b0'; g.fillText(txt, W/2, ty); g.restore();
   };
@@ -17090,7 +17090,7 @@ function fishDraw(){
     g.font=Math.round(cardH*0.09)+'px Trebuchet MS'; g.fillText(FISH.len+' cm   +'+moneyText(f.coins)+'  +'+f.xp+' XP',W/2,pcy+cardH*0.30);
   }
   if(FISH.msg && FISH.phase==='ready' && now<FISH.msgUntil){
-    fishPill(FISH.msg, FISH.waterTop-10, 16);
+    fishPill(FISH.msg, FISH.waterTop-20, Math.round(H*0.04));
   }
 
   // ── reel track (right side) ──
