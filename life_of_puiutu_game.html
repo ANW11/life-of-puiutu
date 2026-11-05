@@ -911,6 +911,10 @@
   #fishHud{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:3;color:#ffe7b0;
     font-weight:bold;font-size:16px;text-shadow:0 2px 6px #000;background:rgba(10,18,28,.42);
     padding:5px 16px;border-radius:14px;backdrop-filter:blur(3px);pointer-events:none;white-space:nowrap;}
+  /* TAP! / It got away: same pill as #fishHud; top is the text baseline, set from fishDraw */
+  #fishCall{position:absolute;left:50%;transform:translate(-50%,-82%);z-index:3;color:#ffe7b0;
+    font-weight:bold;line-height:1.15;text-shadow:0 2px 6px #000;background:rgba(10,18,28,.42);
+    padding:.2em .8em;border-radius:999px;backdrop-filter:blur(3px);pointer-events:none;white-space:nowrap;}
   #fishHint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:3;color:#eaf6ff;
     font-size:14px;text-shadow:0 2px 5px #000;background:rgba(10,18,28,.42);padding:5px 16px;
     border-radius:14px;backdrop-filter:blur(3px);pointer-events:none;}
@@ -1899,6 +1903,7 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
     <div id="fishWrap">
       <div id="fishHud"> caught: <span id="fishCount">0</span><span style="opacity:.6;margin:0 8px;">·</span>biggest: <span id="fishBest">-</span></div>
       <canvas id="fishCanvas" width="360" height="540"></canvas>
+      <div id="fishCall" style="display:none"></div>
       <div id="fishHint"><b>↑ / ↓</b> move the bar to keep it on the fish · <b>Space</b> or tap when it bites</div>
       <!-- touch screens: hold to move the green bar -->
       <div id="fishPad"><div id="fishUpBtn">▲</div><div id="fishDownBtn">▼</div></div>
@@ -17070,14 +17075,9 @@ function fishDraw(){
     const cardW=Math.min(W*0.56, H*0.64), cardH=cardW*0.57, cy0=H*0.40;
     if(!drawFit(g,FSCENE.card,W/2,cy0,cardW,cardH)){
       g.save(); g.globalAlpha=0.9; g.fillStyle='rgba(10,18,28,.55)';
-  // same pill as #fishHud: dark see-through capsule, yellow bold text with a soft shadow
-  const fishPill=(txt,ty,fs)=>{
-    g.font='bold '+fs+'px Trebuchet MS';
-    const tw=g.measureText(txt).width, px=fs, py=fs*0.32, bh=fs+py*2;
-    g.fillStyle='rgba(10,18,28,.42)'; roundRectPath(W/2-tw/2-px, ty-fs*0.82-py, tw+px*2, bh, bh/2); g.fill();
-    g.save(); g.shadowColor='#000'; g.shadowBlur=6; g.shadowOffsetY=2;
-    g.fillStyle='#ffe7b0'; g.fillText(txt, W/2, ty); g.restore();
-  };
+  // TAP! / got away: an HTML pill (#fishCall) styled like #fishHud, so it gets the same blurred backdrop
+  let call=null;
+  const fishPill=(txt,ty,fs)=>{ call={txt,ty,fs}; };
       g.beginPath(); g.roundRect(W/2-cardW/2,cy0-cardH/2,cardW,cardH,16); g.fill(); g.restore();
     }
     // parchment centre sits a touch above the card centre (card has a bottom band)
@@ -17092,6 +17092,11 @@ function fishDraw(){
   if(FISH.msg && FISH.phase==='ready' && now<FISH.msgUntil){
     fishPill(FISH.msg, FISH.waterTop-20, Math.round(H*0.04));
   }
+  { const el=document.getElementById('fishCall');
+    if(!call){ if(el.style.display!=='none') el.style.display='none'; }
+    else { const k=FISH.cv.clientHeight/H;
+      if(el.textContent!==call.txt) el.textContent=call.txt;
+      el.style.fontSize=Math.round(call.fs*k)+'px'; el.style.top=Math.round(call.ty*k)+'px'; el.style.display='block'; } }
 
   // ── reel track (right side) ──
   if(FISH.phase==='reel' || FISH.phase==='caught'){
