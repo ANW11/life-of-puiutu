@@ -1185,6 +1185,19 @@
     text-shadow:0 1px 2px #000;font-family:'Jersey 10','Trebuchet MS',sans-serif;}
   .spellSlot.potSlot svg,.spellSlot.potSlot .forgeArt{width:38px;height:38px;object-fit:contain;}
   #spellBar .barGap{width:6px;}
+  /* ── controller: the four spells sit in a cross that matches the D-pad, buddy + potions beside it ── */
+  body.pad #spellBar.show{display:grid;grid-template-columns:auto 6px auto auto auto;grid-template-rows:auto auto auto;
+    gap:4px;align-items:center;justify-items:center;}
+  body.pad #spellBar .barGap{display:none;}
+  body.pad #spellBar [data-slot="0"]{grid-area:1/4;} body.pad #spellBar [data-slot="1"]{grid-area:2/5;}
+  body.pad #spellBar [data-slot="2"]{grid-area:3/4;} body.pad #spellBar [data-slot="3"]{grid-area:2/3;}
+  body.pad #spellBar #buddySlot{grid-area:1/1;} body.pad #spellBar [data-pot="heal"]{grid-area:2/1;} body.pad #spellBar [data-pot="mana"]{grid-area:3/1;}
+  body.pad #spellBar::after{content:'✚';grid-area:2/4;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:20px;color:#ffe7b0;background:rgba(20,12,4,.6);}
+  body.pad #dpad, body.pad #joyZone, body.pad #jumpCtrl, body.pad #actCtrl{display:none !important;}
+  #padCursor{position:fixed;z-index:99999;pointer-events:none;display:none;font-size:26px;line-height:1;
+    transform:translate(-35%,-35%);filter:drop-shadow(0 2px 2px rgba(0,0,0,.65));}
+  .padFocus{outline:3px solid #ffe7b0 !important;outline-offset:2px;}
   /* the companion's special: fills from the bottom as you fight beside them */
   .spellSlot.buddySlot{border-color:#a8577a;background:rgba(58,22,40,.82);overflow:hidden;}
   .spellSlot.buddySlot .bFill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(#ffb0cf,#c2507f);opacity:.55;transition:height .2s;}
@@ -17145,6 +17158,9 @@ function fishDraw(){
       g.fillStyle=dipping?'#c83a3a':'#e8483a'; g.fillText('',FISH.bobX,bobY+9); }
   }
 
+  // TAP! / got away: an HTML pill (#fishCall) styled like #fishHud, so it gets the same blurred backdrop
+  let call=null;
+  const fishPill=(txt,ty,fs)=>{ call={txt,ty,fs}; };
   // ── centered phase prompts / caught banner ──
   g.textAlign='center';
   if(FISH.phase==='bite'){
@@ -17154,9 +17170,6 @@ function fishDraw(){
     const cardW=Math.min(W*0.56, H*0.64), cardH=cardW*0.57, cy0=H*0.40;
     if(!drawFit(g,FSCENE.card,W/2,cy0,cardW,cardH)){
       g.save(); g.globalAlpha=0.9; g.fillStyle='rgba(10,18,28,.55)';
-  // TAP! / got away: an HTML pill (#fishCall) styled like #fishHud, so it gets the same blurred backdrop
-  let call=null;
-  const fishPill=(txt,ty,fs)=>{ call={txt,ty,fs}; };
       g.beginPath(); g.roundRect(W/2-cardW/2,cy0-cardH/2,cardW,cardH,16); g.fill(); g.restore();
     }
     // parchment centre sits a touch above the card centre (card has a bottom band)
@@ -18826,6 +18839,173 @@ document.querySelectorAll('#spellBar .spellSlot[data-slot]').forEach(el=>{
   el.addEventListener('mousedown',fire);
 });
 
+// ── game controller (Xbox / PlayStation / anything the browser reads as a standard pad) ──
+// In play the pad presses the same keys the keyboard does, so every handler above works as is:
+// A jumps, R1 hits, the left face button talks, the D-pad casts the four spells (the bar turns
+// into a cross to match). On menus, shops and the map a paw cursor takes over: the left stick
+// moves it, the D-pad jumps it between buttons, A clicks, B goes back, the right stick scrolls.
+(function(){
+  if(!navigator.getGamepads) return;
+  const DEAD=0.22, FULL=0.85;
+  const BTN={ A:0, B:1, X:2, Y:3, L1:4, R1:5, L2:6, R2:7, SELECT:8, START:9, UP:12, DOWN:13, LEFT:14, RIGHT:15 };
+  const SPELL_DIR={ [BTN.UP]:'Digit1', [BTN.RIGHT]:'Digit2', [BTN.DOWN]:'Digit3', [BTN.LEFT]:'Digit4' };
+  const prev=[], held={};                       // last frame's buttons; synthetic keys we hold down
+  let padOn=false, ps=false, stickHeld=false, lastMode='', cur=null, cx=innerWidth/2, cy=innerHeight/2, last=0;
+
+  const key=(type,code)=>document.dispatchEvent(new KeyboardEvent(type,{code,key:code.replace(/^(Key|Digit)/,'').toLowerCase(),bubbles:true,cancelable:true}));
+  const down=code=>{ if(held[code]) return; held[code]=true; key('keydown',code); };
+  const up=code=>{ if(!held[code]) return; delete held[code]; key('keyup',code); };
+  const tap=code=>{ key('keydown',code); key('keyup',code); };
+  const releaseAll=()=>{ Object.keys(held).forEach(up);
+    if(stickHeld){ stickHeld=false; input.joy=false; input.jx=input.jy=0; input.left=input.right=input.up=input.down=false; } };
+
+  const overlayOpen=()=>!!document.querySelector('.modal.active') || mapOpen;
+  function mode(){
+    if(typeof MC!=='undefined' && MC.on) return 'cart';
+    if(typeof FISH!=='undefined' && FISH.active) return 'fish';
+    if(!inGame || overlayOpen() || choiceActive || battleActive) return 'ui';
+    return 'play';
+  }
+
+  // ── controller vs keyboard: the spell bar becomes a cross and the prompts name pad buttons ──
+  const FACE=()=>ps?{A:'✕',B:'○',X:'□',Y:'△'}:{A:'A',B:'B',X:'X',Y:'Y'};
+  const SLOT_LBL={ slot0:'▲', slot1:'▶', slot2:'▼', slot3:'◀', heal:'L2', mana:'R2', buddy:'L1' };
+  function relabel(){
+    document.querySelectorAll('#spellBar .spellSlot').forEach(el=>{
+      const k=el.querySelector('.sKey'); if(!k) return;
+      if(k.dataset.kb===undefined) k.dataset.kb=k.textContent;
+      const id=el.dataset.slot!==undefined?'slot'+el.dataset.slot:el.dataset.pot||(el.id==='buddySlot'?'buddy':'');
+      k.textContent=padOn&&SLOT_LBL[id]?SLOT_LBL[id]:k.dataset.kb;
+    });
+    const ib=document.getElementById('interactBtn'); if(ib) ib.textContent=padOn?FACE().X:'E';
+    const fb=document.querySelector('#fightBtn small'); if(fb) fb.textContent=padOn?'(R1)':'(F)';
+    fixPrompt();
+  }
+  function fixPrompt(){
+    const p=document.getElementById('interactPrompt'); if(!p) return;
+    const t=p.textContent, n=padOn?t.replace(/\b(Press|Apasă) E\b/,'$1 '+FACE().X):t.replace(/\b(Press|Apasă) [□X]/,'$1 E');
+    if(n!==t) p.textContent=n;
+  }
+  { const p=document.getElementById('interactPrompt'); if(p) new MutationObserver(fixPrompt).observe(p,{childList:true,characterData:true,subtree:true}); }
+  function setPad(on){
+    if(on===padOn) return; padOn=on;
+    document.body.classList.toggle('pad',on);
+    if(!on){ releaseAll(); showCursor(false); }
+    relabel();
+  }
+  window.addEventListener('keydown',e=>{ if(e.isTrusted) setPad(false); },true);
+  window.addEventListener('mousemove',e=>{ if(e.isTrusted && (Math.abs(e.movementX)+Math.abs(e.movementY))>3) setPad(false); },true);
+  window.addEventListener('touchstart',e=>{ if(e.isTrusted) setPad(false); },{capture:true,passive:true});
+  window.addEventListener('gamepadconnected',e=>{ toast(LT('Controller connected','Controller conectat')); });
+
+  // ── the paw cursor for menus ──
+  function showCursor(on){
+    if(on && !cur){ cur=document.createElement('div'); cur.id='padCursor'; cur.textContent='🐾'; document.body.appendChild(cur); }
+    if(cur) cur.style.display=on?'block':'none';
+    if(!on) document.querySelectorAll('.padFocus').forEach(el=>el.classList.remove('padFocus'));
+  }
+  function placeCursor(){ cx=Math.max(4,Math.min(innerWidth-4,cx)); cy=Math.max(4,Math.min(innerHeight-4,cy));
+    if(cur){ cur.style.left=cx+'px'; cur.style.top=cy+'px'; } }
+  const hitAt=(x,y)=>{ if(cur) cur.style.display='none'; const el=document.elementFromPoint(x,y); if(cur) cur.style.display='block'; return el; };
+  function click(){
+    const el=hitAt(cx,cy); if(!el) return;
+    const o={bubbles:true,cancelable:true,clientX:cx,clientY:cy,button:0,pointerId:99,pointerType:'mouse',isPrimary:true};
+    el.dispatchEvent(new PointerEvent('pointerdown',o)); el.dispatchEvent(new MouseEvent('mousedown',o));
+    el.dispatchEvent(new PointerEvent('pointerup',o));   el.dispatchEvent(new MouseEvent('mouseup',o));
+    el.dispatchEvent(new MouseEvent('click',o));
+    if(/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) el.focus();   // the Steam Deck shows its keyboard for a focused field
+  }
+  // everything clickable that is actually on top right now (outermost element with a pointer cursor)
+  function targets(){
+    const out=[];
+    for(const el of document.body.querySelectorAll('button,a,[onclick],div,span,img,canvas,li,label,select,input,textarea')){
+      if(el.id==='padCursor' || !el.offsetParent && getComputedStyle(el).position!=='fixed') continue;
+      const r=el.getBoundingClientRect(); if(r.width<8||r.height<8||r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth) continue;
+      if(getComputedStyle(el).cursor!=='pointer' && !/^(BUTTON|INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) continue;
+      const p=el.parentElement; if(p && getComputedStyle(p).cursor==='pointer') continue;
+      const mx=r.left+r.width/2, my=r.top+r.height/2, h=hitAt(mx,my);
+      if(h && (h===el || el.contains(h))) out.push({el,x:mx,y:my});
+    }
+    return out;
+  }
+  function snap(dx,dy){
+    let best=null, bs=1e9;
+    for(const t of targets()){
+      const vx=t.x-cx, vy=t.y-cy, along=vx*dx+vy*dy; if(along<6) continue;
+      const side=Math.abs(vx*dy-vy*dx), s=along+side*2.2;
+      if(s<bs){ bs=s; best=t; }
+    }
+    if(!best) return;
+    document.querySelectorAll('.padFocus').forEach(el=>el.classList.remove('padFocus'));
+    best.el.classList.add('padFocus'); best.el.scrollIntoView({block:'nearest',inline:'nearest'});
+    const r=best.el.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2; placeCursor();
+  }
+  function scrollUnder(amount){
+    let el=hitAt(cx,cy);
+    while(el && el!==document.body){ const s=getComputedStyle(el).overflowY;
+      if((s==='auto'||s==='scroll') && el.scrollHeight>el.clientHeight){ el.scrollTop+=amount; return; } el=el.parentElement; }
+  }
+
+  const axis=v=>{ const a=Math.abs(v); return a<DEAD?0:Math.sign(v)*Math.min(1,(a-DEAD)/(FULL-DEAD)); };
+  function poll(t){
+    requestAnimationFrame(poll);
+    const dt=Math.min(0.05,(t-last)/1000||0); last=t;
+    const gp=[...navigator.getGamepads()].find(g=>g&&g.connected); if(!gp) return;
+    const b=gp.buttons.map(x=>x.pressed||x.value>0.5), lx=axis(gp.axes[0]||0), ly=axis(gp.axes[1]||0), ry=axis(gp.axes[3]||0);
+    const pressed=i=>b[i]&&!prev[i], released=i=>!b[i]&&prev[i];
+    if(!padOn && (b.some(Boolean)||lx||ly)){ ps=/054c|dualsense|dualshock|playstation/i.test(gp.id) || /wireless controller/i.test(gp.id)&&!/xbox|xinput/i.test(gp.id); setPad(true); }
+    if(!padOn){ b.forEach((v,i)=>prev[i]=v); return; }
+    const m=mode(); if(m!==lastMode){ releaseAll(); lastMode=m; }
+    showCursor(m==='ui'); if(m==='ui') placeCursor();
+
+    if(m==='ui'){
+      const sp=900*dt; if(lx||ly){ cx+=lx*Math.abs(lx)*sp; cy+=ly*Math.abs(ly)*sp; placeCursor();
+        document.querySelectorAll('.padFocus').forEach(el=>el.classList.remove('padFocus')); }
+      if(ry) scrollUnder(ry*900*dt);
+      if(pressed(BTN.UP)) snap(0,-1); if(pressed(BTN.DOWN)) snap(0,1);
+      if(pressed(BTN.LEFT)) snap(-1,0); if(pressed(BTN.RIGHT)) snap(1,0);
+      if(pressed(BTN.A)) click();
+      if(pressed(BTN.B)||pressed(BTN.START)) tap('Escape');
+    }
+    else if(m==='cart'){
+      const L=lx<-0.5||b[BTN.LEFT], R=lx>0.5||b[BTN.RIGHT], D=ly>0.5||b[BTN.DOWN];
+      L?down('ArrowLeft'):up('ArrowLeft'); R?down('ArrowRight'):up('ArrowRight'); D?down('ArrowDown'):up('ArrowDown');
+      if(pressed(BTN.A)) tap(MC.st&&(MC.st.mode==='crash'||MC.st.mode==='won')?'Enter':'KeyF');
+      if(pressed(BTN.R1)||pressed(BTN.X)) tap('KeyF');
+      if(pressed(BTN.B)||pressed(BTN.START)) tap('Escape');
+    }
+    else if(m==='fish'){
+      const U=ly<-0.5||b[BTN.UP], D=ly>0.5||b[BTN.DOWN];
+      U?down('ArrowUp'):up('ArrowUp'); D?down('ArrowDown'):up('ArrowDown');
+      if(pressed(BTN.A)) tap('Space');
+      if(pressed(BTN.B)||pressed(BTN.START)) tap('Escape');
+    }
+    else {   // play
+      if(!b[BTN.A]) up('Space');
+      if(dialogueActive){ if(pressed(BTN.A)||pressed(BTN.X)) tap('Space'); }
+      else {
+        // left stick walks: analog in the top-down areas, plain left/right on the side-scrolling ones
+        if(lx||ly){ stickHeld=true;
+          if(topdownMode()){ const d=Math.hypot(lx,ly), k=d>1?1/d:1; input.joy=true; input.jx=lx*k; input.jy=ly*k;
+            input.up=ly<-0.55; input.down=ly>0.55; }
+          input.left=lx<-0.4; input.right=lx>0.4; }
+        else if(stickHeld){ stickHeld=false; input.joy=false; input.jx=input.jy=0; input.left=input.right=input.up=input.down=false; }
+        b[BTN.A]?down('Space'):up('Space');
+        if(pressed(BTN.R1)) tap('KeyF');
+        if(pressed(BTN.X)) tap('KeyE');
+        if(pressed(BTN.Y)) tap('KeyR');
+        if(pressed(BTN.L1)) tap('KeyC');
+        if(pressed(BTN.L2)) tap('KeyQ');
+        if(pressed(BTN.R2)) tap('KeyZ');
+        for(const i in SPELL_DIR) if(pressed(+i)) tap(SPELL_DIR[i]);
+      }
+      if(pressed(BTN.START)) tap('Escape');
+    }
+    b.forEach((v,i)=>prev[i]=v);
+  }
+  requestAnimationFrame(poll);
+})();
+
 // dialogue tap
 document.getElementById('dialogue').addEventListener('click',advanceDialogue);
 
@@ -18876,7 +19056,7 @@ const NET={
     let url;
     try{ const proto=location.protocol==='https:'?'wss':'ws', srv=new URLSearchParams(location.search).get('server');   // ?server=host: game files from here, players via that host
       url=srv?'wss://'+srv.replace(/^\w+:\/\//,'').replace(/\/.*$/,'')+'/ws'
-        :location.hostname.endsWith('.pages.dev')?'wss://'+NET_RELAY+'/ws'   // the web version: the relay on Cloudflare (mp_worker/)
+        :/(\.pages\.dev|\.workers\.dev|(^|\.)puiutu\.dev)$/.test(location.hostname)?'wss://'+NET_RELAY+'/ws'   // the web version (pages.dev, puiutu.dev/play): the relay on Cloudflare (mp_worker/)
         :proto+'://'+location.host+'/ws'; }
     catch(e){ return; }
     try{ this.ws=new WebSocket(url); }catch(e){ return; }

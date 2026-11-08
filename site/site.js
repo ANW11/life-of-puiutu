@@ -38,6 +38,34 @@
   };
   if (!reduce) { addEventListener('scroll', onScroll, { passive: true }); onScroll(); }
 
+  // contact form: Web3Forms forwards the message to the owner's inbox; the address itself never
+  // appears on the site (the access key only identifies the inbox on their side).
+  const WEB3FORMS_KEY = 'd7615c00-596b-466f-b0e3-bb0d83c5b178';
+  const form = document.getElementById('contactForm'), status = document.getElementById('formStatus');
+  const say = (t, cls) => { status.textContent = t; status.className = 'form-status ' + (cls || ''); };
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(form));
+    if (d.botcheck) return;                                   // the hidden box only bots tick
+    if (!d.name.trim() || !d.message.trim()) return say('Please fill in your name and a message.', 'err');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return say('That email does not look right.', 'err');
+    if (!WEB3FORMS_KEY) return say('The contact form is not ready yet. Try our socials below.', 'err');
+    const btn = form.querySelector('button'); btn.disabled = true; say('Sending...');
+    try {
+      const r = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ access_key: WEB3FORMS_KEY, subject: 'Life of Puiutu site: message from ' + d.name.trim(),
+          from_name: 'Life of Puiutu website', name: d.name.trim(), email: d.email.trim(), replyto: d.email.trim(),
+          message: d.message.trim(), botcheck: false })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.success) throw new Error(j.message || r.status);
+      form.reset(); say('Sent! Puiutu will get back to you.', 'ok');
+    } catch (err) {
+      say('Could not send right now. Please try again, or message us on Instagram.', 'err');
+    } finally { btn.disabled = false; }
+  });
+
   // floating fireflies / dust in square pixels
   const c = document.getElementById('motes'), g = c.getContext('2d');
   let W, H, motes = [];

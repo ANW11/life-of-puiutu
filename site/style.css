@@ -255,7 +255,31 @@ blockquote{margin-top:18px;font-family:var(--px);font-size:1.4rem;color:var(--cr
 .wishlist .lead{color:var(--cream);background:rgba(0,0,0,.62);border-radius:10px;padding:8px 18px;display:inline-block}
 .loaf{position:absolute;width:120px;left:50%;margin-left:-60px;bottom:-150px;filter:drop-shadow(0 10px 8px rgba(0,0,0,.5))}
 
+/* ---------- contact ---------- */
+.contact{padding:90px 0 80px;background:linear-gradient(rgba(18,12,26,.85),#0c0812)}
+.contact-form{margin:34px auto 0;max-width:620px;text-align:left;display:flex;flex-direction:column;gap:16px}
+.contact-form .row{display:flex;gap:16px;flex-wrap:wrap}
+.contact-form .row label{flex:1 1 220px}
+.contact-form label{display:flex;flex-direction:column;gap:6px}
+.contact-form label span{font-family:var(--px);font-size:1.15rem;color:var(--cream)}
+.contact-form input,.contact-form textarea{font:inherit;font-size:1.1rem;color:var(--text);background:rgba(0,0,0,.45);
+  border:2px solid rgba(255,231,176,.3);border-radius:10px;padding:10px 14px;width:100%;resize:vertical}
+.contact-form input:focus,.contact-form textarea:focus{outline:none;border-color:var(--gold);background:rgba(0,0,0,.6)}
+.contact-form .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.send-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.send-row .btn{border:0;cursor:pointer}
+.send-row .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+.form-status{font-family:var(--px);font-size:1.1rem;color:var(--muted);margin:0}
+.form-status.ok{color:#9be28a}.form-status.err{color:#ff8a8a}
+.socials{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:46px}
+.socials a{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--cream);font-family:var(--px);font-size:1.2rem;
+  padding:10px 18px;border-radius:12px;background:rgba(0,0,0,.45);border:2px solid rgba(255,231,176,.3);transition:transform .15s,border-color .15s,color .15s}
+.socials a:hover{transform:translateY(-2px);border-color:var(--gold);color:var(--gold)}
+.socials svg{width:24px;height:24px}
+.handle{font-family:var(--special);font-size:1.25rem;color:var(--muted);margin-top:14px;letter-spacing:.05em}
 footer{text-align:center;padding:30px 20px 40px;color:var(--muted);font-size:.9rem;background:#0c0812}
+footer .foot-links{margin-top:6px}
+footer a{color:var(--cream);text-decoration:none}footer a:hover{color:var(--gold)}
 footer .legal{max-width:640px;margin:10px auto 0;font-size:.78rem;line-height:1.45;opacity:.8}
 
 /* ---------- reveal ---------- */

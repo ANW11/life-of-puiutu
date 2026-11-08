@@ -192,6 +192,96 @@
         "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/2bd11696-106c-4191-83a6-395e37403f7a/scratchpad/www && exec python3 -m http.server 8812 --bind 127.0.0.1"
       ],
       "port": 8812
+    },
+    {
+      "name": "puiutu-epilogue",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/d8155ffb-13be-43a2-ab2d-ce150ef6d5dc/scratchpad/www && exec python3 -m http.server 8814"
+      ],
+      "port": 8814
+    },
+    {
+      "name": "puiutu-pipes",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/65ac8ceb-3873-4eee-b129-f81206ab2702/scratchpad/www && exec python3 -m http.server 8815 --bind 127.0.0.1"
+      ],
+      "port": 8815
+    },
+    {
+      "name": "puiutu-archive",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/aeb0be16-9bcd-4b1a-bc63-ef7d443ebac0/scratchpad/www && exec python3 -m http.server 8816 --bind 127.0.0.1"
+      ],
+      "port": 8816
+    },
+    {
+      "name": "rts-repo",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/a9712794-8225-4d29-8094-aa78bbde0b1c/scratchpad/www && exec python3 -m http.server 8820 --bind 127.0.0.1"
+      ],
+      "port": 8820
+    },
+    {
+      "name": "puiutu-pad",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/b9d81e58-f235-4151-9c09-40ca388a53be/scratchpad/www && exec python3 -m http.server 8830"
+      ],
+      "port": 8830
+    },
+    {
+      "name": "puiutu-site",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/3325fbc3-7f36-4d1b-a3d8-b45cd741a3c7/scratchpad/www && exec python3 -m http.server 8842 --bind 127.0.0.1"
+      ],
+      "port": 8842
+    },
+    {
+      "name": "puiutu-skins",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/3325fbc3-7f36-4d1b-a3d8-b45cd741a3c7/scratchpad/game && exec python3 -m http.server 8843 --bind 127.0.0.1"
+      ],
+      "port": 8843
+    },
+    {
+      "name": "puiutu-full",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/64c6d56a-7070-4269-8a5d-b2ec37267f40/scratchpad/stage && exec python3 -m http.server 8850 --bind 127.0.0.1"
+      ],
+      "port": 8850
+    },
+    {
+      "name": "puiutu-demo",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/3dc470f2-22a0-4349-831f-043725070348/scratchpad/demo && exec python3 -m http.server 8860 --bind 127.0.0.1"
+      ],
+      "port": 8860
+    },
+    {
+      "name": "puiutu-fullbuild",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-andreicraciun-Desktop-claude/3dc470f2-22a0-4349-831f-043725070348/scratchpad/full && exec python3 -m http.server 8862 --bind 127.0.0.1"
+      ],
+      "port": 8862
     }
   ]
 }
