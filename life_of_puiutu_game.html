@@ -1499,7 +1499,7 @@
   #rotateHint .rh-text{font-size:22px;max-width:320px;line-height:1.2;}
   #rotateHint .rh-tip{font-size:18px;max-width:320px;color:#c9bbd0;line-height:1.2;}
   @keyframes rhTurn{0%,25%{transform:rotate(0)}55%,100%{transform:rotate(90deg)}}
-  @media (orientation:portrait) and (pointer:coarse){ body.playing #rotateHint{display:flex;} }
+  @media (orientation:portrait) and (pointer:coarse){ body.webphone #rotateHint{display:flex;} }
     /* fonts: Jersey 10 = main (UI, HUD, dialogue, subtitles), Silkscreen = titles, VT323 = special (speech bubbles, lore, terminals) */
   .fs-bubble,#loreBody,#loreBody p,#circuitDev{font-family:'VT323','Jersey 10',monospace;}
   .title,.modal-head h2,.wd-head h3,#phoneTitle,#wmCardName,h1,h2{font-family:'Silkscreen UI','Jersey 10',sans-serif;font-weight:400;}
@@ -6138,7 +6138,7 @@ function resize(){
   const k=Math.max(1, REF_H/Math.max(1,r.height));       // logical px per CSS px (1 on a desktop)
   VW=r.width*k; VH=r.height*k;
   VIEW.base=dpr/k;                                        // logical px -> canvas px
-  VIEW.zTarget=Math.min(1.5, Math.max(1, 0.8*k));         // phone sideways (~400px tall) -> ~1.45
+  VIEW.zTarget=1;                                         // the whole frame fits the screen on phones too (the old ~1.45 zoom-in on the cat was too close)
 }
 window.addEventListener('resize',resize);
 // The APK can turn the phone for a minigame that is taller than it is wide (Fruit Merge).
@@ -18824,15 +18824,21 @@ document.getElementById('dialogue').addEventListener('click',advanceDialogue);
 // menu buttons
 // On a phone in the browser, Play also goes full screen and turns the screen sideways (Android
 // Chrome can; iPhone Safari cannot, so it gets the "turn your phone" card and the home-screen tip).
-function playFullscreen(){
-  if(nativeOrientation()) return;                                       // the APK handles its own screen
-  if(!matchMedia('(pointer:coarse)').matches) return;                   // a desktop keeps its window
-  document.body.classList.add('playing');
+// The rotate card covers the menu too: on a phone browser the whole game is played sideways.
+function setupRotateHint(){
+  if(nativeOrientation()) return;                                       // the APK turns its own screen (and Fruit Merge upright)
+  if(!matchMedia('(pointer:coarse)').matches) return;
+  document.body.classList.add('webphone');
   const ios=/iPhone|iPad|iPod/.test(navigator.userAgent), standalone=navigator.standalone||matchMedia('(display-mode:fullscreen),(display-mode:standalone)').matches;
   const hint=document.getElementById('rotateHint');
   if(hint){ hint.querySelector('.rh-title').textContent=LT('Turn your phone','Întoarce telefonul');
     hint.querySelector('.rh-text').textContent=LT('Life of Puiutu is played sideways.','Life of Puiutu se joacă cu telefonul culcat.');
     hint.querySelector('.rh-tip').textContent=(ios&&!standalone)?LT('For full screen: tap Share, then Add to Home Screen, and play from the icon.','Pentru ecran complet: apasă Share, apoi Add to Home Screen, și joacă din iconiță.'):''; }
+}
+setupRotateHint();
+function playFullscreen(){
+  if(nativeOrientation()) return;                                       // the APK handles its own screen
+  if(!matchMedia('(pointer:coarse)').matches) return;                   // a desktop keeps its window
   const de=document.documentElement, fs=de.requestFullscreen||de.webkitRequestFullscreen;
   if(!fs || document.fullscreenElement || document.webkitFullscreenElement) return;
   try{ const r=fs.call(de,{navigationUI:'hide'});

@@ -24,7 +24,10 @@
   const sArt = document.querySelector('.secret-art');
   const onScroll = () => {
     const y = scrollY;
-    if (y < innerHeight * 1.2) hero.style.transform = `translateY(${y * .3}px) scale(${1 + y / 6000})`;
+    // on a phone held upright the art sits at the bottom of the hero: moving it reads as a wobble
+    const still = matchMedia('(orientation:portrait) and (max-width:860px)').matches;
+    if (still) hero.style.transform = '';
+    else if (y < innerHeight * 1.2) hero.style.transform = `translateY(${y * .3}px) scale(${1 + y / 6000})`;
     strips.forEach(s => {
       const r = s.parentElement.getBoundingClientRect();
       const sp = +s.dataset.speed, base = sp < 0 ? 0 : -(s.scrollWidth - innerWidth);
