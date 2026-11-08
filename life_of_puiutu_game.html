@@ -828,6 +828,7 @@
   #gachaCard.skin-reveal.item-art #gcName{background:rgba(22,10,38,.88);border:2px solid var(--ray,#ffd24a);border-radius:12px;
     padding:4px 16px;font-size:clamp(14px,3.6vh,24px);box-shadow:0 4px 12px rgba(0,0,0,.5);}
   #gachaCard.skin-reveal.item-art #gcRarity{text-shadow:0 2px 0 #000,0 0 6px #000;}
+  #gachaCard.skin-reveal.coin-art #gcName{display:flex;align-items:center;gap:3px;line-height:1;font-size:clamp(18px,5vh,28px);}   /* the number sits level with its coin */
   /* coins: exactly as many coin sprites as dropped, in rows — the amount (in coin icons) underneath */
   #gachaCard.skin-reveal.coin-art #gcIcon{position:absolute;left:4%;right:4%;top:2%;height:72%;display:flex;flex-wrap:wrap;align-content:center;
     align-items:center;justify-content:center;gap:4px;font-size:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));}
@@ -921,6 +922,10 @@
     object-fit:fill;border-radius:6%;background:radial-gradient(circle at 50% 42%,var(--w1),var(--w2) 75%);}
   #gachaCard.framed #gcName{position:absolute;left:var(--pl);top:var(--pt);width:var(--pw);height:var(--ph);z-index:4;
     display:flex;align-items:center;justify-content:center;color:#ffe7b0;text-shadow:0 1px 0 #000;white-space:nowrap;overflow:hidden;}
+  #gachaCard.skin-reveal.framed #gcName{box-sizing:border-box;padding:0 11%;font-size:clamp(11px,calc(var(--ch)*.05),26px);}   /* clear of the plate's end knobs */
+  /* phone landscape (gachaPlace adds .side): the card fills the height, the buttons stay at the side */
+  #gacha.side #gachaMsg,#gacha.side #gachaPity{white-space:nowrap;}
+  #gacha.side #gachaCard.skin-reveal.framed{--ch:min(var(--gch,300px),calc(94vw*881/523));}
   #gachaCard.framed #gcRarity{position:absolute;top:var(--wt);left:50%;transform:translate(-50%,-30%);z-index:4;white-space:nowrap;
     background:rgba(0,0,0,.55);padding:2px 8px;border-radius:8px;}
   @keyframes gFlash{0%{opacity:0}9%{opacity:1}22%{opacity:.9}100%{opacity:0}}
@@ -16170,10 +16175,19 @@ function gachaPlace(){
   cv.style.height=h+'px'; cv.style.width=(h*ar)+'px'; cv.style.maxHeight='none'; cv.style.maxWidth='none';
   st.style.left=(rx-h*ar*BODY)+'px'; st.style.top=(foot-h*BASE)+'px';
   ui.style.left=rx+'px'; ui.style.top=(foot+6)+'px';
+  // short landscape screens (phones): the machine stands big on the rug, its globe over the window,
+  // and the roll button sits beside it instead of pushing it up off the rug
+  const side=H<560 && W>H*1.3; m.classList.toggle('side', side);
+  if(side){ const sFoot=Math.min(ry, H-8); let sh=Math.min((sFoot-8)/BASE, H*0.84);
+    const uiW=ui.offsetWidth||220; sh=Math.min(sh, (W/2-uiW-40)/(ar*(1-BODY)));   // room for the buttons on the right
+    cv.style.height=sh+'px'; cv.style.width=(sh*ar)+'px';
+    st.style.left=(rx-sh*ar*BODY)+'px'; st.style.top=(sFoot-sh*BASE)+'px';
+    ui.style.left=Math.min(W-uiW/2-12, (rx+sh*ar*(1-BODY)+W)/2)+'px'; ui.style.top=Math.max(8, sFoot-sh*0.42-uiH/2)+'px';
+    m.style.setProperty('--gch', Math.max(160, sFoot-14)+'px'); }
 }
 window.addEventListener('resize', gachaPlace);
 function gachaOpen(){ openModal('gacha'); GACHA.open=true; GACHA.busy=false;
-  requestAnimationFrame(gachaPlace);
+  requestAnimationFrame(gachaPlace); setTimeout(gachaPlace,250);
   GACHA.ctx=document.getElementById('gachaCanvas').getContext('2d');
   const gd=GACHA.geo.dome; GACHA.dome={cx:gd[0]*GACHA.W, cy:gd[1]*GACHA.H, rx:gd[2]*GACHA.W, ry:gd[3]*GACHA.H};
   gachaInitCaps(); document.getElementById('gachaCard').className='';
@@ -16318,8 +16332,11 @@ function gachaReveal(rar,pick,gotCap){
       v('--pl',B.plate[0]); v('--pt',B.plate[1]); v('--pw',B.plate[2]-B.plate[0]); v('--ph',B.plate[3]-B.plate[1]);
       card.dataset.frame=framed; card.classList.add('framed');
       // a long name shrinks until it fits the nameplate instead of running over the ornaments
+      // (measured left-aligned: a centred overflow hides its left half from scrollWidth)
       const nm=document.getElementById('gcName'); let fs=parseFloat(getComputedStyle(nm).fontSize);
-      while(nm.scrollWidth>nm.clientWidth && fs>9){ fs-=1; nm.style.fontSize=fs+'px'; } }
+      nm.style.justifyContent='flex-start';
+      while(nm.scrollWidth>nm.clientWidth && fs>9){ fs-=1; nm.style.fontSize=fs+'px'; }
+      nm.style.justifyContent=''; }
     SFX.tone&&SFX.tone(140,1.15,'sawtooth',0.04);                  // rising charge hum
     SFX.tone&&SFX.tone(210,1.15,'sawtooth',0.03,0.12);
     SFX.tone&&SFX.tone(300,1.15,'sine',0.02,0.24);
