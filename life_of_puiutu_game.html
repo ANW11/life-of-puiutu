@@ -1294,7 +1294,10 @@
   #phoneApp > .modal > .modal-head{display:none;}
   #phoneApp > .modal .modal-body{zoom:.9;overflow:auto;}
   /* the wide tablet screen: lists flow in columns so a whole app fits on one page */
-  #phoneApp #marketBody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;align-content:start;padding:12px 16px;}
+  /* two columns when a row fits in half the screen, one column on a small phone (a row needs ~330px:
+     icon, name, chart, price and the Buy/Sell buttons; squeezed into half, the buttons ran over the next card) */
+  #phoneApp #marketBody{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:8px 14px;align-content:start;padding:12px 16px;}
+  #phoneApp #marketBody .stock-row{min-width:0;}
   #phoneApp #marketBody > *{max-width:none;margin:0;}
   #phoneApp #marketBody > :not(.stock-row){grid-column:1/-1;}
   /* inventory on parchment: every section starts on its own row with its heading across the width, its
