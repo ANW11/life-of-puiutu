@@ -1490,6 +1490,16 @@
   #gameCanvas{transform-origin:50% 55%;}
   #gameCanvas.push{transform:scale(1.16);transition:transform 7s linear;}
   #gameCanvas.pushfast{transform:scale(1.22);transition:transform 2.2s cubic-bezier(.2,.7,.4,1);}
+  /* a phone browser held upright while playing: ask for a quarter turn (iPhone Safari cannot turn
+     the screen or go full screen by itself; Android does both on Play, see playFullscreen) */
+  #rotateHint{display:none;position:fixed;inset:0;z-index:9999;background:#120c1a;color:#ffe7b0;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px;font-family:'Jersey 10',sans-serif;}
+  #rotateHint .rh-phone{width:56px;height:92px;border:5px solid #ffe7b0;border-radius:12px;animation:rhTurn 2.2s ease-in-out infinite;}
+  #rotateHint .rh-title{font-family:'Silkscreen UI','Jersey 10',sans-serif;font-size:22px;color:#ffc857;}
+  #rotateHint .rh-text{font-size:22px;max-width:320px;line-height:1.2;}
+  #rotateHint .rh-tip{font-size:18px;max-width:320px;color:#c9bbd0;line-height:1.2;}
+  @keyframes rhTurn{0%,25%{transform:rotate(0)}55%,100%{transform:rotate(90deg)}}
+  @media (orientation:portrait) and (pointer:coarse){ body.playing #rotateHint{display:flex;} }
     /* fonts: Jersey 10 = main (UI, HUD, dialogue, subtitles), Silkscreen = titles, VT323 = special (speech bubbles, lore, terminals) */
   .fs-bubble,#loreBody,#loreBody p,#circuitDev{font-family:'VT323','Jersey 10',monospace;}
   .title,.modal-head h2,.wd-head h3,#phoneTitle,#wmCardName,h1,h2{font-family:'Silkscreen UI','Jersey 10',sans-serif;font-weight:400;}
@@ -1498,6 +1508,8 @@
 document.fonts&&['20px "Jersey 10"','20px "Silkscreen"','20px "VT323"'].forEach(f=>document.fonts.load(f));</script>
 </head>
 <body>
+<div id="rotateHint"><div class="rh-phone"></div><div class="rh-title">Turn your phone</div>
+  <div class="rh-text">Life of Puiutu is played sideways.</div><div class="rh-tip"></div></div>
 <div id="app">
 <script>
 // The title screen follows the player's own clock: sunrise, day, sunset or night.
@@ -1972,6 +1984,12 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
 
 <script>
 'use strict';
+// ── WEBSITE DEMO ── build_web.py --demo sets window.PUIUTU_DEMO. The demo is the Garden, the Tower
+// Garden, the Library, the Beach (no diving), the Crystal Cave and Queen Seby. Every other area
+// shows a "not in the demo" card instead of loading, the pig's five fish open the cave (in the full
+// game that comes much later), and beating Seby shows the end card.
+const DEMO = !!window.PUIUTU_DEMO;
+const DEMO_AREAS = new Set(['garden','towergarden','library','beach','cave','sebyboss']);
 //═══════════════════════════════════════════════════════════════════════════
 //  LIFE OF PUIUTU — 2D platformer
 //═══════════════════════════════════════════════════════════════════════════
@@ -1985,12 +2003,6 @@ document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval
   const d=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
   if(!d||!d.set) return;
   Object.defineProperty(HTMLImageElement.prototype,'src',{
-// ── WEBSITE DEMO ── build_web.py --demo sets window.PUIUTU_DEMO. The demo is the Garden, the Tower
-// Garden, the Library, the Beach (no diving), the Crystal Cave and Queen Seby. Every other area
-// shows a "not in the demo" card instead of loading, the pig's five fish open the cave (in the full
-// game that comes much later), and beating Seby shows the end card.
-const DEMO = !!window.PUIUTU_DEMO;
-const DEMO_AREAS = new Set(['garden','towergarden','library','beach','cave','sebyboss']);
     configurable:true, enumerable:d.enumerable, get:d.get,
     set(v){
       this._want=String(v); this._tries=0;
@@ -5353,6 +5365,8 @@ const RO = {
   "Sir Oink":"Sir Oink",
   "Clownfish":"Pește-clovn",
   "Parrotfish":"Pește-papagal",
+  "Blue Tang":"Chirurg albastru",
+  "Oarfish":"Peștele-vâslă",
   "Pufferfish":"Pește-balon",
   "Lionfish":"Pește-leu",
   "Porcupinefish":"Pește-porc-spinos",
@@ -5366,8 +5380,6 @@ const RO = {
   "American Shorthair":"Americană cu păr scurt",
   "Turkish Angora":"Angora turcească",
   "Silver Bengal":"Bengaleză argintie",
-  "Blue Tang":"Chirurg albastru",
-  "Oarfish":"Peștele-vâslă",
   "British Shorthair":"Britanică cu păr scurt",
   "Calico":"Tricoloră",
   "Golden Bengal":"Bengaleză aurie",
@@ -5826,6 +5838,7 @@ const STORY=[
   {id:'evidence',     grants:['orgAccess'],     hint:'The same mark, on both armies’ weapons. You know the building.'},
   {id:'organization', grants:[],                hint:'Down.'},
 ];
+if(DEMO){ const ff=STORY.find(s=>s.id==='fivefish'); ff.grants=['caveOpen']; ff.hint='The pig kept his word. The Crystal Cave in the garden is open now.'; }
 const STORY_IX={}; STORY.forEach((s,i)=>STORY_IX[s.id]=i);
 // Two ways to play. STORY runs the campaign: gates apply, bosses stay beaten, the world
 // remembers. FREE PLAY opens everything and puts it all back — every boss respawns, including
@@ -5839,7 +5852,6 @@ function setMode(m){
   if(b) b.classList.toggle('on', freeMode());
 }
 function storyAt(id){ const i=STORY_IX[id]; return i!=null && (S.story||0)>=i; }
-if(DEMO){ const ff=STORY.find(s=>s.id==='fivefish'); ff.grants=['caveOpen']; ff.hint='The pig kept his word. The Crystal Cave in the garden is open now.'; }
 // A gate is open in TEST mode, or when the campaign has granted its flag.
 function gateOpen(flag){ return testMode() || !!S[flag]; }
 // Advance to a step. Grants every flag up to and including it, so jumping ahead never leaves a
@@ -6274,6 +6286,10 @@ function hasDouble(){return S.items.includes('dbljump');}
 
 //──────── area entry
 function enterArea(id,fromRight,toX){
+  if(DEMO && !DEMO_AREAS.has(id)){
+    if(!A){ id='garden'; }                       // a save from further on: start the demo in the garden
+    else { demoCard('locked', id); return; }
+  }
   curArea=id;A=AREAS[id];
   S.visited[id]=true;
   try{ mapNoteArea(id); }catch(e){}
@@ -6287,10 +6303,6 @@ function enterArea(id,fromRight,toX){
   enemies=(ENEMY_SPAWNS[id]||[]).map(s=>{
     const leveled = (s.type==='pigeon'||s.type==='clobster');
     const lvl = leveled ? rollPigeonLevel() : null;          // shared 1-10 rarity curve (10 rarest)
-  if(DEMO && !DEMO_AREAS.has(id)){
-    if(!A){ id='garden'; }                       // a save from further on: start the demo in the garden
-    else { demoCard('locked', id); return; }
-  }
     const k=enemyKind(s.type, lvl);
     const variant = (s.type==='pigeon'&&lvl) ? PIGEON_VARIANTS[lvl-1] : null;
     const dims = s.type==='clobster' ? {w:48,h:42,dh:70} : {w:36,h:50,dh:80};
@@ -6323,6 +6335,8 @@ function enterArea(id,fromRight,toX){
   if(A.mode==='topdown'){ enterHub(fromRight); }
   setControlMode(A.mode==='topdown');
   updateQuestHUD(); checkAchievements();
+  // demo: Seby is down and you are back out in the garden -> the end card, once
+  if(DEMO && id==='garden' && S.sebyDefeated && !S.demoDone){ S.demoDone=true; save(); setTimeout(()=>demoCard('end'), 1200); }
 }
 // show/hide the platformer touch controls depending on area mode
 function setControlMode(topdown){
@@ -6336,8 +6350,6 @@ function setControlMode(topdown){
   const jz=document.getElementById('joyZone'); if(jz) jz.style.display = touch?'block':'none';
   // a computer jumps with Space and attacks with a right click: the round buttons are for phones only
   set('jumpCtrl', touch); set('actCtrl', touch);
-  // demo: Seby is down and you are back out in the garden -> the end card, once
-  if(DEMO && id==='garden' && S.sebyDefeated && !S.demoDone){ S.demoDone=true; save(); setTimeout(()=>demoCard('end'), 1200); }
   set('fightBtn', false);
   const ip=document.getElementById('interactPrompt'); if(ip&&topdown) ip.style.display='none';
   updateRockyBtn();
@@ -6968,6 +6980,7 @@ function sebyDefeated(b,now){
   for(let i=0;i<12;i++) floatText(b.x+(Math.random()-.5)*150, b.y-10-Math.random()*110, '', i%2?'#9fe6ff':'#b07cf0');
   floatText(b.x, b.y-60, '+'+k.xp+' XP', '#aef36b');
   questProgress('defeat'); checkAchievements(); renderStatbars();
+  // the demo's end card waits until you climb out of the cave (see enterArea)
 }
 
 //──────── attack + kill + faint
@@ -6981,7 +6994,6 @@ function playerAttack(){
   for(const e of enemies){
     if(e.dead||e.defeated) continue;
     const ahead=(e.x-P.x)*P.facing;             // >0 if in front of the cat
-  // the demo's end card waits until you climb out of the cave (see enterArea)
     if(ahead>-18 && ahead<ATK_RANGE && Math.abs(e.y-P.y)<74){
       const dmg=playerAtkDmg(); e.hp-=dmg; e.hitFlash=now; e.kx=P.facing*5; hit=true;
       floatText(e.x, e.y-e.dh*0.6, '-'+dmg, '#fff');
@@ -8707,9 +8719,16 @@ const GARRISON_TALK={
     const say=(lines,then)=>sayLines(garrisonName(u), lines, {img:spr&&spr.walk[0], bg:'#1b2433', tone:420, then});
     if(storyAt('fivefish')){
       // the story got past this beat some other way but the road was never opened: open it now
+      if(DEMO){ say(['The cave in the garden. Snout will let you in now.',
+                     'And do not tell him a pig sent you.'], ()=>{ if(!S.caveOpen && trotterReady()) storySet('fivefish'); }); return; }
       say(['Whisker Savings Bank, in the City. Ask for the suit.',
            'And do not tell them a pig sent you.'], ()=>{ if(!S.cityOpen && trotterReady()) storySet('fivefish'); });
       return;
+    }
+    // the first time you talk to him he asks for the fish; until then there is no quest on the HUD
+    if(!S.trotterMet){
+      S.trotterMet=true; save(); updateQuestHUD();
+      if(!trotterReady()){ say((u.lines||[]).map(l=>l.replace(/^Agent Trotter:\s*/,''))); return; }
     }
     if(!trotterReady()){
       const n=Math.min(S.totalFish||0, TROTTER_TOLL);
@@ -8717,30 +8736,23 @@ const GARRISON_TALK={
            'The barrel is right behind you. I am not going anywhere.']);
       return;
     }
+    if(DEMO){ say(['Five. Look at that.',
+                   'Here is your something-worth-more-than-a-fish: that cave in the garden, the one Snout keeps shut.',
+                   'It is not closed for digging. It is closed because of what lives at the bottom.',
+                   'Snout will let you in now. I made a call.'], ()=>storySet('fivefish')); return; }
     say(['Five. Look at that.',
          'Here is your something-worth-more-than-a-fish: there is a suit that lets you breathe down there.',
          'It is not sold on this beach. It is sold in the City, at the bank.',
-      if(DEMO){ say(['The cave in the garden. Snout will let you in now.',
-                     'And do not tell him a pig sent you.'], ()=>{ if(!S.caveOpen && trotterReady()) storySet('fivefish'); }); return; }
          'The road east is open to you now. I made a call.'],
       ()=>storySet('fivefish'));
   },
 };
-    // the first time you talk to him he asks for the fish; until then there is no quest on the HUD
-    if(!S.trotterMet){
-      S.trotterMet=true; save(); updateQuestHUD();
-      if(!trotterReady()){ say((u.lines||[]).map(l=>l.replace(/^Agent Trotter:\s*/,''))); return; }
-    }
 function garrisonTalk(){
   const u=HUB.nearGarrison; if(!u) return;
   const spr=ARMY_SPR[u.key];
   if(u.talkFn && GARRISON_TALK[u.talkFn]){ GARRISON_TALK[u.talkFn](u,spr); return; }
   sayLines(garrisonName(u), u.lines, {img:spr&&spr.walk[0], bg:'#1b2433', tone:420,
     icon:u.key.endsWith('emissary')?'':''});
-    if(DEMO){ say(['Five. Look at that.',
-                   'Here is your something-worth-more-than-a-fish: that cave in the garden, the one Snout keeps shut.',
-                   'It is not closed for digging. It is closed because of what lives at the bottom.',
-                   'Snout will let you in now. I made a call.'], ()=>storySet('fivefish')); return; }
 }
 function armySpawnUnit(team, rank, sp){
   let x=sp.xf*HUB.worldW, y=sp.yf*VH;
@@ -16736,6 +16748,7 @@ function sortPointer(e){ const cv=document.getElementById('sortCanvas'), rc=cv.g
 const FISH_SPECIES=[
   {key:'clownfish', name:'Clownfish',    w:30, coins:6,   xp:6,   speed:1.00, barH:0.52, minL:6,  maxL:14,  col:'#ff8a3a'},
   {key:'parrotfish',name:'Parrotfish',   w:24, coins:11,  xp:11,  speed:1.15, barH:0.46, minL:14, maxL:30,  col:'#3fb6c8'},
+  {key:'bluetang',  name:'Blue Tang',    w:22, coins:9,   xp:9,   speed:1.10, barH:0.48, minL:12, maxL:30,  col:'#2f6fe0'},
   {key:'pufferfish',name:'Pufferfish',   w:16, coins:17,  xp:17,  speed:1.30, barH:0.42, minL:12, maxL:26,  col:'#caa24a', leap:1.35},
   {key:'porcupinefish',name:'Porcupinefish',w:11,coins:30,xp:34,  speed:1.45, barH:0.38, minL:20, maxL:42,  col:'#b98a4a'},
   {key:'mahimahi',  name:'Mahi-Mahi',    w:12, coins:26,  xp:28,  speed:1.50, barH:0.36, minL:30, maxL:60,  col:'#7ec850', leap:1.5},
@@ -16747,9 +16760,10 @@ const FISH_SPECIES=[
   {key:'mantaray',  name:'Manta Ray',    w:2.4,coins:200, xp:240, speed:2.10, barH:0.21, minL:200,maxL:400, col:'#4a5a6a', legendary:true, big:true, leap:2.3},
   {key:'hammerhead',name:'Hammerhead',   w:1.5,coins:300, xp:380, speed:2.35, barH:0.18, minL:220,maxL:450, col:'#5a6472', legendary:true, big:true, leap:2.3},
   {key:'greatwhite',name:'Great White',  w:0.9,coins:450, xp:560, speed:2.55, barH:0.15, minL:300,maxL:640, col:'#6b7480', legendary:true, big:true, leap:2.3},
+  // the oarfish: a sea-serpent legend, rarer than the sharks, not quite the Mola Mola
+  {key:'oarfish',   name:'Oarfish',      w:0.6,coins:560, xp:700, speed:2.00, barH:0.14, minL:300,maxL:800, col:'#c8d2dc', legendary:true, big:true, leap:2.0},
   // ── the white whale: rarest of all → smallest zone, hardest precision ──
   {key:'molamola',  name:'Mola Mola',    w:0.4,coins:700, xp:850, speed:1.70, barH:0.12, minL:180,maxL:330, col:'#8a93a0', legendary:true, big:true, leap:2.7},
-  {key:'bluetang',  name:'Blue Tang',    w:22, coins:9,   xp:9,   speed:1.10, barH:0.48, minL:12, maxL:30,  col:'#2f6fe0'},
 ];
 const FISH_ASSET_V='6';   // bump to force browsers to reload updated fish sprites
 const FISH_IMG={}; for(const f of FISH_SPECIES){ const im=new Image(); im.src='fishing/sprite_'+f.key+'.png?v='+FISH_ASSET_V; FISH_IMG[f.key]=im; }
@@ -16762,8 +16776,6 @@ function fishWeight(f,len){ let kg=Math.pow(len,3)*1e-5;
   return kg; }
 function fmtKg(kg){ return kg<1 ? Math.round(kg*1000)+'g' : kg.toFixed(kg<10?2:1)+'kg'; }
 // Fish Log: every species — caught ones in color with stats, the rest as black silhouettes
-  // the oarfish: a sea-serpent legend, rarer than the sharks, not quite the Mola Mola
-  {key:'oarfish',   name:'Oarfish',      w:0.6,coins:560, xp:700, speed:2.00, barH:0.14, minL:300,maxL:800, col:'#c8d2dc', legendary:true, big:true, leap:2.0},
 function renderFishLog(){
   const log=S.fishLog||{};
   const found=FISH_SPECIES.filter(f=>log[f.key]&&log[f.key].count>0).length;
@@ -18810,7 +18822,24 @@ document.querySelectorAll('#spellBar .spellSlot[data-slot]').forEach(el=>{
 document.getElementById('dialogue').addEventListener('click',advanceDialogue);
 
 // menu buttons
-document.getElementById('btnPlay').onclick=startGame;
+// On a phone in the browser, Play also goes full screen and turns the screen sideways (Android
+// Chrome can; iPhone Safari cannot, so it gets the "turn your phone" card and the home-screen tip).
+function playFullscreen(){
+  if(nativeOrientation()) return;                                       // the APK handles its own screen
+  if(!matchMedia('(pointer:coarse)').matches) return;                   // a desktop keeps its window
+  document.body.classList.add('playing');
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent), standalone=navigator.standalone||matchMedia('(display-mode:fullscreen),(display-mode:standalone)').matches;
+  const hint=document.getElementById('rotateHint');
+  if(hint){ hint.querySelector('.rh-title').textContent=LT('Turn your phone','Întoarce telefonul');
+    hint.querySelector('.rh-text').textContent=LT('Life of Puiutu is played sideways.','Life of Puiutu se joacă cu telefonul culcat.');
+    hint.querySelector('.rh-tip').textContent=(ios&&!standalone)?LT('For full screen: tap Share, then Add to Home Screen, and play from the icon.','Pentru ecran complet: apasă Share, apoi Add to Home Screen, și joacă din iconiță.'):''; }
+  const de=document.documentElement, fs=de.requestFullscreen||de.webkitRequestFullscreen;
+  if(!fs || document.fullscreenElement || document.webkitFullscreenElement) return;
+  try{ const r=fs.call(de,{navigationUI:'hide'});
+    const turn=()=>{ try{ screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{}); }catch(e){} };
+    if(r&&r.then) r.then(turn).catch(()=>{}); else turn(); }catch(e){}
+}
+document.getElementById('btnPlay').onclick=()=>{ playFullscreen(); startGame(); };
 document.getElementById('btnShop').onclick=()=>openModal('shop');
 document.getElementById('btnProfile').onclick=()=>openModal('profile');
 document.getElementById('btnInv').onclick=()=>openModal('inventory');
@@ -19545,6 +19574,37 @@ cv.addEventListener('wheel',e=>{ if(!PLACE_ON||!PLACE_SEL||!PLACE_SEL.sk) return
   const r=PLACE_SEL.r; r[PLACE_SEL.sk]=placeRound(PLACE_SEL.sk,r[PLACE_SEL.sk]*(e.deltaY<0?1.04:1/1.04)); placeLog(); placeSave(); placeLive(); },{passive:false});
 document.getElementById('btnMap').addEventListener('click',openMap);
 document.getElementById('btnGacha').addEventListener('click',gachaOpen);
+// ── the website demo's cards: a place that is not in the demo, Border War, and the end ──
+const DEMO_LINK='https://www.instagram.com/lifeofpuiutu/';
+function demoCard(kind, id){
+  if(document.getElementById('demoCard')) return;
+  const loc=(typeof MAP_LOCS!=='undefined'&&MAP_LOCS.find(l=>l.id===id))||null;
+  const place=(loc&&loc.name)||(AREAS[id]&&AREAS[id].name)||LT('That way','Pe acolo');
+  const C={
+    locked:{t:LT('Not in the demo','Nu e în demo'),
+            b:LT(place+' is waiting in the full game. For now, the garden, the tower, the library, the beach and the Crystal Cave are yours.',
+                 place+' te așteaptă în jocul complet. Deocamdată ai grădina, turnul, biblioteca, plaja și Peștera de Cristal.')},
+    war:{t:'Border War',
+         b:LT('The cats and the rats have their own war mode. It comes with the full game.','Pisicile și șobolanii au propriul mod de război. Vine cu jocul complet.')},
+    end:{t:LT('Thanks for playing!','Mulțumim că ai jucat!'),
+         b:LT('That is the end of the demo. Queen Seby is down, and a pig just filled a cart with her crystals. Why would a pig need a cart full of crystals? The full game is coming soon.',
+              'Aici se termină demo-ul. Regina Seby a căzut, iar un porc tocmai și-a umplut căruța cu cristalele ei. De ce ar avea nevoie un porc de o căruță plină de cristale? Jocul complet vine în curând.')}
+  }[kind];
+  paused=true;
+  const el=document.createElement('div'); el.id='demoCard';
+  el.style.cssText='position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;background:rgba(10,7,4,.62);padding:16px;';
+  el.innerHTML='<div style="max-width:440px;width:100%;background:rgba(24,16,8,.94);border:2px solid #ffe066;border-radius:16px;padding:22px 22px 18px;text-align:center;color:#ffe7b0;font-family:\'Jersey 10\',sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.6)">'+
+    '<div style="font-family:\'Silkscreen UI\',\'Jersey 10\',sans-serif;font-size:24px;margin-bottom:10px;color:#ffc857">'+C.t+'</div>'+
+    '<div style="font-size:21px;line-height:1.25;margin-bottom:18px">'+C.b+'</div>'+
+    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+    '<a id="demoFollow" href="'+DEMO_LINK+'" target="_blank" rel="noopener" style="background:#ffc857;color:#2a1a08;text-decoration:none;border-radius:10px;padding:9px 16px;font-size:20px">'+LT('Follow the game','Urmărește jocul')+'</a>'+
+    '<button id="demoOk" style="background:#3a2a16;color:#ffe7b0;border:1px solid #ffe066;border-radius:10px;padding:9px 16px;font:20px \'Jersey 10\',sans-serif;cursor:pointer">'+(kind==='end'?LT('Keep exploring','Mai explorez'):LT('OK','OK'))+'</button></div></div>';
+  document.body.appendChild(el);
+  const close=()=>{ el.remove(); paused=false; };
+  el.querySelector('#demoOk').onclick=close;
+  el.addEventListener('click',e=>{ if(e.target===el) close(); });
+  if(kind==='end' && SFX && SFX.win) SFX.win();
+}
 // ── Border War: the RTS, in its own page, opened over the game ──
 let WAR_OPEN=false;
 function warOpen(){
@@ -19725,37 +19785,6 @@ setInterval(()=>{ const el=document.getElementById('mktTimer'), m=document.getEl
       if(FISH.phase==='ready'||FISH.phase==='bite'){ fishTap(); }   // cast / hook
       if(e.code==='ArrowUp') FISH.upHeld=true;
       if(e.code==='ArrowDown') FISH.downHeld=true;
-// ── the website demo's cards: a place that is not in the demo, Border War, and the end ──
-const DEMO_LINK='https://www.instagram.com/lifeofpuiutu/';
-function demoCard(kind, id){
-  if(document.getElementById('demoCard')) return;
-  const loc=(typeof MAP_LOCS!=='undefined'&&MAP_LOCS.find(l=>l.id===id))||null;
-  const place=(loc&&loc.name)||(AREAS[id]&&AREAS[id].name)||LT('That way','Pe acolo');
-  const C={
-    locked:{t:LT('Not in the demo','Nu e în demo'),
-            b:LT(place+' is waiting in the full game. For now, the garden, the tower, the library, the beach and the Crystal Cave are yours.',
-                 place+' te așteaptă în jocul complet. Deocamdată ai grădina, turnul, biblioteca, plaja și Peștera de Cristal.')},
-    war:{t:'Border War',
-         b:LT('The cats and the rats have their own war mode. It comes with the full game.','Pisicile și șobolanii au propriul mod de război. Vine cu jocul complet.')},
-    end:{t:LT('Thanks for playing!','Mulțumim că ai jucat!'),
-         b:LT('That is the end of the demo. Queen Seby is down, and a pig just filled a cart with her crystals. Why would a pig need a cart full of crystals? The full game is coming soon.',
-              'Aici se termină demo-ul. Regina Seby a căzut, iar un porc tocmai și-a umplut căruța cu cristalele ei. De ce ar avea nevoie un porc de o căruță plină de cristale? Jocul complet vine în curând.')}
-  }[kind];
-  paused=true;
-  const el=document.createElement('div'); el.id='demoCard';
-  el.style.cssText='position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;background:rgba(10,7,4,.62);padding:16px;';
-  el.innerHTML='<div style="max-width:440px;width:100%;background:rgba(24,16,8,.94);border:2px solid #ffe066;border-radius:16px;padding:22px 22px 18px;text-align:center;color:#ffe7b0;font-family:\'Jersey 10\',sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.6)">'+
-    '<div style="font-family:\'Silkscreen UI\',\'Jersey 10\',sans-serif;font-size:24px;margin-bottom:10px;color:#ffc857">'+C.t+'</div>'+
-    '<div style="font-size:21px;line-height:1.25;margin-bottom:18px">'+C.b+'</div>'+
-    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
-    '<a id="demoFollow" href="'+DEMO_LINK+'" target="_blank" rel="noopener" style="background:#ffc857;color:#2a1a08;text-decoration:none;border-radius:10px;padding:9px 16px;font-size:20px">'+LT('Follow the game','Urmărește jocul')+'</a>'+
-    '<button id="demoOk" style="background:#3a2a16;color:#ffe7b0;border:1px solid #ffe066;border-radius:10px;padding:9px 16px;font:20px \'Jersey 10\',sans-serif;cursor:pointer">'+(kind==='end'?LT('Keep exploring','Mai explorez'):LT('OK','OK'))+'</button></div></div>';
-  document.body.appendChild(el);
-  const close=()=>{ el.remove(); paused=false; };
-  el.querySelector('#demoOk').onclick=close;
-  el.addEventListener('click',e=>{ if(e.target===el) close(); });
-  if(kind==='end' && SFX && SFX.win) SFX.win();
-}
     }
   });
   window.addEventListener('keyup',e=>{

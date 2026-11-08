@@ -273,6 +273,14 @@ footer{text-align:center;padding:30px 20px 40px;color:var(--muted);font-size:.9r
   .soon-pill{display:none}
   section{padding:80px 0}
 }
+/* a phone held upright: the wide hero art would be cropped to a sliver of the bank. Zoom it out and
+   sit it at the bottom, so the bank, the cat and both kings show; the sky colour fills the top */
+@media (orientation:portrait) and (max-width:860px){
+  .hero{min-height:100svh;background:#251434}
+  .hero-art{inset:auto 0 0 0;height:min(100%,calc(100vw * 1.8 * 941 / 1671));background-size:180% auto;
+    background-position:center bottom;background-repeat:no-repeat;transform-origin:center bottom}
+  .hero-shade{background:linear-gradient(180deg,#251434 0%,rgba(37,20,52,0) 40%,rgba(18,12,26,0) 78%,var(--night) 100%)}
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}
