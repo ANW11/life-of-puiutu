@@ -2,6 +2,7 @@
 """Build the web version of Life of Puiutu for Cloudflare Pages.
 
     python3 build_web.py            # writes web_build/
+    python3 build_web.py --demo     # writes web_build_demo/: the website demo (see DEMO in the game)
     npx wrangler pages deploy web_build --project-name puiutu
 
 What it does:
@@ -14,12 +15,23 @@ What it does:
     Masks and pixel art are encoded lossless so collision and pixel colors stay
     exact; everything else is lossy at high quality.
   - adds a _headers file for Cloudflare caching
+  - with --demo: sets window.PUIUTU_DEMO, leaves out Border War and the maps of every area the
+    demo does not reach, and minifies the game's scripts (no comments, short local names)
 """
 import os, re, shutil, subprocess, sys, time
 from concurrent.futures import ThreadPoolExecutor
 
 SRC = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(SRC, 'web_build')
+DEMO = '--demo' in sys.argv
+OUT = os.path.join(SRC, 'web_build_demo' if DEMO else 'web_build')
+# the areas the demo reaches (keep in sync with DEMO_AREAS in the game)
+DEMO_AREAS = {'garden', 'towergarden', 'library', 'beach', 'cave', 'sebyboss'}
+# map files of locked areas that are named outside buildAreas() (masks with spaces in the name, …)
+LOCKED_WORDS = ('ratking', 'sewer', 'slum', 'city', 'castle', 'throne', 'bank', 'abyss', 'ocean',
+                'finalarena', 'library_lower', 'organization')
+# the late bosses never appear in the demo: their sprites stay out of it, so nobody can dig them up
+DEMO_SKIP_DIRS = {'mobs/catking', 'mobs/ratking', 'mobs/lion', 'mobs/MechBoar', 'mobs/mechboar_frames'}
+TERSER = ['npx', '--yes', 'terser@5.31.0', '--ecma', '2020', '--compress', 'passes=2', '--mangle']
 
 ASSET_DIRS = ['Phone', 'army', 'cart_game', 'circuit', 'colorsort', 'fishing',
               'fruitmerge', 'fx', 'gacha', 'maps', 'mobs', 'npcs', 'props',
@@ -40,6 +52,32 @@ def lossless(rel):
     return 'mask' in n or '/px/' in n or n.startswith('circuit/')
 
 
+def area_maps(game):
+    """maps/... files named inside each area of buildAreas(): {area: {file names}}"""
+    body = game[game.index('function buildAreas(){'):]
+    body = body[:body.index('\n}\n')]
+    out, cur = {}, None
+    for line in body.split('\n'):
+        m = re.match(r'^    (\w+):\{', line)
+        if m: cur = m.group(1)
+        if cur:
+            out.setdefault(cur, set()).update(re.findall(r'maps/([\w.-]+)', line))
+    return out
+
+
+def minify_scripts(html):
+    """run every inline <script> of the page through terser"""
+    def one(m):
+        attrs, code = m.group(1), m.group(2)
+        if 'src=' in attrs or not code.strip():
+            return m.group(0)
+        r = subprocess.run(TERSER, input=code, capture_output=True, text=True)
+        if r.returncode != 0:
+            sys.exit('terser failed: ' + r.stderr[:500])
+        return '<script%s>%s</script>' % (attrs, r.stdout.strip())
+    return re.sub(r'<script([^>]*)>(.*?)</script>', one, html, flags=re.S)
+
+
 def main():
     texts = [open(os.path.join(SRC, f), encoding='utf-8').read()
              for f in ['life_of_puiutu_game.html', 'rts.html']]
@@ -47,22 +85,34 @@ def main():
               for f in os.listdir(os.path.join(SRC, 'rts')) if f.endswith('.js')]
     corpus = '\n'.join(texts)
 
+    skip_maps = set()
+    if DEMO:
+        per = area_maps(texts[0])
+        keep = set().union(*(per.get(a, set()) for a in DEMO_AREAS))
+        skip_maps = set().union(*per.values()) - keep
+
     if os.path.exists(OUT):
         shutil.rmtree(OUT)
     os.makedirs(OUT)
 
     files = []
     for top in ASSET_DIRS:
+        if DEMO and top == 'rts':
+            continue
         for root, dirs, names in os.walk(os.path.join(SRC, top)):
             rel_root = os.path.relpath(root, SRC)
             dirs[:] = [d for d in dirs
                        if os.path.join(rel_root, d) not in SKIP_DIRS
+                       and not (rel_root == 'maps' and d in skip_maps)
+                       and not (DEMO and os.path.join(rel_root, d) in DEMO_SKIP_DIRS)
                        and not d.startswith(('_', '.')) and 'backup' not in d.lower()]
             for n in names:
                 ext = os.path.splitext(n)[1].lower()
                 if ext not in ASSET_EXT or n.startswith('.') or '.backup.' in n:
                     continue
                 if rel_root in LITERAL_ONLY and n not in corpus:
+                    continue
+                if rel_root == 'maps' and (n in skip_maps or (DEMO and any(k in n.lower() for k in LOCKED_WORDS))):
                     continue
                 files.append(os.path.join(rel_root, n))
 
@@ -90,8 +140,14 @@ def main():
 
     # the game page: on pages.dev multiplayer goes through the Cloudflare relay (mp_worker/), see NET_RELAY
     html = texts[0]
+    if DEMO:
+        html = html.replace('<head>', '<head>\n<script>window.PUIUTU_DEMO=true;</script>', 1)
+        html = minify_scripts(html)
+        html = re.sub(r'<!--(?!\[if).*?-->', '', html, flags=re.S)      # HTML comments too
+        print('demo: left out', len(skip_maps), 'map files and Border War')
     open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(html)
-    shutil.copy2(os.path.join(SRC, 'rts.html'), OUT)
+    if not DEMO:
+        shutil.copy2(os.path.join(SRC, 'rts.html'), OUT)
 
     sw = open(os.path.join(SRC, 'sw.js'), encoding='utf-8').read()
     sw = sw.replace("'./life_of_puiutu_game.html'", "'./index.html'")

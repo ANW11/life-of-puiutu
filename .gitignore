@@ -17,3 +17,4 @@ army/frames/_backup/
 
 # web build for Cloudflare Pages (python3 build_web.py)
 web_build/
+web_build_demo/
