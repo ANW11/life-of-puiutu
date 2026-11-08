@@ -5328,7 +5328,7 @@ const RO = {
   "Paws off the table, little one. Those are mine.":"Lăbuțele jos de pe masă, micuțule. Alea sunt ale mele.",
   "Come and talk to me first.":"Vino întâi să vorbești cu mine.",
   "The tide keeps bringing me these little capsules. People seal a wish in them and throw them in the sea.":"Valul îmi tot aduce capsulele astea mici. Oamenii închid o dorință în ele și le aruncă în mare.",
-  "Put a gold coin in and shake one. Sometimes a whole new coat falls out. Do not ask me how. The sea is strange.":"Pune un ban de aur și scutură una. Uneori cade o blană cu totul nouă. Nu mă întreba cum. Marea e ciudată.",
+  "Put a silver coin in and shake one. Sometimes a whole new coat falls out. Do not ask me how. The sea is strange.":"Pune un ban de argint și scutură una. Uneori cade o blană cu totul nouă. Nu mă întreba cum. Marea e ciudată.",
   "Oh, before I forget.":"Ah, până nu uit.",
   "Before you go up there, look at this. The war table.":"Înainte să urci acolo, uită-te la asta. Masa de război.",
   "This is how we fight it, really. Pieces on a map. The ones up the hill are just the pieces that move.":"Așa îl ducem de fapt. Piese pe o hartă. Cei de pe deal sunt doar piesele care se mișcă.",
@@ -6619,7 +6619,7 @@ function iconsMigrate(){
   // saves made before the Rat King's fall opened the bank's lift were stuck at 'ratking' for good
   if(S.ratKingDown && (S.story||0)===STORY_IX.ratking){ S.story=STORY_IX.evidence; S.orgAccess=true; }
 }
-function iconOn(k){ return freeMode() || !!S[TOP_ICONS[k].flag]; }
+function iconOn(k){ return freeMode() || (DEMO && k==='gacha') || !!S[TOP_ICONS[k].flag]; }   // the demo has the Lucky Capsule from the start
 function syncTopIcons(){
   for(const k in TOP_ICONS){ const el=document.getElementById(TOP_ICONS[k].btn); if(el) el.style.display=iconOn(k)?'':'none'; }
 }
@@ -15602,7 +15602,7 @@ const SHELLY_PAY=[
 // the Lucky Capsule: the sea brings back what people threw in it, sealed up small
 const SHELLY_CAPSULE=[
   'The tide keeps bringing me these little capsules. People seal a wish in them and throw them in the sea.',
-  'Put a gold coin in and shake one. Sometimes a whole new coat falls out. Do not ask me how. The sea is strange.'];
+  'Put a silver coin in and shake one. Sometimes a whole new coat falls out. Do not ask me how. The sea is strange.'];
 function shellyQuestStart(){
   if(S.quests.shelly) return;
   S.quests.shelly={state:'active', base:0}; save(); updateQuestHUD();
@@ -15929,7 +15929,7 @@ function tailorBuy(id){
 }
 //═══════════════════════════════════════════════ GACHA — Lucky Capsule machine (bouncy physics)
 const RAR_COL={common:'#aeb6c0',rare:'#5aaaff',epic:'#be6eff',legendary:'#ffc846'};
-const RAR_REFUND={common:60,rare:200,epic:600,legendary:2000};
+const RAR_REFUND={common:50,rare:100,epic:200,legendary:500};   // a duplicate skin: half a roll back for a common, five rolls for a legendary
 const RAR_STARS={common:0,rare:3,epic:4,legendary:5};
 const CAT_SKINS=[
   {id:'skin_abyssinian', name:'Abyssinian',        rarity:'epic',      art:'skins/abysian_art.png',        skin:'skins/Abyssinian.png'},
@@ -15965,7 +15965,7 @@ const SKIN_LINES={
 if(typeof S!=='undefined' && S.equippedSkin) loadSkinFrames(S.equippedSkin);   // resume the equipped skin
 // no hats: the capsule gives coins, cat skins, spells, potions (a small stack) and charms of the rolled rarity.
 // A charm the story has not unlocked yet (the Golden Banana) stays out until it has.
-const GACHA_COINS={common:10000,rare:20000,epic:30000,legendary:50000};   // gold only, a roll costs 1g: 1g (your roll back), 2g, 3g, 5g, one gold coin sprite each
+const GACHA_COINS={common:100,rare:200,epic:300,legendary:500};   // silver only, a roll costs 1 silver: 1s (your roll back), 2s, 3s, 5s, one silver coin sprite each
 const GACHA_SPELL={epic:'fishstorm',legendary:'ninelives'};
 const GACHA_STACK={common:3,rare:2,epic:1,legendary:1};
 function gachaPool(rar){
@@ -16029,7 +16029,7 @@ function gachaDrawArt(artSrc,noKey){
   img.onerror=()=>{ const ic=document.getElementById('gcIcon'); if(ic) ic.style.display=''; };
   img.src=artSrc;
 }
-const GACHA={ cost:10000, busy:false, open:false, caps:[], raf:null, ctx:null, W:360, H:536,
+const GACHA={ cost:100, busy:false, open:false, caps:[], raf:null, ctx:null, W:360, H:536,
   dome:{cx:178,cy:152,rx:124,ry:107},
   img:(()=>{const i=new Image();i.src='gacha/gacha.png';return i;})(),
   // the pixel-art machine, when it's there: its glass globe, base, hole and tray sit in other places
@@ -16121,9 +16121,10 @@ function gachaOpen(){ openModal('gacha'); GACHA.open=true; GACHA.busy=false;
   gachaSyncUI(); if(GACHA.raf)cancelAnimationFrame(GACHA.raf); gachaLoop(); }
 function gachaClose(){ GACHA.open=false; if(GACHA.raf)cancelAnimationFrame(GACHA.raf); GACHA.raf=null; }
 // inline gold-coin sprite (reused in the roll button / messages instead of the 🥇 emoji)
+function silverCoinHTML(box){ return `<span style="${coinFaceStyle('ui/silvercoin.png',box||20)};vertical-align:middle;margin:0 1px;"></span>`; }
 function goldCoinHTML(box){ return `<span style="${coinFaceStyle('ui/goldcoin.png',box||20)};vertical-align:middle;margin:0 1px;"></span>`; }
 function gachaSyncUI(){ const lb=document.getElementById('gachaLegend');
-  const rb=document.getElementById('gachaRoll'); if(rb) rb.innerHTML='Roll · 1 '+goldCoinHTML(22);
+  const rb=document.getElementById('gachaRoll'); if(rb) rb.innerHTML='Roll · 1 '+silverCoinHTML(22);
   if(lb){ lb.style.display=(S.legendaryCapsules>0)?'':'none'; lb.textContent='Open Legendary Capsule ('+(S.legendaryCapsules||0)+')'; }
   const p=document.getElementById('gachaPity'); if(p) p.textContent='Legendary in '+(100-(S.gachaPity||0))+' rolls · capsule in '+(50-((S.gachaCapProg||0)))+'';
   const cc=document.getElementById('gachaCoins'); if(cc){ const mp=moneyParts(S.coins); const B=26;
@@ -16133,7 +16134,7 @@ function gachaSyncUI(){ const lb=document.getElementById('gachaLegend');
                 +coin('ui/bronzecoin.png')+mp.b; } }
 function gachaJolt(){ for(const c of GACHA.caps){ c.vy-=7+Math.random()*4; c.vx+=(Math.random()-0.5)*7; } }
 function gachaRoll(){ if(GACHA.busy) return;
-  if(S.coins<GACHA.cost){ document.getElementById('gachaMsg').innerHTML='Need 1 '+goldCoinHTML(20)+' gold to roll.'; SFX.lose&&SFX.lose(); return; }
+  if(S.coins<GACHA.cost){ document.getElementById('gachaMsg').innerHTML='Need 1 '+silverCoinHTML(20)+' silver to roll.'; SFX.lose&&SFX.lose(); return; }
   GACHA.busy=true; S.coins-=GACHA.cost; document.getElementById('gachaCard').className='';
   document.getElementById('gachaMsg').textContent='Rolling…'; gachaSyncUI(); gachaJolt();
   // eject the lowest NORMAL capsule into the tray, then refill one from the top
