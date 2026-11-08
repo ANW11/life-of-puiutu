@@ -6138,7 +6138,8 @@ function resize(){
   const k=Math.max(1, REF_H/Math.max(1,r.height));       // logical px per CSS px (1 on a desktop)
   VW=r.width*k; VH=r.height*k;
   VIEW.base=dpr/k;                                        // logical px -> canvas px
-  VIEW.zTarget=1;                                         // the whole frame fits the screen on phones too (the old ~1.45 zoom-in on the cat was too close)
+  // a phone (touch, short screen): a small zoom on the cat so it is not tiny; 1.45 was too close
+  VIEW.zTarget=(matchMedia('(pointer:coarse)').matches && r.height<600) ? 1.2 : 1;
 }
 window.addEventListener('resize',resize);
 // The APK can turn the phone for a minigame that is taller than it is wide (Fruit Merge).
