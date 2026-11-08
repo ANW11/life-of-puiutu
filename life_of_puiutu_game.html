@@ -14696,7 +14696,9 @@ const TOMY_SAY={portrait:'tomy', bg:'#cfe6a8', tone:600};
 function trainSay(lines, then){ sayLines('Tomy', lines, Object.assign({}, TOMY_SAY, {then})); }
 function trainStart(){
   if(testMode() || TRAIN.on || (S.tut&&S.tut.training) || S.metGlow || !hubTomy()) return;
-  Object.assign(TRAIN,{on:true, step:-1, hits:0, jumped:false, cast:false, drank:false, talked:false, wob:0, waiting:false});
+  // pick up where you left off: closing the game mid-lesson used to start Tomy over at 1/6
+  const from=Math.max(0,Math.min(TRAIN_STEPS.length-1,(S.tut&&S.tut.trainStep)|0));
+  Object.assign(TRAIN,{on:true, step:from-1, hits:0, jumped:false, cast:false, drank:false, talked:false, wob:0, waiting:false});
   const t=hubTomy();
   let d={x:t.x+0.07*HUB.worldW, y:t.y+0.06*VH};   // on the grass a few steps from his sunbeam
   if(maskReady()){ const p=nearestWalk(d.x,d.y); if(p) d=p; }
@@ -14705,7 +14707,8 @@ function trainStart(){
   trainNext();
 }
 function trainNext(){
-  TRAIN.step++; TRAIN.waiting=true; trainPanel();   // the panel comes up once he has finished talking
+  TRAIN.step++; TRAIN.waiting=true; trainPanel();
+  S.tut=S.tut||{}; S.tut.trainStep=TRAIN.step; save();   // the panel comes up once he has finished talking
   const st=TRAIN_STEPS[TRAIN.step];
   if(!st){ trainFinish(); return; }
   const go=()=>{ const intro=document.getElementById('introScreen');
