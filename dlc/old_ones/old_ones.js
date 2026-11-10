@@ -139,7 +139,7 @@ function oldCityArea(){
     name:'City of Fangs', theme:'cave', mode:'topdown',
     hub:{
       music:'cave',
-      img:OLD_ART+'city_of_fangs.png?v=11', mask:OLD_ART+'city_of_fangs_walk.png?v=2', maskWalk:'yellow',
+      img:OLD_ART+'city_of_fangs.png?v=13', mask:OLD_ART+'city_of_fangs_walk.png?v=2', maskWalk:'yellow',
       walkTop:0.38, walkBot:0.87, scaleFar:0.76, scaleNear:1.00,
       spawn:{xf:0.0546, yf:0.4032},                             // the top of the Old Stairs (placed in game)
       // Pip, the Organization's junior surveyor, by the tent; Old Ash, an old cat, on the bedroll by the fire
