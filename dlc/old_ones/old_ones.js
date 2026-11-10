@@ -214,7 +214,7 @@ function oldRegisterItems(){
     {id:'old_pack',emoji:'',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="8" y="9" width="16" height="18" fill="#2a1a10"/><rect x="9" y="10" width="14" height="16" fill="#7a5a34"/><rect x="11" y="6" width="10" height="5" fill="#2a1a10"/><rect x="12" y="7" width="8" height="3" fill="#5a4024"/><rect x="9" y="15" width="14" height="3" fill="#5a4024"/><rect x="15" y="16" width="2" height="2" fill="#e8c060"/></svg>'),name:'Rat-sized Pack',desc:'Cheese, a sock, a letter home that was never sent.',price:99999,type:'key',trophy:true});
 }
 // dialogue faces: square crops around each head (the full sprites are too wide or too tall for the round portrait)
-const OLD_FACES={}; ['pip','old_ash','whisk'].forEach(n=>{ const im=new Image(); im.src=OLD_ART+'npc/'+n+'_face.png?v=1'; OLD_FACES[n]=im; });
+const OLD_FACES={}; ['pip','old_ash','whisk'].forEach(n=>{ const im=new Image(); im.src=OLD_ART+'npc/'+n+'_face.png?v=2'; OLD_FACES[n]=im; });
 const OLD_FACE=(k)=>OLD_FACES[{old_pip:'pip',old_ash:'old_ash',old_whisk:'whisk'}[k]]||PIG_IMG[k];
 function oldSay(name, img, lines, then, bg){ sayLines(name, lines, {img:OLD_FACE(img), bg:bg||'#1b2433', tone:340, then}); }
 function pipTalk(s){
@@ -297,83 +297,150 @@ function oldGateScene(){
 }
 
 // ── The Weaver: a giant tarantula on the Avenue of Fangs ──
-// It lives in the hole in the roof. Walk far enough down the avenue and it drops on its thread.
-// Walk and bite up close, a rear-and-lunge, and below half health it climbs back up and drops on
-// where you stand (its shadow warns you). Beaten, it curls up and sleeps; its purple eye (a Fang
-// Core) comes loose. Frames: art/boss/tar_0..4 (walk A, walk B, rear, lunge, curled).
-const OLD_TAR_IMG=[0,1,2,3,4].map(i=>{ const im=new Image(); im.src=OLD_ART+'boss/tar_'+i+'.png?v=1'; return im; });
-const OLD_TAR_H=170;                                     // height on screen at scale 1
+// It lives in the hole in the roof and drops on its thread when you walk down the avenue.
+// Its thick hair blunts claws (half damage). The braziers are the trick: bait its lunge into a lit
+// brazier and it gets singed, stunned, and takes double damage while it reels (that brazier goes
+// out for a while). It spits silk where you stand: the patches slow you, and burn away near a fire.
+// Below half health it also climbs back up its thread and slams down where you stand.
+// Frames: art/boss/tar_0..4 (walk A, walk B, rear, lunge, curled).
+const OLD_TAR_IMG=[0,1,2,3,4].map(i=>{ const im=new Image(); im.src=OLD_ART+'boss/tar_'+i+'.png?v=2'; return im; });
+const OLD_TAR_H=270;                                     // height on screen at scale 1 (it is big)
 const OLD_TAR_NAME=()=>LT('The Weaver','Țesătoarea');
+let OLD_AV_BRAZ=[[235,550],[770,550],[1300,550],[1795,550],[235,800],[770,800],[1300,800],[1885,800]];   // both rows, at the pedestal's foot                                      // the avenue's braziers, map pixels (set with the map)
+const oldBrazW=()=>OLD_AV_BRAZ.map(([x,y])=>({x:x/OLD_AV_W*HUB.worldW, y:y/OLD_AV_H*VH}));
+// every heavy landing shakes stones loose: some fall on you, the rest around the avenue
+function oldRockfall(b,now,n){ const c=HUB.cat, band=hubBand();
+  for(let i=0;i<n;i++){ const onYou=i<2, x=onYou ? c.x+(Math.random()-0.5)*120 : c.x+(Math.random()-0.5)*VW*0.9;
+    const y=onYou ? c.y+(Math.random()-0.5)*50 : band.top+Math.random()*(band.bot-band.top);
+    b.rocks.push({x, y, r:70, t0:now, landAt:now+1100+i*180}); } }
 const OLD_TARANTULA={
   init(b,H){ b.state = S.oldTarantulaDown ? 'down' : 'hidden'; b.lift=b.state==='hidden'?1:0; b.facing=-1; b.phase=0;
+    b.webs=[]; b.spits=[]; b.rocks=[]; b.brazOut=OLD_AV_BRAZ.map(()=>0); b.nextSpit=0; b.hinted=false;
     if(S.oldTarantulaDown){ b.defeated=true; b.hp=0; } },
   update(b,now){
-    const c=HUB.cat, dx=c.x-b.x, dy=c.y-b.y, dist=Math.hypot(dx,dy);
+    const c=HUB.cat;
+    // silk slows you: damp this frame's step while you stand in a patch
+    if(b.prevCat && b.webs.some(w=>Math.hypot(c.x-w.x,(c.y-w.y)*1.4)<w.r)){ c.x=b.prevCat.x+(c.x-b.prevCat.x)*0.4; c.y=b.prevCat.y+(c.y-b.prevCat.y)*0.4; }
+    b.prevCat={x:c.x,y:c.y};
+    // stones shaken loose from the roof: a warning circle, then they land
+    b.rocks=(b.rocks||[]).filter(r=>{ if(now<r.landAt) return true;
+      if(!r.hit){ r.hit=true; r.doneAt=now+500; SFX.tone&&SFX.tone(90,0.15,'square',0.04);
+        if(Math.hypot(c.x-r.x,(c.y-r.y)*1.3)<r.r) hubHurtPlayer(now, rnd(10,15), '#d8c8a8', r.x, r.y, 22); }
+      return now<r.doneAt; });
+    // silk burns near a lit brazier, and fades
+    const BZ=oldBrazW();
+    b.webs=b.webs.filter(w=>{ if(now>w.until) return false;
+      if(!w.burnAt && BZ.some((z,i)=>now>b.brazOut[i] && Math.hypot(w.x-z.x,w.y-z.y)<170)) w.burnAt=now+1200;
+      return !(w.burnAt && now>w.burnAt); });
+    // globs in flight become patches
+    b.spits=b.spits.filter(sp=>{ if(now<sp.landAt) return true; b.webs.push({x:sp.x,y:sp.y,r:80,until:now+8000}); return false; });
+    const dx=c.x-b.x, dy=c.y-b.y, dist=Math.hypot(dx,dy);
     if(b.state==='down' || b.defeated) return;
-    if(b.state==='hidden'){                              // up in the roof until you are close
-      if(c.x > b.x-VW*0.42){ b.state='drop'; b.t0=now; b.dropX=b.x; SFX.tone&&SFX.tone(110,0.6,'sawtooth',0.04);
+    if(b.state==='hidden'){
+      if(c.x > b.x-VW*0.42){ b.state='drop'; b.t0=now; SFX.tone&&SFX.tone(110,0.6,'sawtooth',0.04);
         toast(LT('Something is coming down on a thread...','Ceva coboară pe un fir...')); }
       return; }
-    if(b.state==='drop'){                                // slides down its silk, then lands with a thud
+    if(b.state==='drop'){
       const k=Math.min(1,(now-b.t0)/1700); b.lift=1-k*k;
-      if(k>=1){ b.lift=0; b.state='walk'; b.landAt=now; b.nextAtk=now+1300; SFX.tone&&SFX.tone(70,0.3,'square',0.06); HUB.shakeUntil=now+350; }
+      if(k>=1){ b.lift=0; b.state='walk'; b.nextAtk=now+1300; b.nextSpit=now+2600; SFX.tone&&SFX.tone(70,0.3,'square',0.06); HUB.shakeUntil=now+350; oldRockfall(b,now,4);
+        if(!b.hinted){ b.hinted=true; setTimeout(()=>toast(LT('Its thick hair blunts your claws. The braziers burn bright though...','Blana groasă îți tocește ghearele. Dar brazierele ard puternic...')),900); } }
       return; }
-    if(Math.abs(dx)>30 && b.state!=='lunge') b.facing=dx<0?-1:1;
+    if(b.state==='stunned'){ if(now>b.stunUntil){ b.state='walk'; b.nextAtk=now+900; } return; }
+    if(Math.abs(dx)>40 && b.state!=='lunge') b.facing=dx<0?-1:1;
     b.phase2=b.hp<=b.maxHp*0.5;
-    const sp=b.phase2?2.3:1.6;
+    const sp=b.phase2?2.4:1.7;
     if(b.state==='walk'){
-      if(dist>80){ hubBossMove(b, dx/dist*sp, dy/dist*sp*0.8); b.phase+=0.12; b.moving=true; } else b.moving=false;
+      if(dist>120){ hubBossMove(b, dx/dist*sp, dy/dist*sp*0.8); b.phase+=0.1; b.moving=true; } else b.moving=false;
+      if(now>b.nextSpit){ b.nextSpit=now+(b.phase2?3200:4600);               // a glob of silk where you stand
+        b.spits.push({fx:b.x, fy:b.y-OLD_TAR_H*hubScale(b.y)*0.5, x:c.x, y:c.y, t0:now, landAt:now+750});
+        SFX.tone&&SFX.tone(520,0.12,'triangle',0.035); }
       if(now>b.nextAtk){
-        if(b.phase2 && Math.random()<0.45){ b.state='climb'; b.t0=now; }
-        else if(dist<260){ b.state='rear'; b.t0=now; SFX.tone&&SFX.tone(240,0.15,'sawtooth',0.04); }
+        if(b.phase2 && Math.random()<0.4){ b.state='climb'; b.t0=now; }
+        else if(dist<380){ b.state='rear'; b.t0=now; b.stomp=Math.random()<0.35; SFX.tone&&SFX.tone(240,0.15,'sawtooth',0.04); }
         else b.nextAtk=now+400;
       }
-      if(dist<70 && now>(b.touchAt||0)){ b.touchAt=now+900; hubHurtPlayer(now, rnd(b.kind.cdmg[0],b.kind.cdmg[1])-4, '#c08cff', b.x, b.y, 14); }
+      if(dist<100 && now>(b.touchAt||0)){ b.touchAt=now+900; hubHurtPlayer(now, rnd(b.kind.cdmg[0],b.kind.cdmg[1])-4, '#c08cff', b.x, b.y, 16); }
       return; }
-    if(b.state==='rear'){                                // up on its back legs: the tell
-      if(now-b.t0>(b.phase2?480:650)){ b.state='lunge'; b.t0=now; b.la=Math.atan2(dy,dx); b.hitDone=false; } return; }
-    if(b.state==='lunge'){                               // a fast bite along the ground
-      const k=(now-b.t0)/320; hubBossMove(b, Math.cos(b.la)*11*(1-k), Math.sin(b.la)*8*(1-k));
-      if(!b.hitDone && Math.hypot(c.x-b.x,c.y-b.y)<95){ b.hitDone=true; hubHurtPlayer(now, rnd(b.kind.cdmg[0],b.kind.cdmg[1]), '#c08cff', b.x, b.y, 26); }
-      if(k>=1){ b.state='walk'; b.nextAtk=now+(b.phase2?900:1400); } return; }
-    if(b.state==='climb'){                               // back up the thread
-      const k=Math.min(1,(now-b.t0)/600); b.lift=k;
-      if(k>=1){ b.state='aim'; b.t0=now; } return; }
-    if(b.state==='aim'){                                 // its shadow follows you, then stops
-      b.x+= (c.x-b.x)*0.08; b.y+=(c.y-b.y)*0.08;
-      if(now-b.t0>1000){ b.state='slam'; b.t0=now; } return; }
+    if(b.state==='rear'){                                // up on its back legs: the tell, then it commits to a line
+      if(now-b.t0>(b.phase2?520:700) && b.stomp){ b.stomp=false; b.state='walk'; b.nextAtk=now+1400;   // slams its legs down instead
+        SFX.tone&&SFX.tone(70,0.3,'square',0.07); HUB.shakeUntil=now+400; oldRockfall(b,now,b.phase2?6:4);
+        if(Math.hypot(dx,dy)<150) hubHurtPlayer(now, rnd(b.kind.cdmg[0],b.kind.cdmg[1]), '#c08cff', b.x, b.y, 30); return; }
+      if(now-b.t0>(b.phase2?520:700)){ b.state='lunge'; b.t0=now; b.la=Math.atan2(dy,dx); b.hitDone=false; } return; }
+    if(b.state==='lunge'){
+      const k=(now-b.t0)/420; hubBossMove(b, Math.cos(b.la)*14*(1-k*0.6), Math.sin(b.la)*10*(1-k*0.6));
+      if(!b.hitDone && Math.hypot(c.x-b.x,c.y-b.y)<130){ b.hitDone=true; hubHurtPlayer(now, rnd(b.kind.cdmg[0],b.kind.cdmg[1]), '#c08cff', b.x, b.y, 30); }
+      // ran into a lit brazier: singed
+      const i=BZ.findIndex((z,j)=>now>b.brazOut[j] && Math.hypot(b.x-z.x,(b.y-z.y)*1.3)<110);
+      if(i>=0){ b.brazOut[i]=now+15000; b.state='stunned'; b.stunUntil=now+3200; b.singedAt=now;
+        floatText(b.x,b.y-OLD_TAR_H*hubScale(b.y)-20,LT('SINGED!','PÂRLITĂ!'),'#ffb347');
+        SFX.tone&&[180,140,100].forEach((f,j)=>SFX.tone(f,0.2,'sawtooth',0.05,j*0.08)); HUB.shakeUntil=now+300; return; }
+      if(k>=1){ b.state='walk'; b.nextAtk=now+(b.phase2?1000:1500); } return; }
+    if(b.state==='climb'){ const k=Math.min(1,(now-b.t0)/600); b.lift=k; if(k>=1){ b.state='aim'; b.t0=now; } return; }
+    if(b.state==='aim'){ b.x+=(c.x-b.x)*0.08; b.y+=(c.y-b.y)*0.08; if(now-b.t0>1000){ b.state='slam'; b.t0=now; } return; }
     if(b.state==='slam'){
       const k=Math.min(1,(now-b.t0)/260); b.lift=1-k;
-      if(k>=1){ b.lift=0; SFX.tone&&SFX.tone(60,0.35,'square',0.07); HUB.shakeUntil=now+400;
-        if(Math.hypot(c.x-b.x,c.y-b.y)<120) hubHurtPlayer(now, rnd(b.kind.cdmg[0]+4,b.kind.cdmg[1]+6), '#c08cff', b.x, b.y, 34);
+      if(k>=1){ b.lift=0; SFX.tone&&SFX.tone(60,0.35,'square',0.07); HUB.shakeUntil=now+400; oldRockfall(b,now,b.phase2?7:5);
+        if(Math.hypot(c.x-b.x,c.y-b.y)<160) hubHurtPlayer(now, rnd(b.kind.cdmg[0]+4,b.kind.cdmg[1]+6), '#c08cff', b.x, b.y, 36);
         b.state='walk'; b.nextAtk=now+1500; } return; }
   },
   hit(b,dmg,now,col,near){
-    if(b.defeated || !['walk','rear','lunge'].includes(b.state) || b.lift>0.2) return 0;
-    if(!near(b.x, b.y-40, 34)) return 0;
-    b.hp-=dmg; b.hitFlash=now; floatText(b.x,b.y-OLD_TAR_H*hubScale(b.y)-10,'-'+dmg,col);
+    if(b.defeated || !['walk','rear','lunge','stunned'].includes(b.state) || b.lift>0.2) return 0;
+    const H=OLD_TAR_H*hubScale(b.y);
+    if(!near(b.x, b.y-H*0.35, H*0.3)) return 0;
+    const d = b.state==='stunned' ? dmg*2 : Math.max(1,Math.round(dmg*0.5));   // hair blunts claws; a singed spider is wide open
+    b.hp-=d; b.hitFlash=now; floatText(b.x,b.y-H-10,'-'+d, b.state==='stunned'?'#ffb347':col);
     if(b.hp<=0) oldTarantulaDown(b,now);
     syncHUD(); save(); return 1;
   },
   draw(g,b){
+    const now=Date.now(), BZ=oldBrazW();
+    // the braziers it has knocked out: dark smoke over the bowl until they relight
+    BZ.forEach((z,i)=>{ if(now<(b.brazOut||[])[i]){ const sx=z.x-HUB.camx, sy=z.y-62*hubScale(z.y);
+      g.save(); g.fillStyle='rgba(20,14,26,.85)'; g.beginPath(); g.ellipse(sx,sy,26*hubScale(z.y),20*hubScale(z.y),0,0,7); g.fill();
+      g.fillStyle='rgba(160,150,170,.35)'; for(let k=0;k<3;k++){ const t=(now/900+k/3)%1; g.beginPath(); g.arc(sx+Math.sin(t*6+k)*6, sy-t*40, 6+t*8,0,7); g.fill(); }
+      g.restore(); } });
+    // silk on the floor
+    for(const w of (b.webs||[])){ const sx=w.x-HUB.camx, burn=w.burnAt?Math.max(0,(w.burnAt-now)/1200):1;
+      g.save(); g.globalAlpha=0.75*burn*Math.min(1,(w.until-now)/800); g.strokeStyle=w.burnAt?'#ffb060':'#e9e4f2'; g.lineWidth=2;
+      for(let k=0;k<8;k++){ const a=k/8*Math.PI*2; g.beginPath(); g.moveTo(sx,w.y); g.lineTo(sx+Math.cos(a)*w.r, w.y+Math.sin(a)*w.r*0.55); g.stroke(); }
+      for(const rr of [0.35,0.65,0.95]){ g.beginPath(); g.ellipse(sx,w.y,w.r*rr,w.r*rr*0.55,0,0,7); g.stroke(); }
+      g.restore(); }
+    // falling stones: a red circle that fills up, then the stone drops and cracks
+    for(const r of (b.rocks||[])){ const sx=r.x-HUB.camx, t=Math.min(1,(now-r.t0)/(r.landAt-r.t0));
+      g.save();
+      if(!r.hit){ g.strokeStyle='rgba(255,90,70,.85)'; g.lineWidth=2; g.beginPath(); g.ellipse(sx,r.y,r.r,r.r*0.5,0,0,7); g.stroke();
+        g.fillStyle='rgba(255,70,50,'+(0.12+0.25*t)+')'; g.beginPath(); g.ellipse(sx,r.y,r.r*t,r.r*0.5*t,0,0,7); g.fill();
+        if(t>0.6){ const fy=r.y-(1-(t-0.6)/0.4)*VH*0.8; g.fillStyle='#6d5a6e'; g.strokeStyle='#241a28'; g.lineWidth=2;
+          g.beginPath(); g.moveTo(sx-16,fy); g.lineTo(sx-6,fy-20); g.lineTo(sx+14,fy-14); g.lineTo(sx+18,fy+4); g.lineTo(sx,fy+14); g.closePath(); g.fill(); g.stroke(); } }
+      else { const k=(r.doneAt-now)/500; g.globalAlpha=Math.max(0,k); g.fillStyle='#5a4a5c';
+        for(let i=0;i<6;i++){ const a=i/6*Math.PI*2; g.fillRect(sx+Math.cos(a)*r.r*(1-k)*0.8-4, r.y+Math.sin(a)*r.r*0.4*(1-k)-4, 8, 8); } }
+      g.restore(); }
+    // globs in the air, with a warning circle where they land
+    for(const sp of (b.spits||[])){ const t=Math.min(1,(now-sp.t0)/(sp.landAt-sp.t0)), x=sp.fx+(sp.x-sp.fx)*t, y=sp.fy+(sp.y-sp.fy)*t-Math.sin(t*Math.PI)*120;
+      g.save(); g.strokeStyle='rgba(233,228,242,.6)'; g.setLineDash([6,6]); g.beginPath(); g.ellipse(sp.x-HUB.camx,sp.y,80,44,0,0,7); g.stroke(); g.setLineDash([]);
+      g.fillStyle='#efeaf7'; g.beginPath(); g.arc(x-HUB.camx,y,9,0,7); g.fill(); g.restore(); }
     if(b.state==='hidden') return;
-    const now=Date.now(), sc=hubScale(b.y), sx=b.x-HUB.camx, H=OLD_TAR_H*sc;
+    const sc=hubScale(b.y), sx=b.x-HUB.camx, H=OLD_TAR_H*sc;
+    // frame 4 is only the defeated pose (eye gone); everything else uses the walk/attack frames
     const fr = (b.state==='down'||b.defeated) ? 4 : b.state==='rear' ? 2 : b.state==='lunge' ? 3
-             : (b.state==='drop'||b.state==='climb'||b.state==='aim'||b.state==='slam') ? 4 : (b.moving ? Math.floor(b.phase)%2 : 0);
+             : (b.moving ? Math.floor(b.phase)%2 : 0);
     const im=OLD_TAR_IMG[fr]; const lift=(b.lift||0)*(b.y+60);
-    // its shadow on the floor (grows as it comes down; the warning before a slam)
     g.save(); const sh=1-(b.lift||0)*0.6; g.globalAlpha=0.35+(b.state==='aim'?0.25*Math.sin(now*0.02):0);
     g.fillStyle='#000'; g.beginPath(); g.ellipse(sx,b.y,H*0.75*sh,H*0.16*sh,0,0,7); g.fill(); g.restore();
-    // the silk thread up to the roof
-    if(lift>2 || b.state==='drop'){ g.save(); g.strokeStyle='rgba(230,220,255,.55)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(sx,0); g.lineTo(sx,b.y-lift-H*0.6); g.stroke(); g.restore(); }
+    if(lift>2 || b.state==='drop'){ g.save(); g.strokeStyle='rgba(230,220,255,.55)'; g.lineWidth=2; g.beginPath(); g.moveTo(sx,0); g.lineTo(sx,b.y-lift-H*0.6); g.stroke(); g.restore(); }
     if(im.complete && im.naturalWidth){
       const w=im.naturalWidth/im.naturalHeight*H;
       g.save(); g.translate(sx, b.y-lift); if(b.facing>0) g.scale(-1,1); g.imageSmoothingEnabled=false;
-      if(b.defeated){ g.filter='brightness(0.75)'; }
+      if(b.defeated) g.filter='brightness(0.75)';
+      else if(b.state==='stunned') g.filter='brightness(1.25) sepia(0.5)';
       g.drawImage(im, -w/2, -H, w, H); g.restore();
       if(now-(b.hitFlash||0)<110){ g.save(); g.globalAlpha=.45; g.globalCompositeOperation='lighter'; g.fillStyle='#fff';
         g.beginPath(); g.ellipse(sx,b.y-lift-H*0.45,w*0.4,H*0.4,0,0,7); g.fill(); g.restore(); }
     }
+    if(b.state==='stunned'){                              // singed: little flames and dizzy stars over it
+      g.save(); g.font='bold 20px "Jersey 10"'; g.textAlign='center';
+      for(let k=0;k<3;k++){ const a=now*0.005+k*2.1; g.fillStyle=k%2?'#ffb347':'#fff3a0'; g.fillText('*', sx+Math.cos(a)*H*0.35, b.y-H*0.95+Math.sin(a)*10); }
+      g.restore(); }
     if(!b.defeated && b.state!=='drop' && (b.lift||0)<0.5)
       drawBossPlate(sx, b.y-H-24, OLD_TAR_NAME(), Math.max(0,b.hp/b.maxHp), b.phase2?'#e070ff':'#a64dff', '#24102e');
   },
@@ -387,26 +454,26 @@ function oldTarantulaDown(b,now){
 }
 
 // ── Zone 1b: the Avenue of Fangs ──
-// The long avenue between the two sphinxes, 3072x1024 (two ChatGPT halves, ref/make_avenue.py).
+// The long avenue between the two sphinxes, 2304x1024 (a calm pixel-art map extended to the right and joined on the overlap, ref/make_avenue.py).
 // Arcades and braziers along it; Whisk hides in the alcove with the crumbs; at the far end a fallen
 // sphinx head blocks the way on (later content). Walk mask: ref/make_avenue_mask.py.
-const OLD_AV_W=3072, OLD_AV_H=1024, avx=x=>x/OLD_AV_W, avy=y=>y/OLD_AV_H;
+const OLD_AV_W=2304, OLD_AV_H=1024, avx=x=>x/OLD_AV_W, avy=y=>y/OLD_AV_H;
 function oldAvenueArea(){
   return {
     name:'Avenue of Fangs', theme:'cave', mode:'topdown',
     hub:{
       music:'cave',
-      img:OLD_ART+'fang_avenue.png?v=4', mask:OLD_ART+'fang_avenue_walk.png?v=4', maskWalk:'yellow',
-      walkTop:0.49, walkBot:0.82, scaleFar:0.84, scaleNear:1.00,
+      img:OLD_ART+'fang_avenue.png?v=6', mask:OLD_ART+'fang_avenue_walk.png?v=6', maskWalk:'yellow',
+      walkTop:0.55, walkBot:0.84, scaleFar:0.86, scaleNear:1.00,
       spawn:{xf:avx(150), yf:avy(640)},
-      boss:{xf:0.56, yf:0.66, dlc:OLD_TARANTULA, kind:{hp:520, cdmg:[11,17], xp:520, coins:180}},
+      boss:{xf:avx(870), yf:avy(680), dlc:OLD_TARANTULA, kind:{hp:520, cdmg:[11,17], xp:520, coins:180}},
       staff:[
-        {img:'old_whisk', xf:avx(1985), yf:avy(522), h:104, face:-1, r:130, name:'Whisk', talkFn:whiskTalk, lines:[]},
+        {img:'old_whisk', xf:avx(1545), yf:avy(575), h:62, face:-1, r:130, name:'Whisk', talkFn:whiskTalk, lines:[]},
       ],
       doors:[
         {xf:avx(60), yf:avy(640), r:90, glowXf:avx(40), glowYf:avy(560), glowR:80, glowRGB:'255,200,120', icon:'',
          to:'smilodon', label:'Back to the plaza', toSpawn:{xf:ofx(1385), yf:ofy(560)}},
-        {xf:avx(2900), yf:avy(560), r:150, icon:'',
+        {xf:avx(1950), yf:avy(600), r:150, icon:'',
          nearFn(){ if(HUB._blockedDoor!==this){ HUB._blockedDoor=this;
            toast(LT('A fallen stone head blocks the avenue. Purple light leaks through the cracks behind it.','Un cap de piatră prăbușit blochează bulevardul. Lumină mov se strecoară prin crăpăturile din spatele lui.')); }
            return 'skip'; }},
@@ -438,7 +505,7 @@ function oldAvenueArea(){
     AREAS.fangavenue=oldAvenueArea();
     // the DLC's NPC faces live in the base game's staff image table
     oldRegisterItems();
-    if(typeof PIG_IMG==='object') [['old_pip','pip'],['old_ash','old_ash'],['old_whisk','whisk']].forEach(([k,f])=>{ if(!PIG_IMG[k]){ const im=new Image(); im.src=OLD_ART+'npc/'+f+'.png?v=1'; PIG_IMG[k]=im; } });
+    if(typeof PIG_IMG==='object') [['old_pip','pip'],['old_ash','old_ash'],['old_whisk','whisk']].forEach(([k,f])=>{ if(!PIG_IMG[k]){ const im=new Image(); im.src=OLD_ART+'npc/'+f+'.png?v=2'; PIG_IMG[k]=im; } });
     setTimeout(()=>{ if(typeof AREA_LVL==='object'){ AREA_LVL.smilodon=AREA_LVL.smilodon||8; AREA_LVL.fangavenue=AREA_LVL.fangavenue||8; } }, 0);   // AREA_LVL is declared after AREAS
   },
   drawCine(){ if(HUB.descent) drawOldDescent(); else drawOldVaultGlow(); },
