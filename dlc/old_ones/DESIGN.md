@@ -10,11 +10,18 @@ Target: ~35-45 min of the DLC's ~2h. One hub map (dlc/old_ones/art/city_of_fangs
 - The pigs' survey camp
 - Broken stair down to the black sea (exit to zone 3, blocked by rubble for now)
 
-## The Forge Gate: three Fang Cores (BUILT)
-- **Rat (Whisk):** a deserter by the mural wall, no Federation gear. Bring him his pack from the camp by the stairs.
-- **Cat (Old Ash):** sleeps on a core by the fire. First talk: he points at Whisk's pack. Then he trades it for a Fish Broth or 30 fish.
-- **Pig (Pip):** with Agent Snout's Survey Badge he signs it out at once; without it, "a supervisor is on his way down" makes him panic and hand it over.
-- With all three: the cores light the gate one by one, the gate opens (`S.oldGateOpen`). The Forges are the next area.
+## The Forge Gate: three Fang Cores
+- **Purple: the Weaver** (boss, Avenue of Fangs). A giant tarantula with one purple crystal eye. It lives in the
+  hole in the roof and drops on its thread when you walk down the avenue; walks and bites, rears and lunges,
+  and below half health climbs back up and slams down where you stand (its shadow warns you). Beaten, it
+  curls up asleep (not dead) and the purple eye comes loose. `S.oldTarantulaDown`.
+- **Orange: Pip** (plaza): three crystal samples for his report. Snout's Survey Badge skips the paperwork.
+- **Green: Whisk** (the alcove on the avenue, only talks once the Weaver is down): bring his pack from the camp.
+- The cores light the gate one by one: purple, orange, green.
+
+## The Avenue of Fangs (zone 1b)
+Built to match the title screen: stepped buildings, ivory fang pillars, the forge, two rows of braziers with
+the mosaic avenue between them, webs and the hole in the roof. A fallen sphinx head blocks the far end.
 
 ## NPCs
 - **The rat deserter** (companion for zone 1), at the camp by the stairs

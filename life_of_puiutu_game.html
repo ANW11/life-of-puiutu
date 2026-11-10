@@ -4,7 +4,7 @@
 <script>/* DLC: every id listed here is loaded from dlc/<id>/<id>.js before the game starts. A build
    that does not include a DLC lists nothing (build_web.py rewrites this line). See dlcOwned(). */
 window.PUIUTU_DLC_LIST=['old_ones'];
-window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=14"><\/script>'); });</script>
+window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=18"><\/script>'); });</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -6985,6 +6985,7 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
     }
     return hits;
   }
+  if(b && b.dlc){ if(b.dlc.hit) hits+=b.dlc.hit(b,dmg,now,col,near)||0; return hits; }
   if(b && (b.ck||b.rk||b.mb)){
     const busy = b.stage==='summon' || b.stage==='crack' || b.stage==='rising' || b.stage==='idle' || b.stage==='wake' || b.stage==='talk';
     if(!b.defeated && !busy && near(b.x,b.y,b.mb?64:22)){       // the machine is a much bigger target
@@ -9031,6 +9032,7 @@ function enterHub(fromRight){
     const sk = ck ? {hp:300, cdmg:[9,14], xp:420, coins:150}
              : rk ? {hp:460, cdmg:[11,17], xp:480, coins:170}   // one bar, no second entity
              : mb ? {hp:640, cdmg:[12,18], xp:650, coins:260}
+             : H.boss.kind ? Object.assign({}, H.boss.kind)     // a DLC boss brings its own numbers
              : {hp:420, cdmg:[10,16], xp:350, coins:120};
     // the Mech Boar's health is the Ancient Mushroom's fight, not yours — only its damage scales (in hubHurtPlayer)
     const bhp = mb ? sk.hp : Math.round(sk.hp*HUB.lvBoss.hp);
@@ -9067,6 +9069,8 @@ function enterHub(fromRight){
       // once in the story; every time in Free Play, so it can be watched again
       HUB.hangar = ((S.hangarIntroSeen && !freeMode()) || !HUB.spirit) ? null
                  : {phase:'await', t0:0, pin:null, agent:{xf:0.655, yf:0.790, placed:false, facing:1, phase:0, moving:false}};
+    } else if(H.boss.dlc){                         // a DLC's boss runs entirely on its own hooks
+      HUB.boss.dlc=H.boss.dlc; if(H.boss.dlc.init) H.boss.dlc.init(HUB.boss, H);
     } else {
       // She is there every time you walk in. Every time she falls the piglet wheels his cart in over
       // her — he hands over the crystal once, and after that it is just "mind the cart".
@@ -11706,6 +11710,7 @@ function drawMechBoar(g,b){
 }
 function updateHubBoss(now){
   const b=HUB.boss, c=HUB.cat;
+  if(b.dlc){ b.dlc.update(b,now); return; }
   if(b.ck){ updateCatKing(b,now); return; }
   if(b.rk){ updateRatKing(b,now); return; }
   if(b.mb){ updateMechBoar(b,now); return; }
@@ -12604,7 +12609,7 @@ function drawHub(){
   const npPos=hubNpc(); if(npPos && !HUB.square) items.push({z:npPos.y, t:'hubnpc', p:npPos});
   // the Cat King keeps being drawn after he is beaten — a cat asleep in an enormous chair is
   // the whole point of the scene, so it must survive the fight that produced it
-  if(HUB.boss && (!HUB.boss.defeated || HUB.boss.ck || HUB.boss.rk || HUB.boss.mb)) items.push({z:HUB.boss.y, t:'boss'});
+  if(HUB.boss && (!HUB.boss.defeated || HUB.boss.ck || HUB.boss.rk || HUB.boss.mb || HUB.boss.dlc)) items.push({z:HUB.boss.y, t:'boss'});
   if(HUB.crystals) for(const k of HUB.crystals){ if(!k.dead) items.push({z:k.y, t:'crystal', k}); }
   if(HUB.spirit && HUB.spirit.placed) items.push({z:HUB.spirit.y, t:'spirit'});
   if(HUB.crowd) for(const a of HUB.crowd) items.push({z:a.y+(a.front?400:0), t:'crowd', a});
@@ -12895,6 +12900,7 @@ function drawHub(){
     } else if(it.t==='boss' && HUB.boss.ck){ drawCatKing(g, HUB.boss);
     } else if(it.t==='boss' && HUB.boss.rk){ drawRatKing(g, HUB.boss);
     } else if(it.t==='boss' && HUB.boss.mb){ drawMechBoar(g, HUB.boss);
+    } else if(it.t==='boss' && HUB.boss.dlc){ HUB.boss.dlc.draw(g, HUB.boss);
     } else if(it.t==='boss'){ const b=HUB.boss, sc=hubScale(b.y), sx=b.x-HUB.camx, now=Date.now();
       const bsz=200*sc;   // boss render height (the new Seby art is wide, so keep height modest)
       // animated frames where she has them; the shard throw keeps its single painted pose
@@ -14104,7 +14110,7 @@ function updateSnout(now){
   if(dialogueActive || HUB.cine) { BUDDY.nextIdle=Math.max(BUDDY.nextIdle, now+6000); BUDDY.pendingAt=Math.max(BUDDY.pendingAt||0, now+1200); return; }
   if(BUDDY.pending && now>BUDDY.pendingAt){ snoutSayQueue(BUDDY.pending); BUDDY.pending=null; BUDDY.nextIdle=now+16000; }
   // chatter: fight calls while Seby stands, otherwise whatever is on his mind in this room
-  const sebyUp = HUB.boss && !HUB.boss.defeated && !HUB.boss.ck && !HUB.boss.rk && !HUB.boss.mb && HUB.boss.introShown;
+  const sebyUp = HUB.boss && !HUB.boss.defeated && !HUB.boss.ck && !HUB.boss.rk && !HUB.boss.mb && !HUB.boss.dlc && HUB.boss.introShown;
   if(!BUDDY.bubble && now>BUDDY.nextIdle){
     const pool = sebyUp ? SNOUT_TALK.fight : (SNOUT_TALK.idle[curArea]||SNOUT_TALK.idle.any);
     snoutSay(snoutPick(pool));
@@ -14343,6 +14349,7 @@ function hudQuests(){
     out.push({key:'trotter', name:'Agent Trotter', img:()=>ARMY_SPR.pig_agent.walk[0], have:Math.min(TROTTER_TOLL,S.totalFish||0), n:TROTTER_TOLL, talk:true});
   if(S.sharkQuest==='on')
     out.push({key:'shark', name:'Rat Emissary', img:()=>ARMY_SPR.rat_emissary.walk[0], have:Math.min(2,S.sharkKills||0), n:2});
+  dlcHook('hudQuests', out);                       // a DLC's own quests get plaques too
   return out;
 }
 function updateQuestHUD(){
