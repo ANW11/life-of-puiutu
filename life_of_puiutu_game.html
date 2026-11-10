@@ -4,7 +4,7 @@
 <script>/* DLC: every id listed here is loaded from dlc/<id>/<id>.js before the game starts. A build
    that does not include a DLC lists nothing (build_web.py rewrites this line). See dlcOwned(). */
 window.PUIUTU_DLC_LIST=['old_ones'];
-window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=26"><\/script>'); });</script>
+window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=27"><\/script>'); });</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -3920,7 +3920,7 @@ function buildAreas(){
         merlin:{xf:0.13, yf:0.57},              // Merlin the wizard-dog, on the raised corner by the armchair
         potions:{xf:0.4997, yf:0.6212, r:322},       // the alchemy table of potions -> Color Sort minigame
         doors:[// the big castle gate (right): back to the Tower Garden courtyard
-               {xf:0.8138, yf:0.4683, r:60, glowXf:0.8129, glowYf:0.3322, glowR:134, to:'towergarden', label:'Back to Tower Garden', icon:'', toSpawn:{xf:0.45, yf:0.92}},
+               {xf:0.8138, yf:0.4683, r:60, glowXf:0.8108, glowYf:0.3069, glowR:128, to:'towergarden', label:'Back to Tower Garden', icon:'', toSpawn:{xf:0.45, yf:0.92}},
                // the stairwell's blue arch: down to the archive under the library
                {xf:0.310, yf:0.925, r:70, glowXf:0.3055, glowYf:0.8024, glowR:87, glowRGB:'120,120,255', to:'librarylower', label:'Lower Archive', icon:''}],
       },
@@ -4026,7 +4026,7 @@ function buildAreas(){
         walkTop:0.40, walkBot:0.96,
         scaleFar:0.64, scaleNear:1.06,
         spawn:{xf:0.0822, yf:0.6298},                 // arrive from the cave passage on the left
-        seal:{xf:0.5709, yf:0.5988, r:311, portalXf:0.5707, portalYf:0.6001},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
+        seal:{xf:0.5709, yf:0.5988, r:311, portalXf:0.5695, portalYf:0.6511},  // barrier center (puzzle); portalXf/Yf = the opened swirl's center
         // the left ruins archway -> back up to Ocean Depths
         doors:[{xf:0.061, yf:0.562, r:112, glowXf:0.060, glowYf:0.503, glowR:56, glowRGB:'90,180,255', to:'ocean1', label:'Back to Ocean Depths', icon:'', toSpawn:{xf:0.13, yf:0.66}}],
       },

@@ -139,7 +139,7 @@ function oldCityArea(){
     name:'City of Fangs', theme:'cave', mode:'topdown',
     hub:{
       music:'cave',
-      img:OLD_ART+'city_of_fangs.png?v=13', mask:OLD_ART+'city_of_fangs_walk.png?v=2', maskWalk:'yellow',
+      img:OLD_ART+'city_of_fangs.png?v=14', mask:OLD_ART+'city_of_fangs_walk.png?v=2', maskWalk:'yellow',
       walkTop:0.38, walkBot:0.87, scaleFar:0.76, scaleNear:1.00,
       spawn:{xf:0.0546, yf:0.4032},                             // the top of the Old Stairs (placed in game)
       // Pip, the Organization's junior surveyor, by the tent; Old Ash, an old cat, on the bedroll by the fire
@@ -160,17 +160,17 @@ function oldCityArea(){
          to:'librarylower', label:'Up the Old Stairs', icon:'', toSpawn:{xf:0.90, yf:0.68}},
         // the Forge Gate: three round sockets, three Fang Cores (one from the rats, the cats, the pigs)
         {xf:ofx(2290), yf:ofy(490), r:110, glowXf:ofx(2296), glowYf:ofy(240), glowR:110, glowRGB:'170,90,255', icon:'',
-         glowIf(){ return S.oldGateOpen || oldCoresHeld()>=3; },
-         labelFn(){ return S.oldGateOpen ? LT('The Forges','Forjele') : LT('Set the three Fang Cores','Pune cele trei Fang Cores'); },
-         nearFn(){ if(S.oldGateOpen || oldCoresHeld()>=3) return;
-           if(HUB._blockedDoor!==this){ HUB._blockedDoor=this; const n=oldCoresHeld();
-             toast(n ? LT('Three round sockets in the gate. You have '+n+' of the cores that fit them.','Trei locașuri rotunde în poartă. Ai '+n+' din miezurile care intră în ele.')
+         glowIf(){ return S.oldGateOpen || oldCoresHeld()>0; },
+         labelFn(){ return S.oldGateOpen ? LT('The Forges','Forjele') : LT('Set the Fang Core','Pune Fang Core'); },
+         nearFn(){ if(S.oldGateOpen || oldCoresHeld()>0) return;
+           if(HUB._blockedDoor!==this){ HUB._blockedDoor=this; const n=oldSocketed().length;
+             toast(n ? LT(n+' of the 3 sockets glow. The others wait for their cores.',n+' din cele 3 locașuri strălucesc. Celelalte își așteaptă miezurile.')
                      : LT('Three round sockets in the gate, all empty. Something the size of a fist went in each.','Trei locașuri rotunde în poartă, toate goale. În fiecare intra ceva cât un pumn.')); }
            return 'skip'; },
          useFn(){ if(!S.oldGateOpen) oldGateScene(); else toast(LT('The Forges are still being built. Soon.','Forjele încă se construiesc. În curând.')); }},
         // the far end of the plaza: the long avenue between the two sphinxes
-        {xf:ofx(1385), yf:ofy(505), r:95, glowXf:ofx(1385), glowYf:ofy(430), glowR:80, glowRGB:'255,200,120', icon:'',
-         to:'fangavenue', label:'The Avenue of Fangs', toSpawn:{xf:0.05, yf:0.62}},
+        {xf:0.5673, yf:0.4798, r:95, glowXf:0.5709, glowYf:0.3954, glowR:159, glowRGB:'255,200,120', icon:'',
+         to:'fangavenue', label:'The Avenue of Fangs', toSpawn:{xf:0.0396, yf:0.6627}},
         // three purple crystal clusters Pip needs as samples (only once he has asked)
         ...OLD_SHARDS.map((p,i)=>({xf:ofx(p[0]), yf:ofy(p[1]), r:95, glowXf:ofx(p[0]), glowYf:ofy(p[1]-30), glowR:46, glowRGB:'190,120,255', icon:'',
           labelFn(){ return LT('Chip off a crystal sample','Desprinde o mostră de cristal'); },
@@ -198,11 +198,13 @@ function oldCityArea(){
 // Pigs: Pip logged one as bank property; Agent Snout's Survey Badge, or the word "supervisor", frees it.
 const OLD_CORE_IDS=['old_core_purple','old_core_pig','old_core_rat'];   // purple (the tarantula's eye), orange (Pip), green (Whisk)
 const OLD_SHARDS=[[410,470],[1570,860],[2440,790]];                     // the crystal clusters Pip wants samples from (map pixels)
-function oldCoresHeld(){ return OLD_CORE_IDS.filter(id=>S.items.includes(id)).length; }
+function oldSocketed(){ return S.oldSocketed || (S.oldGateOpen ? OLD_CORE_IDS.slice() : []); }    // cores already set in the gate
+function oldHasCore(id){ return S.items.includes(id) || oldSocketed().includes(id); }               // ever got it (carried or set)
+function oldCoresHeld(){ return OLD_CORE_IDS.filter(id=>S.items.includes(id)).length; }            // carried, not yet set
 function oldGiveCore(id, msgEn, msgRo){
   if(!S.items.includes(id)) S.items.push(id); save(); syncHUD();
   SFX.tone&&[523,659,784].forEach((f,i)=>SFX.tone(f,0.18,'triangle',0.04,i*0.09));
-  const n=oldCoresHeld();
+  const n=OLD_CORE_IDS.filter(oldHasCore).length;
   toast(LT(msgEn+' ('+n+'/3 Fang Cores)', msgRo+' ('+n+'/3 Fang Cores)'));
 }
 function oldRegisterItems(){
@@ -218,7 +220,7 @@ const OLD_FACES={}; ['pip','old_ash','whisk'].forEach(n=>{ const im=new Image();
 const OLD_FACE=(k)=>OLD_FACES[{old_pip:'pip',old_ash:'old_ash',old_whisk:'whisk'}[k]]||PIG_IMG[k];
 function oldSay(name, img, lines, then, bg){ sayLines(name, lines, {img:OLD_FACE(img), bg:bg||'#1b2433', tone:340, then}); }
 function pipTalk(s){
-  if(S.items.includes('old_core_pig') || S.oldGateOpen){ oldSay('Pip','old_pip',[LT('I have filed a report saying nothing happened. Please make it true.','Am depus un raport că nu s-a întâmplat nimic. Vă rog să fie adevărat.')]); return; }
+  if(oldHasCore('old_core_pig')){ oldSay('Pip','old_pip',[LT('I have filed a report saying nothing happened. Please make it true.','Am depus un raport că nu s-a întâmplat nimic. Vă rog să fie adevărat.')]); return; }
   const give=()=>{ S.oldPipQuest='done'; oldGiveCore('old_core_pig','Pip hands over the orange core, and nearly his hat.','Pip îți dă miezul portocaliu, și aproape și casca.'); updateQuestHUD(); };
   if(S.items.includes('snoutbadge')){
     oldSay('Pip','old_pip',[LT('Is that a Survey Badge? Agent Snout\'s badge?','Aia e o insignă de topograf? Insigna agentului Snout?'),
@@ -247,7 +249,7 @@ function ashTalk(s){
     LT('The rat went down the avenue, past the big cats. He hides in the dark bits of the wall.','Șobolanul a luat-o pe bulevard, pe lângă pisicile mari. Se ascunde în colțurile întunecate ale zidului.')]);
 }
 function whiskTalk(s){
-  if(S.items.includes('old_core_rat')){ oldSay('Whisk','old_whisk',[LT('I am not going back up. Not to them. Maybe I will stay with the old cat. He does not shout.','Nu mă mai întorc sus. Nu la ei. Poate rămân cu motanul bătrân. El nu țipă.')],null,'#2a1210'); return; }
+  if(oldHasCore('old_core_rat')){ oldSay('Whisk','old_whisk',[LT('I am not going back up. Not to them. Maybe I will stay with the old cat. He does not shout.','Nu mă mai întorc sus. Nu la ei. Poate rămân cu motanul bătrân. El nu țipă.')],null,'#2a1210'); return; }
   if(S.items.includes('old_pack')){
     oldSay('Whisk','old_whisk',[LT('My pack! You brought my pack. The letter is still in it.','Rucsacul meu! Mi-ai adus rucsacul. Scrisoarea e încă în el.'),
       LT('Here. The stone. They would have put it on a spear. I would rather it went in a door.','Poftim. Piatra. Ar fi pus-o pe o suliță. Mai bine să intre într-o ușă.')],
@@ -264,36 +266,49 @@ const OLD_SOCKETS=[[2215,310],[2292,215],[2377,310]];   // the centres of the th
 const OLD_SOCKET_ORB=[['core_purple','170,90,255'],['core_orange','255,150,40'],['core_green','70,230,110']];   // spider, pig, rat
 const OLD_ORB_IMG={}; OLD_SOCKET_ORB.forEach(([f])=>{ const im=new Image(); im.src=OLD_ART+f+'.png?v=1'; OLD_ORB_IMG[f]=im; });
 function drawOldGate(){
-  const n = S.oldGateOpen ? 3 : (HUB.oldGate ? HUB.oldGate.lit : 0); if(!n && !HUB.oldGate) return;
-  const now=Date.now(), W=HUB.worldW, k=W/OLD_CITY_W;
+  const G=HUB.oldGate, now=Date.now();
+  if(G && now>G.until) HUB.oldGate=null;                                       // scene skipped or over
+  const set=oldSocketed(), hide=(HUB.oldGate&&HUB.oldGate.hide)||[];
+  const idx=OLD_CORE_IDS.map((id,i)=>(set.includes(id)&&!hide.includes(id))?i:-1).filter(i=>i>=0);
+  if(!idx.length && !HUB.oldGate) return;
+  const W=HUB.worldW, k=W/OLD_CITY_W;
   g.save(); g.globalCompositeOperation='lighter';
-  for(let i=0;i<n;i++){ const [x,y]=OLD_SOCKETS[i], [f,rgb]=OLD_SOCKET_ORB[i], sx=x*k-HUB.camx, sy=y/OLD_CITY_H*VH, R=30*k*(1+0.08*Math.sin(now*0.005+i));
+  idx.forEach(i=>{ const [x,y]=OLD_SOCKETS[i], [f,rgb]=OLD_SOCKET_ORB[i], sx=x*k-HUB.camx, sy=y/OLD_CITY_H*VH, R=30*k*(1+0.08*Math.sin(now*0.005+i));
     const gr=g.createRadialGradient(sx,sy,2,sx,sy,R*2.4); gr.addColorStop(0,'rgba('+rgb+',.75)'); gr.addColorStop(0.4,'rgba('+rgb+',.4)'); gr.addColorStop(1,'rgba('+rgb+',0)');
-    g.fillStyle=gr; g.beginPath(); g.arc(sx,sy,R*2.4,0,7); g.fill(); }
+    g.fillStyle=gr; g.beginPath(); g.arc(sx,sy,R*2.4,0,7); g.fill(); });
   g.globalCompositeOperation='source-over'; g.imageSmoothingEnabled=false;
-  for(let i=0;i<n;i++){ const im=OLD_ORB_IMG[OLD_SOCKET_ORB[i][0]]; if(!(im&&im.complete&&im.naturalWidth)) continue;   // the orb itself, sitting in its socket
+  idx.forEach(i=>{ const im=OLD_ORB_IMG[OLD_SOCKET_ORB[i][0]]; if(!(im&&im.complete&&im.naturalWidth)) return;   // the orb itself, sitting in its socket
     const [x,y]=OLD_SOCKETS[i], sx=x*k-HUB.camx, sy=y/OLD_CITY_H*VH, h=54*k, w=im.naturalWidth/im.naturalHeight*h;
-    g.drawImage(im, sx-w/2, sy-h*0.5, w, h); }
+    g.drawImage(im, sx-w/2, sy-h*0.5, w, h); });
   g.globalCompositeOperation='lighter';
-  const G=HUB.oldGate; if(G && G.flashAt){ const t=now-G.flashAt; if(t<900){ g.fillStyle='rgba(200,150,255,'+(0.6*(1-t/900))+')'; g.fillRect(0,0,VW,VH); } }
+  if(HUB.oldGate && HUB.oldGate.flashAt){ const t=now-HUB.oldGate.flashAt; if(t<900){ g.fillStyle='rgba(200,150,255,'+(0.6*(1-t/900))+')'; g.fillRect(0,0,VW,VH); } }
   g.restore();
 }
+// set every core you carry into its socket; the third one opens the gate
 function oldGateScene(){
   const W=()=>HUB.worldW, C=()=>HUB.cine, sub=(t)=>{ if(C()) C().sub = t ? {text:t, t0:Date.now()} : null; };
-  HUB.oldGate={lit:0, flashAt:0};
+  const going=OLD_CORE_IDS.filter(id=>S.items.includes(id)); if(!going.length) return;
+  // the save changes now, so skipping the scene can't lose a core; the scene only reveals them one by one
+  S.oldSocketed=OLD_CORE_IDS.filter(id=>oldSocketed().includes(id)||going.includes(id));
+  S.items=S.items.filter(i=>!OLD_CORE_IDS.includes(i));
+  const opens=S.oldSocketed.length===3; if(opens) S.oldGateOpen=true;
+  save(); syncHUD();
   const ding=(i)=>SFX.tone&&SFX.tone([392,494,587][i],0.4,'triangle',0.05);
-  const steps=[
-    {cam:()=>ofx(2296)*W(), ms:900},
-    {ms:1100, do:()=>{ HUB.oldGate.lit=1; ding(0); sub(LT('The spider\'s eye clicks into place.','Ochiul păianjenului intră cu un clic.')); }},
-    {ms:1100, do:()=>{ HUB.oldGate.lit=2; ding(1); sub(LT('Then the pig\'s.','Apoi al porcului.')); }},
-    {ms:1300, do:()=>{ HUB.oldGate.lit=3; ding(2); sub(LT('Then the rat\'s.','Apoi al șobolanului.')); }},
-    {ms:2600, do:()=>{ HUB.oldGate.flashAt=Date.now(); if(SFX.tone) for(let i=0;i<6;i++) SFX.tone(60+i*4,0.4,'sawtooth',0.03,i*0.25);
+  const SAY={old_core_purple:LT('The spider\'s eye clicks into place.','Ochiul păianjenului intră cu un clic.'),
+             old_core_pig:LT('The pig\'s core clicks into place.','Miezul porcului intră cu un clic.'),
+             old_core_rat:LT('The rat\'s core clicks into place.','Miezul șobolanului intră cu un clic.')};
+  const steps=[{cam:()=>ofx(2296)*W(), ms:900}];
+  going.forEach(id=>steps.push({ms:1200, do:()=>{ const G=HUB.oldGate; if(G) G.hide=G.hide.filter(h=>h!==id); ding(OLD_CORE_IDS.indexOf(id)); sub(SAY[id]); }}));
+  if(opens) steps.push(
+    {ms:2600, do:()=>{ if(HUB.oldGate) HUB.oldGate.flashAt=Date.now(); if(SFX.tone) for(let i=0;i<6;i++) SFX.tone(60+i*4,0.4,'sawtooth',0.03,i*0.25);
       sub(LT('Three hands, one door. Something deep in the wall starts to turn.','Trei mâini, o singură ușă. Ceva adânc în zid începe să se rotească.')); }},
-    {ms:3200, do:()=>{ S.items=S.items.filter(i=>!OLD_CORE_IDS.includes(i)); S.oldGateOpen=true; save(); syncHUD(); HUB.oldGate=null;
-      sub(LT('The Forge Gate is open.','Poarta Forjei e deschisă.')); }},
-    {ms:400, do:()=>sub(null)},
-  ];
-  if(!cineStart('oldgate', steps, true)){ S.oldGateOpen=true; save(); }
+    {ms:3200, do:()=>sub(LT('The Forge Gate is open.','Poarta Forjei e deschisă.'))});
+  else { const n=S.oldSocketed.length;
+    steps.push({ms:2200, do:()=>sub(LT(n+' of 3. The gate hums, and waits for the rest.',n+' din 3. Poarta vibrează și îi așteaptă pe ceilalți.'))}); }
+  steps.push({ms:400, do:()=>sub(null)});
+  const total=steps.reduce((a,st)=>a+(st.ms||0),0);
+  HUB.oldGate={hide:going.slice(), flashAt:0, until:Date.now()+total+500};
+  if(!cineStart('oldgate', steps, true)) HUB.oldGate=null;
 }
 
 // ── The Weaver: a giant tarantula on the Avenue of Fangs ──
@@ -465,14 +480,14 @@ function oldAvenueArea(){
       music:'cave',
       img:OLD_ART+'fang_avenue.png?v=8', mask:OLD_ART+'fang_avenue_walk.png?v=7', maskWalk:'yellow',
       walkTop:0.55, walkBot:0.84, scaleFar:0.86, scaleNear:1.00,
-      spawn:{xf:avx(150), yf:avy(640)},
-      boss:{xf:avx(930), yf:avy(680), dlc:OLD_TARANTULA, kind:{hp:520, cdmg:[11,17], xp:520, coins:180}},
+      spawn:{xf:0.0396, yf:0.6627},                              // placed in game
+      boss:{xf:0.3414, yf:0.662, dlc:OLD_TARANTULA, kind:{hp:520, cdmg:[11,17], xp:520, coins:180}},
       staff:[
         {img:'old_whisk', xf:avx(1545), yf:avy(575), h:62, face:-1, r:130, name:'Whisk', talkFn:whiskTalk, lines:[]},
       ],
       doors:[
-        {xf:avx(60), yf:avy(640), r:90, glowXf:avx(40), glowYf:avy(560), glowR:80, glowRGB:'255,200,120', icon:'',
-         to:'smilodon', label:'Back to the plaza', toSpawn:{xf:ofx(1385), yf:ofy(560)}},
+        {xf:0.0413, yf:0.6749, r:90, glowXf:0.0488, glowYf:0.6424, glowR:80, glowRGB:'255,200,120', icon:'',
+         to:'smilodon', label:'Back to the plaza', toSpawn:{xf:0.5673, yf:0.54}},
         {xf:avx(1950), yf:avy(600), r:150, icon:'',
          nearFn(){ if(HUB._blockedDoor!==this){ HUB._blockedDoor=this;
            toast(LT('A fallen stone head blocks the avenue. Purple light leaks through the cracks behind it.','Un cap de piatră prăbușit blochează bulevardul. Lumină mov se strecoară prin crăpăturile din spatele lui.')); }
