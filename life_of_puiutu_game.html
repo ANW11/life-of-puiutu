@@ -4,7 +4,7 @@
 <script>/* DLC: every id listed here is loaded from dlc/<id>/<id>.js before the game starts. A build
    that does not include a DLC lists nothing (build_web.py rewrites this line). See dlcOwned(). */
 window.PUIUTU_DLC_LIST=['old_ones'];
-window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=28"><\/script>'); });</script>
+window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=31"><\/script>'); });</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -1555,7 +1555,16 @@ document.fonts&&['20px "Jersey 10"','20px "Silkscreen"','20px "VT323"'].forEach(
 <script>
 // The title screen follows the player's own clock: sunrise, day, sunset or night.
 function menuSkyFor(h){ return h>=5&&h<9 ? 'sunrise' : h>=9&&h<17 ? 'day' : h>=17&&h<20 ? 'sunset' : 'night'; }
+// An owned DLC can bring its own title screen: PUIUTU_DLC[id].menu = {bg, title, titleWidth}.
+function dlcMenuArt(){ const D=window.PUIUTU_DLC||{};
+  for(const id in D){ if(D[id].menu && typeof dlcOwned==='function' && dlcOwned(id)) return D[id].menu; } return null; }
 function updateMenuSky(){ const el=document.getElementById('menuBg'); if(!el) return;
+  const m=dlcMenuArt();
+  if(m){ if(el.dataset.sky==='dlc') return; el.dataset.sky='dlc';
+    el.style.transition='none'; el.style.backgroundImage="url('"+m.bg+"')";          // no fade in from the day sky
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.style.transition=''; }));
+    const t=document.querySelector('#menu .title-img'); if(t && m.title){ t.src=m.title; if(m.titleWidth) t.style.width=m.titleWidth; }
+    return; }
   const k=menuSkyFor(new Date().getHours()); if(el.dataset.sky===k) return; el.dataset.sky=k;
   el.style.backgroundImage="url('ui/menu_"+k+".jpg')"; }
 document.addEventListener('DOMContentLoaded', ()=>{ updateMenuSky(); setInterval(updateMenuSky, 60000); });

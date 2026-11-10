@@ -501,6 +501,8 @@ function oldAvenueArea(){
 // ── the hooks the base game calls ──
 (window.PUIUTU_DLC = window.PUIUTU_DLC || {}).old_ones = {
   name: 'Shadow of the Old Ones',
+  // owning the DLC swaps the title screen: the city with the Old Ones in the dark, the logo with the DLC's title
+  menu: {bg: OLD_ART+'menu_bg.jpg?v=2', title: OLD_ART+'menu_title.png?v=2', titleWidth: 'min(40%,680px)'},
   // a fresh AREAS (start, reset): open the vault in the Lower Archive and add the DLC's areas
   areas(AREAS){
     const H=AREAS.librarylower && AREAS.librarylower.hub; if(!H) return;
