@@ -262,7 +262,7 @@ function whiskTalk(s){
     LT('I cannot go back there. The old cat is there. Cats eat rats, everybody says so.','Nu pot să mă întorc acolo. E motanul bătrân acolo. Pisicile mănâncă șobolani, toată lumea zice.')],null,'#2a1210');
 }
 // the three sockets in the gate (map pixels) and the scene that fills them
-const OLD_SOCKETS=[[2215,310],[2292,215],[2377,310]];   // the centres of the three bronze rings
+const OLD_SOCKETS=[[2216,312],[2296,215],[2382,312]];   // the centres of the three bronze rings (measured on the map)
 const OLD_SOCKET_ORB=[['core_purple','170,90,255'],['core_orange','255,150,40'],['core_green','70,230,110']];   // spider, pig, rat
 const OLD_ORB_IMG={}; OLD_SOCKET_ORB.forEach(([f])=>{ const im=new Image(); im.src=OLD_ART+f+'.png?v=1'; OLD_ORB_IMG[f]=im; });
 function drawOldGate(){
@@ -279,7 +279,7 @@ function drawOldGate(){
   g.globalCompositeOperation='source-over'; g.imageSmoothingEnabled=false;
   idx.forEach(i=>{ const im=OLD_ORB_IMG[OLD_SOCKET_ORB[i][0]]; if(!(im&&im.complete&&im.naturalWidth)) return;   // the orb itself, sitting in its socket
     const [x,y]=OLD_SOCKETS[i], sx=x*k-HUB.camx, sy=y/OLD_CITY_H*VH, h=54*k, w=im.naturalWidth/im.naturalHeight*h;
-    g.drawImage(im, sx-w/2, sy-h*0.5, w, h); });
+    g.drawImage(im, sx-w/2, sy-h*0.41, w, h); });   // the sphere sits at 41% of the sprite's height, claws below
   g.globalCompositeOperation='lighter';
   if(HUB.oldGate && HUB.oldGate.flashAt){ const t=now-HUB.oldGate.flashAt; if(t<900){ g.fillStyle='rgba(200,150,255,'+(0.6*(1-t/900))+')'; g.fillRect(0,0,VW,VH); } }
   g.restore();
