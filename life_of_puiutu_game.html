@@ -4,7 +4,7 @@
 <script>/* DLC: every id listed here is loaded from dlc/<id>/<id>.js before the game starts. A build
    that does not include a DLC lists nothing (build_web.py rewrites this line). See dlcOwned(). */
 window.PUIUTU_DLC_LIST=['old_ones'];
-window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=31"><\/script>'); });</script>
+window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=32"><\/script>'); });</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -15138,10 +15138,13 @@ function showScreen(id){
   if(id==='menu') zoneMusic();                 // the menu has its own theme; the game's waits
   else MENU_MUSIC.stop();
 }
+// The themes owned DLCs bring, by name (PUIUTU_DLC[id].music = {name: theme}); a hub uses one with music:'name'.
+function dlcThemes(){ const out={}, D=window.PUIUTU_DLC||{};
+  for(const id in D){ if(D[id].music && dlcOwned(id)) Object.assign(out, D[id].music); } return out; }
 // Start whichever theme belongs on screen now (and silence the rest): the menu's, or the room's.
 function zoneMusic(){
   [MUSIC,BOSS_MUSIC,OCEAN_MUSIC,SEWER_MUSIC,SLUM_MUSIC,MECH_MUSIC,SEBY_MUSIC,CAT_MUSIC,RAT_MUSIC,MENU_MUSIC,
-   WIND_SOUND,NATURE_MUSIC,BEACH_MUSIC,CAVE_MUSIC,WARREN_MUSIC].forEach(m=>m.stop());
+   WIND_SOUND,NATURE_MUSIC,BEACH_MUSIC,CAVE_MUSIC,WARREN_MUSIC,...Object.values(dlcThemes())].forEach(m=>m.stop());
   if(!S.musicOn) return;
   const menu=document.getElementById('menu'); if(menu && menu.classList.contains('active')){ MENU_MUSIC.start(); return; }
   const H=A&&A.mode==='topdown'&&A.hub, live=HUB.boss&&!HUB.boss.defeated;
@@ -15157,6 +15160,7 @@ function zoneMusic(){
   else if(H&&H.music==='beach')  BEACH_MUSIC.start();
   else if(H&&H.music==='cave')   CAVE_MUSIC.start();
   else if(H&&H.music==='warren') WARREN_MUSIC.start();
+  else if(H&&H.music&&dlcThemes()[H.music]) dlcThemes()[H.music].start();   // a DLC place's own theme
   else if(H&&H.slumMusic) SLUM_MUSIC.start();
   else if(H&&H.sewerChase) SEWER_MUSIC.start();
   else if(H&&H.underwater) OCEAN_MUSIC.start();
@@ -19934,7 +19938,7 @@ function warOpen(){
   document.body.appendChild(f); paused=true; try{ f.focus(); }catch(e){}
   if(typeof SFX!=='undefined'&&SFX.click) SFX.click();
 }
-function stopAllMusic(){ MUSIC.stop(); OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEWER_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); RAT_MUSIC.stop(); }
+function stopAllMusic(){ Object.values(dlcThemes()).forEach(m=>m.stop()); MUSIC.stop(); OCEAN_MUSIC.stop(); BOSS_MUSIC.stop(); MECH_MUSIC.stop(); SLUM_MUSIC.stop(); SEWER_MUSIC.stop(); SEBY_MUSIC.stop(); CAT_MUSIC.stop(); RAT_MUSIC.stop(); }
 function resumeAreaMusic(){ if(!S.musicOn) return; SFX.ac(); const H=A&&A.hub;
   if(H&&H.abyssBoss)BOSS_MUSIC.start(); else if(H&&H.mechboar&&HUB.boss&&!HUB.boss.defeated)MECH_MUSIC.start(); else if(H&&H.sebyMusic&&HUB.boss&&!HUB.boss.defeated)SEBY_MUSIC.start();
   else if(H&&H.catMusic&&HUB.boss&&!HUB.boss.defeated)CAT_MUSIC.start(); else if(H&&H.ratking&&HUB.boss&&!HUB.boss.defeated)RAT_MUSIC.start(); else if(H&&H.slumMusic)SLUM_MUSIC.start(); else if(H&&H.sewerChase)SEWER_MUSIC.start();

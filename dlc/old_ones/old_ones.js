@@ -138,7 +138,7 @@ function oldCityArea(){
   return {
     name:'City of Fangs', theme:'cave', mode:'topdown',
     hub:{
-      music:'cave',
+      music:'ruins',
       img:OLD_ART+'city_of_fangs.png?v=14', mask:OLD_ART+'city_of_fangs_walk.png?v=2', maskWalk:'yellow',
       walkTop:0.38, walkBot:0.87, scaleFar:0.76, scaleNear:1.00,
       spawn:{xf:0.0546, yf:0.4032},                             // the top of the Old Stairs (placed in game)
@@ -477,7 +477,7 @@ function oldAvenueArea(){
   return {
     name:'Avenue of Fangs', theme:'cave', mode:'topdown',
     hub:{
-      music:'cave',
+      music:'ruins',
       img:OLD_ART+'fang_avenue.png?v=8', mask:OLD_ART+'fang_avenue_walk.png?v=7', maskWalk:'yellow',
       walkTop:0.55, walkBot:0.84, scaleFar:0.86, scaleNear:1.00,
       spawn:{xf:0.0396, yf:0.6627},                              // placed in game
@@ -498,9 +498,47 @@ function oldAvenueArea(){
   };
 }
 
+// ── The ruins of the smilodons: the DLC's own theme (areas with music:'ruins') ──
+// D Hijaz (D Eb F# G A Bb C), the old mode of a lost desert city, one bar of four seconds:
+// D · Eb · D · Cm. A drone and a low choir hold the hall, a hand drum keeps "dum . tek tek",
+// an oud-like pluck walks the scale, and every other pass a wooden flute sings the tune.
+// Crystals chime, water drips, and everything rings back off the stone (a long echo on the bus).
+// Built on first use: this script loads before the base game's instruments (PLACE_SOUND) exist.
+let RUINS_MUSIC=null;
+function oldRuinsMusic(){ if(RUINS_MUSIC) return RUINS_MUSIC; RUINS_MUSIC=Object.assign(Object.create(PLACE_SOUND),{ timer:null, step:0, bus:null, noise:null, curve:null, fuzz:null, gain:0.6,
+  roots:[73.42, 77.78, 73.42, 65.41],                                          // D2 · Eb2 · D2 · C2
+  chords:[[146.83,185.00,220.00],[155.56,196.00,233.08],[146.83,185.00,220.00],[130.81,155.56,196.00]],
+  oud:[[293.66,369.99,440.00,311.13,293.66,220.00],[311.13,392.00,466.16,392.00,369.99,311.13],
+       [293.66,311.13,369.99,392.00,369.99,311.13],[261.63,311.13,392.00,311.13,293.66,261.63]],
+  tune:[[440.00,587.33,622.25,739.99],[783.99,0,739.99,622.25],[739.99,622.25,587.33,0],[523.25,622.25,587.33,0]],
+  out(c){                                                                     // the stone hall: a long, darkening echo
+    if(!this.bus){ PLACE_SOUND.out.call(this,c);
+      const d=c.createDelay(1.5), fb=c.createGain(), lp=c.createBiquadFilter(), wet=c.createGain();
+      d.delayTime.value=0.47; fb.gain.value=0.42; lp.type='lowpass'; lp.frequency.value=1600; wet.gain.value=0.45;
+      this.bus.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(wet); wet.connect(c.destination); }
+    return this.bus; },
+  dum(c,t,v){ this.timpani(c,t,98,v); },                                      // the frame drum's deep stroke
+  tek(c,t,v){ this.hiss(c,t,v,0.06,'bandpass',2600,1.4); },                   // the rim
+  start(){ this.loop('ruins', 4, function(c,t){
+    const i=this.step%4, root=this.roots[i], ch=this.chords[i], B=1;
+    this.pad(c,t,73.42,4.6,0.03); this.pad(c,t,110,4.6,0.016);              // the drone never leaves D
+    this.bass(c,t,root,3.8,0.022); this.choir(c,t,ch,4.2,0.016);
+    // dum . tek tek | dum tek . tek  (the second drum bar answers the first)
+    const pat = this.step%2 ? [[0,'d'],[1,'t'],[1.5,'d'],[3,'t']] : [[0,'d'],[2,'t'],[2.5,'t'],[3.5,'t']];
+    if(this.step>=2) pat.forEach(([b,k])=> k==='d' ? this.dum(c,t+b*B,0.11) : this.tek(c,t+b*B,0.03));
+    this.oud[i].forEach((f,k)=>{ if(Math.random()<0.8) this.pluck(c,t+k*(B*2/3),f,1.4,0.016); });
+    if(Math.floor(this.step/4)%2===1) this.tune[i].forEach((f,k)=>{ if(f) this.flute(c,t+k*B,f,k===3||!this.tune[i][k+1]?1.9:1.05,0.026); });
+    if(Math.random()<0.5) this.bell(c,t+1+Math.random()*2,[1174.66,1479.98,1760.00][this.step%3],2.6,0.012);   // a crystal answers
+    for(let d=0;d<2;d++) if(Math.random()<0.5) this.drip(c,t+Math.random()*4,0.016);
+    this.wind(c,t,5,0.012,200,600);
+  }); } });
+  return RUINS_MUSIC; }
+
 // ── the hooks the base game calls ──
 (window.PUIUTU_DLC = window.PUIUTU_DLC || {}).old_ones = {
   name: 'Shadow of the Old Ones',
+  // its own music, by the hub's music: key (see zoneMusic)
+  get music(){ return {ruins: oldRuinsMusic()}; },
   // owning the DLC swaps the title screen: the city with the Old Ones in the dark, the logo with the DLC's title
   menu: {bg: OLD_ART+'menu_bg.jpg?v=2', title: OLD_ART+'menu_title.png?v=2', titleWidth: 'min(40%,680px)'},
   // a fresh AREAS (start, reset): open the vault in the Lower Archive and add the DLC's areas
