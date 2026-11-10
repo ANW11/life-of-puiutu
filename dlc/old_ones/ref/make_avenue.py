@@ -5,7 +5,18 @@ import numpy as np
 from PIL import Image, ImageFilter
 L=np.asarray(Image.open('dlc/old_ones/ref/avenue_left_src.png').convert('RGB')).astype(float)
 R=np.asarray(Image.open('dlc/old_ones/ref/avenue_right_src.png').convert('RGB')).astype(float)
-dx=768; H,W=L.shape[:2]; ov=W-dx; a=L[:,dx:]; b=R[:,:ov]
+dx=768; H,W=L.shape[:2]; ov=W-dx
+# the extension came back with a different colour cast: match it to the left image using the overlap,
+# where both show the same scene (per-channel histogram matching, built from the overlap only)
+def match(src_all, src_ov, ref_ov):
+    out=np.empty_like(src_all)
+    for ch in range(3):
+        s=np.sort(src_ov[...,ch].ravel()); r=np.sort(ref_ov[...,ch].ravel())
+        q=np.linspace(0,1,256); sv=np.quantile(s,q); rv=np.quantile(r,q)
+        out[...,ch]=np.interp(src_all[...,ch], sv, rv)
+    return out
+R=match(R, R[:,:ov], L[:,dx:])
+a=L[:,dx:]; b=R[:,:ov]
 cost=np.abs(a-b).sum(2); cost[:,:60]+=1e5; cost[:,ov-60:]+=1e5
 acc=cost.copy(); back=np.zeros_like(cost,dtype=int)
 for y in range(1,H):

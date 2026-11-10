@@ -463,7 +463,7 @@ function oldAvenueArea(){
     name:'Avenue of Fangs', theme:'cave', mode:'topdown',
     hub:{
       music:'cave',
-      img:OLD_ART+'fang_avenue.png?v=6', mask:OLD_ART+'fang_avenue_walk.png?v=6', maskWalk:'yellow',
+      img:OLD_ART+'fang_avenue.png?v=7', mask:OLD_ART+'fang_avenue_walk.png?v=6', maskWalk:'yellow',
       walkTop:0.55, walkBot:0.84, scaleFar:0.86, scaleNear:1.00,
       spawn:{xf:avx(150), yf:avy(640)},
       boss:{xf:avx(870), yf:avy(680), dlc:OLD_TARANTULA, kind:{hp:520, cdmg:[11,17], xp:520, coins:180}},
