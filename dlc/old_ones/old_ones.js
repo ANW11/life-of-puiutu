@@ -306,7 +306,7 @@ function oldGateScene(){
 const OLD_TAR_IMG=[0,1,2,3,4].map(i=>{ const im=new Image(); im.src=OLD_ART+'boss/tar_'+i+'.png?v=2'; return im; });
 const OLD_TAR_H=270;                                     // height on screen at scale 1 (it is big)
 const OLD_TAR_NAME=()=>LT('The Weaver','Țesătoarea');
-let OLD_AV_BRAZ=[[235,550],[770,550],[1300,550],[1795,550],[235,800],[770,800],[1300,800],[1885,800]];   // both rows, at the pedestal's foot                                      // the avenue's braziers, map pixels (set with the map)
+let OLD_AV_BRAZ=[[235,550],[770,550],[1300,550],[1830,550],[235,800],[770,800],[1300,800],[1845,800]];   // both rows, at the pedestal's foot                                      // the avenue's braziers, map pixels (set with the map)
 const oldBrazW=()=>OLD_AV_BRAZ.map(([x,y])=>({x:x/OLD_AV_W*HUB.worldW, y:y/OLD_AV_H*VH}));
 // every heavy landing shakes stones loose: some fall on you, the rest around the avenue
 function oldRockfall(b,now,n){ const c=HUB.cat, band=hubBand();
@@ -454,7 +454,7 @@ function oldTarantulaDown(b,now){
 }
 
 // ── Zone 1b: the Avenue of Fangs ──
-// The long avenue between the two sphinxes, 2304x1024 (a calm pixel-art map extended to the right and joined on the overlap, ref/make_avenue.py).
+// The long avenue between the two sphinxes, 2304x1024: the Weaver's lair (cocoons, webs, a shaft of light from the roof onto the skull mosaic), extended to the right and joined on the overlap (ref/make_avenue.py).
 // Arcades and braziers along it; Whisk hides in the alcove with the crumbs; at the far end a fallen
 // sphinx head blocks the way on (later content). Walk mask: ref/make_avenue_mask.py.
 const OLD_AV_W=2304, OLD_AV_H=1024, avx=x=>x/OLD_AV_W, avy=y=>y/OLD_AV_H;
@@ -463,10 +463,10 @@ function oldAvenueArea(){
     name:'Avenue of Fangs', theme:'cave', mode:'topdown',
     hub:{
       music:'cave',
-      img:OLD_ART+'fang_avenue.png?v=7', mask:OLD_ART+'fang_avenue_walk.png?v=6', maskWalk:'yellow',
+      img:OLD_ART+'fang_avenue.png?v=8', mask:OLD_ART+'fang_avenue_walk.png?v=7', maskWalk:'yellow',
       walkTop:0.55, walkBot:0.84, scaleFar:0.86, scaleNear:1.00,
       spawn:{xf:avx(150), yf:avy(640)},
-      boss:{xf:avx(870), yf:avy(680), dlc:OLD_TARANTULA, kind:{hp:520, cdmg:[11,17], xp:520, coins:180}},
+      boss:{xf:avx(930), yf:avy(680), dlc:OLD_TARANTULA, kind:{hp:520, cdmg:[11,17], xp:520, coins:180}},
       staff:[
         {img:'old_whisk', xf:avx(1545), yf:avy(575), h:62, face:-1, r:130, name:'Whisk', talkFn:whiskTalk, lines:[]},
       ],
