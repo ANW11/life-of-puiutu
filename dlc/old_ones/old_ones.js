@@ -1,0 +1,313 @@
+// ════════════════════════════════════════════════════════════════════════════════════════
+//  Life of Puiutu: DLC "Shadow of the Old Ones"
+//  Lives entirely in dlc/old_ones/ (this script + art/). The base game never names these files:
+//  it loads this script only when the DLC is part of the build (PUIUTU_DLC_LIST) and only calls
+//  the hooks registered at the bottom (areas, drawCine) when dlcOwned('old_ones').
+//  Everything here runs inside the base game's page and uses its globals (S, HUB, g, VW, VH,
+//  LT, toast, save, decorImg, cineStart, drawCat, CATS, SFX, roundRectPath, enterArea, AREAS…).
+// ════════════════════════════════════════════════════════════════════════════════════════
+//──────── DLC: SHADOW OF THE OLD ONES — the vault, the old stairs, the City of Fangs ────────
+// The wheel vault in the Lower Archive answers Seby's purple crystal. Behind it a stair cut for
+// saber-toothed cats goes down to their dead city. The first time, the crystal opens the wheel
+// (a short scene); every time after, walking in plays the descent and then the reveal.
+const OLD_ART='dlc/old_ones/art/';
+const OLD_STAIRS_IMG=OLD_ART+'old_stairwell.png?v=4', OLD_REVEAL_IMG=OLD_ART+'old_city_reveal.png?v=2';
+// Puiutu's way down the stairwell picture (its own pixels, 1536x1024): out of the library door,
+// the long flight to the right, the landing with the candles, the second flight back to the left
+// (on its treads, read off the picture), and onto the flat slab at its foot. He never walks the
+// boulders: from the slab the camera looks across to the purple mouth of the cavern instead.
+// [x, y, stairs] : stairs = he hops down step by step on the way TO this point
+const OLD_STAIRS_PATH=[[150,250],[1160,672,1],[1198,672],[960,718,1],[760,778,1],[560,838,1],[372,900,1],[300,924]];
+const OLD_CAVE_MOUTH=[1380,900], OLD_LOOK_MS=1700, OLD_FADE_MS=900;   // the look across, then the fade
+function oldVaultOpen(){
+  const W=()=>HUB.worldW, C=()=>HUB.cine, sub=(t)=>{ if(C()) C().sub = t ? {text:t, t0:Date.now()} : null; };
+  const open=()=>{ S.oldOnesOpen=true; save(); };
+  const steps=[
+    {cam:()=>0.80*W(), ms:900, do:()=>{ SFX.pad&&[110,164.81,220].forEach((f,i)=>SFX.pad(f,4,i?0.012:0.02,0,'sine')); }},
+    {ms:2800, do:()=>{ C().vaultGlowAt=Date.now(); sub(LT('The purple crystal hums. The stones on the wheel answer it.','Cristalul mov vibrează. Pietrele de pe roată îi răspund.')); }},
+    {ms:2400, do:()=>{ sub(LT('Something very heavy moves inside the wall.','Ceva foarte greu se mișcă în perete.'));
+      if(SFX.tone) for(let i=0;i<6;i++) SFX.tone(55+i*3,0.35,'sawtooth',0.03,i*0.3); }},
+    {ms:1300, do:()=>{ sub(null); open(); C().flashAt=Date.now(); }},
+    {ms:3400, do:()=>sub(LT('Behind it, stairs. Older than the library. Older than the city.','În spate, scări. Mai vechi decât biblioteca. Mai vechi decât orașul.'))},
+    {ms:500, do:()=>sub(null)},
+  ];
+  [OLD_STAIRS_IMG, OLD_REVEAL_IMG].forEach(decorImg);   // ready before the way down
+  if(!cineStart('oldvault', steps)) open();             // seen before (or Free Play replays): just open it
+}
+function oldStairsDescent(){
+  [OLD_STAIRS_IMG, OLD_REVEAL_IMG].forEach(decorImg);
+  const P=OLD_STAIRS_PATH; let L=0; const seg=[];
+  for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0], P[i][1]-P[i-1][1]); seg.push({a:P[i-1], b:P[i], s:L, d, stair:!!P[i][2]}); L+=d; }
+  const walkMs=L/0.23;                                   // ~230 picture pixels a second
+  HUB.descent={t0:Date.now(), seg, len:L, walkMs, revealMs:8800, subAt:[0.04,0.36,0.68], subI:0, done:false};
+  const go=()=>{ HUB.descent=null;
+    if(typeof AREA_LVL==='object' && !AREA_LVL.smilodon) AREA_LVL.smilodon=8;
+    if(AREAS.smilodon) enterArea('smilodon', false);
+    else toast(LT('The City of Fangs is still being built. Soon.','Orașul Colților încă se construiește. În curând.')); };
+  cineStart('olddescent', [ {until:()=>HUB.descent && HUB.descent.done}, {ms:20, do:()=>setTimeout(go, 40)} ], true);
+}
+function oldDescentPos(k){
+  const D=HUB.descent, at=k*D.len;
+  for(const sg of D.seg){ if(at<=sg.s+sg.d || sg===D.seg[D.seg.length-1]){
+    const u=Math.max(0,Math.min(1,(at-sg.s)/sg.d)), x=sg.a[0]+(sg.b[0]-sg.a[0])*u, y=sg.a[1]+(sg.b[1]-sg.a[1])*u;
+    const hop=sg.stair ? Math.abs(Math.sin((at-sg.s)/72*Math.PI))*13 : 0;   // one hop per tread on a flight; a landing is just a trot
+    return {x, y, hop, facing: sg.b[0]<sg.a[0]?-1:1, dist:at}; } }
+}
+function drawOldDescent(){
+  const D=HUB.descent; if(!D) return; const now=Date.now(), t=now-D.t0;
+  const ok=im=>im&&im.complete&&im.naturalWidth;
+  g.save(); g.fillStyle='#07040c'; g.fillRect(0,0,VW,VH);
+  if(t < D.walkMs+OLD_LOOK_MS){
+    const k=Math.min(1,t/D.walkMs), im=decorImg(OLD_STAIRS_IMG);
+    // the lines on the way down, one per flight
+    if(D.subI<D.subAt.length && k>=D.subAt[D.subI] && HUB.cine){
+      const L=[LT('The steps were cut for paws four times his size.','Treptele fuseseră tăiate pentru labe de patru ori mai mari decât ale lui.'),
+               LT('On the walls, great cats hunted things with too many legs.','Pe pereți, pisici uriașe vânau lucruri cu prea multe picioare.'),
+               LT('Further down, the crystals in the rock glowed on their own.','Mai jos, cristalele din piatră luminau singure.')];
+      HUB.cine.sub={text:L[D.subI], t0:now}; D.subI++; }
+    if(HUB.cine && HUB.cine.sub && now-HUB.cine.sub.t0>3600) HUB.cine.sub=null;
+    if(ok(im)){
+      // landscape, filling the screen: a touch of zoom so the camera can follow him down
+      const s=Math.max(VW/im.naturalWidth, VH/im.naturalHeight)*1.12;
+      const w=im.naturalWidth*s, h=im.naturalHeight*s, p=oldDescentPos(k);
+      // once he is down, the camera drifts from him to the cavern's mouth
+      const lk=Math.max(0,Math.min(1,(t-D.walkMs)/OLD_LOOK_MS)), le=lk*lk*(3-2*lk);
+      const fx=p.x+(OLD_CAVE_MOUTH[0]-p.x)*le, fy=p.y+(OLD_CAVE_MOUTH[1]-p.y)*le;
+      const ox = Math.min(0,Math.max(VW-w, VW/2-fx*s));
+      const oy = Math.min(0,Math.max(VH-h, VH*0.55-fy*s));
+      g.imageSmoothingEnabled=false; g.drawImage(im, ox, oy, w, h);
+      const cx=ox+p.x*s, cy=oy+p.y*s;
+      // it gets darker the deeper he goes; a little light stays round him
+      // the light follows what the camera looks at: him, then the cavern's purple mouth
+      const lx=ox+fx*s, ly=oy+fy*s-30;
+      const dark=0.12+0.38*k-0.25*le, gr=g.createRadialGradient(lx,ly,40,lx,ly,Math.max(VW,VH)*0.75);
+      gr.addColorStop(0,'rgba(6,3,14,0)'); gr.addColorStop(1,'rgba(6,3,14,'+(dark+0.3)+')');
+      g.fillStyle=gr; g.fillRect(0,0,VW,VH);
+      g.fillStyle='rgba(6,3,14,'+(dark*0.5)+')'; g.fillRect(0,0,VW,VH);
+      const walking=t<D.walkMs;
+      drawCat(g, cx, cy-(walking?p.hop*s:0), p.facing, walking?p.dist*0.045:0, CATS.puiutu, {scale:(62*s)/74, moving:walking});
+    }
+    if(t<700){ g.fillStyle='rgba(7,4,12,'+(1-t/700)+')'; g.fillRect(0,0,VW,VH); }
+    const fadeAt=D.walkMs+OLD_LOOK_MS-OLD_FADE_MS;
+    if(t>fadeAt){ g.fillStyle='rgba(7,4,12,'+Math.min(1,(t-fadeAt)/OLD_FADE_MS)+')'; g.fillRect(0,0,VW,VH); }
+  } else {
+    // the last step opens onto a ledge over the cavern: the City of Fangs
+    const rt=t-(D.walkMs+OLD_LOOK_MS), im=decorImg(OLD_REVEAL_IMG);
+    if(HUB.cine) HUB.cine.sub=null;
+    if(ok(im)){
+      // full screen: it starts close on the ledge and slowly pulls back over the city
+      const e=Math.min(1,rt/D.revealMs), ease=e<0.5?2*e*e:1-Math.pow(-2*e+2,2)/2;
+      const s=Math.max(VW/im.naturalWidth, VH/im.naturalHeight)*(1.22-0.2*ease);
+      const w=im.naturalWidth*s, h=im.naturalHeight*s;
+      const ox=Math.min(0,Math.max(VW-w, VW*0.5-w*(0.38+0.14*ease))), oy=Math.min(0,Math.max(VH-h, VH*0.5-h*0.55));
+      g.imageSmoothingEnabled=false; g.drawImage(im, ox, oy, w, h);
+    }
+    const ta=Math.max(0,Math.min(1,(rt-1400)/900))*Math.max(0,Math.min(1,(D.revealMs-600-rt)/700));
+    if(ta>0){
+      g.globalAlpha=ta; g.textAlign='center';
+      const t1=LT('SHADOW OF THE OLD ONES','UMBRA CELOR VECHI'), t2=LT('Chapter I: The City of Fangs','Capitolul I: Orașul Colților');
+      g.font='bold 54px "Jersey 10"'; const w1=g.measureText(t1).width; g.font='bold 24px "Jersey 10"'; const w2=g.measureText(t2).width;
+      const bw=Math.max(w1,w2)+64, by=VH*0.16;
+      g.fillStyle='rgba(0,0,0,.6)'; roundRectPath(VW/2-bw/2, by-50, bw, 96, 14); g.fill();
+      g.fillStyle='#ffe7b0'; g.font='bold 54px "Jersey 10"'; g.fillText(t1, VW/2, by);
+      g.fillStyle='#d9c2ff'; g.font='bold 24px "Jersey 10"'; g.fillText(t2, VW/2, by+32);
+      g.globalAlpha=1; }
+    if(rt<900){ g.fillStyle='rgba(7,4,12,'+(1-rt/900)+')'; g.fillRect(0,0,VW,VH); }
+    if(rt>D.revealMs-700){ g.fillStyle='rgba(7,4,12,'+Math.min(1,(rt-(D.revealMs-700))/700)+')'; g.fillRect(0,0,VW,VH); }
+    if(rt>=D.revealMs) D.done=true;
+  }
+  g.restore();
+}
+// while the crystal wakes the wheel: a purple pulse over the vault
+function drawOldVaultGlow(){
+  const C=HUB.cine; if(!C || !C.vaultGlowAt || curArea!=='librarylower') return;
+  const t=Date.now()-C.vaultGlowAt, a=Math.min(1,t/900)*(0.6+0.4*Math.sin(t*0.012));
+  const gx=0.924*HUB.worldW-HUB.camx, gy=0.43*VH, R=150+Math.min(1,t/3000)*80;
+  g.save(); g.globalCompositeOperation='lighter';
+  const gr=g.createRadialGradient(gx,gy,6,gx,gy,R); gr.addColorStop(0,'rgba(190,110,255,'+(0.75*a)+')'); gr.addColorStop(1,'rgba(120,40,255,0)');
+  g.fillStyle=gr; g.beginPath(); g.arc(gx,gy,R,0,7); g.fill(); g.restore();
+}
+
+// ── Zone 1: the City of Fangs (hub) ──
+// One wide map (2576x1024), two halves stitched: the foot of the Old Stairs and the abandoned camp on
+// the left, the mural wall, two sphinx statues either side of the avenue, the skull mosaic and a
+// plain ring mosaic, the pigs' survey camp, the sealed Forge Gate, the broken stair to the black sea.
+// Walk mask: city_of_fangs_walk.png (yellow), drawn by ref/make_city_mask.py.
+const OLD_CITY_W=2576, OLD_CITY_H=1024, ofx=x=>x/OLD_CITY_W, ofy=y=>y/OLD_CITY_H;
+function oldCityArea(){
+  return {
+    name:'City of Fangs', theme:'cave', mode:'topdown',
+    hub:{
+      music:'cave',
+      img:OLD_ART+'city_of_fangs.png?v=9', mask:OLD_ART+'city_of_fangs_walk.png?v=2', maskWalk:'yellow',
+      walkTop:0.38, walkBot:0.87, scaleFar:0.76, scaleNear:1.00,
+      spawn:{xf:0.0546, yf:0.4032},                             // the top of the Old Stairs (placed in game)
+      // Pip, the Organization's junior surveyor, by the tent; Old Ash, an old cat, on the bedroll by the fire
+      staff:[
+        {img:'old_pip', xf:ofx(1880), yf:ofy(728), h:118, face:-1, r:110, name:'Pip', talkFn:pipTalk,
+         lines:[LT('Oh! You are not a supervisor. Good. I mean, hello.','Oh! Nu ești supervizor. Bine. Adică, bună ziua.'),
+                LT('Junior Surveyor Pip, Organization field office. They said ten minutes. That was three days ago.','Topograf stagiar Pip, biroul de teren al Organizației. Mi-au zis zece minute. Asta a fost acum trei zile.'),
+                LT('Everything down here is bank property now. It says so on the crates. I stamped them myself.','Tot ce e aici jos e acum proprietatea băncii. Scrie pe lăzi. Le-am ștampilat eu.'),
+                LT('Please do not touch the statue core. It is logged. Logged things are very important.','Vă rog nu atingeți miezul statuii. E înregistrat. Lucrurile înregistrate sunt foarte importante.')]},
+        {img:'old_ash', xf:ofx(195), yf:ofy(790), h:70, face:1, r:150, name:'Old Ash', talkFn:ashTalk,
+         lines:[LT('Mrrr. Another one from upstairs. Mind the fire, it is the only warm thing for a mile.','Mrrr. Încă unul de sus. Ai grijă la foc, e singurul lucru cald pe o milă.'),
+                LT('I came down after a mouse. That was a long time ago. The mouse got away. I stayed.','Am coborât după un șoarece. A fost demult. Șoarecele a scăpat. Eu am rămas.'),
+                LT('Up there they fight about whose flag is on the wall. Down here the walls belong to somebody nobody remembers.','Acolo sus se ceartă al cui steag e pe zid. Aici jos zidurile sunt ale cuiva de care nu-și mai amintește nimeni.'),
+                LT('The big cats carved everything. Look at the pictures on the walls. Read them slowly.','Pisicile mari au sculptat tot. Uită-te la imaginile de pe pereți. Citește-le încet.')]},
+        {img:'old_whisk', xf:ofx(700), yf:ofy(540), h:104, face:1, r:120, name:'Whisk', talkFn:whiskTalk, lines:[]},
+      ],
+      doors:[
+        {xf:0.0666, yf:0.4354, r:80, glowXf:0.0441, glowYf:0.2751, glowR:80, glowRGB:'255,200,120',
+         to:'librarylower', label:'Up the Old Stairs', icon:'', toSpawn:{xf:0.90, yf:0.68}},
+        // the Forge Gate: three round sockets, three Fang Cores (one from the rats, the cats, the pigs)
+        {xf:ofx(2290), yf:ofy(490), r:110, glowXf:ofx(2296), glowYf:ofy(240), glowR:110, glowRGB:'170,90,255', icon:'',
+         glowIf(){ return S.oldGateOpen || oldCoresHeld()>=3; },
+         labelFn(){ return S.oldGateOpen ? LT('The Forges','Forjele') : LT('Set the three Fang Cores','Pune cele trei Fang Cores'); },
+         nearFn(){ if(S.oldGateOpen || oldCoresHeld()>=3) return;
+           if(HUB._blockedDoor!==this){ HUB._blockedDoor=this; const n=oldCoresHeld();
+             toast(n ? LT('Three round sockets in the gate. You have '+n+' of the cores that fit them.','Trei locașuri rotunde în poartă. Ai '+n+' din miezurile care intră în ele.')
+                     : LT('Three round sockets in the gate, all empty. Something the size of a fist went in each.','Trei locașuri rotunde în poartă, toate goale. În fiecare intra ceva cât un pumn.')); }
+           return 'skip'; },
+         useFn(){ if(!S.oldGateOpen) oldGateScene(); else toast(LT('The Forges are still being built. Soon.','Forjele încă se construiesc. În curând.')); }},
+        // Whisk's pack, left behind at the camp by the stairs
+        {xf:ofx(262), yf:ofy(752), r:70, glowXf:ofx(262), glowYf:ofy(735), glowR:42, glowRGB:'255,210,140', icon:'',
+         labelFn(){ return LT('A rat-sized pack','Un rucsac de șobolan'); },
+         glowIf(){ return !S.oldPack; },
+         nearFn(){ return S.oldPack ? 'skip' : undefined; },
+         useFn(){ S.oldPack=true; if(!S.items.includes('old_pack')) S.items.push('old_pack'); save(); syncHUD();
+           toast(LT('A tiny pack: a crust of cheese, a spare sock, a letter never sent.','Un rucsac mic: o coajă de brânză, o șosetă de rezervă, o scrisoare netrimisă.')); }},
+      ],
+    },
+    platforms:[], npcs:[],
+  };
+}
+
+// ── The Forge Gate: three Fang Cores, one from each side ──
+// Rats: Whisk, a deserter hiding by the mural wall, dug one out of a tunnel; he wants his pack back.
+// Cats: Old Ash has been sleeping on one (the warmest stone down here); a fish broth or 30 fish buys it.
+// Pigs: Pip logged one as bank property; Agent Snout's Survey Badge, or the word "supervisor", frees it.
+const OLD_CORE_IDS=['old_core_rat','old_core_cat','old_core_pig'];
+function oldCoresHeld(){ return OLD_CORE_IDS.filter(id=>S.items.includes(id)).length; }
+function oldGiveCore(id, msgEn, msgRo){
+  if(!S.items.includes(id)) S.items.push(id); save(); syncHUD();
+  SFX.tone&&[523,659,784].forEach((f,i)=>SFX.tone(f,0.18,'triangle',0.04,i*0.09));
+  const n=oldCoresHeld();
+  toast(LT(msgEn+' ('+n+'/3 Fang Cores)', msgRo+' ('+n+'/3 Fang Cores)'));
+}
+function oldRegisterItems(){
+  if(typeof SHOP!=='object' || SHOP.some(i=>i.id==='old_core_rat')) return;
+  SHOP.push(
+    {id:'old_core_rat',emoji:'',img:OLD_ART+'core_purple.png',name:'Fang Core (Rat)',desc:'Dug out of a collapsing tunnel by a rat who ran from the war.',price:99999,type:'key',trophy:true},
+    {id:'old_core_cat',emoji:'',img:OLD_ART+'core_orange.png',name:'Fang Core (Cat)',desc:'Still warm. An old cat slept on it for years.',price:99999,type:'key',trophy:true},
+    {id:'old_core_pig',emoji:'',img:OLD_ART+'core_green.png',name:'Fang Core (Pig)',desc:'Logged as bank property. Signed out in a hurry.',price:99999,type:'key',trophy:true},
+    {id:'old_pack',emoji:'',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="8" y="9" width="16" height="18" fill="#2a1a10"/><rect x="9" y="10" width="14" height="16" fill="#7a5a34"/><rect x="11" y="6" width="10" height="5" fill="#2a1a10"/><rect x="12" y="7" width="8" height="3" fill="#5a4024"/><rect x="9" y="15" width="14" height="3" fill="#5a4024"/><rect x="15" y="16" width="2" height="2" fill="#e8c060"/></svg>'),name:'Rat-sized Pack',desc:'Cheese, a sock, a letter home that was never sent.',price:99999,type:'key',trophy:true});
+}
+// dialogue faces: square crops around each head (the full sprites are too wide or too tall for the round portrait)
+const OLD_FACES={}; ['pip','old_ash','whisk'].forEach(n=>{ const im=new Image(); im.src=OLD_ART+'npc/'+n+'_face.png?v=1'; OLD_FACES[n]=im; });
+const OLD_FACE=(k)=>OLD_FACES[{old_pip:'pip',old_ash:'old_ash',old_whisk:'whisk'}[k]]||PIG_IMG[k];
+function oldSay(name, img, lines, then, bg){ sayLines(name, lines, {img:OLD_FACE(img), bg:bg||'#1b2433', tone:340, then}); }
+function pipTalk(s){
+  if(S.items.includes('old_core_pig')){ oldSay('Pip','old_pip',[LT('I have filed a report saying nothing happened. Please make it true.','Am depus un raport că nu s-a întâmplat nimic. Vă rog să fie adevărat.')]); return; }
+  const give=()=>oldGiveCore('old_core_pig','Pip hands over the core, and the clipboard, and nearly his hat.','Pip îți dă miezul, și clipboardul, și aproape și casca.');
+  if(S.items.includes('snoutbadge')){
+    oldSay('Pip','old_pip',[LT('Is that a Survey Badge? Agent Snout\'s badge?','Aia e o insignă de topograf? Insigna agentului Snout?'),
+      LT('Then you are cleared for removal of bank property. Sign here. And here. Initial here.','Atunci ești autorizat să ridici proprietatea băncii. Semnează aici. Și aici. Inițiale aici.'),
+      LT('Take it. Please. It hums at night.','Ia-l. Te rog. Bâzâie noaptea.')], give);
+    return; }
+  oldSay('Pip','old_pip',s.lines,()=>askChoice({name:'Pip', img:OLD_FACE('old_pip'), bg:'#1b2433',
+    text:LT('So you see, the core has to stay logged. Unless an agent signs it out.','Deci vezi, miezul trebuie să rămână înregistrat. Doar dacă îl semnează un agent.'),
+    choices:[
+      {label:LT('"A supervisor is on his way down."','„Vine un supervizor încoace.”'), onPick(){
+        oldSay('Pip','old_pip',[LT('A SUPERVISOR? Now? And the core is just sitting here, unsigned?','UN SUPERVIZOR? Acum? Și miezul stă aici, nesemnat?'),
+          LT('Take it. Take it! If anyone asks, it was never here, and neither were you.','Ia-l. Ia-l! Dacă întreabă cineva, n-a fost niciodată aici, și nici tu.')], give); }},
+      {label:LT('Leave him to his paperwork','Lasă-l cu hârtiile lui'), onPick(){}}]}));
+}
+function ashTalk(s){
+  if(S.items.includes('old_core_cat')){ oldSay('Old Ash','old_ash',[LT('The bed is cold now. Worth it. That broth was good.','Patul e rece acum. A meritat. Supa a fost bună.')]); return; }
+  if(!S.oldAshMet){ S.oldAshMet=true; save();
+    oldSay('Old Ash','old_ash',s.lines.concat([LT('The little pack by the fire? A rat left it. Ran off toward the carvings. Smelled of cheese and panic.','Rucsacul mic de lângă foc? L-a lăsat un șobolan. A fugit spre sculpturi. Mirosea a brânză și a panică.')])); return; }
+  const fishOk=(S.coins||0)>=30, brothOk=bagCount('broth')>0;
+  oldSay('Old Ash','old_ash',[LT('You keep looking at my bed. Fine. It is not a stone, it is one of their cores.','Tot te uiți la patul meu. Bine. Nu e o piatră, e unul din miezurile lor.'),
+    LT('Warmest thing down here, after the fire. I would want something warm for it.','Cel mai cald lucru de aici, după foc. Aș vrea ceva cald în schimb.')],
+    ()=>askChoice({name:'Old Ash', img:OLD_FACE('old_ash'), bg:'#1b2433', text:LT('Well?','Ei?'), choices:[
+      ...(brothOk?[{label:LT('Give him a Fish Broth','Dă-i o Supă de pește'), onPick(){ bagTake('broth'); ashGive(); }}]:[]),
+      ...(fishOk?[{label:LT('Give him 30 fish','Dă-i 30 de pești'), onPick(){ S.coins-=30; ashGive(); }}]:[]),
+      {label:LT('Let him keep his bed','Lasă-i patul'), onPick(){ if(!brothOk&&!fishOk) toast(LT('Old Ash wants a Fish Broth or 30 fish.','Old Ash vrea o Supă de pește sau 30 de pești.')); }}]}));
+}
+function ashGive(){ oldSay('Old Ash','old_ash',[LT('Hm. Fair trade. Take the cold rock. Mind, it is heavier than it looks.','Hm. Târg cinstit. Ia piatra rece. Atenție, e mai grea decât pare.')],
+  ()=>oldGiveCore('old_core_cat','Old Ash rolls off the core with a long sigh.','Old Ash se rostogolește de pe miez cu un oftat lung.')); }
+function whiskTalk(s){
+  if(S.items.includes('old_core_rat')){ oldSay('Whisk','old_whisk',[LT('I am not going back up. Not to them. Maybe I will stay with the old cat. He does not shout.','Nu mă mai întorc sus. Nu la ei. Poate rămân cu motanul bătrân. El nu țipă.')],null,'#2a1210'); return; }
+  if(S.items.includes('old_pack')){
+    oldSay('Whisk','old_whisk',[LT('My pack! You brought my pack. The letter is still in it.','Rucsacul meu! Mi-ai adus rucsacul. Scrisoarea e încă în el.'),
+      LT('Here. The stone. They would have put it on a spear. I would rather it went in a door.','Poftim. Piatra. Ar fi pus-o pe o suliță. Mai bine să intre într-o ușă.')],
+      ()=>{ S.items=S.items.filter(i=>i!=='old_pack'); oldGiveCore('old_core_rat','Whisk gives you the core with both paws.','Whisk îți dă miezul cu ambele labe.'); },'#2a1210');
+    return; }
+  oldSay('Whisk','old_whisk',[LT('Do not shout. Please. Are they still looking for me up there?','Nu țipa. Te rog. Încă mă caută acolo sus?'),
+    LT('I dug this out of the old tunnel. Then the tunnel moved. I ran, and left my pack at the camp by the stairs.','Am scos asta din tunelul vechi. Apoi tunelul s-a mișcat. Am fugit și mi-am lăsat rucsacul la tabăra de lângă scări.'),
+    LT('I cannot go back there. The old cat is there. Cats eat rats, everybody says so.','Nu pot să mă întorc acolo. E motanul bătrân acolo. Pisicile mănâncă șobolani, toată lumea zice.')],null,'#2a1210');
+}
+// the three sockets in the gate (map pixels) and the scene that fills them
+const OLD_SOCKETS=[[2215,310],[2292,215],[2377,310]];   // the centres of the three bronze rings
+const OLD_SOCKET_ORB=[['core_purple','170,90,255'],['core_orange','255,150,40'],['core_green','70,230,110']];   // rat, cat, pig
+const OLD_ORB_IMG={}; OLD_SOCKET_ORB.forEach(([f])=>{ const im=new Image(); im.src=OLD_ART+f+'.png?v=1'; OLD_ORB_IMG[f]=im; });
+function drawOldGate(){
+  const n = S.oldGateOpen ? 3 : (HUB.oldGate ? HUB.oldGate.lit : 0); if(!n && !HUB.oldGate) return;
+  const now=Date.now(), W=HUB.worldW, k=W/OLD_CITY_W;
+  g.save(); g.globalCompositeOperation='lighter';
+  for(let i=0;i<n;i++){ const [x,y]=OLD_SOCKETS[i], [f,rgb]=OLD_SOCKET_ORB[i], sx=x*k-HUB.camx, sy=y/OLD_CITY_H*VH, R=30*k*(1+0.08*Math.sin(now*0.005+i));
+    const gr=g.createRadialGradient(sx,sy,2,sx,sy,R*2.4); gr.addColorStop(0,'rgba('+rgb+',.75)'); gr.addColorStop(0.4,'rgba('+rgb+',.4)'); gr.addColorStop(1,'rgba('+rgb+',0)');
+    g.fillStyle=gr; g.beginPath(); g.arc(sx,sy,R*2.4,0,7); g.fill(); }
+  g.globalCompositeOperation='source-over'; g.imageSmoothingEnabled=false;
+  for(let i=0;i<n;i++){ const im=OLD_ORB_IMG[OLD_SOCKET_ORB[i][0]]; if(!(im&&im.complete&&im.naturalWidth)) continue;   // the orb itself, sitting in its socket
+    const [x,y]=OLD_SOCKETS[i], sx=x*k-HUB.camx, sy=y/OLD_CITY_H*VH, h=54*k, w=im.naturalWidth/im.naturalHeight*h;
+    g.drawImage(im, sx-w/2, sy-h*0.5, w, h); }
+  g.globalCompositeOperation='lighter';
+  const G=HUB.oldGate; if(G && G.flashAt){ const t=now-G.flashAt; if(t<900){ g.fillStyle='rgba(200,150,255,'+(0.6*(1-t/900))+')'; g.fillRect(0,0,VW,VH); } }
+  g.restore();
+}
+function oldGateScene(){
+  const W=()=>HUB.worldW, C=()=>HUB.cine, sub=(t)=>{ if(C()) C().sub = t ? {text:t, t0:Date.now()} : null; };
+  HUB.oldGate={lit:0, flashAt:0};
+  const ding=(i)=>SFX.tone&&SFX.tone([392,494,587][i],0.4,'triangle',0.05);
+  const steps=[
+    {cam:()=>ofx(2296)*W(), ms:900},
+    {ms:1100, do:()=>{ HUB.oldGate.lit=1; ding(0); sub(LT('The rat\'s core clicks into place.','Miezul șobolanului intră cu un clic.')); }},
+    {ms:1100, do:()=>{ HUB.oldGate.lit=2; ding(1); sub(LT('Then the cat\'s.','Apoi al pisicii.')); }},
+    {ms:1300, do:()=>{ HUB.oldGate.lit=3; ding(2); sub(LT('Then the pig\'s.','Apoi al porcului.')); }},
+    {ms:2600, do:()=>{ HUB.oldGate.flashAt=Date.now(); if(SFX.tone) for(let i=0;i<6;i++) SFX.tone(60+i*4,0.4,'sawtooth',0.03,i*0.25);
+      sub(LT('Three sides, one door. Something deep in the wall starts to turn.','Trei tabere, o singură ușă. Ceva adânc în zid începe să se rotească.')); }},
+    {ms:3200, do:()=>{ S.items=S.items.filter(i=>!OLD_CORE_IDS.includes(i)); S.oldGateOpen=true; save(); syncHUD(); HUB.oldGate=null;
+      sub(LT('The Forge Gate is open.','Poarta Forjei e deschisă.')); }},
+    {ms:400, do:()=>sub(null)},
+  ];
+  if(!cineStart('oldgate', steps, true)){ S.oldGateOpen=true; save(); }
+}
+
+// ── the hooks the base game calls ──
+(window.PUIUTU_DLC = window.PUIUTU_DLC || {}).old_ones = {
+  name: 'Shadow of the Old Ones',
+  // a fresh AREAS (start, reset): open the vault in the Lower Archive and add the DLC's areas
+  areas(AREAS){
+    const H=AREAS.librarylower && AREAS.librarylower.hub; if(!H) return;
+    H.openIf='oldOnesOpen'; H.imgOpen=OLD_ART+'library_lower_open.png?v=4';   // the wheel rolled aside, the stairs behind it
+    const i=H.doors.findIndex(d=>d.dlcTeaser==='old_ones');
+    const door={xf:0.915, yf:0.668, r:105, glowXf:0.924, glowYf:0.430, glowR:96, glowRGB:'170,90,255', label:'The Old Stairs', icon:'',
+      // shut until you carry Seby's crystal; with it, the wheel can be opened
+      nearFn(){ if(S.oldOnesOpen || hasPurpleCrystal()) return;
+        if(HUB._blockedDoor!==door){ HUB._blockedDoor=door; toast(LT('The wheel will not turn. Its purple stones are dark, as if they were waiting for something.','Roata nu se mișcă. Pietrele ei mov sunt stinse, de parcă ar aștepta ceva.')); }
+        return 'skip'; },
+      glowIf(){ return S.oldOnesOpen || hasPurpleCrystal(); },
+      labelFn(){ return S.oldOnesOpen ? LT('The Old Stairs','Scările Vechi') : LT('Hold up the crystal','Ridică cristalul'); },
+      // the first time, the crystal opens it; after that, the long way down
+      useFn(){ if(!S.oldOnesOpen) oldVaultOpen(); else oldStairsDescent(); }};
+    if(i>=0) H.doors[i]=door; else H.doors.push(door);
+    AREAS.smilodon=oldCityArea();
+    // the DLC's NPC faces live in the base game's staff image table
+    oldRegisterItems();
+    if(typeof PIG_IMG==='object') [['old_pip','pip'],['old_ash','old_ash'],['old_whisk','whisk']].forEach(([k,f])=>{ if(!PIG_IMG[k]){ const im=new Image(); im.src=OLD_ART+'npc/'+f+'.png?v=1'; PIG_IMG[k]=im; } });
+    setTimeout(()=>{ if(typeof AREA_LVL==='object' && !AREA_LVL.smilodon) AREA_LVL.smilodon=8; }, 0);   // AREA_LVL is declared after AREAS
+  },
+  drawCine(){ if(HUB.descent) drawOldDescent(); else drawOldVaultGlow(); },
+  drawHub(){ if(curArea==='smilodon') drawOldGate(); },
+};

@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
+<script>/* DLC: every id listed here is loaded from dlc/<id>/<id>.js before the game starts. A build
+   that does not include a DLC lists nothing (build_web.py rewrites this line). See dlcOwned(). */
+window.PUIUTU_DLC_LIST=['old_ones'];
+window.PUIUTU_DLC_LIST.forEach(function(id){ document.write('<script src="dlc/'+id+'/'+id+'.js?v=14"><\/script>'); });</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -3933,7 +3937,11 @@ function buildAreas(){
         walkTop:0.45, walkBot:1.0,
         scaleFar:0.80, scaleNear:1.02,
         spawn:{xf:0.090, yf:0.500},               // foot of the stairs, under the arch on the left
-        doors:[{xf:0.085, yf:0.480, r:70, glowXf:0.085, glowYf:0.300, glowR:64, glowRGB:'120,120,255', to:'library', label:'Up to the Library', icon:'', toSpawn:{xf:0.31, yf:0.90}}],
+        // the wheel vault on the right is the way into the DLC "Shadow of the Old Ones". Without it the
+        // wheel stays shut; with Seby's crystal in your bag it only says what it is waiting for. The
+        // DLC's own script (dlc/old_ones) takes this spot over and turns it into a real door.
+        doors:[{xf:0.085, yf:0.480, r:70, glowXf:0.085, glowYf:0.300, glowR:64, glowRGB:'120,120,255', to:'library', label:'Up to the Library', icon:'', toSpawn:{xf:0.31, yf:0.90}},
+               {xf:0.915, yf:0.668, r:105, dlcTeaser:'old_ones'}],
       },
       platforms:[], npcs:[],
     },
@@ -4454,7 +4462,23 @@ function buildAreas(){
     }
   };
 }
-let AREAS=buildAreas();
+//──────── DLC ───────────────────────────────────────────────────────────────────────────
+// Each DLC lives in dlc/<id>/ (its script <id>.js and its art) and is NOT part of the base game's
+// files: a build without it simply does not contain it (build_web.py --dlc <id> puts it in).
+// The script is loaded before this one (see PUIUTU_DLC_LIST in <head>) and registers itself in
+// window.PUIUTU_DLC[id] = {areas(AREAS), drawCine(), …}. The base game only calls those hooks.
+// Owned = its files are there AND, when a store says what was bought (window.PUIUTU_ENTITLEMENTS,
+// set by the Steam / store wrapper), the store lists it.
+function dlcOwned(id){
+  const d=window.PUIUTU_DLC && window.PUIUTU_DLC[id]; if(!d) return false;
+  const ent=window.PUIUTU_ENTITLEMENTS; return !Array.isArray(ent) || ent.includes(id);
+}
+function dlcHook(name, ...args){
+  const D=window.PUIUTU_DLC||{};
+  for(const id in D){ if(dlcOwned(id) && typeof D[id][name]==='function'){ try{ D[id][name](...args); }catch(e){ console.error('DLC '+id+'.'+name, e); } } }
+}
+function buildAllAreas(){ const a=buildAreas(); dlcHook('areas', a); return a; }
+let AREAS=buildAllAreas();
 
 //──────────────────────────────────────────────────────────────── NPC DIALOGUE
 // quest-giving NPCs
@@ -6132,7 +6156,7 @@ function doInteract(){
         npcSay('Rat Emissary: Away from the stand. That suit is not for cats who cannot pay for it.','rat_emissary');
       else { toast('Something is missing here… you need a diving suit. Ask Sir Oink at the bank.'); SFX&&SFX.tone&&SFX.tone(200,0.12,'sine',0.05); } }
   else if(t==='bankdesk'){ const bd=A.hub.bankdesk; sayLines(T(bd.name||'Sir Oink'), storyTalk('oink', OINK_LATER, bd.lines||[]), {img:PIG_IMG[bd.img], bg:'#1b2433', tone:300, then:()=>openMarket('bank')}); }
-  else if(t==='staff'){ const s=HUB.nearStaff; if(s) sayLines(T(s.name||'Pig'), STAFF_LATER[s.name] ? storyTalk('staff_'+s.name, STAFF_LATER[s.name], s.lines||[]) : (s.lines||[]), {img:PIG_IMG[s.img], bg:'#1b2433', tone:340}); }
+  else if(t==='staff'){ const s=HUB.nearStaff; if(s && s.talkFn) s.talkFn(s); else if(s) sayLines(T(s.name||'Pig'), STAFF_LATER[s.name] ? storyTalk('staff_'+s.name, STAFF_LATER[s.name], s.lines||[]) : (s.lines||[]), {img:PIG_IMG[s.img], bg:'#1b2433', tone:340}); }
   else if(t==='merge') mgOpen();
   else if(t==='door'){ const dr=HUB.nearDoor; if(dr){
       if(dr.minigame==='minecart'){ mcOpen(); return; }   // the Rat Warren mine ride
@@ -6144,6 +6168,7 @@ function doInteract(){
       // defensive: a closed road is no longer offered as a door at all, so this should be
       // unreachable — but if it ever is, it stays quiet unless somebody is there to speak
       if(dr.requires && !gateOpen(dr.requires)){ npcSay(dr.lockedMsg, dr.speaker); return; }
+      if(dr.useFn){ dr.useFn(); return; }                // a door with its own scene (DLC doors)
       // the Lair's tunnel is sealed by a conduit gate, and it has to be powered EVERY time you go in —
       // so the gate is always drawn shut, and solving the puzzle walks you straight through.
       if(dr.to==='sebyboss'){ circOpen(()=>{ if(!S.sebyGateOpen){ S.sebyGateOpen=true; save(); toast(LT('The gate grinds open. The way to the Lair is clear.','Poarta se deschide scârțâind. Drumul spre Bârlog e liber.')); } go(); }); }
@@ -10583,6 +10608,7 @@ function updateCine(now){
 }
 function drawCine(){
   const C=HUB.cine, now=Date.now();
+  dlcHook('drawCine');                                      // a DLC's own scenes draw first (they may own the screen)
   if(C && C.cut) drawCut(C.cut);
   if(C && C.eyes && now-C.eyesAt<260){                     // two eyes, far off, and gone
     g.save(); g.globalCompositeOperation='lighter';
@@ -11934,6 +11960,13 @@ function updateHub(){
       near = Math.hypot(c.x-dr.xf*HUB.worldW, c.y-dr.yf*VH) < (dr.r||90);
     }
     if(!near) continue;
+    // a DLC's door that is not installed: never offered. Carrying Seby's crystal, you are told why once.
+    if(dr.dlcTeaser){
+      if(!dlcOwned(dr.dlcTeaser) && hasPurpleCrystal() && HUB._blockedDoor!==dr){ HUB._blockedDoor=dr;
+        toast(LT('The purple stones on the wheel flicker at the crystal, then go dark. (Shadow of the Old Ones, DLC)','Pietrele mov de pe roată clipesc la cristal, apoi se sting. (Shadow of the Old Ones, DLC)')); }
+      continue; }
+    // a door can decide for itself whether it is there right now ('skip' = walk on by)
+    if(dr.nearFn && dr.nearFn()==='skip') continue;
     // A road that is closed is not offered to you at all — no glow, no "Press E". You simply
     // walk up to it and whoever is standing there tells you why you are not going that way.
     if(dr.requires && !gateOpen(dr.requires)){
@@ -12961,6 +12994,7 @@ function drawHub(){
   if((!A.hub.abyssBoss || (HUB.abyss && HUB.abyss.state==='dead')) && A.hub.doors) for(const dr of A.hub.doors){
     if(dr.swirl && A.hub.boss && HUB.boss && !HUB.boss.defeated) continue;
     if(dr.requires && !gateOpen(dr.requires)) continue;   // closed roads do not glow
+    if(dr.dlcTeaser || (dr.glowIf && !dr.glowIf())) continue;   // an absent DLC's door and a sleeping door do not glow
     const useRed = dr.maskColor==='red' && HUB._redCx!=null;
     const gx=(useRed?HUB._redCx*HUB.worldW:(dr.glowXf!=null?dr.glowXf:dr.xf)*HUB.worldW) - HUB.camx;
     const gy=(useRed?HUB._redCy*VH:(dr.glowYf!=null?dr.glowYf:dr.yf)*VH);
@@ -12980,7 +13014,7 @@ function drawHub(){
     g.restore();
     drawCueMotes(g, gx, gy, glowR, rgb, near);
     if(near){ const ly=Math.max(gy-glowR-6, 104);    // above the glow; in a short window it stops just under the top bar instead of jumping below
-      drawPressE(g, gx, ly, (dr.lockedLabel && dr.to==='sebyboss')?dr.lockedLabel:dr.label, rgb, false); }
+      drawPressE(g, gx, ly, (dr.lockedLabel && dr.to==='sebyboss')?dr.lockedLabel:dr.labelFn?dr.labelFn():dr.label, rgb, false); }
   }
   // the cave mouth: blue motes drift out of it whenever it is open (faint from afar, brighter up close)
   const cvM=hubCave();
@@ -13067,6 +13101,7 @@ function drawHub(){
     g.restore();
   }
   drawHubSpots();
+  dlcHook('drawHub');                               // a DLC's own things on the map (glows, placed objects)
   huntDraw();
   drawHubMotes();                                   // over the hunt's dark too: the crystal's sparks glow
   if(HUB.abyss) drawAbyssBoss();
@@ -19979,7 +20014,7 @@ document.getElementById('setSfxOn').addEventListener('click',()=>setSfxOn(true))
 document.getElementById('setSfxOff').addEventListener('click',()=>setSfxOn(false));
 syncSoundSwitches();
 document.getElementById('resetBtn').onclick=()=>{
-    if(confirm(T('Reset all progress?'))){localStorage.removeItem('puiutu_save');S=load();A=null;AREAS=buildAreas();enterArea('garden',false);syncHUD();renderStatbars();renderProfile();updateQuestHUD();toast('Game reset!');}
+    if(confirm(T('Reset all progress?'))){localStorage.removeItem('puiutu_save');S=load();A=null;AREAS=buildAllAreas();enterArea('garden',false);syncHUD();renderStatbars();renderProfile();updateQuestHUD();toast('Game reset!');}
 };
 setInterval(()=>{ const m=document.getElementById('phone'); if(m&&m.classList.contains('active')) updatePhoneClock(); }, 1000);
 // Apps open ON the phone, like a real one: the app's window is moved onto the phone's screen (it keeps

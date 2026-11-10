@@ -10,5 +10,10 @@ rsync -a --delete --delete-excluded \
   "$SRC/ui" "$SRC/fx" "$SRC/skins" "$SRC/fishing" "$SRC/circuit" "$SRC/colorsort" \
   "$SRC/fruitmerge" "$SRC/gacha" "$SRC/cart_game" "$SRC/Phone" \
   www/
+# DLCs: none by default. DLCS="old_ones" ./sync_www.sh ships that one (script + art, no notes)
+rm -rf www/dlc
+for d in $DLCS; do mkdir -p "www/dlc/$d"; cp "$SRC/dlc/$d/$d.js" "www/dlc/$d/"; rsync -a "$SRC/dlc/$d/art" "www/dlc/$d/"; done
+LIST=$(for d in $DLCS; do printf "'%s'," "$d"; done | sed 's/,$//')
+sed -i '' "s/window\.PUIUTU_DLC_LIST=\[[^]]*\];/window.PUIUTU_DLC_LIST=[$LIST];/" www/life_of_puiutu_game.html
 cp www/life_of_puiutu_game.html www/index.html
 echo "www/ ready: $(du -sh www | cut -f1)"

@@ -3,6 +3,7 @@
 
     python3 build_web.py            # writes web_build/
     python3 build_web.py --demo     # writes web_build_demo/: the website demo (see DEMO in the game)
+    python3 build_web.py --dlc old_ones   # also ship a DLC (dlc/old_ones/); repeat --dlc for more
     npx wrangler pages deploy web_build --project-name puiutu
 
 What it does:
@@ -15,6 +16,8 @@ What it does:
     Masks and pixel art are encoded lossless so collision and pixel colors stay
     exact; everything else is lossy at high quality.
   - adds a _headers file for Cloudflare caching
+  - DLCs (dlc/<id>/) are left out unless named with --dlc <id>; the page's PUIUTU_DLC_LIST is
+    rewritten to exactly the DLCs in the build, so a build without one never even asks for it
   - with --demo: sets window.PUIUTU_DEMO, leaves out Border War and the maps of every area the
     demo does not reach, and minifies the game's scripts (no comments, short local names)
 """
@@ -23,6 +26,11 @@ from concurrent.futures import ThreadPoolExecutor
 
 SRC = os.path.dirname(os.path.abspath(__file__))
 DEMO = '--demo' in sys.argv
+# DLCs to ship: --dlc <id> (repeatable). Never in the demo.
+DLCS = [] if DEMO else [sys.argv[i + 1] for i, a in enumerate(sys.argv[:-1]) if a == '--dlc']
+for _d in DLCS:
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dlc', _d, _d + '.js')):
+        sys.exit('no such DLC: dlc/%s/%s.js' % (_d, _d))
 OUT = os.path.join(SRC, 'web_build_demo' if DEMO else 'web_build')
 # the areas the demo reaches (keep in sync with DEMO_AREAS in the game)
 DEMO_AREAS = {'garden', 'towergarden', 'library', 'beach', 'cave', 'sebyboss'}
@@ -116,6 +124,13 @@ def main():
                     continue
                 files.append(os.path.join(rel_root, n))
 
+    # a DLC ships its script and its art/, never its notes or reference pictures
+    for d in DLCS:
+        files.append(os.path.join('dlc', d, d + '.js'))
+        for root, dirs, names in os.walk(os.path.join(SRC, 'dlc', d, 'art')):
+            files += [os.path.relpath(os.path.join(root, n), SRC) for n in names
+                      if os.path.splitext(n)[1].lower() in ASSET_EXT and not n.startswith('.')]
+
     def build(rel):
         src, dst = os.path.join(SRC, rel), os.path.join(OUT, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -140,6 +155,10 @@ def main():
 
     # the game page: on pages.dev multiplayer goes through the Cloudflare relay (mp_worker/), see NET_RELAY
     html = texts[0]
+    html, n = re.subn(r"window\.PUIUTU_DLC_LIST=\[[^\]]*\];",
+                      'window.PUIUTU_DLC_LIST=%s;' % repr(DLCS).replace(' ', ''), html, count=1)
+    assert n == 1, 'PUIUTU_DLC_LIST not found in the game page'
+    print('DLCs in this build:', ', '.join(DLCS) or 'none')
     if DEMO:
         html = html.replace('<head>', '<head>\n<script>window.PUIUTU_DEMO=true;</script>', 1)
         html = minify_scripts(html)
