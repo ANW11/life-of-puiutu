@@ -51,7 +51,7 @@ const RO = {
   'box-select': 'selectare cu dreptunghi', 'Hero / Army / Idle': 'Erou / Armată / Liberi', 'quick selection buttons at the top': 'butoanele de selecție rapidă de sus',
   'Settings': 'Setări', 'On': 'Pornită', 'Off': 'Oprită', 'Close': 'Închide',
   'Got it': 'Am înțeles', 'Paused': 'Pauză', 'Game speed': 'Viteza jocului', 'Slow': 'Încet', 'Fast': 'Repede',
-  'Resume': 'Continuă', 'Surrender': 'Capitulează', 'Quit': 'Ieși', 'Victory': 'Victorie', 'Defeat': 'Înfrângere',
+  'Resume': 'Continuă', 'Surrender': 'Capitulează', 'Quit': 'Ieși', 'Really surrender?': 'Sigur capitulezi?', 'Really quit?': 'Sigur ieși?', 'Victory': 'Victorie', 'Defeat': 'Înfrângere',
   'Play again': 'Joacă din nou', 'Back': 'Înapoi',
   'Waiting for host…': 'Se așteaptă gazda…', 'Start vs friend': 'Start contra prietenului', 'Waiting for friend…': 'Se așteaptă prietenul…',
   'To play a friend, open the game from its online link (not straight from the file).': 'Ca să joci cu un prieten, deschide jocul de pe linkul online (nu direct din fișier).',

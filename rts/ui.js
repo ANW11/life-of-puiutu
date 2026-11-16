@@ -219,7 +219,10 @@ const UI = {
 
   // ── keys ──
   key(e) {
-    if (!G || G.over || Main.paused) { if (e.key === 'Escape' || e.key === 'F10') { e.preventDefault(); Main.togglePause(); } return; }
+    if (!G || G.over || Main.paused) { if (e.key === 'Escape' || e.key === 'F10') { e.preventDefault();
+      // Esc closes whatever sits on top first (how to play / settings), and only then the pause menu
+      if ($('helpOv').classList.contains('show') && $('pauseOv').classList.contains('show')) { $('helpOv').classList.remove('show'); return; }
+      Main.togglePause(); } return; }
     const k = e.key.length === 1 ? e.key.toUpperCase() : e.key;
     if (e.key.startsWith('Arrow')) { this.arrows[e.key] = true; e.preventDefault(); return; }
     if (k === 'Escape') { e.preventDefault(); if (this.place || this.target) { this.place = null; this.target = null; this.hint(); return; } if (this.menu !== 'main') { this.menu = 'main'; this.cardSig = ''; return; } Main.togglePause(); return; }

@@ -25,7 +25,16 @@ const Main = {
     $('setClose').onclick = () => $('setOv').classList.remove('show');
     $('setMusic').querySelectorAll('.ch').forEach(c => c.onclick = () => { if ((+c.dataset.v === 1) !== !!S.musicOn) { Jukebox.toggle(); showMusic(); } syncSet(); });
     $('setSpeed').querySelectorAll('.ch').forEach(c => c.onclick = () => { this.speed = +c.dataset.v; syncSet(); });
-    $('surrenderBtn').onclick = () => { if (G && !G.over) { CMD.exec({ t: 'surrender' }); this.togglePause(false); } };
+    // Surrender and Quit end the battle, so each asks once more ("Really…?") before it happens
+    const confirm2 = (id, label, ask, go) => { const btn = $(id); let armed = 0;
+      btn.onclick = () => { if (Date.now() < armed) { armed = 0; btn.textContent = label; go(); return; }
+        armed = Date.now() + 3000; btn.textContent = ask; sfx('click');
+        setTimeout(() => { if (armed && Date.now() >= armed) { armed = 0; btn.textContent = label; } }, 3100); };
+      btn.disarm = () => { armed = 0; btn.textContent = label; }; };
+    confirm2('surrenderBtn', 'Surrender', 'Really surrender?', () => { if (G && !G.over) { this.closeMenus(); CMD.exec({ t: 'surrender' }); } });
+    confirm2('quitBtn', 'Quit', 'Really quit?', () => this.quit());
+    // a click on the dark backdrop around the pause box is the same as Resume
+    $('pauseOv').addEventListener('click', e => { if (e.target === $('pauseOv')) this.togglePause(false); });
     // playing a friend
     NET.onStatus = (text, ready) => { $('mpStatus').innerHTML = text; $('startBtn').disabled = NET.role === 'host' && !NET.peer; $('startBtn').textContent = NET.role === 'guest' ? 'Waiting for host…' : NET.role === 'host' ? (NET.peer ? 'Start vs friend' : 'Waiting for friend…') : 'Start'; };
     if (!NET.available()) { $('mpBox').innerHTML = '<p style="font-size:13px;opacity:.75">To play a friend, open the game from its online link (not straight from the file).</p>'; }
@@ -34,9 +43,9 @@ const Main = {
       $('joinBtn').onclick = () => { const c = $('codeIn').value.trim(); if (c.length < 4) { $('mpStatus').textContent = 'Type the 4-letter code your friend sees.'; return; } NET.leave(); NET.join(c); this.mpMode(true); };
       $('soloBtn').onclick = () => { NET.leave(); this.mpMode(false); NET.onStatus('', false); };
     }
-    $('quitBtn').onclick = $('quitBtn2').onclick = () => this.quit();
+    $('quitBtn2').onclick = () => this.quit();
     if (window.parent !== window) { $('backBtn').style.display = ''; $('backBtn').onclick = () => window.parent.postMessage({ type: 'borderwar-close' }, '*'); }
-    $('againBtn').onclick = () => { $('endOv').classList.remove('show'); $('startOv').classList.add('show'); this.showRecord(); };
+    $('againBtn').onclick = () => { this.closeMenus(); $('endOv').classList.remove('show'); $('startOv').classList.add('show'); this.showRecord(); };
     this.showRecord();
     requestAnimationFrame(t => this.frame(t));
   },
@@ -57,7 +66,7 @@ const Main = {
     R.buildTerrain(); R.cam.z = IS_TOUCH ? 1.05 : 1.3;
     const s = G.map.starts[0]; R.centerOn(s.x + 2, s.y - 2, UI.viewH());
     UI.setSel([]); UI.groups = {}; UI.pings = []; this.ended = false; this.acc = 0;
-    $('startOv').classList.remove('show'); this.paused = false; sfx('done');
+    this.closeMenus(); $('startOv').classList.remove('show'); this.paused = false; sfx('done');
     if (!Jukebox.cur) Jukebox.play();
     G.msgs.push({ text: 'Your workers are already fishing. Select one and press B to build — houses first, then a Training Yard.', col: '#ffe7b0', t: 0 });
     G.msgs.push({ text: o.mp ? 'You are playing your friend. Good luck.' : 'Opponent: ' + AI_LEVELS[o.level].name + '. Good luck.', col: '#bbb', t: 0.01 });
@@ -83,16 +92,20 @@ const Main = {
   },
   togglePause(on) {
     // against a friend the menu opens but the battle goes on (pausing one side would pause both)
-    if (!G || G.over) return; this.paused = on === undefined ? !this.paused : on;
-    $('pauseOv').classList.toggle('show', this.paused); $('helpOv').classList.remove('show');
+    if (!G || G.over) { this.closeMenus(); return; }   // nothing to pause: never leave the menu stuck on screen
+    this.paused = on === undefined ? !this.paused : on;
+    $('pauseOv').classList.toggle('show', this.paused); $('helpOv').classList.remove('show'); $('setOv').classList.remove('show');
+    ['surrenderBtn', 'quitBtn'].forEach(id => $(id).disarm && $(id).disarm());
   },
+  // the in-battle menus (pause, how to play, settings) all go away together
+  closeMenus() { ['pauseOv', 'helpOv', 'setOv'].forEach(id => $(id).classList.remove('show')); ['surrenderBtn', 'quitBtn'].forEach(id => $(id).disarm && $(id).disarm()); },
   quit() {
     NET.leave(); this.mpMode(false);
     if (window.parent !== window) window.parent.postMessage({ type: 'borderwar-close' }, '*');
-    else { $('pauseOv').classList.remove('show'); $('endOv').classList.remove('show'); $('startOv').classList.add('show'); this.paused = true; G = null; }
+    else { this.closeMenus(); $('endOv').classList.remove('show'); $('startOv').classList.add('show'); this.paused = true; G = null; }
   },
   end() {
-    this.ended = true; const win = G.over.winner === ME, mp = !!G.opt.mp || NET.role === 'guest', lvl = mp ? 'friend' : G.opt.level, r = this.record();
+    this.ended = true; this.closeMenus(); const win = G.over.winner === ME, mp = !!G.opt.mp || NET.role === 'guest', lvl = mp ? 'friend' : G.opt.level, r = this.record();
     r[lvl] = r[lvl] || { w: 0, l: 0 }; if (win) r[lvl].w++; else r[lvl].l++; try { localStorage.setItem('borderwar_record', JSON.stringify(r)); } catch (e) {}
     const mult = { easy: 1, normal: 2, hard: 3, friend: 3 }[lvl], coins = win ? 60 * mult : 15, xp = win ? 120 * mult : 40;
     const t = G.over.t | 0, mm = (t / 60 | 0) + ':' + String(t % 60).padStart(2, '0');

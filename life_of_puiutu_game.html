@@ -5009,7 +5009,10 @@ const RO = {
   "“…Fine. FINE. I will do it myself.”":"„…Bine. BINE. O fac eu însumi.”",
   "“They told you I was a monster. Good. That was the point.”":"„Ți-au spus că sunt un monstru. Bine. Asta era ideea.”",
   "“Do not make me get up.”":"„Nu mă face să mă ridic.”",
-  "Queen Seby, the Ancient One stirs… the crystals tremble.":"Regina Seby, Cea Străveche se trezește… cristalele tremură.",
+  "Queen Seby, the Ancient One stirs. Her crystals shield her: break them all, then strike.":"Regina Seby, Cea Străveche se trezește. Cristalele ei o apără: sparge-le pe toate, apoi lovește.",
+  "Your claws can't reach her. The glowing crystals power her shield: break them first.":"Ghearele tale nu ajung la ea. Cristalele strălucitoare îi alimentează scutul: sparge-le întâi.",
+  "SHIELDED":"SCUT",
+  "Shield: crystals left":"Scut: cristale rămase",
   "Queen Seby gathers her shattered crystals… she rises again!":"Regina Seby își adună cristalele sparte… se ridică din nou!",
   "The crystal barrier shatters. Queen Seby is exposed!":"Bariera de cristal se sparge. Regina Seby e descoperită!",
   "Queen Seby's power is yours. Crystal Spikes learned!":"Puterea Reginei Seby e a ta, ai învățat Țepii de cristal!",
@@ -7010,7 +7013,9 @@ function damageAtPoint(wx,wy,radius,dmg,opt){
   }
   if(b && !b.defeated && !b.appear && near(b.x,b.y,22)){
     if(crystalsRemain()){
-      b.hitFlash=now; hits++; floatText(b.x,b.y-110,'SHIELDED','#bda8ff');
+      b.hitFlash=now; hits++; floatText(b.x,b.y-110,T('SHIELDED'),'#bda8ff');
+      if(now>(b.shieldHintAt||0)){ b.shieldHintAt=now+9000;   // say WHY, and say it again if they keep trying
+        toast("Your claws can't reach her. The glowing crystals power her shield: break them first."); }
       SFX.tone&&SFX.tone(180,0.1,'sine',0.05);
     }else{
       b.hp-=dmg; b.hitFlash=now; hits++; floatText(b.x,b.y-110,'-'+dmg,col);
@@ -7689,7 +7694,7 @@ function updateSeby(e,now){
   if(!e.dashCD)  e.dashCD =now+3600;
   // one-time awakening line when he first senses you
   if(!e.introShown && adist<600){ e.introShown=true;
-    toast('Queen Seby, the Ancient One stirs… the crystals tremble.');
+    toast('Queen Seby, the Ancient One stirs. Her crystals shield her: break them all, then strike.');
     SFX.seq&&SFX.seq([220,175,147,110],'sawtooth',0.07); }
 
   if(e.state==='shards'){
@@ -11747,7 +11752,7 @@ function updateHubBoss(now){
   }
   if(!b.throwCD)b.throwCD=now+2000; if(!b.meleeCD)b.meleeCD=now+1300; if(!b.dashCD)b.dashCD=now+3800;
   if(!b.introShown && dist<560){ b.introShown=true;
-    toast('Queen Seby, the Ancient One stirs… the crystals tremble.');
+    toast('Queen Seby, the Ancient One stirs. Her crystals shield her: break them all, then strike.');
     SFX.seq&&SFX.seq([220,175,147,110],'sawtooth',0.07); }
 
   if(b.state==='shards'){
@@ -12936,12 +12941,34 @@ function drawHub(){
       if(crystalsRemain()){ const pulse=0.5+0.5*Math.sin(now*0.006);
         g.save(); g.globalCompositeOperation='lighter'; g.strokeStyle='rgba(176,124,240,'+(0.25+pulse*0.35)+')'; g.lineWidth=3;
         g.beginPath(); g.ellipse(sx, b.y-bsz*0.45, bsz*0.62, bsz*0.5, 0, 0, 7); g.stroke();
-        g.fillStyle='rgba(150,80,230,'+(0.06+pulse*0.06)+')'; g.fill(); g.restore(); }
+        g.fillStyle='rgba(150,80,230,'+(0.06+pulse*0.06)+')'; g.fill();
+        // a crackling beam from every standing crystal into the bubble, so it reads as "they feed her"
+        const bcx=sx, bcy=b.y-bsz*0.45;
+        for(const k of HUB.crystals){ if(k.dead) continue;
+          const kx=k.x-HUB.camx, ky=k.y-k.h*hubScale(k.y)*0.7;
+          const flick=0.6+0.25*Math.sin(now*0.013+k.x*0.05);
+          // the beam stops where it meets the bubble, so it plugs into the shield, not into her
+          const dx=kx-bcx, dy=ky-bcy, rx=bsz*0.62, ry=bsz*0.5, e=1/Math.sqrt((dx*dx)/(rx*rx)+(dy*dy)/(ry*ry));
+          const ex=bcx+dx*Math.min(1,e), ey=bcy+dy*Math.min(1,e);
+          const path=()=>{ g.beginPath(); g.moveTo(kx,ky);
+            const segs=9; for(let i=1;i<segs;i++){ const t=i/segs, j=Math.sin(now*0.02+i*1.7+k.x)*5;
+              g.lineTo(kx+(ex-kx)*t+j, ky+(ey-ky)*t-j); }
+            g.lineTo(ex,ey); g.stroke(); };
+          g.strokeStyle='rgba(170,100,255,'+(flick*0.35)+')'; g.lineWidth=9; path();    // soft glow
+          g.strokeStyle='rgba(225,195,255,'+flick+')'; g.lineWidth=2.5; path();         // bright core
+          g.fillStyle='rgba(240,220,255,'+flick+')'; g.beginPath(); g.arc(ex,ey,3+pulse*2,0,7); g.fill();
+          g.fillStyle='rgba(230,200,255,'+(0.5+flick*0.5)+')'; g.beginPath(); g.arc(kx,ky,4+pulse*2,0,7); g.fill(); }
+        g.restore(); }
       if(now-(b.hitFlash||0)<110){ g.save();g.globalAlpha=.45;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.ellipse(sx,b.y-bsz*0.5,bsz*0.35,bsz*0.47,0,0,7);g.fill();g.restore(); }
       // royal name plate + big HP bar
       const topY=b.y-bsz-14;
       const pct=Math.max(0,b.hp/b.maxHp);
       drawBossPlate(sx, topY+4, 'Queen Seby, the Ancient One', pct, pct>0.5?'#b07cf0':pct>0.22?'#e8b53a':'#e0533a', '#1c1030');
+      if(crystalsRemain() && !b.defeated){ const left=HUB.crystals.filter(k=>!k.dead).length;
+        const lbl=T('Shield: crystals left')+' '+left;
+        g.save(); g.textAlign='center'; g.font='bold 13px "Jersey 10"'; const w=g.measureText(lbl).width+16;
+        g.fillStyle='rgba(10,8,6,.7)'; roundRectPath(sx-w/2,topY+26,w,18,6); g.fill();
+        g.fillStyle='#d9b8ff'; g.fillText(lbl,sx,topY+39); g.restore(); }
     } else if(it.t==='spirit'){ drawForestSpirit(g, HUB.spirit);
     } else if(it.t==='crowd'){ drawCrowdActor(g, it.a);
     } else if(it.t==='snout'){ drawSnout(g, HUB.hangar.agent);
@@ -19932,7 +19959,7 @@ function demoCard(kind, id){
 let WAR_OPEN=false;
 function warOpen(){
   if(document.getElementById('warFrame')) return; WAR_OPEN=true; stopAllMusic();     // Border War brings its own
-  const f=document.createElement('iframe'); f.id='warFrame'; f.src='rts.html?v=33&lang='+(S.lang||'en');
+  const f=document.createElement('iframe'); f.id='warFrame'; f.src='rts.html?v=34&lang='+(S.lang||'en');
   f.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:none;z-index:200;background:#0c0f0a;';
   f.addEventListener('load',()=>{ try{ guardArt(f.contentDocument); }catch(e){} });   // same origin; if not, it simply goes unguarded
   document.body.appendChild(f); paused=true; try{ f.focus(); }catch(e){}
