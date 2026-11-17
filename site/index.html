@@ -7,27 +7,47 @@
 <meta name="description" content="A cute little cat. Two kings who want him to fight. And a bank that pays for both sides. Life of Puiutu, coming soon to Steam.">
 <meta property="og:title" content="Life of Puiutu · Coming Soon">
 <meta property="og:description" content="Two kings want you to fight. Someone wants you to say yes.">
-<meta property="og:image" content="art/hero.webp">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://puiutu-site.life-of-puiutu.workers.dev/">
+<meta property="og:image" content="https://puiutu-site.life-of-puiutu.workers.dev/art/hero.webp">
+<meta property="og:image:width" content="1671">
+<meta property="og:image:height" content="941">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#120c1a">
 <link rel="icon" href="art/favicon.png">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=8">
+<script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
 
+<a class="skip" href="#story">Skip to the story</a>
 <canvas id="motes" aria-hidden="true"></canvas>
+
+<nav class="topbar" id="topbar" aria-label="Sections">
+  <a class="tb-logo" href="#top" aria-label="Life of Puiutu, back to the top"><img src="art/logo.webp" alt="" width="1000" height="453"></a>
+  <ul class="tb-links">
+    <li><a href="#real">The cast</a></li>
+    <li><a href="#sides">The war</a></li>
+    <li><a href="#features">The game</a></li>
+    <li><a href="#world">The world</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a class="btn btn-gold btn-sm" href="play/">Play the demo</a>
+</nav>
 
 <!-- ============ HERO ============ -->
 <header class="hero" id="top">
   <div class="hero-art" style="background-image:url(art/hero.webp)"></div>
   <div class="hero-shade"></div>
   <div class="hero-inner">
-    <img class="logo" src="art/logo.webp" alt="Life of Puiutu">
+    <h1><img class="logo" src="art/logo.webp" alt="Life of Puiutu" width="1000" height="453" fetchpriority="high"></h1>
     <p class="tagline">Two kings want you to fight. <span>Someone wants you to say yes.</span></p>
     <div class="cta">
-      <a class="btn btn-gold" href="#wishlist">Wishlist on Steam <small>soon</small></a>
-      <a class="btn btn-ghost" href="play/">Play the free demo</a>
+      <a class="btn btn-gold" href="play/">Play the free demo</a>
+      <a class="btn btn-ghost" href="#wishlist"><img class="steam" src="art/steam.svg" alt="" width="20" height="20"> Wishlist on Steam <small>soon</small></a>
     </div>
-    <div class="soon-pill">COMING SOON</div>
+    <p class="status"><span class="dot"></span>Coming soon to Steam on PC. The demo runs in your browser, no download.</p>
   </div>
   <a class="scroll-hint" href="#story" aria-label="Scroll down"><span></span></a>
 </header>
@@ -48,7 +68,7 @@
       and suddenly everyone wants something from a cat who just wanted lunch.</p>
   </div>
   <div class="puiutu-real reveal">
-    <img src="art/puiutu.webp" alt="Puiutu sitting" class="bob">
+    <img loading="lazy" decoding="async" src="art/puiutu.webp" alt="Puiutu sitting" class="bob">
     <div class="note">Puiutu is a real cat.<br><span>He has no idea he is in a video game.</span></div>
   </div>
 </section>
@@ -63,30 +83,30 @@
     <div class="cast">
       <figure class="who reveal">
         <div class="stack">
-          <img class="polaroid back" src="art/real_puiutu_kitten.webp" alt="Puiutu as a kitten">
-          <img class="polaroid front" src="art/real_puiutu.webp" alt="Puiutu, the real cat">
-          <img class="ingame" src="art/puiutu.webp" alt="Puiutu in the game">
+          <img loading="lazy" decoding="async" class="polaroid back" src="art/real_puiutu_kitten.webp" alt="Puiutu as a kitten">
+          <img loading="lazy" decoding="async" class="polaroid front" src="art/real_puiutu.webp" alt="Puiutu, the real cat">
+          <img loading="lazy" decoding="async" class="ingame" src="art/puiutu.webp" alt="Puiutu in the game">
         </div>
         <figcaption><b>Puiutu</b><span>Plays himself. Did not read the script.</span></figcaption>
       </figure>
       <figure class="who reveal">
         <div class="stack">
-          <img class="polaroid back" src="art/real_nomnom_nap.webp" alt="NomNom asleep on the rug">
-          <img class="polaroid front" src="art/real_nomnom.webp" alt="NomNom, the real cat">
-          <img class="ingame" src="art/nomnom.webp" alt="NomNom in the game">
+          <img loading="lazy" decoding="async" class="polaroid back" src="art/real_nomnom_nap.webp" alt="NomNom asleep on the rug">
+          <img loading="lazy" decoding="async" class="polaroid front" src="art/real_nomnom.webp" alt="NomNom, the real cat">
+          <img loading="lazy" decoding="async" class="ingame" src="art/nomnom.webp" alt="NomNom in the game">
         </div>
         <figcaption><b>NomNom</b><span>Runs the forge in the game. Runs the rug at home.</span></figcaption>
       </figure>
       <figure class="who reveal">
         <div class="stack">
-          <img class="polaroid front" src="art/real_tomy.webp" alt="Tomy, the real white cat, lying on a car">
-          <img class="ingame px" src="art/tomy.webp" alt="Tomy in the game">
+          <img loading="lazy" decoding="async" class="polaroid front" src="art/real_tomy.webp" alt="Tomy, the real white cat, lying on a car">
+          <img loading="lazy" decoding="async" class="ingame px" src="art/tomy.webp" alt="Tomy in the game">
         </div>
         <figcaption><b>Tomy</b><span>Wants eight fish. Settles for a warm car.</span></figcaption>
       </figure>
       <figure class="who reveal">
         <div class="stack">
-          <img class="polaroid front" src="art/real_seby.webp" alt="Seby, a real blue crayfish in her tank">
+          <img loading="lazy" decoding="async" class="polaroid front" src="art/real_seby.webp" alt="Seby, a real blue crayfish in her tank">
           <div class="ingame seby-real" role="img" aria-label="Seby in the game"></div>
         </div>
         <figcaption><b>Seby</b><span>A real crayfish. Yes, really. Much friendlier than her boss fight.</span></figcaption>
@@ -94,11 +114,11 @@
     </div>
     <div class="devrow">
       <figure class="dev reveal">
-        <img class="polaroid front" src="art/real_dev.webp" alt="The developer holding Puiutu and NomNom">
+        <img loading="lazy" decoding="async" class="polaroid front" src="art/real_dev.webp" alt="The developer holding Puiutu and NomNom">
         <figcaption><b>The developer</b><span>and the two leads, on set.</span></figcaption>
       </figure>
       <figure class="dev reveal">
-        <img class="polaroid front tilt" src="art/real_approves.webp" alt="Puiutu rubbing his face on the laptop while the game runs">
+        <img loading="lazy" decoding="async" class="polaroid front tilt" src="art/real_approves.webp" alt="Puiutu rubbing his face on the laptop while the game runs">
         <figcaption><b>Puiutu</b><span>approving the latest build.</span></figcaption>
       </figure>
     </div>
@@ -112,7 +132,7 @@
     <article class="side union reveal">
       <div class="poster">
         <div class="shadow-lion">
-          <img src="art/lion.webp" alt="A shadow shaped like a lion">
+          <img loading="lazy" decoding="async" src="art/lion.webp" alt="A shadow shaped like a lion">
           <i class="eye e1"></i><i class="eye e2"></i>
         </div>
       </div>
@@ -125,7 +145,7 @@
     <article class="side federation reveal">
       <div class="poster">
         <div class="shadow-rat">
-          <img src="art/ratking.webp" alt="A shadow wearing a crown">
+          <img loading="lazy" decoding="async" src="art/ratking.webp" alt="A shadow wearing a crown">
           <i class="eye r1"></i>
         </div>
       </div>
@@ -144,7 +164,7 @@
     <h2 class="center reveal">A cozy little life.<br><span class="soft">Mostly.</span></h2>
     <div class="grid">
       <div class="card reveal">
-        <div class="pic"><div class="rig"><img src="art/fisher.webp" alt="Puiutu fishing"><div class="line"><img src="art/parrotfish.webp" alt="A parrotfish on the hook"></div></div></div>
+        <div class="pic"><div class="rig"><img loading="lazy" decoding="async" src="art/fisher.webp" alt="Puiutu fishing"><div class="line"><img loading="lazy" decoding="async" src="art/parrotfish.webp" alt="A parrotfish on the hook"></div></div></div>
         <h4>Fish it.</h4>
         <p>From clownfish to great whites. Some of them are bigger than you. Reel anyway.</p>
       </div>
@@ -164,12 +184,12 @@
         <p>A loyal Westie, a pig with a badge, a rat who stopped marching. They walk with you and they talk back.</p>
       </div>
       <div class="card reveal">
-        <div class="pic"><img src="art/nomnom.webp" alt="NomNom the cat" class="bob"></div>
+        <div class="pic"><img loading="lazy" decoding="async" src="art/nomnom.webp" alt="NomNom the cat" class="bob"></div>
         <h4>Play together.</h4>
         <p>Meet other players in the town square, fish side by side, or wage a tiny cat and rat war in Border War.</p>
       </div>
       <div class="card reveal">
-        <div class="pic"><img src="art/crystal.webp" alt="" class="glow"></div>
+        <div class="pic"><img loading="lazy" decoding="async" src="art/crystal.webp" alt="" class="glow"></div>
         <h4>Three endings.</h4>
         <p>Serve the cats. Serve the rats. Or find out who serves whom.</p>
       </div>
@@ -179,29 +199,31 @@
 
 <!-- ============ SKINS ============ -->
 <section class="skins" id="skins">
+  <p class="kicker center reveal">13 breeds, same Puiutu</p>
   <h2 class="center reveal">Be any cat you want.</h2>
-  <div class="deck reveal">
-    <img src="art/skin_calico.webp" alt="Calico" title="Calico">
-    <img src="art/skin_abyssinian.webp" alt="Abyssinian" title="Abyssinian">
-    <img src="art/skin_siamese.webp" alt="Siamese" title="Siamese">
-    <img src="art/skin_british.webp" alt="British Shorthair" title="British Shorthair">
-    <img src="art/skin_mainecoon.webp" alt="Maine Coon" title="Maine Coon">
-    <img src="art/skin_angora.webp" alt="Turkish Angora" title="Turkish Angora">
-    <img src="art/skin_sphynx.webp" alt="Sphynx" title="Sphynx">
-    <img src="art/skin_russianblue.webp" alt="Russian Blue" title="Russian Blue">
-    <img src="art/skin_american.webp" alt="American Shorthair" title="American Shorthair">
-    <img src="art/skin_goldbengal.webp" alt="Golden Bengal" title="Golden Bengal">
-    <img src="art/skin_silvbengal.webp" alt="Silver Bengal" title="Silver Bengal">
-    <img src="art/skin_scottish.webp" alt="Scottish Fold" title="Scottish Fold">
-    <img src="art/skin_ragdoll.webp" alt="Ragdoll" title="Ragdoll">
+  <div class="deck reveal" id="deck">
+    <img loading="lazy" decoding="async" src="art/skin_calico.webp" alt="Calico" tabindex="0" data-name="Calico">
+    <img loading="lazy" decoding="async" src="art/skin_abyssinian.webp" alt="Abyssinian" tabindex="0" data-name="Abyssinian">
+    <img loading="lazy" decoding="async" src="art/skin_siamese.webp" alt="Siamese" tabindex="0" data-name="Siamese">
+    <img loading="lazy" decoding="async" src="art/skin_british.webp" alt="British Shorthair" tabindex="0" data-name="British Shorthair">
+    <img loading="lazy" decoding="async" src="art/skin_mainecoon.webp" alt="Maine Coon" tabindex="0" data-name="Maine Coon">
+    <img loading="lazy" decoding="async" src="art/skin_angora.webp" alt="Turkish Angora" tabindex="0" data-name="Turkish Angora">
+    <img loading="lazy" decoding="async" src="art/skin_sphynx.webp" alt="Sphynx" tabindex="0" data-name="Sphynx">
+    <img loading="lazy" decoding="async" src="art/skin_russianblue.webp" alt="Russian Blue" tabindex="0" data-name="Russian Blue">
+    <img loading="lazy" decoding="async" src="art/skin_american.webp" alt="American Shorthair" tabindex="0" data-name="American Shorthair">
+    <img loading="lazy" decoding="async" src="art/skin_goldbengal.webp" alt="Golden Bengal" tabindex="0" data-name="Golden Bengal">
+    <img loading="lazy" decoding="async" src="art/skin_silvbengal.webp" alt="Silver Bengal" tabindex="0" data-name="Silver Bengal">
+    <img loading="lazy" decoding="async" src="art/skin_scottish.webp" alt="Scottish Fold" tabindex="0" data-name="Scottish Fold">
+    <img loading="lazy" decoding="async" src="art/skin_ragdoll.webp" alt="Ragdoll" tabindex="0" data-name="Ragdoll">
   </div>
+  <p class="breed" id="breed" aria-live="polite">Hover a card to meet the breed</p>
 </section>
 
 <!-- ============ WORLD ============ -->
 <section class="world" id="world">
   <h2 class="center reveal">A whole world to wander.</h2>
-  <div class="strip" data-speed="-0.15"><img src="art/w_city.webp" alt="The town square"><img src="art/w_garden.webp" alt="Tower garden"><img src="art/w_beach.webp" alt="The beach"><img src="art/w_library.webp" alt="The library"><img src="art/w_castle.webp" alt="Castle gate"></div>
-  <div class="strip" data-speed="0.15"><img src="art/w_slum.webp" alt="The slums"><img src="art/w_seby.webp" alt="Seby's lair"><img src="art/w_throne.webp" alt="Throne room"><img src="art/w_ratking.webp" alt="Rat King's hall"><img src="art/w_abyss.webp" alt="The abyss"></div>
+  <div class="strip" data-speed="-0.15"><img loading="lazy" decoding="async" src="art/w_city.webp" alt="The town square"><img loading="lazy" decoding="async" src="art/w_garden.webp" alt="Tower garden"><img loading="lazy" decoding="async" src="art/w_beach.webp" alt="The beach"><img loading="lazy" decoding="async" src="art/w_library.webp" alt="The library"><img loading="lazy" decoding="async" src="art/w_castle.webp" alt="Castle gate"></div>
+  <div class="strip" data-speed="0.15"><img loading="lazy" decoding="async" src="art/w_slum.webp" alt="The slums"><img loading="lazy" decoding="async" src="art/w_seby.webp" alt="Seby's lair"><img loading="lazy" decoding="async" src="art/w_throne.webp" alt="Throne room"><img loading="lazy" decoding="async" src="art/w_ratking.webp" alt="Rat King's hall"><img loading="lazy" decoding="async" src="art/w_abyss.webp" alt="The abyss"></div>
 </section>
 
 <!-- ============ SECRET ============ -->
@@ -215,9 +237,9 @@
       <span class="redact" tabindex="0">The war is not a war.</span>
       <span class="redact" tabindex="0">It is a business.</span></p>
     <div class="seals reveal">
-      <figure><img src="art/seal_union.webp" alt=""><figcaption>Union</figcaption></figure>
-      <figure><img src="art/seal_rats.webp" alt=""><figcaption>Federation</figcaption></figure>
-      <figure class="odd"><img src="art/seal_pigs.webp" alt=""><figcaption>?</figcaption></figure>
+      <figure><img loading="lazy" decoding="async" src="art/seal_union.webp" alt=""><figcaption>Union</figcaption></figure>
+      <figure><img loading="lazy" decoding="async" src="art/seal_rats.webp" alt=""><figcaption>Federation</figcaption></figure>
+      <figure class="odd"><img loading="lazy" decoding="async" src="art/seal_pigs.webp" alt=""><figcaption>?</figcaption></figure>
     </div>
     <p class="whisper reveal">Animals who fight each other never look up.</p>
   </div>
@@ -227,11 +249,11 @@
 <section class="wishlist" id="wishlist" style="background-image:url(art/sunset.webp)">
   <div class="wishlist-shade"></div>
   <div class="wrap narrow center reveal">
-    <img class="logo small-logo" src="art/logo.webp" alt="Life of Puiutu">
+    <img loading="lazy" decoding="async" class="logo small-logo" src="art/logo.webp" alt="Life of Puiutu">
     <h2>Coming soon to Steam.</h2>
     <p class="lead">The store page is on its way. Until then, the free demo runs right in your browser.</p>
     <div class="cta center-cta">
-      <span class="btn btn-gold disabled">Wishlist <small>soon</small></span>
+      <span class="btn btn-gold disabled"><img class="steam" src="art/steam.svg" alt="" width="20" height="20"> Wishlist <small>soon</small></span>
       <a class="btn btn-ghost" href="play/">Play the free demo</a>
     </div>
   </div>
@@ -275,6 +297,6 @@
   <p class="legal">© 2026 ANW. All rights reserved. Life of Puiutu, its name, characters, story, art, music and code are protected by copyright. Copying, reproducing, redistributing or adapting any part of the game or this site without written permission is not allowed.</p>
 </footer>
 
-<script src="site.js?v=5"></script>
+<script src="site.js?v=8"></script>
 </body>
 </html>

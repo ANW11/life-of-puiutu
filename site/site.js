@@ -8,6 +8,27 @@
   }), { threshold: .18 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
+  // top bar: shows once the hero is mostly behind you; marks the section you are reading
+  const bar = document.getElementById('topbar'), heroEl = document.querySelector('.hero');
+  new IntersectionObserver(es => es.forEach(e => bar.classList.toggle('on', !e.isIntersecting)),
+    { threshold: 0, rootMargin: '-40% 0px 0px 0px' }).observe(heroEl);
+  const links = [...bar.querySelectorAll('.tb-links a')];
+  const spy = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    links.forEach(a => a.classList.toggle('here', a.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  links.forEach(a => { const t = document.querySelector(a.getAttribute('href')); t && spy.observe(t); });
+
+  // skins: the card you point at says its breed
+  const breed = document.getElementById('breed'), idle = breed.textContent;
+  breed.classList.add('idle');
+  const show = n => { breed.textContent = n || idle; breed.classList.toggle('idle', !n); };
+  document.querySelectorAll('#deck img').forEach(img => {
+    ['pointerenter', 'focus'].forEach(ev => img.addEventListener(ev, () => show(img.dataset.name)));
+    img.addEventListener('click', () => show(img.dataset.name));
+  });
+  document.getElementById('deck').addEventListener('pointerleave', () => show(''));
+
   // the secret lights up when you reach it
   const secret = document.querySelector('.secret');
   new IntersectionObserver(es => es.forEach(e => e.isIntersecting && secret.classList.add('lit')),
